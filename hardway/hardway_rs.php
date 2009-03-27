@@ -655,7 +655,8 @@ class ScoperHardway
 
 			// Since the NOT IN subquery is a painful aberration for filtering, 
 			// replace it with the separatare term query used by WP prior to 2.7
-			if ( ! empty($wp_query->query_vars['category__not_in']) ) {
+			if ( strpos( $where, "AND {$wpdb->posts}.ID NOT IN ( SELECT tr.object_id" ) ) { // global wp_query is not set on manual WP_Query calls by template code
+			//if ( ! empty($wp_query->query_vars['category__not_in']) ) {
 				$ids = get_objects_in_term($wp_query->query_vars['category__not_in'], 'category');
 				if ( is_wp_error( $ids ) )
 					$ids = array();

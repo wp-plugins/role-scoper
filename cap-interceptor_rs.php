@@ -46,6 +46,11 @@ class CapInterceptor_RS
 	//
 	function flt_user_has_cap($wp_blogcaps, $orig_reqd_caps, $args)	{
 		global $scoper;
+		static $hascap_object_ids;	//	$hascap_object_ids[src_name][object_type][capreqs key] = array of object ids for which user has the required caps
+									// 		capreqs key = md5(sorted array of required capnames)
+
+		if ( empty($hascap_object_ids) )
+			$hascap_object_ids = array();
 		
 		// work around bug in mw_EditPost method (requires publish_pages AND publish_posts cap)
 		if ( defined('XMLRPC_REQUEST') && ( 'publish_posts' == $orig_reqd_caps[0] ) ) {
@@ -53,10 +58,10 @@ class CapInterceptor_RS
 			if ( 'page' == $xmlrpc_post_type_rs )
 				return array('publish_posts' => true);
 		}
-		
+
 		//dump($orig_reqd_caps);
 		//dump($args);
-		
+
 		/*
 		rs_errlog(' ');
 		rs_errlog('flt_user_has_cap');
@@ -143,7 +148,7 @@ class CapInterceptor_RS
 			if ( ! empty($args[2]) ) // since we're in edit page form, convert id-specific edit_posts requirement to edit_pages
 				$rs_reqd_caps[$key] = 'edit_pages';
 		}
-
+		
 		// If no object id was passed in, we won't do much.
 		if ( empty($args[2]) ) {
 			if ( ! $this->skip_id_generation ) {
@@ -163,16 +168,16 @@ class CapInterceptor_RS
 					//rs_errlog("trying to determine ID for {$reqd_caps[0]}");
 	
 					if ( $gen_id = $this->generate_missing_object_id( $reqd_caps[0]) ) {
-						// Special case for upload scripts: don't do scoped role query if the post doesn't have any categories saved yet
-						if ( strpos($script_name, 'p-admin/media-upload.php') || strpos($script_name, 'p-admin/async-upload.php') ) {
-							if ( ! wp_get_post_categories($gen_id) )
-								$gen_id = 0;
-						}
-	
-						if ( $gen_id ) {
-							$args[2] = $gen_id;
-							
-							//rs_errlog("determined ID = $gen_id");
+						if ( ! is_array($gen_id) ) {
+							// Special case for upload scripts: don't do scoped role query if the post doesn't have any categories saved yet
+							if ( strpos($script_name, 'p-admin/media-upload.php') || strpos($script_name, 'p-admin/async-upload.php') ) {
+								if ( ! wp_get_post_categories($gen_id) )
+									$gen_id = 0;
+							}
+		
+							if ( $gen_id ) {
+								$args[2] = $gen_id;
+							}
 						}
 					}
 				}
@@ -194,13 +199,16 @@ class CapInterceptor_RS
 						if ( ! $this->skip_any_term_check )
 							if ( $tax_caps = $this->user_can_for_any_term($missing_caps) )
 								$wp_blogcaps = array_merge($wp_blogcaps, $tax_caps);
-							
+					
 					// If we are about to fail the blogcap requirement, credit a missing scoper-defined cap if 
 					// the user has it by object role for ANY object.
 					// (i.e. don't bar user from edit-pages.php if they have edit_cap for at least one page)
 					if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {
-						if ( ! $this->skip_any_object_check && ( ! strpos($script_name, 'p-admin/index.php') || ! did_action('admin_notices') || ! empty($scoper->honor_any_objrole) ) ) {  // credit object role assignment for menu visibility check and Dashboard Post/Page total, but not for Dashboard "Write Post" / "Write Page" links
 						
+						$honor_objrole = awp_ver('2.7') || ! strpos($script_name, 'p-admin/index.php') || ! did_action('admin_notices') || ! empty($scoper->honor_any_objrole);
+		
+						if ( ! $this->skip_any_object_check && $honor_objrole ) {  // credit object role assignment for menu visibility check and Dashboard Post/Page total, but not for Dashboard "Write Post" / "Write Page" links
+
 							// Complication due to the dual usage of 'edit_posts' / 'edit_pages' caps for creation AND editing permission:
 							// We don't want to allow a user to create a new page or post simply because they have an editing role assigned directly to some other post/page
 							$any_objrole_skip_uris = array( 'p-admin/page-new.php', 'p-admin/post-new.php' );
@@ -318,8 +326,8 @@ class CapInterceptor_RS
 						wp_set_object_terms( $object_id, $set_terms, $taxonomy );
 						
 					// delete any buffered cap check results which were queried prior to storage of these object terms
-					if ( isset($scoper->hascap_object_ids[$src_name][$object_type]) )
-						unset($scoper->hascap_object_ids[$src_name][$object_type]);
+					if ( isset($hascap_object_ids[$src_name][$object_type]) )
+						unset($hascap_object_ids[$src_name][$object_type]);
 				}
 			}
 		}
@@ -333,35 +341,58 @@ class CapInterceptor_RS
 		//
 		// (This is useful when front end code must check caps for each post 
 		// to determine whether to display 'edit' link, etc.)
+
 		
-		// now that object type is known, retrieve / construct memory cache of all ids which satisfy capreqs
-		sort($rs_reqd_caps);
-		
-		$capreqs_key = md5( serialize($rs_reqd_caps) . ! $scoper->query_interceptor->require_full_object_role );  // see ScoperAdmin::user_can_admin_object
-		
-		// is the requested object a revision?
-		if ( 'post' == $src_name &&  awp_ver('2.6') && ! isset($scoper->hascap_object_ids[$src_name][$object_type][$capreqs_key][$object_id]) ) {
+		// is the requested object a revision or attachment?
+		$maybe_revision = ( 'post' == $src_name &&  awp_ver('2.6') && ! isset($hascap_object_ids[$src_name][$object_type][$capreqs_key][$object_id]) );
+
+		$maybe_attachment = strpos($_SERVER['SCRIPT_NAME'], 'p-admin/upload.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/media.php');
+
+		if ( $object_id && ( $maybe_revision || $maybe_attachment ) ) {
 			if ( ! $_post = wp_cache_get($object_id, 'posts') )
 				if ( $_post = & scoper_get_row($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE ID = %d LIMIT 1", $object_id)) )
 					wp_cache_add($_post->ID, $_post, 'posts');
-					
-			if ( $_post && ('revision' == $_post->post_type) ) {
-				$object_id = $_post->post_parent;
-				$revisions = rs_get_post_revisions($object_id);
-				
+
+			if ( $_post ) {
+				if ( 'revision' == $_post->post_type )
+					$revisions = rs_get_post_revisions($object_id);
+
 				//todo: eliminate redundant post query (above by detect method to determine object type)
-				if ( ! $object_type || ('revision' == $object_type) ) {
+				if ( ( 'revision' == $_post->post_type ) || ( 'attachment' == $_post->post_type ) ) {
+					//$object_id = $_post->post_parent;
+				
 					if ( ! $_parent = wp_cache_get($_post->post_parent, 'posts') )
 						if ( $_parent = & scoper_get_row($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE ID = %d LIMIT 1", $_post->post_parent)) )
 							wp_cache_add($_post->post_parent, $_parent, 'posts');
 					
-					if ( $_parent )
+					if ( $_parent ) {
 						$object_type = $_parent->post_type;
+					
+						// compensate for WP's requirement of posts cap for attachment editing, regardless of whether it's attached to a post or page
+						if ( $maybe_attachment && ( 'page' == $object_type ) ) {
+							if ( 'edit_others_posts' == $rs_reqd_caps[0] )
+								$rs_reqd_caps[0] = 'edit_others_pages';
+								
+							elseif ( 'delete_others_posts' == $rs_reqd_caps[0] )
+								$rs_reqd_caps[0] = 'delete_others_pages';
+								
+							elseif ( 'edit_posts' == $rs_reqd_caps[0] )
+								$rs_reqd_caps[0] = 'edit_pages';
+								
+							elseif ( 'delete_posts' == $rs_reqd_caps[0] )
+								$rs_reqd_caps[0] = 'delete_pages';
+						}
+					}
 				}
 			}
 		}
+
+
+		// now that object type is known, retrieve / construct memory cache of all ids which satisfy capreqs
+		sort($rs_reqd_caps);
+		$capreqs_key = md5( serialize($rs_reqd_caps) . ! $scoper->query_interceptor->require_full_object_role );  // see ScoperAdmin::user_can_admin_object
 		
-		if ( ! isset($scoper->hascap_object_ids[$src_name][$object_type][$capreqs_key]) ) {
+		if ( ! isset($hascap_object_ids[$src_name][$object_type][$capreqs_key]) ) {
 			// If we have a cache of all currently listed object ids, limit capreq query to those ids
 
 			// Check whether Object ids meeting specified capreqs were already memcached during this http request
@@ -386,7 +417,7 @@ class CapInterceptor_RS
 			
 			// If a listing buffer exists, query on its IDs.  Otherwise just for this object_id
 			$id_in = " AND $src->table.{$src->cols->id} IN ('" . implode("', '", array_unique($listed_ids)) . "')";
-			
+
 			if ( isset($args['use_term_roles']) )
 				$use_term_roles = $args['use_term_roles'];
 			else
@@ -398,7 +429,7 @@ class CapInterceptor_RS
 			
 			$join = $scoper->query_interceptor->flt_objects_join('', $src_name, $object_type, $this_args );
 			$where = $scoper->query_interceptor->objects_where_role_clauses($src_name, $rs_reqd_caps, $this_args );
-			
+
 			if ( $use_object_roles && $scoper->query_interceptor->require_full_object_role )
 				$this->require_full_object_role = false;	// return just-used temporary switch back to normal
 			
@@ -406,38 +437,41 @@ class CapInterceptor_RS
 				$where = "AND ( $where )";
 			
 			$query = "SELECT DISTINCT $src->table.{$src->cols->id} FROM $src->table $join WHERE 1=1 $where $id_in";
-			//rs_errlog($query);
 
 			$query_key = md5( $query );
 
-			if ( isset($scoper->hascap_object_ids[$src_name][$object_type][$query_key]) )
-				$okay_ids = $scoper->hascap_object_ids[$src_name][$object_type][$query_key];
+			if ( isset($hascap_object_ids[$src_name][$object_type][$query_key]) )
+				$okay_ids = $hascap_object_ids[$src_name][$object_type][$query_key];
 			else {
 				$okay_ids = scoper_get_col($query);
 
 				// If set of listed ids is not known, each current_user_can call will generate a new query construction
 				// But if the same query is generated, use buffered result
 				if ( ! empty($okay_ids) )
-					$okay_ids = array_flip($okay_ids);
-				
-				if ( count($listed_ids) > 1 )
-					$scoper->hascap_object_ids[$src_name][$object_type][$capreqs_key] = $okay_ids;
-				
-				$scoper->hascap_object_ids[$src_name][$object_type][$query_key] = $okay_ids;
+					$okay_ids = array_fill_keys($okay_ids, true);
+
+				if ( count($listed_ids) > 1 ) {
+					// bulk post/page deletion is broken by hascap buffering
+					if ( empty($_GET['doaction']) || ( ('delete_post' != $args[0]) && ('delete_page' != $args[0]) ) )
+						$hascap_object_ids[$src_name][$object_type][$capreqs_key] = $okay_ids;
+				}
+				$hascap_object_ids[$src_name][$object_type][$query_key] = $okay_ids;
 			}
-			
+
 		} else { // results of this same has_cap inquiry are already stored (from another call within current http request)
-			$okay_ids = $scoper->hascap_object_ids[$src_name][$object_type][$capreqs_key];
+			$okay_ids = $hascap_object_ids[$src_name][$object_type][$capreqs_key];
 		}
-		
+
 		// if we redirected the cap check to revision parent, credit all the revisions for passing results
 		if ( isset($okay_ids[$object_id]) && ! empty($revisions) ) {
 			$okay_ids = $okay_ids + $revisions;
 
-			$scoper->hascap_object_ids[$src_name][$object_type][$capreqs_key] = $okay_ids;
+			// bulk post/page deletion is broken by hascap buffering
+			if ( empty($_GET['doaction']) || ( ('delete_post' != $args[0]) && ('delete_page' != $args[0]) ) )
+				$hascap_object_ids[$src_name][$object_type][$capreqs_key] = $okay_ids;
 			
 			if ( ! empty($query_key) )
-				$scoper->hascap_object_ids[$src_name][$object_type][$query_key] = $okay_ids;
+				$hascap_object_ids[$src_name][$object_type][$query_key] = $okay_ids;
 		}
 		
 		//rs_errlog( serialize($okay_ids) );
@@ -447,6 +481,7 @@ class CapInterceptor_RS
 		$undefined_reqd_caps = array_diff_key( $wp_blogcaps, $rs_reqd_caps);
 		
 		if ( ! $okay_ids || ! isset($okay_ids[$object_id]) ) {
+			//d_echo("object_id $object_id not okay!" );
 			//rs_errlog( "object_id $object_id not okay!" );
 			return $undefined_reqd_caps;	// required caps we scrutinized are excluded from this array
 		} else {

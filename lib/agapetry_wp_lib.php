@@ -231,8 +231,8 @@ function awp_force_set($setvar, $val, $args = '', $keys = '', $subkeys = '') {
 }
 
 function awp_notice($message, $plugin_name) {
-	// slick method copied from NextGEN Gallery plugin
-	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade"><p><strong>' . $message . '</strong></p></div>\';'));
+	// slick method copied from NextGEN Gallery plugin			// TODO: why isn't there a class that can turn this text black?
+	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade" style="color: black">' . $message . '</div>\';'));
 	trigger_error("$plugin_name internal notice: $message");
 	$err = new WP_Error($plugin_name, $message);
 }

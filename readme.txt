@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, cms, members, user, groups, admin, categories, pages, posts
 Requires at least: 2.5
 Tested up to: 2.7
-Stable Tag: 1.0.0
+Stable Tag: 1.0.1
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 

@@ -274,7 +274,10 @@ class ScoperAdminUI {
 	// make use of filter provided by WP 2.7
 	function flt_dropdown_pages($orig_options_html) {
 		global $scoper, $post_ID;
-		
+
+		if ( strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/options-' ) )
+			return $orig_options_html;
+
 		if ( empty($post_ID) )
 			$object_id = $scoper->data_sources->detect('id', 'post', 0, 'post');
 		else
@@ -288,10 +291,10 @@ class ScoperAdminUI {
 		//if ( is_administrator_rs() )	// WP 2.7 excludes private pages from Administrator's parent dropdown
 		//	return $orig_options_html;
 
-		if ( is_administrator_rs() )
+		if ( is_administrator_rs() ) {
 			$can_associate_main = true;
-
-		elseif ( ! scoper_get_option( 'lock_top_pages' ) ) {
+			
+		} elseif ( ! scoper_get_option( 'lock_top_pages' ) ) {
 			global $current_user;
 			$reqd_caps = array('edit_others_pages');
 			$roles = $scoper->role_defs->qualify_roles($reqd_caps, '');

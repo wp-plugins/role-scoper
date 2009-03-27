@@ -49,7 +49,9 @@ function scoper_default_options() {
 		'rs_page_author_role_objscope' => 0,
 		'rs_post_reader_role_objscope' => 0,
 		'rs_post_author_role_objscope' => 0,
-		'lock_top_pages' => 0
+		'lock_top_pages' => 0,
+		'display_user_profile_groups' => 1,
+		'display_user_profile_roles' => 1
 		//'assume_javascript' => 0  //possible todo: implement this
 	);
 

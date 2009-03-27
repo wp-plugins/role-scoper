@@ -37,10 +37,10 @@ class ScoperAdmin
 				if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/plugins.php') )
 					add_filter( 'plugin_action_links', array(&$this, 'flt_plugin_action_links'), 10, 2 );
 				
-				if ( ! awp_ver('2.7') ) {
+				//if ( ! awp_ver('2.7') ) {
 					add_filter('ozh_adminmenu_menu', array(&$this, 'ozh_adminmenu_hack') );
 					add_filter('ozh_adminmenu_altmenu', array(&$this, 'ozh_altmenu_hack') );
-				}
+				//}
 			}
 		}
 
@@ -189,6 +189,19 @@ class ScoperAdmin
 				if ( scoper_get_otype_option('use_term_roles', $tx->object_source->name) )
 					$can_admin_terms[$taxonomy] = true;
 		}
+		
+		/*
+		global $_wp_menu_nopriv;
+		if ( ! empty($can_admin_objects['post']['post']) || ! empty($can_admin_terms['category']) )
+			if ( isset($_wp_menu_nopriv['edit.php']) )
+				unset($_wp_menu_nopriv['edit.php']);
+				
+		if ( ! empty($can_admin_objects['post']['page']) )
+			if ( isset($_wp_menu_nopriv['edit-pages.php']) )
+				unset($_wp_menu_nopriv['edit-pages.php']);
+		
+		dump($_wp_menu_nopriv);
+		*/
 		
 		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_administrator || current_user_can('manage_groups') );
 		
@@ -464,9 +477,6 @@ class ScoperAdmin
 				}
 			}
 		}
-		
-		
-		
 	}
 
 	
@@ -765,6 +775,9 @@ class ScoperAdmin
 	
 	// only used for WP < 2.7
 	function ozh_adminmenu_hack($menu) {
+		dump($menu);
+		die;
+	
 		if ( current_user_can('edit_posts') ) {
 			$menu[5][0] = __("Write");
 			$menu[5][1] = "edit_posts";

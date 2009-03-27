@@ -725,6 +725,31 @@ $all_options []= 'lock_top_pages';?>
 </td></tr>
 
 
+<?php 
+								// --- USER PROFILE SECTION ---
+$all_options []= 'display_user_profile_groups';
+$all_options []= 'display_user_profile_roles';
+?>
+
+<tr valign="top">
+<th scope="row"><?php _e('User Profile', 'scoper') ?></th>
+<td>
+
+<div class="agp-vspaced_input">
+<label for="display_user_profile_groups">
+<input name="display_user_profile_groups" type="checkbox" id="display_user_profile_groups" value="1" <?php checked('1', scoper_get_option('display_user_profile_groups'));?> />
+<?php _e('Display User Groups', 'scoper') ?></label>
+</div>
+
+<div class="agp-vspaced_input">
+<label for="display_user_profile_roles">
+<input name="display_user_profile_roles" type="checkbox" id="display_user_profile_roles" value="1" <?php checked('1', scoper_get_option('display_user_profile_roles'));?> />
+<?php _e('Display User Roles', 'scoper') ?></label>
+</div>
+
+</td></tr>
+
+
 <tr valign="top">
 <th scope="row"><?php 
 								// --- HIDDEN EDITING ELEMENTS SECTION ---
@@ -754,7 +779,8 @@ _e('Hidden Editing Elements', 'scoper') ?></th>
 		$all_otype_options []= $option_name;
 		
 		$sample_ids = array();
-		$sample_ids['post:post'] = '<span id="rs_sample_ids_post:post" class="rs-gray" style="display:none">' . 'categorydiv; rs_private_post_reader; rs_post_contributor; passworddiv; slugdiv; authordiv; commentstatusdiv; trackbacksdiv;' . '</span>';
+
+		$sample_ids['post:post'] = '<span id="rs_sample_ids_post:post" class="rs-gray" style="display:none">' . 'categorydiv; rs_private_post_reader; rs_post_contributor; passworddiv; slugdiv; authordiv; commentstatusdiv; trackbacksdiv; tagsdiv; postexcerpt; postcustom' . '</span>';
 		$sample_ids['post:page'] = '<span id="rs_sample_ids_post:page" class="rs-gray" style="display:none">' . 'rs_private_page_reader; rs_page_contributor; rs_page_associate; pagepassworddiv; pageslugdiv; pageauthordiv; pageorderdiv; pageparentdiv; pagecommentstatusdiv' . '</span>';
 		
 		foreach ( $opt_vals as $src_otype => $val ) {

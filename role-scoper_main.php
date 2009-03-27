@@ -48,10 +48,6 @@ class Scoper
 	var $listed_ids = array();  // $listed_ids[src_name][object_id] = array of colname=>value : general purpose memory cache
 								// If a 3rd party loads it with listing results for a scoper-defined otype, those will be used to buffer subsequent current_user_can/flt_user_has_cap queries
 
-	var $hascap_object_ids = array();  // $hascap_object_ids[src_name][object_type][capreqs key] = array of object ids for which user has the required caps
-									   // capreqs key = md5(sorted array of required capnames)
-	// ===
-	
 	// minimal config retrieval to support pre-init usage by WP_Scoped_User before text domain is loaded
 	function Scoper() {
 		require_once('defaults_rs.php');

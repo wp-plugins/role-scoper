@@ -156,13 +156,13 @@ class ScoperAdminFiltersUI
 
 		if ( ! $blogwide_edit && ('post' == $src_name) ) {
 			$object = $this->scoper->data_sources->get_object($src_name, $object_id);
-			
-			if ( ! empty($object->post_name) ) // don't prevent the full editing of new posts/pages
+
+			if ( ! empty($object->post_date) ) // don't prevent the full editing of new posts/pages
 				if ( scoper_get_option('hide_non_editor_admin_divs') )
 					$force_hide = true;
 		}
-		
-		if ( $force_hide || ! $this->scoper->admin->user_can_admin_object($src_name, $object_type, $object_id) ) {
+
+		if ( ! empty($force_hide) || ! $this->scoper->admin->user_can_admin_object($src_name, $object_type, $object_id) ) {
 			if ( ! awp_ver('2.7-dev') )	// side-info with related posts, links, etc.
 				echo "\n<!-- " . __('Role Scoper Plugin CSS:') . " -->\n<style type='text/css'>\n<!--\n.side-info { display: none !important; }\n-->\n</style>\n";	
 		
@@ -180,6 +180,9 @@ class ScoperAdminFiltersUI
 		//if ( strpos( $_SERVER['SCRIPT_NAME'], 'profile.php') && ! is_administrator_rs() )
 			//return;
 	
+		if ( ! is_administrator_rs() && ! scoper_get_option( 'display_user_profile_groups' ) )
+			return;
+			
 		if ( ! $all_groups = ScoperAdminLib::get_all_groups(UNFILTERED_RS) )
 			return;
 
@@ -260,8 +263,7 @@ class ScoperAdminFiltersUI
 					global $check_for_pending_rev;
 					$check_for_pending_rev = true;
 					
-					// todo: confirm this is never needed
-					$this->scoper->hascap_object_ids = array();
+					//$this->scoper->hascap_object_ids = array();
 					
 					if ( ! current_user_can($cap_name, $post_id) ) {
 						$this->impose_pending_rev = $post_id;

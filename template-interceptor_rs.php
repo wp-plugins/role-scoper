@@ -136,7 +136,7 @@ function is_teaser_rs( $id = '' , $src_name = 'post' ) {
 
 function is_restricted_rs( $id = '', $src_name = 'post', $op_type = 'read', $scope_criteria = '' ) {
 	global $scoper;
-	
+
 	if ( empty($scoper) || ( ! $id && is_home() && ! is_single() ) )
 		return false;
 		

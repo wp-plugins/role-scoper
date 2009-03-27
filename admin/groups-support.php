@@ -87,6 +87,8 @@ class UserGroups_tp {
 				wpp_cache_delete( $user_id, 'group_membership_for_user' );
 			
 			if ( $got_blogrole = scoper_get_var("SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE scope = 'blog' AND role_type = '$role_type' AND group_id = '$group_id' LIMIT 1") ) {
+				scoper_query("DELETE FROM $wpdb->user2role2object_rs WHERE scope = 'blog' AND role_type = '$role_type' AND group_id = '$group_id'");
+			
 				scoper_flush_roles_cache( BLOG_SCOPE_RS, ROLE_BASIS_GROUPS );
 				
 				if ( $any_user_roles )
@@ -94,6 +96,8 @@ class UserGroups_tp {
 			}
 			
 			if ( $got_taxonomyrole = scoper_get_var("SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE scope = 'term' AND role_type = '$role_type' AND group_id = '$group_id' LIMIT 1") ) {
+				scoper_query("DELETE FROM $wpdb->user2role2object_rs WHERE scope = 'term' AND role_type = '$role_type' AND group_id = '$group_id'");
+			
 				scoper_flush_roles_cache( TERM_SCOPE_RS, ROLE_BASIS_GROUPS );
 				
 				if ( $any_user_roles )
@@ -101,6 +105,8 @@ class UserGroups_tp {
 			}
 			
 			if ( $got_objectrole = scoper_get_var("SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE scope = 'object' AND role_type = '$role_type' AND group_id = '$group_id' LIMIT 1") ) {
+				scoper_query("DELETE FROM $wpdb->user2role2object_rs WHERE scope = 'object' AND role_type = '$role_type' AND group_id = '$group_id'");
+
 				scoper_flush_roles_cache( OBJECT_SCOPE_RS, ROLE_BASIS_GROUPS );
 				
 				if ( $any_user_roles )

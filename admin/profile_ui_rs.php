@@ -5,6 +5,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 class ScoperProfileUI {
 
 	function display_ui_user_roles($user, $groups_only = false) {
+
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx )
 			if ( ! isset($user->term_roles[$taxonomy]) )
 				$user->get_term_roles($taxonomy);
@@ -14,6 +15,9 @@ class ScoperProfileUI {
 			_e('Group Roles', 'scoper');	//TODO: hide this caption or display "none defined" where appropriate
 			echo '</h3>';
 		} else {
+			if ( ! is_administrator_rs() && ! scoper_get_option( 'display_user_profile_roles' ) )
+				return;
+
 			echo "<div id='userprofile_rolesdiv_rs' class='rs-scoped_role_profile'>";
 			echo "<h3>" . __('Scoped Roles', 'scoper') . "</h3>";
 	

@@ -292,7 +292,7 @@ class ScoperAdminHardway_Ltd {
 				global $current_user;
 
 				if ( ! empty( $current_user->allcaps['upload_files'] ) ) {
-					$unattached_clause = "$wpdb->posts.post_parent = '0' OR ";
+					$unattached_clause = "$wpdb->posts.post_type = 'attachment' AND $wpdb->posts.post_parent = '0' OR ";
 					$query = str_replace( 'AND ( ( wp_trunk_posts.post_parent IN', "AND $unattached_clause ( ( wp_trunk_posts.post_parent IN", $query );
 
 					return $query;

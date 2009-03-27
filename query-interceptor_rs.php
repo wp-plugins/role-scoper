@@ -875,7 +875,7 @@ class QueryInterceptor_RS
 		extract($args);
 
 		global $scoper;
-		
+
 		if ( '' === $custom_user_blogcaps )
 			$custom_user_blogcaps = SCOPER_CUSTOM_USER_BLOGCAPS;
 		
@@ -1061,7 +1061,6 @@ class QueryInterceptor_RS
 		//---------------------------------------------------------------------------------
 
 		//d_echo ("qualifying obj roles");
-		//dump($qualifying_object_roles);
 		
 		// for term admin query, object source type is passed in, but rs qualifying roles are by taxonomy
 		if ( ! $qualifying_roles && $object_type && ( 'rs' == SCOPER_ROLE_TYPE) ) {
