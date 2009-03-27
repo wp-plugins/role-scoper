@@ -1,0 +1,880 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fcharset0 Arial;}{\f1\fswiss\fprq2\fcharset0 Arial;}}
+{\colortbl ;\red128\green0\blue128;}
+\viewkind4\uc1\pard\qc\b\f0\fs32 Role Scoper plugin for Wordpress\fs24\par
+\b0\fs20\par
+\b\fs24 Change Log\b0\fs20\par
+\pard\par
+\b\par
+v 1.0.1\par
+- \b0 BugFix : In some situations, non-attachments were included in Media Library listing\line - BugFix : Low level users could not edit uploads from Media Library based on a Post/Page/Category role assignment\par
+- BugFix : Cannot set static front page with Role Scoper activated\par
+- BugFix : Users with editing role via Page / Category assignment could not bulk-delete posts/pages\par
+- BugFix : Post/Page Edit divs configured as Hidden Editing Elements were not hidden for draft posts/pages\par
+- BugFix : After a group was deleted, its role assignments were left in the database\b\par
+- \b0 BugFix : PHP warnings viewing users list with WP < 2.8\par
+\b - \b0 BugFix : Failed to return results for manual WP_Query calls which include category exclusion argument\par
+- BugFix : Role Scoper error messages were formatted with unreadable colors with WP 2.7\b\par
+- \b0 BugFix : Conflict with ozhAdminMenus plugin - Page menus missing in some configurations\b\par
+- \b0 BugFix : Conflict with WP-Wall plugin caused fatal error\b\par
+- \b0 Feature : Options to hide User Groups, Scoped Roles from user profile\b\par
+\par
+\par
+v 1.0.0\par
+- \b0 BugFix : In some installations, DB error for anonymous user front-end access (since rc9.9220)\b\par
+\par
+\par
+v 1.0.0-rc9.9316\par
+- \b0 BugFix : HTTP Authentication of RSS feeds was broken (since rc9.9220)\b\par
+\par
+\par
+v 1.0.0-rc9.9312c\b0\par
+\b - \b0 BugFix : In Role Scoper Options, "RS Role Defs" tab was hidden on first page refresh after updating options\b\par
+- \b0 BugFix : Hidden Content teaser "first X characters" mode included html tags, causing overly short excerpt and potential for invalid html \b\par
+\par
+\par
+v 1.0.0-rc9.9312b\par
+- \b0 BugFix : Admin Dashboard filtering (Right Now, Recent Comments, Recent Drafts) was non-functional (since rc9.9227)\par
+\b\par
+\par
+v 1.0.0-rc9.9312\par
+- \b0 BugFix : In admin comments listing, some comments are displayed without edit links under certain configurations (since rc9.9210)\b\par
+\par
+\par
+v 1.0.0-rc9.9311\par
+- \b0 BugFix : long delay for calendar filtering with Events Calendar plugin\b\par
+- \b0 Perf : Eliminated 40 queries on Post/Page edit form (or approximately 30 queries if cache is not enabled)\par
+\b - \b0 BugFix : template functions is_teaser_rs(), is_restricted_rs() returned true for static home if first post is\b  \b0 teased/restricted\par
+\par
+\par
+\b v 1.0.0-rc9.9310\b0\par
+- BugFix : For users who have publishing capability only via obj role, post status goes to "sh attempt\b\par
+- \b0 BugFix : Failed to select default category for new post when user doesn't select any (since rc9.9305)\b\par
+\par
+\par
+v 1.0.0-rc9.9309\par
+- \b0 Feature : htaccess workaround to support HTTP authentication with PHP running as a CGI\par
+- Feature : post_exists_rs template function\par
+- Change : When the option "lock top level page structure" is enabled, non-administrators cannot delete top level pages either\b\par
+- \b0 Change : Don't disable the persistent cache for safe mode if variable SCOPER_SAFE_MODE_CACHE is defined\b\par
+\par
+\par
+v 1.0.0-rc9.9305\par
+- \b0 BugFix : Bulk Administration of Post Restrictions, Roles was not alphabetically sorted (since rc9.9227)\par
+- BugFix : Some Role Scoper Options (internal cache, user groups, apply user roles, apply group roles) were not refreshed\par
+in the first page redraw after changing a setting\b\par
+- \b0 Feature : Option (on Advanced tab) to "Lock Top Level Page Structure", prevents non-administrators from creating new top-level pages or moving existing pages to or from top level\b\par
+\par
+\par
+v 1.0.0-rc9.9303\par
+\b0 - BugFix : Non-administrators could not see unattached uploads in the "All" or "Images" listing of Media Library\par
+- Perf : Added .htaccess rule to prevent any rewriting of image when requested from site's own wp-admin\b\par
+\par
+\par
+v 1.0.0-rc9.9302\par
+- \b0 BugFix : DB error in get_archives (from previous version 9229)\b\par
+- \b0 BugFix : PHP warning for undefined variable require_full_object_role\b\par
+\par
+\par
+v 1.0.0-rc9.9229\par
+- \b0 BugFix : PHP Warning "Divide by Zero" with Hidden Content Teaser enabled\par
+- BugFix : Tag filtering caused 2 extra queries per displayed tag when Simple Tags plugin enabled\par
+- BugFix : When administrator views single post, adjacent private posts are not linked\par
+- BugFix : Attachment comments were not listed in Recent Comments or get_comments function output\par
+- Perf : eliminate two redundant queries when Hidden Content Teaser enabled and cache disabled\par
+\b\par
+\par
+v 1.0.0-rc9.9227\par
+- \b0 BugFix : In Post/Page Edit Form, Restriction checkboxes showed wrong settings following a Bulk Restrictions edit, if cache enabled.  Invalid settings were stored on Post/Page save if any other role settings were manually altered (since rc9).\par
+- BugFix : In Post/Page Edit Form, filtered Page Parent dropdown was not always nested correctly\b\par
+- \b0 BugFix : PHP error or bad redirect when anon user posts a comments to an attachment or a teased post/page\par
+\b - \b0 BugFix : Users who lack any blog-wide editing role could not administer Contributor / Author / Editor roles for a particular Post/Page even if the "Require blog-wide editing role" option was disabled\b\par
+- \b0 BugFix : Bulk Administration for Term Roles gave selector for role propagation even if taxonomy is not hierarchical. \par
+- BugFix : Page Parent filtering did not operate when other plugins call parent_dropdown directly\par
+- Feature : In Advanced tab or Role Scoper Options, option to force availability of Author, Reader roles for Post/Page assignment\par
+\b - \b0 Change : Eligible Group Administrators are limited to those who can edit_posts blog-wide only if  "Require blog-wide editing role" option is set\par
+- Change : Borders around Group Membership, Group Roles in Group Edit Form (css-adjustable)\par
+- Change : Borders around User Groups, Scoped Roles in User Profile (css-adjustable)\par
+- Change : Background color distinguishes Group Administrators UI from Group Members (css-adjustable)\b\par
+\par
+v 1.0.0-rc9.9224\b0\par
+- Change : If "Editing and administering content" is disabled in Realm tab of Role Scoper Options, non-administrators see no Role Scoper UI at all.\par
+- Change : Eliminated redundant "Adjustable Realm" switch in Role Scoper Options.  Filtered Access Types remain adjustable.\par
+- Change : Group management list uses group name link for individual edit, instead of "Edit" link.\par
+- Change : Archive listing hides unreadable posts even if Hidden Content Teaser is enabled (there is no way to indicate teased vs. readable)\par
+- Change : manage_users_custom_column filter expects 3 arguments, hacked user_row function in template.php must be updated y\b\par
+- \b0 BugFix : Archive listing was not filtered for anonymous users\b\par
+- \b0 BugFix : Metagroups checklists were not updated to account for roles newly created or deleted by Role Manager (required manual re-sync).\par
+- BugFix : Role name changes by Role Manager were not handled correctly, causing loss of role assignments.\b\par
+\par
+v 1.0.0-rc9.9222.d\b0\par
+- Feature : Groups column in Useruires WP modification pending patcto code base)\b\par
+- \b0 Feature : Filter front-end display of stored post categories via the currently nonexistant "get_the_category" filter\b\par
+- \b0 Feature : For Events Calendar plugin, hide an event if user cannot read its associated post\b\par
+- \b0 BugFix : Edit Pages listing indicated all pages as restricted if the Post Reader role is default-restricted \par
+\b - \b0 BugFix : Edit Posts listing indicated all posts as restricted if the Page Reader role is default-restricted\par
+\b\par
+v 1.0.0-rc9.9222.c\par
+- \b0 BugFix : PHP Error uploading files (since rc9.9220)\b\par
+\par
+v 1.0.0-rc9.9222.b\par
+- \b0 BugFix : Default Page / Post Restrictions were not applied unless at least one unrestriction was set for the role in question.\b\par
+\par
+v 1.0.0-rc9.9222\par
+- \b0 BugFix : previous dev version (rc9.9122c) granted universal post/page editing capabilities to Subscribers, failed to honor assigned roles for various other users.\b\par
+\par
+v 1.0.0-rc9.9221c\par
+- \b0 BugFix : If option to apply Hidden Content Teaser for logged users was previously set, teaser was not applied at all, until options were re-saved (since rc9.9220).\b\par
+\par
+v 1.0.0-rc9.9221b\par
+- \b0 BugFix : Filtering of Post Authors dropdown and color-highlighting of implicit role assignments did not correctly apply restrictions in some configurations\par
+\b\par
+v 1.0.0-rc9.9221\par
+- \b0 BugFix : Some category / object restrictions not applied correctly if WP or RS role definitions customized\par
+- BugFix : subscribe2 autosubscription filter did not honor blogroles\b\par
+\par
+v 1.0.0-rc9.9220\b0\par
+- Perf : reduced front-end memory usage significantly (by 0.8MB for anonymous reader)\par
+- Perf : reduced admin memory usage significantly (by 1.4MB for administrators)\b\par
+- \b0 Perf : eliminated 10 queries on admin dashboard\par
+\b - \b0 Feature : filter subscribe2 autosubscription for new category, limiting to users who can read the category\par
+- Feature : option to apply Hidden Content Teaser for anonymous users only\par
+- Change : Work around WP get_archives bug to prevent duplicate listings with postbypost archive type\par
+- Change : Every php file now has a "cannot execute directly" check at the top\par
+- BugFix : Post / Page Author dropdown not filtered for administrator under some conditions\par
+- BugFix : PHP warnings in WP Role Definitions tab for some installations\b\par
+\par
+v 1.0.0-rc9.9219\b0\par
+- BugFix : Adding / removing group membership via i edit did not fully update cached results for that user\par
+- BugFix : API calls to ScoperAdminLib::add_group_user, ScoperAdminLib::remove_group_user did not fully update cache\par
+- BugFix : Category Role bulk administration did not correctly highlight default-restricted roles\par
+- BugFix : Some Role Scoper Options were not updated correctly if role scoper folder renamed without 'role-scoper'\par
+- BugFix : Roles, Restrictions menu contained an extra generic submenu item for some non-admin, non-editor users\par
+- BugFix : Users who are administrators only for specific groups could create new groups inappropriately\par
+- BugFix : PHP error on non-admin login after admin filtering is disabled via Realm tab of Role Scoper Options (since rc9)\par
+- Feature : Link to Role Scoper Options next to Activate, Deactivate links in plugins listing\par
+- Change : Alphabetize user names in Groups > Browse Members\par
+- Change : ScoperAdminLib::get_all_groups() defaults to unfiltered (return all groups regardless of logged user's roles)\b\par
+\par
+v 1.0.0-rc9.9216\b0\par
+- BugFix Post revisions not save correctly (post_parent value et to 0), since rc9\par
+- BugFix : Tags filter did not support name__like, search arguments\par
+- BugFix : PHP warning for htmlspecialchars_decode() when using RSS feed teaser message\par
+- BugFix : PHP warning for array_diff_key() in hardway_rs.php on some installations\par
+\par
+\b v 1.0.0-rc9.9215\par
+- \b0 BugFix : Further precautions against duplicate comment listings / multiplied comment counts\par
+- BugFix : Filtering for tag cloud did not properly prioritize tag subset by usage\par
+- BugFix : Logged users with a WP role setting of "no role" were blocked from everything\par
+- BugFix : In user profile, assigned roles were sometimes repeated in "contains" list\par
+\par
+\b v 1.0.0-rc9.9214\par
+- \b0 BugFix : PHP warning for htmlspecialchars_decode() when using Hidden Content Teaser with WordPress translation enabled\b\par
+- \b0 BugFix : Category Restrictions not applied if logged user has orphaned Category Roles equal to the number of restricted categories.\par
+- BugFix : On some server configurations, Hidden Content Teaser was not effective at all (since rc8.9116)\par
+- Perf : On some server configurations, redundant db queries.\par
+\b\par
+v 1.0.0-rc9.9213\par
+- \b0 BugFix : Bulk administration of restrictions failed did not display restricted / unrestricted captions correctly when a default restriction has no corresponding unrestrictions (since rc9.9211)\b\par
+- \b0 Change : Prevent orphaned roles/restrictions by performing DB maintenance immediately on Post/Page/Category edit or deletion, rather than deferring to the end of the WP session\b\par
+\par
+v 1.0.0-rc9.9212\par
+- \b0 Feature : New option in Advanced tab "Role administration requires a blog-wide Editor role"\b\par
+- \b0 BugFix : Front-end bookmarks listing was hidden, in some configurations\par
+\b - \b0 BugFix : Intermittant failure of Attachment Filter to return images if server's output buffer became corrupted\b\par
+- \b0 BugFix : "Add New" included in menu even if user can only edit existing Pages / Posts\par
+\b - \b0 BugFix : Posts menu disappeared while a page is edited, in some configurations\par
+- BugFix : PHP warning on db_setup call at plugin activation\par
+\b\par
+v 1.0.0-rc9.9211\par
+- \b0 BugFix : In some configurations, moved new posts to default category unnecessarily\b\par
+\b0 - BugFix : Posts saved via QuickPress were sent to alternate default category even if user has posting rights in default category\b\par
+\b0 - BugFix : Role assignment tabs in Post / Page Edit Form did not not indicate implicit role ownership via blog-wide or category assignment of a containing role\par
+- Perf : Corrected dozens of (mostly harmless) references to undeclared variables or indexes\b\par
+- \b0 Change : Support queries for is_restricted_rs() / is_protected() template function run automatically as needed, no need to define SCOPER_EXTRA_TEMPLATE_FUNCTIONS \b\par
+\par
+v 1.0.0-rc9.9210b\b0\par
+- BugFix : When adding New Post / Page, cannot upload files before post is saved\par
+- BugFix : After a new post is autosaved, non-administrators cannot upload files until a post category is stored\par
+- BugFix : When Attachment Filtering is enabled with WP 2.7.1, uploaded files show as broken or invisible within Post / Page Edit Form\par
+- BugFix : Filtered tag cloud was not sized according to logged user access, did not includes tags for private posts.\par
+- Feature : Hidden Content Teaser option for fixed content prefix / suffix\par
+- Change : Hidden Content Teaser - user-specified prefix / suffix is always applied regardless of teaser mode\par
+- BugFix : With Hidden Content Teaser, Category counts did not include restricted content and categories with entirely hidden content were omitted from sidebar / topbar list\par
+\par
+\b v 1.0.0-rc9.9209\par
+- \b0 Feature : Option to apply teaser only for logged users\par
+- BugFix : Attachment comments (and comment counts) were hidden\b\par
+\par
+\par
+v 1.0.0-rc9 - 5 Feb 2009\par
+Front End:\par
+\b0 - BugFix : WP 2.7: posts queries with a "category not in" argument returned missing or teased posts\cf1\f1\par
+\cf0\b\f0\par
+RSS:\par
+\b0 - Feature : Support HTTP Authentication for RSS feeds\par
+- Feature : Optional Replacement of Readable RSS Content with teaser message (as in Disclose Secret plugin)\b\par
+\par
+Hidden Content Teaser:\par
+\b0 - Feature : Hidden Content Teaser option to display content before more tag if no custom excerpt is stored\par
+- Feature : Hidden Content Teaser option to display first X characters if no custom excerpt or more tag is stored\cf1\b\f1\par
+\cf0\f0\par
+File Attachments:\par
+\b0 - Feature : Attachments Utility to register linked uploads as attachments for filtering purposes\b\par
+\b0 - BugFix : Attachment filter blocked access to Media Library uploads that are not in any post/page\cf1\f1\par
+\cf0\b\f0\par
+Categories / Pages / Links sidebar listing:\par
+\b0 - Feature : get_terms, get_pages filters support "exclude_tree" argument as in WP 2.7.1\par
+- BugFix : WP get_terms filter did not apply "search" and "offset" parameters\par
+- BugFix : get_terms filter always included child terms in post count regardless of pad_counts setting\par
+- BugFix : get_terms filter missed some terms if "number" argument used along with "hierarchical", "parent" or "child_of"\par
+- BugFix : get_terms filter did not apply "child_of" or "hide_empty" parameters when fields set to "ids" or "names" \par
+- BugFix : Category cache was not cleared after category add / edit\par
+- BugFix : Persistant Cache for terms was not updated on introduction of new plugins which use the list_terms_exclusions filter\par
+- BugFix : get_pages filter did not apply "parent" parameter\par
+- BugFix : get_bookmarks filter did not apply "search" parameter\par
+\b\par
+DB Query Optimization:\par
+\b0 - Perf : Option reduce memory usage in front-end access by assuming no content / user edits there\b\par
+\b0 - Perf : In Post / Page Edit form, improved cache implementation to eliminate dozens of redundant queries pertaining to users, groups\par
+- Perf : Reduce Post / Page edit form queries by including member list of each group in persistent cache\par
+- Perf : Post / Page Edit form had redundant queries for revisions \par
+- Perf : Cut category and tag query size in half by eliminating page clause if page categories are not enabled\par
+- Perf : sync_wp_roles operation was executed twice at first-time activation\par
+- Perf : If db select includes any terms regardless of post ID, don't also include those terms in ID-specific clause\cf1\b\f1\par
+\cf0\f0\par
+Bulk Administration of Roles:\par
+\b0 - BugFix : Non-admins could not assign object roles via bulk admin\par
+- BugFix : Users lacking a category management role could not bulk administer Post / Page roles\par
+- BugFix : Users lacking a blog-wide editing role saw checkboxes for bulk admin object role assignment though assignment attempts were rejected\b\par
+\b0 - BugFix : Some Roles / Restrictions links displayed inappropriately for non-admin users (though access was not granted)\par
+- BugFix : Roles / Restrictions submenu items were not removed when disabled via Realm options\b\par
+- \b0 BugFix : In Category Roles / Restrictions bulk admin, tree nesting was sometimes off for non-admin users\b\par
+\b0 - BugFix : Bulk Admin formatting rendered poorly in some IE versions\b\par
+\par
+Edit Post / Page:\par
+\b0 - BugFix : Revision edit link was suppressed for non-editor users own revision\par
+- BugFix : On page add / edit, Page Parent selection was not fully filtered to match UI selections (had no impact for normal usage)\b\par
+\b0 - BugFix : In Edit Post/Page Form, role tabs could not be hidden via screen options\par
+\b - \b0 BugFix : In Edit Page Form, page parent dropdown was populated even if user is not permitted to move page parent from Main Page due to lack of blog-wide edit capability\par
+- BugFix : Contributors, Editors tabs were displayed if user has a blog-wide capability for any data source / object type (now only if for source / obj type being edited)\par
+- BugFix : Custom-specified Hidden Editing Elements were not hidden based on Require Blog-Wide Editing option if the user had a blog-wide editing capability for a different object type\par
+- BugFix : PHP Error in Post/Page Edit form when Realm Option "Object Roles and Restrictions for Posts/Pages" disabled\par
+- BugFix : In some WP 2.6 configurations, PHP array_keys warning in Edit Page form from users query (since rc3b)\par
+- BugFix : In WP 2.6, nuisance error message "page parent was reverted" following autosave of a page (including revision)\cf1\b\f1\par
+\cf0\f0\par
+Role Scoper Options Admin:\par
+\b0 - Feature : Version Update notice is abbreviated with "more..." link\b\par
+\b0 - Change : Removed Object Types Realm Options (for disabling filtering of individual sources / object types) due to complications with hardway / teaser filtering, admin intimidation factor and low feature priority\par
+- Change : Removed Ignore Hierarchy Realm Options (now implemented as a config property modifiable by plugins if needed)\par
+- BugFix : Customization of capabilities for plugin-defined roles (via RS Options) not processed correctly\b\par
+\b0 - BugFix : xhtml validation errors in Role Scoper Options\cf1\f1\par
+\cf0\b\f0\par
+Admin - General:\par
+\b0 - Feature : Contextual Help links to Usage Guide sections\par
+- Feature : About Role Scoper page available to Administrators in admin\par
+- BugFix : PHP warning when viewing the profile of a user with a WP setting of "No Role"\par
+- BugFix : WP 2.7: "Add New" link for Posts / Pages displayed even when user can't do it\par
+- BugFix : Users who have edit role on a Post/Page but not blogwide could not upload files and/or view them in Media Library\par
+- BugFix : Admin object listings sometimes unlinked when user has editing capability only via category role\par
+- Change : Improved formatting \cf1\f1\par
+\cf0\f0\par
+\b Misc:\b0\par
+- BugFix : rs_cache_flush.php failed due to use of undefined ABSPATH constant\b\par
+\b0 - BugFix : Attempt by external plugin to define custom capabilities fails\par
+- BugFix : In some configurations, failed to honor General assignment of a role which was custom-defined via plugin API\par
+--------- end 1.0.0-rc9 changes ---------\par
+\par
+\par
+\b v 1.0.0-rc8.9124\par
+\b0 - Feature : Hidden Content Teaser option to use post content above <!--more--> tag as a teaser (with standard teaser statement also displayed below when viewing single post/page\par
+- BugFix : Tag filtering broke cloud sizing\par
+\par
+\b\par
+v 1.0.0-rc8.9123\par
+\b0 - Feature : Filter and cache front-end tag cloud content based on logged user's access to posts (requires default get_tags parameters)\b\par
+- \b0 BugFix : Entire Persistant Cache was auto-flushed on each user login\b\par
+\b0 - Perf : DB queries with a WP-imposed post/page object type requirement had an irrelevant RS-imposed clause for other object type\par
+- Perf : The optional comment count filter was applying post / page filtering needlessly\b\par
+\par
+\par
+v 1.0.0-rc8.9122\par
+- \b0 BugFix : previous v9121 broke object role application due to inadvertant inclusion of an optional hack\b\par
+\par
+\par
+v 1.0.0-rc8.9121\par
+- \b0 BugFix : Fatal Error on some WP configurations when upgrading from rc2 or higher\b\par
+\par
+\par
+v 1.0.0-rc8.9116\par
+\b0 - BugFix : Category post count included pending / draft posts if using Hidden Content Teaser but not "hide private posts"\b\par
+\b0 - BugFix : Front end posts paging sometimes broken when Hidden Content Teaser enabled\b\par
+\par
+\par
+v 1.0.0-rc8.9115\b0\par
+- Perf : Execute support query for is_restricted_rs() template function only if SCOPER_EXTRA_TEMPLATE_FUNCTIONS defined\par
+- Perf : Teaser support query was executed even with teaser disabled\par
+- Perf : Categories were not stored to persistent cache\par
+- Perf : Front-end comment count filtering was executed redundantly on each post\par
+- Perf : Apply front-end comment count filtering only if SCOPER_FILTER_COMMENT_COUNT defined\b\par
+\par
+\par
+v 1.0.0-rc8.9114\b0\par
+- BugFix : PHP error on bulk edits from Edit Posts / Edit Pages\par
+- BugFix : In Edit Post/Page role assignment, incorrect indication of implict "via group" role ownership in some cases\par
+- Change : If a user has a role implicitly via direct assigment of a superior role and via another blog/category scope, highlight them as "via other role"\par
+- Change : Color for "via other role" is now dark gray to distinguish from "via group"\par
+- Change :\b  \b0 Prevent breaking spaces in User / Group Role Assignment key captions in Edit Post/Page Form\par
+\b\par
+\par
+v 1.0.0-rc8.9113\par
+\b0 - BugFix : DB error in front-end comment filtering when viewing single post/page \par
+\par
+\par
+\b v 1.0.0-rc8.9112\par
+\b0 - BugFix : In WP < 2.7, Page Parent tree did not display to non-administrators (and bogus error message on update)\b\par
+- \b0 BugFix : PHP Warning (nuisance) in Edit Post / Page Form - invalid foreach in item_roles_ui_rs.php\b\par
+\b0 - BugFix : Recent Comments not filtered on the front end if teaser is enabled\b\par
+- \b0 BugFix : Stored filtered comment_count to post db record\par
+- BugFix : get_comments_number() was not filtered\b\par
+\par
+\par
+v 1.0.0-rc8.9109\b0\par
+- BugFix : For img tags which were broken by rc2-rc4, convert attachment_id URLs in stored post/page content back to file URL\par
+\par
+\par
+\b v 1.0.0-rc8.9108\b0\par
+- Feature : Role Scoper Options - RS Role Definitions have editable capabilities\par
+- Feature : Role Scoper Options - WP Role Definitions list caps, contained RS roles\par
+- Feature : User Profile - lists roles which are "contained" in the assigned role(s)\par
+- Change : Files in WP uploads folder which have no post/page attachment are not blocked unless SCOPER_BLOCK_UNATTACHED_UPLOADS defined\par
+- BugFix : PHP Warning if post_cache is an object\par
+\par
+\par
+\b v 1.0.0-rc8 - 7 Jan 2009\b0\par
+- BugFix : Database error / missing categories checklist in Edit Form for non-Administrators (since 1.0.0-rc5)\par
+- BugFix : Edit Post/Page Form displays Readers, Contributors role assignment tabs to Contributors\par
+- BugFix : On some installations, PHP warning "first argument should be an array" above posts and comments\par
+- BugFix : On some installations, MAX_JOIN_SIZE db error in Post/Page Edit Form\par
+- BugFix : In Edit Form for a published and unrestricted post/page, WP Subscribers were not highlighted for implicit ownership of Readers role\par
+- BugFix : In Post/Page Edit Form, users were not highlighted for implicit role possession based on membership in a group that has a containing role\par
+- BugFix : Persistant Cache was non-functional even when enabled\par
+- BugFix : Category Roles/Restrictions bulk admin displayed role checkboxes for roles which logged user lacks (though submission of such role selections would fail)\par
+- BugFix : Create New Group form fails to display after updating an existing group\par
+- BugFix : PHP Warning on bulk deletion of posts/pages by a non-administrator\par
+- BugFix : Background color in Role Scoper Options - Advanced\par
+- Change : Bulk Admin for Page Roles/Restrictions shows all pages by default\par
+- Change : In Bulk Admin, "show/hide empty" link recaptioned as "show/hide unassigned", "show/hide defaulted"\par
+\par
+\par
+\b v 1.0.0-rc7 - 29 Dec 2008\b0\par
+from rc6.8c26: \par
+- BugFix : Teaser setting "hide private posts instead of teasing" was not effective (since 1.0.0-RC4)\par
+- BugFix : With Teaser enabled, unreadable posts were included as Prev/Next post links\par
+- BugFix : PHP error on Apache servers which do not support apache_send_headers\par
+\par
+from rc6.8c27: \par
+- Change : re-enabled Persistent Cache\par
+- BugFix : Persistent Cache for Group Roles was not cleared following modification of Group Role Assignments\par
+- Change : Disabled maintenance queries for deleting orphaned roles/restrictions, due to reported deletion of active roles\par
+\par
+from rc6.8c29: \par
+- BugFix : Cache was not flushed following automatic assignment of propagating restrictions for a new post/page\par
+- BugFix : Group name, description did not support unicode (schema change to DB version 1.0.2)\par
+- BugFix : WP Role Metagroup names display as ??? with unicode languages\par
+- BugFix : Database error in Dashboard Recent Comments for non-admin users\par
+- BugFix : Database error (nuisance) when adding adding a user to a group via user profile\par
+- BugFix : Conflict with Fold Page List plugin (when using child_of parameter)\par
+- BugFix : Pages not listed correctly when using child_of and depth=1\par
+- BugFix : Role Scoper Options stated "DISABLE_PERSISTENT_CACHE defined" even if cache was simply switched off via checkbox\par
+- Feature : If a cache flush failure is detected (due to contention or permissions problems), set a flag to try again next time and stop using the cache until a full flush succeeds\par
+\par
+\par
+\b v 1.0.0-rc6 - 24 Dec 2008\b0\par
+- BugFix : Page Reader restrictions were not effective in blocking logged Subscribers unless Page Associate also restricted\par
+- Change : Persistent File Cache is disabled (may be re-enabled once reported problems are fixed / explained)\par
+- BugFix : Next Post, Previous Post links were not filtered\par
+- BugFix : Manual calls to get_comments were not filtered (now filtered if function arguments include status=approve)\par
+- BugFix : skip_teaser flag, which must be set prior to some manual WP_Query->query calls, was not effective\par
+\par
+\par
+\b v 1.0.0-rc5b - 20 Dec 2008\b0\par
+- BugFix : Attachment Filter was not blocking based on private status of containing post/page\par
+- BugFix : PHP Error message "Call-time pass-by-reference"\par
+- BugFix : On some installations, "headers already sent" warning on activation / deactivation \par
+\par
+\par
+\b v 1.0.0-rc5 - 19 Dec 2008\b0\par
+- BugFix : In some configurations, Post Status forced to Pending on initial publish attempt if no category was selected.\par
+- BugFix : Current post/page author sometimes not included in filtered Users dropdown\par
+- BugFix : Direct file URL access attempts to attachments of a draft did not generate 404 message.\par
+- BugFix : Under some configurations, categories with only private posts were not listed to Administrators on the front end\par
+- BugFix : In Category Roles bulk admin, default-restricted roles were highlighted as restricted even if an explicit unrestriction was set.\par
+- BugFix : File cache was non-functional under some PHP configurations.\par
+- Feature : Role Scoper Options form includes more descriptions and status indicators for Attachment Filtering, File Cache, Hidden Editing Elements\par
+- Change : Split some Role Scoper Options to Advanced tab\par
+- Feature : Bulk Admin tree for Post/Page Roles or Restrictions indicates draft/pending status\par
+- BugFix : Page hierarchy for front-end pages listing did not refresh following page add/edit\par
+- BugFix : Page hierarchy flattened for front-end pages listing when called with child_of argument\par
+- BugFix : Hidden Content Teaser wiped out query results from secondary WP Queries manually initiated by theme\par
+- BugFix : Attachment Filter breaks file downloads for IE with secure connection\par
+- BugFix : User Roles checkboxes in Post/Page Edit Form did not color-code users who have Readers role implicitly for a non-private post via Contributors Role assignment\par
+- BugFix : Unauthorized access attempts to attachment template pages not blocked when Hidden Content Teaser enabled (though actual attachment access is blocked)\par
+- Feature : Support Teaser display for unauthorized attachement access, whether WordPress attachment URL or direct file URL\par
+- Change : Unauthorized attachment requests return 401 Unauthorized header if the requested file exists\par
+- BugFix : missing / deselected categories when editing another user's post in WP 2.7\par
+\par
+\par
+\b v 1.0.0-rc4b - 13 Dec 2008\b0\par
+- BugFix : Some web servers incorrectly identified as non-Apache, resulting in needless forcing of uploaded attachments to attachment_id syntax\par
+- Change : Moved Roles, Restrictions menus to below Users menu\par
+\par
+\par
+\b v 1.0.0-rc4 - 13 Dec 2008\b0\par
+- BugFix : If Hidden Content Teaser was enabled for pages without option to "include private pages in listing", a blank page listing was returned\par
+- BugFix : With option "Hide private posts,pages instead of teasing", only pages were hid, leaving private posts teased\par
+- BugFix : Cache was not flushed following Option changes, leaving a potential for temporary discrepancies\par
+- Feature : Separate options to hide private posts / pages (while teasing corresponding restricted but non-private content)\par
+\par
+\par
+\b v 1.0.0-rc3b - 11 Dec 2008\b0\par
+- BugFix : Group Administrators cannot manage their group(s) unless they are also a WP Administrator\par
+- BugFix : On some installations, fatal error on flush_rules() call\par
+\par
+\par
+\b v 1.0.0-rc3 - 11 Dec 2008\b0\par
+1.0.0-beta/RC Bugs: \par
+- BugFix : Users with page-assigned Page Contributor role (but lacking Page Editor role for the page) could edit it even after publishing.\par
+- BugFix : Restrictions, Results caches were not updated following Post/Page edit\par
+- BugFix : Restrictions, Results caches were not updated following Category Restriction edit\par
+- BugFix : In Post/Page Role assignment tabs, color coding of users with implicit role ownership did not fully reflect Category Restrictions\par
+- BugFix : Category Roles, Restrictions weren't listed on Category Edit form\par
+- BugFix : previous Subscribe2 compatibility fix caused profile listing of unreadable categories\par
+\par
+Longstanding Bugs: \par
+- BugFix : Link Administration Restrictions were not enforced\par
+- BugFix : Pending Revisions of subpages stored to parent page if default roles were set\par
+- BugFix : Current User wasn't stored as revision author for pending revisions\par
+- BugFix : Following saving of a pending post revision, link back to Edit Posts was broken\par
+- BugFix : In Page Edit form, caption for "Restrict for Subpages" checkbox was misaligned\par
+\par
+WP 2.7 Compatibility: \par
+- BugFix : Pending Revisions support for WP 2.7\par
+- BugFix : Since WP 2.7 Quick Edit is not cleanly filterable, disable it for non-Editors\par
+- BugFix : Recent Comments not filtered in admin Dashboard with WP 2.7\par
+- BugFix : In Post/Page edit form, role edit boxes were not draggable with WP 2.7\par
+- BugFix : Some admin tables failed to alternate background color with WP 2.7\par
+- BugFix : Recent Comments widget not filtered with WP 2.7\par
+- BugFix : Page Parent dropdown was not filtered with WP 2.7\par
+\par
+Changes: \par
+- Change : Moved "Restrict" checkboxes to top of Role metaboxes\par
+- Change : Rephrased "Restrict" checkbox captions for clarity\par
+- Change : Insert RewriteRule for uploads filtering only if uploads folder is in WP folder branch\par
+- Change : dropped all vestiges of WP 2.2-2.3 support\par
+\par
+\par
+\b v 1.0.0-rc2 - 4 Dec 2008\b0\par
+- Feature : Direct access to file attachments requested via attachment_id URL is filtered to match access to containing post/page\par
+- Feature : For Apache servers, direct http file access to any file in uploads folder is filtered to require access to a containing post/page\par
+- Feature : For non-Apache servers, new file attachments are forced to use attachment_id URL\par
+- BugFix : Propagating Roles (from parent) for were not assigned on Page / Category creation\par
+- BugFix : Default Roles were not assigned on Category Creation\par
+- Feature : Ability to inherit roles/restrictions by changing parent, if no roles manually set\par
+- BugFix : Restored WP 2.5 Compatibility\par
+- BugFix : In some configurations, "Uncategorized" appears, though there are no Uncategorized posts\par
+- BugFix : Bulk Admin category/page trees did not always nest properly\par
+- BugFix : Category Scroll links in bulk admin form sometimes failed to size correctly\par
+- BugFix : Bulk Admin screen margins/padding too narrow for IE6\par
+- BugFix : Missing background color for Role Scoper Options divisions with WP 2.7\par
+- BugFix : Option to "Suppress Private : caption" was not effective for private posts\par
+- BugFix : ozh Admim Menus plugin conflict - missing Roles or Restrictions links in some installations \par
+- BugFix : For a logged Administrator, Archived posts listings did not include Private posts\par
+- BugFix : For credentialed users, Archives by Month included a month of "0"\par
+- BugFix : Admin menu icons offset in WP 2.7 beta 3\par
+- BugFix : Category selection in user profile was filtered by category edit capability; now filtered by category read capability (Subscribe2 compat)\par
+- Change : Version update notice persists on each load of Options page, but only requeries the notice from agapetry server on scheduled interval\par
+\par
+\par
+\b v 1.0.0-rc1 - 14 Nov 2008\b0\par
+- BugFix : Roles, Restrictions menus were hidden from some non-admin editors, broken for others \par
+\par
+\par
+\b v 1.0.0-beta6 - 10 Nov 2008\b0\par
+- BugFix : Post/Page Reader Restrictions set via bulk administration were not effective\par
+- BugFix : In Post/Page edit form, Restrict caption in roles tabs was not linked to checkbox\par
+- BugFix : If a user has editor role for any post, their comment on any other post is auto-approved.\par
+- BugFix : Some users see Roles and Restrictions menu although they cannot access any submenus\par
+- BugFix : By default, bulk listing of posts/pages without roles/restrictions (i.e. show empty) was limited to oldest 100 (should be newest 100).\par
+- Feature : Title text for "show empty" link indicates listing limit\par
+- Feature : Hint text at top of Post Restrictions / Page Restrictions page reflects actual taxonomy usage ("Category Role assignments" instead of "Section Role assignments")\par
+\par
+\par
+\b v 1.0.0-beta5 - 3 Nov 2008\b0\par
+- BugFix : Updated language file\par
+- BugFix : xhtml validation of Post/Page edit form and bulk admin forms\par
+- doc : revised RoleScoper_UsageGuide.htm\par
+\par
+\par
+\b v 1.0.0-beta4 - 29 Oct 2008\b0\par
+- Feature : preliminary support for WP 2.7 (needs beta testing)\par
+- doc : added RoleScoper_PluginCompat.html for plugin compatibility issues\par
+- BugFix : Windows Live Writer XML-RPC support\par
+- BugFix : WP Super Cache compatibility\par
+- BugFix : For non-Admin users, "Edit Comments" listing omitted some comments, duplicated others\par
+- BugFix : Call to undefined function wpp_cache_flush_group() for some installations\par
+4b: \par
+- Change : UI captions refer to "sub-pages" instead of "child pages"\par
+4c: \par
+- BugFix : Admin menu display with ozh admin menus plugin on WP 2.6\par
+4d: \par
+- Feature : Option to include admin divs in Post/Page edit form for non-blogwide-Editors\par
+\par
+\par
+\b v 1.0.0-beta3 - 17 Oct 2008\b0\par
+- BugFix : fatal error due to call to undefined function\par
+\par
+\par
+\b v 1.0.0-beta2 - 16 Oct 2008\b0\par
+- BugFix : Object restrictions were not applied; resulting "array_keys" error message\par
+- BugFix : PHP error message in post/page edit form above role assignment tabs\par
+- BugFix : Group administrator assignments were not created / modified\par
+- BugFix : PHP error message "wrong datatype in... admin-bulk_rs.php" in post/page edit form, php\par
+- BugFix : In some wp-admin cases, category count query was not filtered correctly; resulting db error\par
+- Feature : Filter recent comments list according to post/page visibility\par
+\par
+\par
+\b v 1.0.0-beta1 - 8 Oct 2008\b0\par
+- Change : Group administration is now linked from Users tab\par
+- Change : User and Group role assignments are handled together via Roles tab\par
+- Change : Realm settings are now a subtab within Options\par
+- Feature : Inline hints below admin page headers provide a brief description, can be disabled\par
+- Change : "Exclusive Section Roles" are now called "Category Restrictions", "Link Category Restrictions", etc.\par
+- Change : "Exclusive Object Roles" are now called "Page Restrictions", "Post Restrictions", etc.\par
+- Change : "Blog Roles" are now called "General Roles"\par
+- Change :  Simplified menu navigation : Restrictions and Roles tabs each have Category, Link Category, Post, Page subtabs\par
+- Change : check for Role Scoper updates only periodically, not on every load of Options page\par
+- Feature : Propagation of Page/Post Restrictions\par
+- Feature : Bulk administration of Page and Post Roles\par
+- Feature : Bulk administration of Page and Post Restrictions\par
+- Feature : Improved navigation & viewing of tree Category / Page / Post bulk admin\par
+- Feature : Default Restrictions\par
+- Feature : Default Roles\par
+- Feature : Default Groups\par
+- Feature : Pending Revisions - Contributors can edit posts/pages, creating a pending rev which an editor can "restore" (requires option setting)\par
+- Feature : rs_cache_flush.php can be copied from role-scoper/wp_root_optional to WP root and excecuted manually or by cron to clear a corrupt file cache\par
+- Feature : When administering Category Roles or Category Restrictions, Manage menu links to "Manage Categories"\par
+- Feature : When administering Page Roles or Page Restrictions, Write and Manage menus link to Page submenus\par
+- Feature : Option to hide the private posts/pages user can't read, while teasing unreadable published (restricted) posts/pages\par
+- Feature : Option to use the post excerpt as the hidden content teaser\par
+- Feature : Role assignment lists are grouped by assign_for, and natural-case alphabetized within each grouping\par
+- Feature : "Check role for all categories/pages/posts" shortcut at bottom of bulk admin tree\par
+- BugFix : Object roles selection UI highlighting of implicit user roles sometimes failed to account for post/page restrictions\par
+- BugFix : Pages list was excluding private pages, even if user could read them\par
+- BugFix : Categories containing only private posts were not listed, even if the user had read access\par
+- BugFix : Fatal PHP error following deactivation of post / link data source via Role Scoper Realm setting\par
+- BugFix : On Manage Pages screen, subpages were displayed without hierarchy for non-admin user in some cases\par
+- BugFix : On Manage Links screen, links were duplicated and possibly non-editable\par
+- BugFix : Non-editors did could not view/edit gallery items attached to their post/page\par
+- BugFix : On the WP "Edit Category" page, Group names were not displayed in the Group Roles table\par
+- BugFix : On the WP "Edit Category" page, User/Group names for "child sections only" role assignments were not grayed\par
+- BugFix : On the WP "Edit Category" page, key was duplicated for group/user roles and wasn't formatted correctly\par
+- BugFix : Double underlines on prev, next, top links in Section Roles and Exclusive Sections admin pages\par
+- BugFix : In Role tabs of Post/Page Edit form, checkbox captions refreshed erratically in IE6\par
+- BugFix : On post/page deletion, restrictions (Exclusive Object Roles) were not deleted\par
+- BugFix : Prevent line breaks in various administrative links\par
+- BugFix : File cache was effectively disabled if certain Options or Realm settings were modified\par
+- performance : Memory caching of non-stored options to eliminate 5-10 queries in some configurations\par
+- Change : Roles propagated on term/object creation get assigner_id 0\par
+\par
+\par
+\par
+\b v 0.9.27 - 24 July 2008\b0\par
+- BugFix : Extremely slow loading of Page Parent dropdown due to recursive queries on page edit by non-administrator\par
+- BugFix : If a user who lacks editing capabilities in the default category saves a page without selecting a category, the post was stored as draft/pending in category "-1" and the user could not re-edit it\par
+- Feature : If post would be set to default category but user lacks save/edit/publish capability there, it is instead defaulted to first category in user's available list\par
+- BugFix : Post/Page counts on Manage Posts/Pages were not filtered correctly for users with ID > 9\par
+\par
+\par
+\b v 0.9.26 - 24 July 2008\b0\par
+Page Categories (Page Category Plus plugin + Categorized Pages + Role Scoper "Section Roles for Pages" option): \par
+- BugFix : Using Page Categories with Teaser disabled for posts and pages, pages in an Exclusive Readers category were exposed in the posts listing\par
+- BugFix : Using Page Categories with Teaser disabled for posts and pages, visible pages did not force their category into the categories list\par
+- BugFix : Using Page Categories With Teaser enabled for posts or pages, various inappropriate exposure of private / exclusive pages and posts\par
+- BugFix : Using Page Categories, false teaser displayed for some posts/pages (though direct access granted)\par
+- BugFix : Using Page Categories, false teaser displayed to Administrator\par
+- BugFix : Using Page Categories, Pages were not correctly accounted in category count\par
+- BugFix : Using Page Categories, when Manage Posts list is filtered by Category, Category Roles and Object Roles Columns became invalid for mixed results of Posts and Pages\par
+\par
+Admin - General: \par
+- BugFix : In Post/Page role assignement users list, indication of implicitly owned roles did not correctly account for Exclusive Sections settings\par
+- BugFix : 404 message instead of Teaser for direct access attempt to private Post/Page\par
+- Change : In the Role tabs of Post/Page Edit form, captions next to "Exclusive" checkbox are more descriptive\par
+- Change : In the Readers tab of Post/Page Edit form, caption cites "Readers" role (was "Private Page Readers")\par
+\par
+\par
+\b v 0.9.25 - 23 July 2008\b0\par
+Admin - General: \par
+- BugFix : Vanished paging links in Manage Posts and Manage Pages\par
+- BugFix : In WP 2.6, Revision save caused a superfluous copy of object role assignments to be stored\par
+- BugFix : On Exclusive Object Roles page, some settings were hidden from Administrators (though displayed in single Post/Page edit and Manage Posts/Pages list)\par
+- BugFix : PHP warning in Dashboard if no comments were stored\par
+- Feature : After when viewing Roles->Section Roles, main Groups tab links to Groups->Section Roles.  Likewise for Blog Roles\par
+\par
+Realm Settings: \par
+- BugFix : If "Object Roles for Posts/Pages" was switched off, Object Roles were not honored but Object Role requirements (Exclusive Object Roles) were still enforced.\par
+- BugFix : If "Object Roles for Posts/Pages" is switched off, the tabs still appeared in the Post/Page edit form and in the Manage Posts/Pages columns\par
+- BugFix : If front-end or admin filtering was switched off, some content restriction/allowance was still performed\par
+- BugFix : Disabling category, link category or other taxonomy filtering created errors.  Switch is now removed.\par
+- BugFix : More descriptive captions on Realm page\par
+\par
+\par
+\b v 0.9.24 - 22 July 2008\b0\par
+Category Management by non-Administrator: \par
+- BugFix : When the parent category was hidden, cannot edit without changing actual parent category\par
+- BugFix : "Manage Categories" list was overly restricted\par
+\par
+Hidden Content Teaser: \par
+- BugFix : Teaser was not working for pages (was always hiding them)\par
+\par
+Admin - Exclusive Sections / Section Roles: \par
+- Change : Link to Exclusive Sections from single Category Edit page is now captioned "Access Restriction (Exclusive Sections)\par
+- Feature : Category Scroll links in Section Roles and Exclusive Sections are color-trended and size-trended to illustrate hierarchy\par
+\par
+\par
+\b v 0.9.23 - 22 July 2008\b0\par
+Hidden Content Teaser: \par
+- BugFix : Hidden Content Teaser failed on some servers due to RS use of undeclared properties and unreliability of \tab WordPress the_posts hook for this purpose (using posts_results instead)\par
+- Change : Code is now structured such that if teaser trigger fails as above, failure state is to hide everything\par
+- BugFix : potentially, other undiscovered bugs related to the failure of undeclared properties on some servers\par
+- BugFix : Comments were visible even in posts hidden with teaser\par
+- BugFix : With teaser on, visible pages below a private page did not retain their hierarchy\par
+- BugFix : Teaser was teasing unviewable private pages even if the "include private pages if user can read them" option was disabled.  Now, if that setting is activated, private pages will never be listed or teased.\par
+\par
+Categories: \par
+- BugFix : For Users < WP editor, other users' published posts could be listed and edited (but not saved) if user had a Section Role assignment of Author in one of the post categories\par
+- BugFix : (theoretically) Imposed safeguards against potential stripping of existing post categories/tags, reported by one user and potentially possible if a post save operation was triggered from an unusual URI.  Now limit RS category/tag filtering to expected URIs\par
+- BugFix : Categories with Exclusive Section settings were not filtered properly with "Realms -> Section Roles for Pages" enabled.  This would pertain to installations that use Page Category Plus\par
+- BugFix : Non-admin users with Category management in a category could modify Exclusive Sections settings for roles they do not possess, effectively promoting themselves to a higher category role.\par
+- BugFix : After a Section Role or Exclusive Sections setting which lowers the user's own administration rights, newly inaccessable categories did not disappear from the UI until after the next page reload\par
+--------- end v0.9.23 changes ---------\par
+\par
+\par
+\b v 0.9.22 - 20 July 2008\b0\par
+- Feature : Activate Teaser separately for posts, pages\par
+- BugFix : Inaccessable pages were always hidden (never teased) regardless of Teaser setting\par
+- BugFix : Posts which are exclusive due to Exclusive Section were not flagged by is_exclusive_rs() template function\par
+- BugFix : For Category Management (including Section Role assignment and Exclusive Sections modification), non-Admin \tab users were not properly limited by Exclusive Sections settings.\par
+- BugFix : WP 2.2 compatability was broken; restored now. (mainly an excercise to ensure support of custom data source and taxonomy schemas)\par
+\par
+\par
+\b v 0.9.21 - 19 July 2008\b0\par
+- Feature : All Post and Page Revision capabilities are governed by scoped role assignments and requirements.  Each user's revision access will match their Manage Post / Manage Pages access (whether greater or less than their WP Blog role would allow).\par
+\par
+\par
+\b v 0.9.20 - 19 July 2008\b0\par
+Doc: \par
+- doc : revised Usage Guide to include How To section, converted to html document\par
+\par
+Front End: \par
+- Feature : Option to suppress private pages from front end listing even if user can read them\par
+- BugFix : In hierarchical page listings, Child Pages were not nested correctly with a hidden ancestor\par
+- BugFix : In hierarchical category listings, Subcategories were not nested correctly with a hidden ancestor\par
+\par
+WP Bug Patch : \par
+- Feature : For %page_name% permalink structure, WP was generating invalid page link with unpublished ancestors.  Convert these to page_id permalink\par
+\par
+WP 2.6: \par
+- BugFix : Hidden content Teaser was not applied with WP 2.6\par
+- BugFix : WP 2.6 Page Revisions were completely hidden, even for administrator.  Restored, but do not yet honor scoped roles or exclusions.  Review & Rollback caps follow blog-wide role assignments, including Role Scoper Blog Roles.\par
+- BugFix : In WP 2.6, "header already sent" error message after saving a page\par
+\par
+Dashboard Filtering: \par
+- Feature : Dashboard now includes private posts/pages in totals\par
+- Feature : Dashboard summary sentance now includes totals and link for draft/future/pending pages\par
+- BugFix : Dashboard filtering (total posts, Write Post/Page links, etc) was accidentally disabled in the last several versions\par
+- BugFix : Existing Dashboard filtering of comment totals became partially dysfunctional in WP 2.6 due to some revised queries\par
+\par
+Admin General: \par
+- BugFix : Associate role assignment was hidden from non-admin users in Page Edit form\par
+- BugFix : When an ancestor term or object was deleted, its propagated roles were also deleted.  Now propagated roles are retained and converted to direct-assigned\par
+- Change : In Realms settings, default to NOT adjustable realm, hide underlying object type, access type activation UI until Adjustable Realm is activated. (This eliminates some option queries).\par
+\par
+Navigation & Access for Elevated users (especially Subscribers/Contributors with Page-specific editing role): \par
+- Feature : Admin notice message if user lacking blog-wide edit_others_pages capability tries to associate a page with Main Page (or disassociate a current child of Main)\par
+- Feature : For posts/pages which have ever been published, hide admin divs (Password, Page Parent, etc. as defined in Role Scoper Options) if user doesn't have any blog-wide editing capabilities (i.e. if they are Subscribers)\par
+- Feature : Hide Editing/Association role assignment in post/page edit form if user doesn't have any blog-wide editing capabilities (i.e. if they are Subscribers)\par
+- BugFix : PHP warning at the bottom of Page Edit form on first entry by a Subscriber with Page Edit role\par
+- BugFix : Filtering of comments so uneditable comments are not listed at all\par
+- BugFix : In WP Admin, Manage Pages linked "Write" to page-new.php even if user can't edit_pages blog-wide\par
+- BugFix : If a user who can't edit pages accesses page-new.php directly, they got an edit form and could save posts\par
+- BugFix : Subscribers with a page/post editing role assignment were not included in the "post author" dropdown\par
+- BugFix : Pages/Posts listed though not editable if owned by current user but published and set to exclusive Editors with owner not assigned as an Editor.  Corrected to no edit listing or edit form access for "owner" in this situation.\par
+- Change : By default, DON'T exclude subscribers from Page/Post Contributor/Editor role assignments (can enforce limitation via Role Scoper Options)\par
+- Change : Category selection is NOT hidden from Contributors by default (appears as c-ategorydiv in Role Scoper "Css admin divs" option; change to categorydiv to hide from Contributors)\par
+\par
+Usage with 'WP' Role Type: \par
+- Feature : Category and Post/Page role assignment indicator columns in Manage Posts, Manage Pages when using WP Role Type (but Exclusive indicator col and is_exclusive_rs() template function still only supported with RS role type)\par
+- Feature : When using "WP" role type, "Anonymous Reader" role may be set to set as an object role assignment or as an Exclusive Object role (ignoring the default role "assignment" which anonymous users have)\par
+- BugFix : When using "WP" role type, Exclusive Section settings for "Anonymous Reader" were not being stored\par
+- BugFix : Pages all hidden when using "WP" role type\par
+\par
+Performance: \par
+- BugFix : LOTS of redundant queries in edit-comments.php for non-admin user\par
+- BugFix : Redundant option queries\par
+\par
+Security: \par
+- Feature : On init failure due to already-plugged set_current_user function, default all defined data sources to zero content visibility\par
+--------- end v0.9.20 changes ---------\par
+\par
+\par
+\b v 0.9.19 - 11 July 2008\b0\par
+- BugFix : Parse error in groups.php and exclusive_sections.php due on servers with PHP short tags disabled\par
+- doc : revised to fix reference to "Users" tab (should be "Roles" tab)\par
+- doc : converted UsageGuide to RTF format\par
+\par
+\par
+\b v 0.9.18 - 10 July 2008\b0\par
+- doc : added usage guide\par
+- BugFix : removed "edit_private" and "delete_private" caps from Post Editor, Page Editor role defs\par
+- BugFix : in WP 2.6, failed redirect following group creation due to extra slash in redirect URL\par
+- BugFix : PHP warning in WP 2.2 (due to non-array return value from wpdb->get_col)\par
+- BugFix : PHP warning due to conflict with Recent Posts plugin, and possibly others that trigger a second posts_results filter\par
+\par
+\par
+\b v 0.9.17 - 9 July 2008\b0\par
+- BugFix : in blogs that originated with WP < 2.3 (categories with term_id <> term_taxonomy_id), some categories were excluded from the sidebar listing\par
+- BugFix : some inconsistencies with the crediting of WP Blog roles (especially involving scoped page roles and customized WP blog roles)\par
+- BugFix : On some servers, failed or noisy activation due to various invalid variable/method access\par
+- BugFix : XMLRPC page editing via Category or Page roles (tested with ScribeFire)\par
+- caption : fixed "capbabilities" typo on Role Scoper Options page\par
+- WP rev : support relocated wp-content folder (WP 2.6)\par
+- Feature : Admin footer on RS admin pages lists plugin version, links to agapetry.net, Support Forum\par
+\par
+\par
+\b v 0.9.16 - 5 July 2008\b0\par
+- Feature : template functions is_exclusive_rs(), is_teaser_rs() allow theme to format exclusive posts distinctively\par
+- Feature : New columns for Manage Posts, Manage Pages : Exclusive, Categ Roles, Post/Page Roles\par
+- Feature : Option to suppress "Private" and "Protected" prefix from post/page title\par
+- Feature : Suppress password form for posts that will be hidden by Role Scoper anyway.\par
+- Feature : In Post/Page edit, role edit tab caption indicates exclusive role\par
+- performance : Cache listed_ids to eliminate redundant queries when WP has not set post_cache\par
+- performance : eliminate some needless configuration code for front end execution\par
+- BugFix : When Page categories are enabled, Exclusive Sections interface for post roles disappeared\par
+- BugFix : Category listing was missing some subcategories if post count not enabled\par
+- BugFix : Some inaccessable categories were included in categories list for anonymous user\par
+- BugFix : For administrators, the category filtering intended to include missing private post categories was also omitting some categories by enforcing "exclusive sections" role requirements\par
+\par
+\par
+\b v 0.9.15 - 2 July 2008\b0\par
+- BugFix : Infinite recursion in edit-pages.php and page.php if admin selects as page parent one of its descendants (bug was introduced in 0.9.14).  Invalid database entry bewilders WP core, requiring installation of Role Scoper v0.9.15 to correct.  This repair is done automatically on version update from < v0.9.15, but can be forced by defining the constants SCOPER_NEED_ROLE_SYNC and SCOPER_FIX_PARENT_RECURSION\par
+- BugFix : In page edit, Contributors sometimes allowed to publish inappropriately if Editor role is assigned for another page.\par
+- BugFix : User group membership change via user profile edit was not updating cache\par
+- BugFix : In user profile, user's WP Role metagroup "membership" was indicated in group count but not listed as a group.\par
+- BugFix : various PHP warning messages for undeclared variables.\par
+\par
+\par
+\b v 0.9.14 - 1 July 2008\b0\par
+- BugFix : For users who are members of a group, cache was not being updated following role assignment.\par
+- BugFix : admin users did not have private post categories listed even though they have access (actually a WP bug, now worked around)\par
+- BugFix : Non-editor users could not select their own page as a parent if the desired parent is a child of an uneditable page.\par
+- BugFix : Object role selection UI was not highlighting users who have a role on the basis of WP Role metagroup "membership"\par
+- BugFix : In an as-yet-unexplained bug, one user had private posts included in anon user's post listing (but not in direct access attempts).  Added sanity safeguards should make this impossible.\par
+\par
+\par
+\b v 0.9.13 - 27 June 2008\b0\par
+- BugFix : Page Parent dropdown was not reflecting scoped role assignments\par
+- BugFix : Cache was not being updated following blog role assignment\par
+- BugFix : Association of page to Main Page was not being appropriately limited (now requires blog-wide edit_others_pages i.e. blog-wide Editor / Page Editor)\par
+\par
+\par
+\b v 0.9.12 - 24 June 2008\b0\par
+- BugFix : Remaining cache maint issues (via thorough review of all cache keys and flush calls)\par
+- BugFix : Empty cache files were being generated unnecessarily\par
+- BugFix : Non-admin category managers were unable to assign group roles\par
+- BugFix : Wasn't honoring wp_set_current_user name argument when in admin (potential cause of "you do not have sufficient permissions" error)\par
+\par
+\par
+\b v 0.9.11 - 23 June 2008\b0\par
+- BugFix : "Exclusive" object role settings were not being auto-flushed appropriately\par
+\par
+\par
+\b v 0.9.10 - 20 June 2008\b0\par
+- BugFix : Page Template selection was hidden in Page Edit form\par
+- BugFix : Newly created subcategories not visible in Manage Categories list\par
+- BugFix : get_categories child_of argument was ignored\par
+- BugFix : get_pages child_of argument was ignored\par
+- BugFix : PHP warning on user registration / edit\par
+- BugFix : Failure to modify group membership via "Members" page\par
+- BugFix : "Write" menu was displayed even if user can only edit some existing post(s) / page(s)\par
+- BugFix : Some object role assignments were not displayed in user's own profile\par
+- BugFix : Conflict with Role Manager was preventing instant refresh of capability settings\par
+- BugFix : Some cached data was not being auto-flushed appropriately\par
+\par
+\par
+\b v0.9.9 - 8 June 2008\b0\par
+- Feature : Meta Groups - each WP Role has corresponding auto-populated user group for role assignment\par
+- BugFix : Group Administrator assignments for non-admin users are now honored\par
+- BugFix : PHP4 was not being detected on some (Ubunutu) servers\par
+\par
+\par
+\b v0.9.8 - 2 June 2008\b0\par
+- BugFix : editing roles were not being credited under some conditions\par
+- BugFix : in post edit, categories were not being listed under some conditions\par
+- BugFix : Category storage for new posts (new bug in v0.9.6 was storing storing term ID as term name)\par
+- BugFix : Exclusive Objects listing for administrators (new bug in v0.9.6)\par
+- Feature : better handling of Main Page association/disassiation (now revert to previously store parent if user tries to set/unset page parent to Main Page but lacks blog-wide edit_pages) \par
+- Feature : added automatic flushing of Role Scoper's internal cache following activation of any new version\par
+\par
+\par
+\b v0.9.6 - 30 May 2008\b0\par
+- BugFix : various problems with crediting of roles to non-admin, non-editor users ("attempt has failed" error was 1 symptom)\par
+- workaround for conflict with WP Security Scan plugin -- re-establish WP version if necessary\par
+- BugFix : "call time pass by reference error" on edit post\par
+- suppress Object Roles admin links for users without pertinent access\par
+- Change : in Exclusive Objects admin page, list only objects user can admin\par
+- BugFix : some Exclusive Objects edit links were missing\par
+- Change : rephrased caption on Object Roles admin page from "No object roles are set" to "No object roles to administer"\par
+- BugFix : added missing table caption in Object Roles, Exclusive Objects pages\par
+- Change : corrected one note at bottom of Exclusive Sections page\par
+- Change : on Role Scoper Options page, suppress revision notes for versions <= currently installed version\par
+\par
+\par
+\b v0.9.5 - 24 May 2008\b0\par
+- BugFix : crediting of group roles (logged user's group membership was being ignored)\par
+- BugFix : get_pages filtering to enable display of private pages if user has scoped role\par
+- BugFix : eliminated query error in WP 2.2-2.3 Write Post form\par
+\par
+\par
+\b v0.9.4 - 23 May 2008\b0\par
+- BugFix : reinstate Groups and Roles menu links (were hidden by 0.9.3)\par
+\par
+\par
+\b v0.9.3 - 23 May 2008\b0\par
+- BugFix : eliminated conflict with theme administration (RS admin filters now only added for a fixed subset of URIs)\par
+\par
+\par
+\b v0.9.2 - 22 May 2008\b0\par
+- BugFix : PHP4 support (eliminated optional byref argument in Scoper::get_strict_terms function)\par
+- BugFix : re-enabled post-specific role assignment (was broken by my workaround for missing dbx_page_advanced in WP 2.5)\par
+- Change : slight change to subtext color for better contrast on Options page\par
+- Change : grammar on Options page (singular/plural object type name)\par
+- Change : added vertical spacing above Group Roles div in group definition page\par
+\par
+\par
+\b v0.9.1 - 19 May 2008\b0\par
+- Feature : added version update notification on Options page (initially just for manual download, install)\par
+- Feature : added option to disable version update notification\par
+\par
+\par
+\b v0.9.0 - 14 May 2008\b0\par
+- Initial beta release\par
+\par
+\par
+Role Scoper is released under the GPL license, version 2 - http://www.opensource.org/licenses/gpl-license.php\par
+Copyright (c) 2009, Kevin Behrens.\par
+\par
+http://agapetry.net\par
+http://agapetry.net/forum/\par
+\par
+}
+ 
