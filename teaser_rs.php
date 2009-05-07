@@ -11,6 +11,9 @@ class ScoperTeaser {
 
 		global $wpdb, $scoper, $wp_query;
 
+		if ( did_action('wp_meta') && ! did_action('wp_head') )
+			return $results;
+
 		if ( ! $src = $scoper->data_sources->get($src_name) )
 			return array();
 

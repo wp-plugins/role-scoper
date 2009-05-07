@@ -133,9 +133,14 @@ if ( ! $errorMessage && ( ('editSubmit' == $mode) || ('add' == $mode) ) ) {
 	// -----  add/delete group members or managers ----
 	$current_members = ScoperAdminLib::get_group_members($group->ID, COL_ID_RS);
 	
-
 	// members
 	$posted_members = ( isset($_POST['member']) ) ? $_POST['member'] : array();
+	
+	if ( ! empty($_POST['member_csv']) ) {
+		if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( 'member_csv', 'user' ) )
+			$posted_members = array_merge($posted_members, $csv_for_item);
+	}
+	
 	if ( $delete_members = array_diff($current_members, $posted_members) ) {
 		ScoperAdminLib::remove_group_user($group->ID, $delete_members);
 		$success_msg .= ' ' . sprintf( __ngettext('%d member deleted.', '%d members deleted.', count($delete_members), 'scoper'), count($delete_members) ); 
@@ -150,6 +155,13 @@ if ( ! $errorMessage && ( ('editSubmit' == $mode) || ('add' == $mode) ) ) {
 	// administrators
 	if ( is_administrator_rs() || current_user_can('manage_groups', $group->ID) ) {
 		$managers = ( isset($_POST['manager']) ) ? array( 'rs_group_manager' => array_fill_keys( $_POST['manager'], 'entity' ) ) : '';
+		
+		if ( ! empty($_POST['manager_csv']) ) {
+			if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( 'manager_csv', 'user' ) ) {
+				foreach ( $csv_for_item as $id )
+					$managers['rs_group_manager'][$id] = 'entity';
+			}
+		}
 		
 		if ( $managers ) {
 			$role_assigner = init_role_assigner();

@@ -673,6 +673,11 @@ class ScoperAdminFilters
 		
 		$posted_groups = ( isset($_POST['group']) ) ? $_POST['group'] : array();
 		
+		if ( ! empty($_POST['groups_csv']) ) {
+			if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( 'groups_csv', 'groups' ) )
+				$posted_groups = array_merge($posted_groups, $csv_for_item);
+		}
+		
 		foreach ($editable_group_ids as $group_id) {
 			if( in_array($group_id, $posted_groups) ) { // checkbox is checked
 				if( ! isset($stored_groups[$group_id]) )

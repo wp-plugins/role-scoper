@@ -77,7 +77,6 @@ function scoper_version_check() {
 				scoper_fix_page_parent_recursion();
 			}
 			
-			
 			if ( version_compare( $ver['version'], '1.0.0-rc2', '>=') ) {
 				// In rc2 through rc4, we forced invalid img src attribute for image attachments on servers deemed non-apache
 				// note: false === stripos( php_sapi_name(), 'apache' ) was the criteria used by the offending code

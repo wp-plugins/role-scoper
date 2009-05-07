@@ -836,6 +836,7 @@ if ( isset($sample_ids[$src_otype]) ) {
 <?php 
 $all_options []= 'indicate_blended_roles';
 $all_options []= 'display_hints';
+$all_options []= 'user_role_assignment_csv';
 ?>
 <tr valign="top">
 <th scope="row"><?php 
@@ -890,6 +891,17 @@ _e('Role Assignment Interface', 'scoper') ?></th>
 <br />
 <span class="rs-subtext">
 <?php if ( $display_hints) _e('Display introductory descriptions at the top of various role assignment / definition screens.', 'scoper');?>
+</span>
+</div>
+<br />
+
+<div class="agp-vspaced_input">
+<label for="user_role_assignment_csv">
+<input name="user_role_assignment_csv" type="checkbox" id="user_role_assignment_csv" value="1" <?php checked('1', scoper_get_option('user_role_assignment_csv'));?> />
+<?php _e('Users CSV Entry', 'scoper') ?></label>
+<br />
+<span class="rs-subtext">
+<?php if ( $display_hints) _e('Accept entry of user names or IDs via comma-separated text instead of individual checkboxes.', 'scoper');?>
 </span>
 </div>
 

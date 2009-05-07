@@ -306,22 +306,33 @@ class QueryInterceptor_RS
 		
 		if ( in_array('group', $object_types) )
 			$use_object_roles = true;
-			
-		if ( -1 == $use_object_roles ) {
+		
+		if ( -1 === $use_object_roles ) {
 			foreach ( $object_types as $object_type ) // do the join if any of the object types consider object roles
 				if ( scoper_get_otype_option( 'use_object_roles', $src_name, $object_type ) ) {
 					$use_object_roles = true;
 					break;
 				}
+			
+			if ( ! is_admin() && ! is_preview() ) {
+				if ( -1 === $use_object_roles )
+					$use_object_roles = false;
+			}
 		}
 		
-		if ( -1 == $use_term_roles )
+		if ( -1 === $use_term_roles ) {
 			foreach ( $object_types as $object_type ) // do the join if any of the object types consider term roles
 				if( scoper_get_otype_option( 'use_term_roles', $src_name, $object_type ) ) {
 					$use_term_roles = true;
 					break;
 				}
-				
+		
+			if ( ! is_admin() ) {
+				if ( -1 === $use_term_roles )
+					$use_term_roles = false;
+			}
+		}
+		
 		if ( $use_object_roles ) {
 			if ( ! is_object($user) ) {
 				global $current_user;

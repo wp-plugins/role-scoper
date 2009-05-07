@@ -154,7 +154,8 @@ if ( $col_parent ) {
 		uksort($listed_objects_alpha, "strnatcasecmp");
 		
 		// convert to ordinal integer index
-		$listed_objects = array_combine( array_keys( array_fill( 0, count($listed_objects_alpha), true ) ), $listed_objects_alpha );
+		$temp = array_fill( 0, count($listed_objects_alpha), true );
+		$listed_objects = array_combine( array_keys( $temp ), $listed_objects_alpha );
 	}
 }
 
@@ -187,6 +188,7 @@ $args = array(
 'ul_class' => 'rs-objlist',				'object_names' => $object_names,			'object_status' => $object_status,
 'err' => $err,							'default_hide_empty' => ! empty($otype->admin_default_hide_empty)
 );
+
 
 ScoperAdminBulk::item_tree( OBJECT_SCOPE_RS, ROLE_ASSIGNMENT_RS, $src, $otype, $listed_objects, $object_roles, $strict_objects, $role_defs_by_otype, $role_codes, $args);
 echo '<hr /><div style="background-color: white;"></div>';

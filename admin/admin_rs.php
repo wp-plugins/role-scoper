@@ -301,7 +301,7 @@ class ScoperAdmin
 		$tweak_menu = false; // don't mess with menu order unless we know we can get away with it in current WP version
 		
 		if ( awp_ver('2.7-dev') && empty($menu[51]) && empty($menu[52]) ) {
-			if ( ! awp_ver('2.8') ) { // review and increment this with each WP version until there's a clean way to force menu proximity to 'Users'
+			if ( ! awp_ver('2.9') ) { // review and increment this with each WP version until there's a clean way to force menu proximity to 'Users'
 				$tweak_menu = true;
 				$restrictions_menu_key = 51;
 				$roles_menu_key = 52;
@@ -763,7 +763,6 @@ class ScoperAdmin
 	// only used for WP < 2.7
 	function ozh_altmenu_hack($altmenu) {
 		// not sure why ozh adds extra page argument to these URLs:
-	
 		$bad_string = '?page=' . get_option('siteurl') . 'p-admin/admin.php?page=';
 		
 		foreach ( array_keys($altmenu) as $key )
@@ -775,9 +774,6 @@ class ScoperAdmin
 	
 	// only used for WP < 2.7
 	function ozh_adminmenu_hack($menu) {
-		dump($menu);
-		die;
-	
 		if ( current_user_can('edit_posts') ) {
 			$menu[5][0] = __("Write");
 			$menu[5][1] = "edit_posts";

@@ -56,13 +56,16 @@ function scoper_attach_linked_uploads( $echo = false ) {
 				
 				// preg_match technique learned from http://stackoverflow.com/questions/138313/how-to-extract-img-src-title-and-alt-from-html-using-php
 				$tags = array( 'img' => array(), 'a' => array() );
-				preg_match('/<img[^>]+>/i', $row->post_content, $tags['img']);
-				preg_match('/<a[^>]+>/i', $row->post_content, $tags['a']);  // don't care that this will terminate with any enclosed tags (i.e. img)
+				
+				$content = $row->post_content;
+				
+				preg_match_all('/<img[^>]+>/i', $row->post_content, $tags['img']);
+				preg_match_all('/<a[^>]+>/i', $row->post_content, $tags['a']);  // don't care that this will terminate with any enclosed tags (i.e. img)
 				
 				foreach ( array_keys($tags) as $tag_type ) {
-					foreach ( $tags[$tag_type] as $found_tag ) {
+					foreach ( $tags[$tag_type]['0'] as $found_tag ) {
 						$found_attribs = array( 'src' => '', 'href' => '', 'title' => '', 'alt' => '' );
-
+						
 						if ( ! preg_match_all('/(alt|title|src|href)=("[^"]*")/i', $found_tag, $tag_attributes) )
 							continue;
 						

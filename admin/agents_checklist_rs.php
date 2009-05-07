@@ -43,24 +43,38 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 			return;
 
 		$key = array();
-			
+
 		// list current selections on top first
 		if ( $stored_assignments )
 			ScoperAgentsChecklist::_agents_checklist_display( CURRENT_ITEMS_RS, $role_basis, $all_agents, $id_prefix, $stored_assignments, $args, $key); 
 		
 		ScoperAgentsChecklist::_agents_checklist_display( ELIGIBLE_ITEMS_RS, $role_basis, $all_agents, $id_prefix, $stored_assignments, $args, $key); 
-	
+
 		echo '<div style="clear:both; height:1px;">&nbsp;</div>';
-		
+
 		if ( $key ) {
 			if ( empty($args['suppress_extra_prefix']) )
 				$id_prefix .= "_{$role_basis}";
-			
+
 			echo "<div class='rs-keytext' id='rs-rolekey_{$id_prefix}' style='margin-left:0'>";
 			echo( _c('Key:|explanation of user/group role symbolic prefix/suffix', 'scoper') );	
 			echo '<p style="margin-top: 0.2em">';
 			echo ( implode(' &nbsp; ', $key) );
 			echo '</p></div>';
+		}
+	}
+	
+	function eligible_agents_input_box( $role_basis, $id_prefix, $propagation ) {
+		$id = "{$id_prefix}_csv";
+		$msg = ( ROLE_BASIS_GROUPS == $role_basis ) ? __( "Enter additional Group Names or IDs (comma-separate)", 'scoper') : __( "Enter additional User Names or IDs (comma-separate)", 'scoper');
+		echo '<br /><div class="rs-agents_caption"><b>' . $msg . ':</b></div>';
+		echo "<input name='$id' type='text' style='width: 99%' id='$id' />";
+		
+		if ( $propagation ) {
+			echo '<br />';
+			$msg = ( ROLE_BASIS_GROUPS == $role_basis ) ? __( "Enter additional Group Names or IDs for Subpages", 'scoper') : __( "Enter additional User Names or IDs for Subpages", 'scoper');
+			echo '<br /><div class="rs-agents_caption"><b>' . $msg . ':</b></div>';
+			echo "<input name='p_{$id}' type='text' style='width: 99%' id='p_{$id}' />";
 		}
 	}
 	
@@ -81,10 +95,14 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 		
+		if ( ( ELIGIBLE_ITEMS_RS == $agents_subset ) && scoper_get_option("{$role_basis}_role_assignment_csv") )
+			return ScoperAgentsChecklist::eligible_agents_input_box( $role_basis, $id_prefix, $propagation );
+
 		if ( is_array($eligible_ids) && empty($eligible_ids) )
 			$eligible_ids = array(-1);
 		else
 			if ( ! is_array($eligible_ids) ) $eligible_ids = array(); else $eligible_ids = array_flip($eligible_ids);
+
 		if ( ! is_array($stored_assignments) ) $stored_assignments = array();
 		if ( ! is_array($locked_ids) ) $locked_ids = array(); else $locked_ids = array_flip($locked_ids);
 		if ( ! is_array($for_children_ids) ) $for_children_ids = array(); else $for_children_ids = array_flip($for_children_ids);
@@ -111,7 +129,7 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 		$default_hide_filtered_list = ( $default_hide_threshold && ( $agent_count[$agents_subset] > $default_hide_threshold ) );
 			
 		$checked = ( $agents_subset == CURRENT_ITEMS_RS ) ? $checked = "checked='checked'" : '';
-			
+
 		// determine whether to show caption, show/hide checkbox and filter textbox
 		$any_display_filtering = ($agent_count[CURRENT_ITEMS_RS] > $filter_threshold) || ($agent_count[ELIGIBLE_ITEMS_RS] > $filter_threshold);
 		
@@ -120,7 +138,7 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 				$caption = ( CURRENT_ITEMS_RS == $agents_subset ) ? __('show current groups (%d)', 'scoper') : __('show eligible groups (%d)', 'scoper');
 			else
 				$caption = ( CURRENT_ITEMS_RS == $agents_subset ) ? __('show current users (%d)', 'scoper') : __('show eligible users (%d)', 'scoper');
-		
+
 			$js_call = "agp_display_if('div_{$agents_subset}_{$id_prefix}', this.id);"
 					. "agp_display_if('chk-links_{$agents_subset}_{$id_prefix}', this.id);";
 	

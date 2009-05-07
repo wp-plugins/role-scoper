@@ -6,52 +6,101 @@ function agp_is_media_type( $mime_type ) {
 	return ( false !== strpos( $mime_type, 'image/' ) ) || ( false !== strpos( $mime_type, 'video/' ) ) || ( false !== strpos( $mime_type, 'audio/' ) );
 }
 
+/*
+  // from http://algorytmy.pl/doc/php/function.readfile.php
+  function readfile_chunked($filename,$retbytes=true)
+  {
+   $chunksize = 1*(1024*1024); // how many bytes per chunk
+   $buffer = '';
+   $cnt =0;
+   // $handle = fopen($filename, 'rb');
+   $handle = fopen($filename, 'rb');
+   if ($handle === false)
+   {
+     return false;
+   }
+   while (!feof($handle))
+   {
+     $buffer = fread($handle, $chunksize);
+     echo $buffer;
+     flush();
+     if ($retbytes)
+     {
+       $cnt += strlen($buffer);
+     }
+   }
+   $status = fclose($handle);
+   if ($retbytes && $status)
+   {
+     return $cnt; // return num. bytes delivered like readfile() does.
+   }
+   return $status;
+  }
+*/
+
 function agp_return_file( $file_path, $mime_type ) {
-	$file_time = filemtime($file_path);
+
+	$use_cache = ( ( filesize($file_path) < 9500000 ) && ( ! defined('SCOPER_NO_SERVER_CACHE') || ! SCOPER_NO_SERVER_CACHE ) );
+
+	if ( $use_cache ) {
+		$file_time = filemtime($file_path);
 	
-	global $is_apache;
+		global $is_apache;
 
-	if ( $is_apache && function_exists('apache_request_headers') ) {
-		// server caching code from Private Files plugin by James Low (http://jameslow.com/2008/01/28/private-files/),
-
-		// If web server is apache, check HTTP If-Modified-Since header before sending content
-		$ar = apache_request_headers();
-		if ( ! empty($ar['If-Modified-Since']) && ( strtotime($ar['If-Modified-Since']) >= $file_time ) ) {
-			// 304: "Browser, your cached version of image is OK; we're not sending anything new to you"
-			header( 'Last-Modified: '.gmdate('D, d M Y H:i:s', $file_time).' GMT', true, 304 );
-			return;
+		if ( $is_apache && function_exists('apache_request_headers') ) {
+			// server caching code from Private Files plugin by James Low (http://jameslow.com/2008/01/28/private-files/),
+	
+			// If web server is apache, check HTTP If-Modified-Since header before sending content
+			$ar = apache_request_headers();
+			if ( ! empty($ar['If-Modified-Since']) && ( strtotime($ar['If-Modified-Since']) >= $file_time ) ) {
+				// 304: "Browser, your cached version of image is OK; we're not sending anything new to you"
+				header( 'Last-Modified: '.gmdate('D, d M Y H:i:s', $file_time).' GMT', true, 304 );
+				return;
+			}
 		}
+
+		// outputing Last-Modified header
+		header( 'Last-Modified: '.gmdate('D, d M Y H:i:s', $file_time).' GMT', true, 200 );
 	}
-	
-	// outputing Last-Modified header
-	header( 'Last-Modified: '.gmdate('D, d M Y H:i:s', $file_time).' GMT', true, 200 );
-	
+
 	if ( agp_is_media_type($mime_type) ) {
-		header('Cache-Control: must-revalidate');
+		if ( $use_cache ) {
+			header('Cache-Control: maxage=3600');
+			header('Cache-Control: must-revalidate');
+		}
 		header( "Content-Type: $mime_type" );
 	} else {
 		global $is_IE;
 		if ( $is_IE ) {
 			// Thanks to Eirik Hoem - http://eirikhoem.wordpress.com/2007/06/15/generated-pdfs-over-https-with-internet-explorer/
 			// for the tip on header requirements for IE7 https download
-			header('Cache-Control: maxage=3600');
-			header('Pragma: public');
+			if ( $use_cache ) {
+				header('Cache-Control: maxage=3600');
+				header('Pragma: public');
+			}
 			header("Content-Description: File Transfer");
 			header("Content-Transfer-Encoding: binary");
 			header('Content-Type: application/x-msdownload');
 			header('Content-Disposition: attachment; filename="' . basename($file_path) . '"');
 		} else {
-			header('Cache-Control: must-revalidate');
+			if ( $use_cache )
+				header('Cache-Control: must-revalidate');
+
 			header( "Content-Type: $mime_type" );
 		}
 	}
-
-	header( 'Content-Length: ' . filesize($file_path) );
 	
+	header( 'Content-Length: ' . filesize($file_path) );
+
 	// this caused intermittant failure to return images
 	//ob_clean();
 	//flush();
+
+	if ( ! $use_cache )
+		ob_end_flush();
+	
 	readfile($file_path);
+	//readfile_chunked($file_path);
 }
 
 
@@ -66,6 +115,8 @@ class AttachmentFilters_RS {
 		$file = $query->query_vars['attachment'];
 		$file_path = WP_UPLOAD_DIR_RS . "/$file";
 		
+		//rs_errlog( $file_path );
+		
 		// don't filter the direct file URL request if filtering is disabled, or if the request is from wp-admin
 		// DISABLE_ATTACHMENT_FILTERING check here is only pertinent until next htaccess rule flush
 		if ( defined('DISABLE_ATTACHMENT_FILTERING') || defined('DISABLE_QUERYFILTERS_RS')
@@ -73,6 +124,8 @@ class AttachmentFilters_RS {
 			// note: image links from wp-admin should now never get here due to http_referer RewriteRule, but leave above check just in case - inexpensive since we're checking for wp-admin before calling get_option
 
 			$mime_type = wp_check_filetype($file_path);
+			
+			//rs_errlog("skipping filtering for $mime_type");
 			
 			if ( is_array($mime_type) && isset($mime_type['type']) )
 				$mime_type = $mime_type['type'];
@@ -82,11 +135,15 @@ class AttachmentFilters_RS {
 		}
 		
 		if ( file_exists( $file_path ) ) {
+			//rs_errlog("$file_path exists.");
+		
 			$file_url = WP_UPLOAD_URL_RS . "/$file";
 
 			// Resized copies have -NNNxNNN suffix, but the base filename is stored as attachment.  Strip the suffix out for db query.
 			$orig_file_url = preg_replace( "/-[0-9]{2,4}x[0-9]{2,4}./", '.', $file_url );
 
+			//rs_errlog("orig file URL: $orig_file_url");
+			
 			global $wpdb, $wp_query;
 			$qry = "SELECT * FROM $wpdb->posts WHERE post_type = 'attachment' AND guid = '$orig_file_url' AND post_parent > 0";
 			$results = scoper_get_results( $qry );
@@ -98,6 +155,8 @@ class AttachmentFilters_RS {
 					$return_file = true;
 			} else {
 				foreach ( $results as $attachment ) {
+					//rs_errlog( "found attachment: " . serialize($attachment) );
+				
 					if ( empty($mime_type) )
 						$mime_type = $attachment->post_mime_type;
 
@@ -126,6 +185,7 @@ class AttachmentFilters_RS {
 			}
 			
 			if ( $return_file ) {
+				//rs_errlog( "returning: $file_path" );
 				agp_return_file($file_path, $mime_type);
 				exit;
 			} 
@@ -187,6 +247,10 @@ class AttachmentFilters_RS {
 			if ( ! empty($post) ) {
 				$object_type = scoper_get_var("SELECT post_type FROM $wpdb->posts WHERE ID = '$post->post_parent'");
 
+				// default to 'post' object type if retrieval failed for some reason
+				if ( empty($object_type) )
+					$object_type = 'post';
+				
 				if ( ! current_user_can( "read_$object_type", $post->post_parent ) ) {
 					if ( scoper_get_otype_option('do_teaser', 'post') ) {
 						if ( $use_teaser_type = scoper_get_otype_option('use_teaser', 'post',  $object_type) )

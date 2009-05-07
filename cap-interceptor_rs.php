@@ -80,6 +80,7 @@ class CapInterceptor_RS
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 
 		global $current_user;
+		
 		if ($user_id && ($user_id != $current_user->ID) )
 			$user = new WP_Scoped_User($user_id);
 		else
@@ -488,6 +489,9 @@ class CapInterceptor_RS
 			if ( $restore_caps = array_diff($orig_reqd_caps, array_keys($rs_reqd_caps) ) )
 				$rs_reqd_caps = $rs_reqd_caps + array_fill_keys($restore_caps, true);
 
+			//rs_errlog( 'RETURNING:' );
+			//rs_errlog( serialize(array_merge($undefined_reqd_caps, $rs_reqd_caps)) );
+				
 			return array_merge($undefined_reqd_caps, $rs_reqd_caps);
 		}
 	}
@@ -587,8 +591,10 @@ class CapInterceptor_RS
 		
 		$grant_caps = array();
 		
-		$check_caps = $scoper->cap_defs->get_base_caps($reqd_caps); // convert 'edit_others', etc. to equivalent base cap
-		$caps_by_otype = $scoper->cap_defs->organize_caps_by_otype($check_caps);
+		// TODO: confirm this is never needed
+		//$check_caps = $scoper->cap_defs->get_base_caps($reqd_caps); // convert 'edit_others', etc. to equivalent base cap
+		
+		$caps_by_otype = $scoper->cap_defs->organize_caps_by_otype($reqd_caps);
 		
 		foreach ( $caps_by_otype as $src_name => $otypes ) {
 			$src = $scoper->data_sources->get($src_name);

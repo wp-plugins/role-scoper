@@ -18,7 +18,7 @@ if ( awp_ver('2.7-dev') )
  *
  */
 class ScoperAdminUI {
-	function role_assignment_list($roles, $agent_names, $checkbox_base_id = '') {
+	function role_assignment_list($roles, $agent_names, $checkbox_base_id = '', $role_basis = 'user') {
 		$agent_grouping = array();
 		$agent_list = array();
 		$role_propagated = array();
@@ -50,6 +50,8 @@ class ScoperAdminUI {
 		// display for_entity assignments first, then for_both, then for_children
 		$assign_for_order = array( 'entity', 'both', 'children');
 		
+		$use_agents_csv = scoper_get_option("{$role_basis}_role_assignment_csv");
+
 		foreach ( $assign_for_order as $assign_for ) {
 			if ( ! isset($agent_grouping[$assign_for]) )
 				continue;
@@ -63,7 +65,11 @@ class ScoperAdminUI {
 				$sfx = '';
 				
 				if ( $checkbox_base_id ) {
-					$js_call = "agp_check_it('{$checkbox_base_id}{$agent_id}');";
+					if ( $use_agents_csv )
+						$js_call = "agp_append('{$role_basis}_csv', ', $agent_name');";
+					else
+						$js_call = "agp_check_it('{$checkbox_base_id}{$agent_id}');";
+					
 					$link_end = " href='javascript:void(0)' title='select' onclick=\"$js_call\">";
 					$sfx = '</a>';
 				}

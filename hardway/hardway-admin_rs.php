@@ -159,30 +159,22 @@ class ScoperAdminHardway {
 				if ( ! empty($reqd_caps) ) {
 					global $scoper, $current_user;
 
-					$users = $scoper->users_who_can($reqd_caps, COL_ID_RS, $src_name, $object_id);
-
-					if ( ! in_array($current_user->ID, $users) )
-						$users []= $current_user->ID;
+					if ( 'page' == $context->object_type_def->val )
+						$current_user_reqd_cap = 'edit_others_pages';
+					else
+						$current_user_reqd_cap = 'edit_others_posts';
 					
-					$query = "SELECT $wpdb->users.ID FROM $wpdb->users WHERE ID IN ('" . implode("','", $users) . "')";
-					
-					/*
-					$query = str_replace(' user_id', " DISTINCT $wpdb->usermeta.user_id", $query);
-					$args = array('usermeta_table' => true); 
+					$id = $scoper->data_sources->detect('id', 'post');
 
-					if ( ! $object_id ) {
-						// always include current user as an available author for new posts/pages
-						global $current_user;
-						$args['preserve_or_clause'] = " $wpdb->usermeta.user_id = '$current_user->ID' ";
+					// only modify the default authors list if current user can edit_others for the current post/page
+					if ( current_user_can( $current_user_reqd_cap, $id ) ) {
+						$users = $scoper->users_who_can($reqd_caps, COL_ID_RS, $src_name, $object_id);
+	
+						if ( ! in_array($current_user->ID, $users) )
+							$users []= $current_user->ID;
+						
+						$query = "SELECT $wpdb->users.ID FROM $wpdb->users WHERE ID IN ('" . implode("','", $users) . "')";
 					}
-					
-					// no need to exclude users by level; users_request will take care of it 
-					// and allow Subscribers with an editing role for this object to be included
-					$query = str_replace("AND meta_value != '0'", '', $query);
-					
-							// note: would need to require users-interceptor.php to do this
-					$query = apply_filters('users_request_rs', $query, $reqd_caps, $src_name, $object_id, $args);
-					*/
 				}
 			}
 		}
@@ -206,6 +198,17 @@ class ScoperAdminHardway {
 		$context = $scoper->admin->get_context('');
 	
 		if ( empty ($context->reqd_caps) )
+			return $wp_output;
+			
+		if ( 'page' == $context->object_type_def->val )
+			$current_user_reqd_cap = 'edit_others_pages';
+		else
+			$current_user_reqd_cap = 'edit_others_posts';
+		
+		$id = $scoper->data_sources->detect('id', 'post');
+
+		// only modify the default authors list if current user can edit_others for the current post/page
+		if ( ! current_user_can( $current_user_reqd_cap, $id ) )
 			return $wp_output;
 			
 		$src_name = $context->source->name;
@@ -334,12 +337,20 @@ class ScoperAdminHardway {
 		global $wpdb, $scoper;
 		
 		$context = $scoper->admin->get_context('', true); // arg: return reqd_caps only
-		if ( empty ($context->reqd_caps) )
-			return $unfiltered_results;
 		
-		$users = $scoper->users_who_can($context->reqd_caps, COLS_ALL_RS);
-		
-		return $users;
+		if ( ! empty ($context->reqd_caps) ) {
+			if ( 'page' == $matched->object_type_def->val )
+				$current_user_reqd_cap = 'edit_others_pages';
+			else
+				$current_user_reqd_cap = 'edit_others_posts';
+			
+			$id = $scoper->data_sources->detect('id', 'post');
+			
+			if ( current_user_can( $current_user_reqd_cap, $id ) )
+				return $scoper->users_who_can($context->reqd_caps, COLS_ALL_RS);
+		}
+
+		return $unfiltered_results;
 	}
 }
 ?>

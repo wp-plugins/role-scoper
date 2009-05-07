@@ -17,7 +17,7 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 			'is_taxonomy' => 1,		'taxonomy_only' => 1,	
 			'table_basename' => 'term_taxonomy',  'table' => $wpdb->prefix . 'term_taxonomy',
 			'table_alias' => 'tt', 	'edit_url' => '%1$s/wp-admin/categories.php?action=edit&cat_ID=%2$d',
-			'cols' => (object) array( 'id' => 'term_id', 'name' => 'name', 'parent' => 'parent' ),
+			'cols' => (object) array( 'id' => 'term_id', 'name' => 'name', 'parent' => 'parent' ),			// NOTE on ID col: DB queries actually use term_taxonomy_id based on attributes returned by get_terms_query_vars.  term_id here is used for categories queries.  Possible Todo: resolve this discrepancy and potential bug source
 			'http_post_vars' => (object) array( 'id' => 'cat_ID', 'parent' => 'category_parent' ),
 			'uri_vars' => (object) array( 'id' => 'cat_ID' )
 		); // end outer array

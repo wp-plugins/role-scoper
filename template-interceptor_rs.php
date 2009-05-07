@@ -62,7 +62,7 @@ class TemplateInterceptor_RS
 					$post_id_in = "'" . implode("','", $post_ids) . "'";
 				}
 
-				$id_clause = "( `postID` < 1 OR `postID` IN ( $post_id_in ) ) AND";
+				$id_clause = "( `postID` IS NULL OR `postID` IN ( $post_id_in ) ) AND";
 				$table_name = $wpdb->prefix . 'eventscalendar_main';
 				$query = str_replace("SELECT * FROM `$table_name` WHERE ", "SELECT * FROM `$table_name` WHERE $id_clause ", $query);
 
@@ -137,19 +137,22 @@ function is_teaser_rs( $id = '' , $src_name = 'post' ) {
 function is_restricted_rs( $id = '', $src_name = 'post', $op_type = 'read', $scope_criteria = '' ) {
 	global $scoper;
 
-	if ( empty($scoper) || ( ! $id && is_home() && ! is_single() ) )
+	if ( empty($scoper) || ( is_home() && is_single() && ! $id ) )
 		return false;
 		
-	if ( ! $id && ( 'post' == $src_name ) ) {
+	if ( ( 'post' == $src_name ) && ! $id ) {
 		global $post;
+
 		if ( ! isset($post->ID) )
 			return false;
-			
+		
 		$id = $post->ID;
 	}
-	
+
+	$listed_ids = ( is_single() || is_page() ) ? array( $id => true ) : array();
+
 	require_once('role_usage_rs.php');
-	determine_role_usage_rs($src_name);
+	determine_role_usage_rs($src_name, $listed_ids);
 
 	if ( 'object' == $scope_criteria )
 		return ( isset( $scoper->objscoped_ids[$src_name][$id][$op_type] ) );

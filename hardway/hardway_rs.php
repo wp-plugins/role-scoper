@@ -323,7 +323,7 @@ class ScoperHardway
 		if ( ! defined('XMLRPC_REQUEST') && ( 'all' == $fields ) )
 			//-- RoleScoper Modification - alternate function call (was _pad_term_counts) --//
 			rs_tally_term_counts($terms, $taxonomies[0], '', array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser ) );
-			
+		
 		// Make sure we show empty categories that have children.
 		if ( $hierarchical && $hide_empty ) {
 			foreach ( $terms as $k => $term ) {
@@ -367,6 +367,7 @@ class ScoperHardway
 		$cache[ $ckey ] = $terms;
 		$current_user->cache_set( $cache, $cache_flag );
 		
+		
 		//-- RoleScoper Modification: alternate filter name --//
 		$terms = apply_filters('get_terms_rs', $terms, $taxonomies, $args);
 		
@@ -382,6 +383,9 @@ class ScoperHardway
 	function flt_get_pages($results, $args = '') {
 		global $wpdb;
 		
+		if ( ! scoper_get_otype_option( 'use_object_roles', 'post', 'page' ) )
+			return $results;
+
 		$defaults = array(
 			'child_of' => 0, 'sort_order' => 'ASC',
 			'sort_column' => 'post_title', 'hierarchical' => 1,
@@ -411,7 +415,7 @@ class ScoperHardway
 				//-- RoleScoper Modification: alternate filter name --//
 				return apply_filters('get_pages_rs', $cache[ $ckey ], $r);
 		}
-		
+
 		$inclusions = '';
 		if ( !empty($include) ) {
 			$child_of = 0; //ignore child_of, parent, exclude, meta_key, and meta_value params if using include
@@ -538,9 +542,10 @@ class ScoperHardway
 		// Role Scoper note: WP core get_pages has already updated wp_cache and pagecache with unfiltered results.
 		// TODO: Suggest moving WP core apply_filters call back before cache update
 		update_page_cache($pages);
-	
+		
+		
 		//====== Role Scoper Mod: Support a disjointed pages tree with some parents hidden ========
-		if ( empty($tease_all) ) {  // if we're including all pages with teaser, no need to continue thru redraw_page_hierarchy processing
+		if ( empty($tease_all) || $child_of ) {  // if we're including all pages with teaser, no need to continue thru redraw_page_hierarchy processing
 			$pages = ScoperHardway::redraw_page_hierarchy($pages, $child_of);
 		}
 		//===================================================

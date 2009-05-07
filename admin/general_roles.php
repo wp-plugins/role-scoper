@@ -78,12 +78,24 @@ if ( isset($_POST['rs_submit']) ) :	?>
 		check_admin_referer( "scoper-assign-blogrole" );
 		
 		$blog_roles = array();
-		$selected_agents = array();
-		foreach ( $role_bases as $role_basis )
-			if ( ! empty($_POST[$role_basis]) )
-				$selected_agents[$role_basis] = $_POST[$role_basis];
 		
 		$selected_roles = $_POST['roles'];
+		
+		$selected_agents = array();
+		foreach ( $role_bases as $role_basis ) {
+			if ( ! empty($_POST[$role_basis]) )
+				$selected_agents[$role_basis] = $_POST[$role_basis];
+			
+			if ( ! empty($_POST["{$role_basis}_csv"]) ) {
+				if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( "{$role_basis}_csv", $role_basis ) ) {
+					if ( empty($selected_agents[$role_basis]) )
+						$selected_agents[$role_basis] = array();
+				
+					$selected_agents[$role_basis] = array_merge($selected_agents[$role_basis], $csv_for_item);
+				}
+			}
+		}
+		
 		$assign_for = $_POST['assign_for'];
 		$modcount = 0;
 		$agents_msg = array();

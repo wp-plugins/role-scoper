@@ -56,9 +56,15 @@ if (! function_exists("array_combine")) {
 // http://us.php.net/manual/en/function.array-combine.php#74412
 // Combines two associate arrays by making a array with the key being $a1 and the value $a2.
     function array_combine($a1,$a2) {
-        for($i=0; $i<count($a1); $i++)
-            $ra[$a1[$i]] = $a2[$i];
-            
+    	$ra = array();
+    	
+    	reset($a2);
+ 
+    	foreach ( array_keys($a1) as $a1_key ) {
+    		$ra[ $a1_key ] = $a2[ key($a2) ];
+    		next( $a2 );
+    	}
+
         if(isset($ra)) return $ra; else return false;
     }
 }

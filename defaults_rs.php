@@ -51,7 +51,8 @@ function scoper_default_options() {
 		'rs_post_author_role_objscope' => 0,
 		'lock_top_pages' => 0,
 		'display_user_profile_groups' => 1,
-		'display_user_profile_roles' => 1
+		'display_user_profile_roles' => 1,
+		'user_role_assignment_csv' => 0
 		//'assume_javascript' => 0  //possible todo: implement this
 	);
 

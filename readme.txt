@@ -4,14 +4,14 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, cms, members, user, groups, admin, categories, pages, posts
 Requires at least: 2.5
 Tested up to: 2.7
-Stable Tag: 1.0.1
+Stable Tag: 1.0.2
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
 == Description ==
 Role Scoper is a comprehensive enrichment for access control in WordPress, giving you CMS-like control of permissions. Assign reading, editing or administration roles to users or groups on a page-specific, category-specific or other content-specific basis.
 
-= Existing WordPress roles can be: =
+Existing WordPress roles are honored by default, but with Role Scoper can be:
 * supplemented with content-specific role assignment
 * disregarded if the role is restricted for the category or page/post
 
@@ -38,7 +38,7 @@ Note: For WP 2.2 and 2.3, use <a href="http://agapetry.net/downloads/role-scoper
 Theme code can utilize the is_restricted_rs() and is_teaser_rs() functions to customize front-end styling.
 
 = Plugin API =
-Other plugin and core developers will be interested in the underlying users_who_can function, made possible by a new roles storage schema.  The abstract data model and API support additional data sources, object types, capabilities and taxonomies (using term_taxonomy or other custom schema). If your plugin uses the WordPress current_user_can function and supports filtering of its listing query, you can use Role Scoper's API to define your data source, object types, taxonomies and scopeable roles. These will supplement any other assigned roles; there is no need to merge all capabilities into an all-inclusive role.
+Other plugin and core developers will be interested in the underlying users_who_can function, made possible by a new roles storage schema.  The abstract data model and API support additional data sources, object types, capabilities and taxonomies (using term_taxonomy or other custom schema). If your plugin uses the WordPress current_user_can function and supports filtering of its listing query, you can use Role Scoper’s API to define your data source, object types, taxonomies and scopeable roles. These will supplement any other assigned roles; there is no need to merge all capabilities into an all-inclusive role.
 
 For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_UsageGuide.htm">Usage Guide</a> or <a href="http://agapetry.net/forum/">Support Forum</a>.
 

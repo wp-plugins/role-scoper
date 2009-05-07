@@ -75,7 +75,7 @@ function awp_user_can($reqd_caps, $object_id = 0, $user_id = 0 ) {
 // Renamed for clarity (was _get_term_hierarchy)
 // Removed option buffering since hierarchy is user-specific (get_terms query will be wp-cached anyway)
 // Also adds support for taxonomies that don't use wp_term_taxonomy schema
-function rs_get_terms_children($taxonomy) {
+function rs_get_terms_children( $taxonomy, $option_value = '' ) {
 	if ( ! is_taxonomy_hierarchical($taxonomy) )
 		return array();
 	
@@ -86,10 +86,10 @@ function rs_get_terms_children($taxonomy) {
 				
 	global $scoper;
 	if ( ! $tx = $scoper->taxonomies->get($taxonomy) )
-		return array();
+		return $option_value;
 	
 	if ( empty($tx->source->cols->parent) || empty($tx->source->cols->id) )
-		return array();
+		return $option_value;
 		
 	$col_id = $tx->source->cols->id;	
 	$col_parent = $tx->source->cols->parent;
@@ -282,6 +282,24 @@ function post_exists_rs( $post_id_arg = '' ) {
 		if ( $wpdb->get_var( sprintf("SELECT ID FROM $wpdb->posts WHERE post_name = '%s'", $wp_query->query_vars['name'] ) ) )
 			return true;
 	}
+}
+
+function awp_get_user_by_name( $name, $display_or_username = true ) {
+	global $wpdb;
+	
+	if ( ! $user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE user_login = '$name'") )
+		if ( $display_or_username )
+			$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE display_name = '$name'");
+	
+	return $user;
+}
+
+function awp_get_user_by_id( $id ) {
+	global $wpdb;
+	
+	if ( $user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$id'") )
+
+	return $user;
 }
 
 ?>

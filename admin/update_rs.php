@@ -172,23 +172,56 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			
 		} // end foreach WP usermeta
 		
-
-		// TODO: reinstate this after further testing
-		/*
-		// Delete any role entries for WP metagroups (or other groups) which no longer exists
-		if ( ! empty($wpdb->groups_id_col) && ! empty($wpdb->groups_rs) ) {
-			if ( $groups_table_valid = scoper_get_var( "SELECT $wpdb->groups_id_col FROM $wpdb->groups_rs LIMIT 1" ) ) {
-				$qry = "DELETE FROM $uro_table WHERE group_id >= '1' AND group_id NOT IN ( SELECT $wpdb->groups_id_col FROM $wpdb->groups_rs )";
-				//rs_errlog( $qry );
-				scoper_query($qry);
-			}
-		}
-		*/
 		
+		// orphaned role deletion added in version 1.0.2
+		// safety precaution: only do this if it's never been done OR it previously executed successfully
+		if ( ! get_option( 'scoper_deleted_orphans' ) || get_option( 'scoper_deleted_orphans_ok' ) ) {
+			update_option( 'scoper_deleted_orphans', true );
+			scoper_delete_orphaned_roles();
+			update_option( 'scoper_deleted_orphans_ok', true );
+		}
+
 		//rs_errlog("finished syncroles "');
 		
 	} // end scoper_sync_wproles function
 
+	function scoper_delete_orphaned_roles() {
+		global $wpdb;
+	
+		$uro_table = $wpdb->user2role2object_rs;
+		$groups_table = $wpdb->groups_rs;
+
+		// Delete any role assignments for WP metagroups (or other groups) which no longer exist
+		if ( ! empty($wpdb->groups_id_col) && ! empty($wpdb->groups_rs) ) {
+			if ( $groups_table_valid = scoper_get_var( "SELECT $wpdb->groups_id_col FROM $groups_table LIMIT 1" ) ) {
+				$qry = "DELETE FROM $uro_table WHERE group_id >= '1' AND group_id NOT IN ( SELECT $wpdb->groups_id_col FROM $groups_table )";
+				//rs_errlog( $qry );
+				scoper_query($qry);
+			}
+		}
+
+		// Delete any role assignments for WP users which no longer exist
+		if ( $users_table_valid = scoper_get_var( "SELECT ID FROM $wpdb->users LIMIT 1" ) ) {
+			$qry = "DELETE FROM $uro_table WHERE user_id >= '1' AND user_id NOT IN ( SELECT ID FROM $wpdb->users )";
+			//rs_errlog( $qry );
+			scoper_query($qry);
+		}
+		
+		// Delete any role assignments for categories which no longer exist
+		if ( $terms_table_valid = scoper_get_var( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy LIMIT 1" ) ) {
+			$qry = "DELETE FROM $uro_table WHERE scope = 'term' AND obj_or_term_id >= '1' AND src_or_tx_name = 'category' AND obj_or_term_id NOT IN ( SELECT term_taxonomy_id FROM $wpdb->term_taxonomy )";
+			//rs_errlog( $qry );
+			scoper_query($qry);
+		}
+		
+		// Delete any role assignments for posts/pages which no longer exist
+		if ( $posts_table_valid = scoper_get_var( "SELECT ID FROM $wpdb->posts LIMIT 1" ) ) {
+			$qry = "DELETE FROM $uro_table WHERE scope = 'object' AND obj_or_term_id >= '1' AND src_or_tx_name = 'post' AND obj_or_term_id NOT IN ( SELECT ID FROM $wpdb->posts )";
+			//rs_errlog( $qry );
+			scoper_query($qry);
+		}
+		
+	}
 
 	function scoper_fix_page_parent_recursion() {
 		global $wpdb;

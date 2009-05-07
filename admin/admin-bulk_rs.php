@@ -172,9 +172,15 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 			foreach ( $role_bases as $role_basis ) {
 				if ( ! empty($_POST[$role_basis]) )
 					$selected_agents[$role_basis] = $_POST[$role_basis];
-				else
-					$role_bases = array_diff($role_bases, array($role_basis) );
+				else {
+					$csv_id = "{$role_basis}_csv";
+					if ( ! empty( $_POST[$csv_id] ) )
+						$selected_agents[$role_basis] = ScoperAdminLib::agent_ids_from_csv( $csv_id, $role_basis );
+					else 
+						$role_bases = array_diff($role_bases, array($role_basis) );
+				}
 			}
+
 			$agents_msg = array();
 			$valid_role_selection = ! empty($selected_roles);
 		break;
@@ -889,7 +895,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 						
 							$assignment_names = array_intersect_key($agent_names[$role_basis], $assigned_roles[$role_basis][$id][$role_handle]);
 							$assignment_list[$role_basis] = "<span class='$role_basis-csv'><span class='rs-bold'>" . $agent_list_prefix[$role_basis] . '</span>'
-							. ScoperAdminUI::role_assignment_list($assigned_roles[$role_basis][$id][$role_handle], $assignment_names, $checkbox_id)
+							. ScoperAdminUI::role_assignment_list($assigned_roles[$role_basis][$id][$role_handle], $assignment_names, $checkbox_id, $role_basis)
 							. '</span>';
 						}
 					}
@@ -955,12 +961,17 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	}
 	
 	echo '</li>';
-	echo '</ul>';
+	echo '</ul><br /><ul>';
 	
 	// now display "select all" checkboxes for all terms in this taxonomy
 	if ( empty( $single_item ) ) {
+		if ( defined('SCOPER_EXTRA_SUBMIT_BUTTON') ) {
+			echo '<li class="alignright"><span class="submit" style="border:none;"><input type="submit" name="rs_submit" value="' 
+			. __('Update &raquo;', 'scoper') 
+			. '" /></span></li>';
+		}
 ?>
-		<br /><table class='widefat' style='width:auto'>
+		<li><table class='widefat' style='width:auto;'>
 		<thead>
 		<tr class="thead">
 		<th colspan="2"><?php printf(__('select / unselect all:', 'scoper'), strtolower($otype_or_tx->display_name_plural))?></th>
@@ -999,10 +1010,10 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 			} // end foreach role
 		} // end foreach roledef
 		
-		echo '</tbody></table><br />';
+		echo '</tbody></table></li></ul><br />';
 	} // endif not single item
 	
-} // end function entity_tree
+} // end function item_tree
 
 } // end class ScoperAdminBulk
 

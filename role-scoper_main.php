@@ -127,7 +127,7 @@ class Scoper
 
 
 		global $current_user;
-
+		
 		if ( empty($current_user->assigned_blog_roles) ) {
 			foreach ($this->role_defs->get_anon_role_handles() as $role_handle) {
 				$current_user->assigned_blog_roles[$role_handle] = true;
@@ -200,16 +200,18 @@ class Scoper
 
 		} elseif ( $this->is_front() ) {		
 			// ===== Front-end-only filters which are always loaded
-			require_once('query-interceptor-front_rs.php');
+			if ( ! defined('DISABLE_QUERYFILTERS_RS') )
+				require_once('query-interceptor-front_rs.php');
 
-			if ( ! $is_administrator )
+			if ( ! $is_administrator ) {
 				require_once('qry-front_non-administrator_rs.php');
+
+				$this->feed_interceptor = new FeedInterceptor_RS(); // file already required in role-scoper.php
+			}
 
 			require_once('template-interceptor_rs.php');
 			$this->template_interceptor = new TemplateInterceptor_RS();
-				
-			$this->feed_interceptor = new FeedInterceptor_RS(); // file already required in role-scoper.php
-			
+
 			$frontend_admin = ! scoper_get_option('no_frontend_admin'); // potential performance enhancement
 			// =====
 		}
@@ -281,7 +283,8 @@ class Scoper
 			global $wp_taxonomies;
 			if ( ! empty($wp_taxonomies) ) {
 				foreach ( array_keys($wp_taxonomies) as $taxonomy )
-					add_filter("option_{$taxonomy}_children", create_function( '', "return rs_get_terms_children('$taxonomy');") );
+					add_filter ( "option_{$taxonomy}_children", create_function( '$option_value', "return rs_get_terms_children('$taxonomy', " . '$option_value );') );
+					//add_filter("option_{$taxonomy}_children", create_function( '', "return rs_get_terms_children('$taxonomy');") );
 			}
 
 			if ( $is_admin || defined('XMLRPC_REQUEST') ) {

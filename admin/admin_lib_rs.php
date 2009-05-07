@@ -352,5 +352,43 @@ class ScoperAdminLib {
 		ScoperAdminLib::sync_wproles();
 	} // end sync_wproles function
 	
+	function agent_ids_from_csv( $csv_id, $role_basis ) {
+		static $groups_by_name;
+	
+		if ( ( ROLE_BASIS_GROUPS == $role_basis ) && ( ! empty($_POST[$csv_id]) ) ) {
+			if ( ! isset($groups_by_name) ) {
+				$all_groups = ScoperAdminLib::get_all_groups();
+				$groups_by_name = array();
+				foreach ( $all_groups as $group )
+					$groups_by_name[$group->display_name] = $group->ID;
+			}
+		}
+
+		$agent_ids = array();
+		
+		if ( ! empty($_POST[$csv_id]) ) {
+			$agent_names = explode(",", $_POST[$csv_id]);
+
+			// role assignments for item
+			foreach ( $agent_names as $agent_name ) {
+				if ( empty($agent_name) ) continue; else $agent_name = trim($agent_name);
+
+				if ( ROLE_BASIS_GROUPS == $role_basis ) {
+					if ( isset($groups_by_name[$agent_name]) )
+						$agent_ids [] = $groups_by_name[$agent_name];
+					elseif ( intval($agent_name) && in_array( $agent_name, $groups_by_name ) )
+						$agent_ids [] = $agent_name;
+				} else {
+					if ( $user = awp_get_user_by_name( $agent_name ) )
+						$agent_ids [] = $user->ID;
+					elseif ( intval($agent_name) && awp_get_user_by_id( $agent_name ) )
+						$agent_ids [] = $agent_name;
+				}
+			}
+		}
+		
+		return $agent_ids;
+	}
+	
 } // end ScoperAdmin class
 ?>

@@ -36,6 +36,13 @@ class ScoperHardwayFront
 			if ( ! is_attachment() && ! is_administrator_rs() ) {
 				global $wpdb;
 
+				if ( awp_is_plugin_active( 'wp-wall') ) {
+					$options = WPWall_GetOptions();
+				
+					if ( strpos( $query, 'comment_post_ID=' . $options['pageId'] ) )
+						return $query;
+				}
+				
 				if ( strpos($query, $wpdb->comments) ) {
 					$query = str_replace( "user_id ", "$wpdb->comments.user_id ", $query);
 			

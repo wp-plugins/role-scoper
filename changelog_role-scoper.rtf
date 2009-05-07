@@ -5,21 +5,42 @@
 \b\fs24 Change Log\b0\fs20\par
 \pard\par
 \b\par
-v 1.0.1\par
+v 1.0.2 - 7 May 2009\b0\par
+- BugFix : Template function is_restricted_rs / is_exclusive_rs was non-functional on home page (since rc9.9311)\par
+- BugFix : With Attachments Filter enabled, attachments larger than 10MB fail to download on some installations\par
+- BugFix : Fatal Error when viewing a single post entry after RS Options modified to disable front-end filtering\par
+- BugFix : Auto-delete orphaned role assignments left in DB by previous versions following category / group deletion\par
+- BugFix : After an empty group was deleted, its role assignments were left in the database\par
+\b - \b0 BugFix : Event Calendar events without an associated post were not displayed without calendar refresh \par
+- BugFix : Post Restrictions and Post Roles did not display on PHP 4 servers\par
+- BugFix : In Post/Page Edit Form, Author selection was inappropriately available to non-editors\par
+- BugFix : Orphaned role assignments already stored to database will be autodeleted on RS version update\par
+- BugFix : If the object type of a requested attachment parent cannot be determined, assume post\par
+- BugFix : Teaser message displayed in header with some themes\par
+- BugFix : http authentication prompt for RSS feeds with logged administrators on some installations\par
+\b - \b0 BugFix : Hidden Editing Elements settings were not effective for unpublished posts/pages\par
+- BugFix : If a memberless group was deleted, any assigned roles were left (orphaned) in the database\par
+- Plugin :  Conflict with WP-Wall plugin caused non-listing or double-listing of wall comments\b\par
+\b0 - Feature : Option to accept CSV entry for user role assignment\par
+- Feature : Bottom-right submit button on bulk admin forms if SCOPER_EXTRA_SUBMIT_BUTTON is defined\b\par
+\par
+\par
+v 1.0.1 - 27 March 2009\par
 - \b0 BugFix : In some situations, non-attachments were included in Media Library listing\line - BugFix : Low level users could not edit uploads from Media Library based on a Post/Page/Category role assignment\par
 - BugFix : Cannot set static front page with Role Scoper activated\par
 - BugFix : Users with editing role via Page / Category assignment could not bulk-delete posts/pages\par
 - BugFix : Post/Page Edit divs configured as Hidden Editing Elements were not hidden for draft posts/pages\par
 - BugFix : After a group was deleted, its role assignments were left in the database\b\par
 - \b0 BugFix : PHP warnings viewing users list with WP < 2.8\par
+- Change : WP 2.7 users with hacked WP template.php user_row code must define("scoper_users_custom_column", "true");\par
 \b - \b0 BugFix : Failed to return results for manual WP_Query calls which include category exclusion argument\par
 - BugFix : Role Scoper error messages were formatted with unreadable colors with WP 2.7\b\par
 - \b0 BugFix : Conflict with ozhAdminMenus plugin - Page menus missing in some configurations\b\par
 - \b0 BugFix : Conflict with WP-Wall plugin caused fatal error\b\par
-- \b0 Feature : Options to hide User Groups, Scoped Roles from user profile\b\par
+- \b0 Feature : Options to hide User Groups, Scoped Roles from user profile\par
+\b\par
 \par
-\par
-v 1.0.0\par
+v 1.0.0 - 21 March 2009\par
 - \b0 BugFix : In some installations, DB error for anonymous user front-end access (since rc9.9220)\b\par
 \par
 \par

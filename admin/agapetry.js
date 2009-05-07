@@ -271,6 +271,12 @@ function agp_check_it(foo, check_it) {
 		fie.checked = 'checked';
 }
 
+function agp_append(foo, val) {
+	var fie = document.getElementById(foo);
+	if (fie)
+		fie.value = fie.value + val;
+}
+
 function agp_uncheck(all_ids_str, keep_checked_id, skip_if_id, skip_if_val) {
 	if ( ! skip_if_id )
 		skip_if_id = 'assign_for';
