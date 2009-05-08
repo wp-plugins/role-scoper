@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.0.1
+Version: 1.0.3.1
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 2.5
