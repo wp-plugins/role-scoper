@@ -4,14 +4,14 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, cms, members, user, groups, admin, categories, pages, posts
 Requires at least: 2.5
 Tested up to: 2.7.1
-Stable Tag: 1.0.3
+Stable Tag: 1.0.3.1
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
 == Description ==
 Role Scoper is a comprehensive enrichment for access control in WordPress, giving you CMS-like control of permissions. Assign reading, editing or administration roles to users or groups on a page-specific, category-specific or other content-specific basis.
 
-Existing WordPress roles are honored by default, but with Role Scoper can be:
+= Existing WordPress roles can be: =
 * supplemented with content-specific role assignment
 * disregarded if the role is restricted for the category or page/post
 
