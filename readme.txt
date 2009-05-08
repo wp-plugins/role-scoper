@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, cms, members, user, groups, admin, categories, pages, posts
 Requires at least: 2.5
 Tested up to: 2.7.1
-Stable Tag: 1.0.3.1
+Stable Tag: 1.0.3.2
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -35,10 +35,10 @@ Scoped role requirements and assignments are reflected in every aspect of the Wo
 Note: For WP 2.2 and 2.3, use <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 0.9</a>
 
 = Template Functions =
-Theme code can utilize the is_restricted_rs() and is_teaser_rs() functions to customize front-end styling.
+Theme code can utilize the is&#95;restricted&#95;rs() and is&#95;teaser&#95;rs() functions to customize front-end styling.
 
 = Plugin API =
-Other plugin and core developers will be interested in the underlying users_who_can function, made possible by a new roles storage schema.  The abstract data model and API support additional data sources, object types, capabilities and taxonomies (using term_taxonomy or other custom schema). If your plugin uses the WordPress current_user_can function and supports filtering of its listing query, you can use Role Scoper’s API to define your data source, object types, taxonomies and scopeable roles. These will supplement any other assigned roles; there is no need to merge all capabilities into an all-inclusive role.
+Other plugin and core developers will be interested in the underlying users&#95;who&#95;can function, made possible by a new roles storage schema.  The abstract data model and API support additional data sources, object types, capabilities and taxonomies (using term&#95;taxonomy or other custom schema). If your plugin uses the WordPress current&#95;user&#95;can function and supports filtering of its listing query, you can use Role Scoper&#39;s API to define your data source, object types, taxonomies and scopeable roles. These will supplement any other assigned roles; there is no need to merge all capabilities into an all-inclusive role.
 
 For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_UsageGuide.htm">Usage Guide</a> or <a href="http://agapetry.net/forum/">Support Forum</a>.
 
