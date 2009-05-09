@@ -76,7 +76,7 @@ class ScoperAdmin
 
 		if ( false !== strpos($_SERVER['REQUEST_URI'], SCOPER_FOLDER . '/admin/options.php') ) {
 			if ( scoper_get_option('version_update_notice') ) {
-				require_once('version_notice_rs.php');
+				require_once('misc/version_notice_rs.php');
 				scoper_new_version_notice();
 			}
 
@@ -300,12 +300,17 @@ class ScoperAdmin
 		global $menu;
 		$tweak_menu = false; // don't mess with menu order unless we know we can get away with it in current WP version
 		
-		if ( awp_ver('2.7-dev') && empty($menu[51]) && empty($menu[52]) ) {
+		if ( awp_ver('2.8-dev') ) {
 			if ( ! awp_ver('2.9') ) { // review and increment this with each WP version until there's a clean way to force menu proximity to 'Users'
 				$tweak_menu = true;
-				$restrictions_menu_key = 51;
-				$roles_menu_key = 52;
+				$restrictions_menu_key = 71;
+				$roles_menu_key = 72;
 			}
+		} elseif ( awp_ver('2.7-dev') && empty($menu[51]) && empty($menu[52]) ) {
+			$tweak_menu = true;
+			$restrictions_menu_key = 51;
+			$roles_menu_key = 52;
+	
 		} elseif ( empty($menu[37]) && empty($menu[38]) && empty($menu[39]) ) {
 			$tweak_menu = true;
 			$restrictions_menu_key = 38;
