@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE>Ozh Admin Menus &ndash; version 2</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.9.125  (Win32)">
+	<META NAME="AUTHOR" CONTENT="Kevin Behrens">
+	<META NAME="CREATED" CONTENT="20081022;15520000">
+	<META NAME="CHANGEDBY" CONTENT="Kevin Behrens">
+	<META NAME="CHANGED" CONTENT="20081029;16172283">
+	<STYLE>
+	<!--
+		@page { size: 8.5in 11in; margin-right: 1.25in; margin-top: 1in; margin-bottom: 1in }
+		P { margin-bottom: 0.08in; direction: ltr; color: #000000; widows: 2; orphans: 2 }
+		P.western { font-family: "Times New Roman", serif; font-size: 10pt; so-language: en-US }
+		P.cjk { font-family: "Times New Roman", serif; font-size: 10pt }
+		P.ctl { font-family: "Times New Roman", serif; font-size: 10pt; so-language: ar-SA }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" TEXT="#000000" DIR="LTR">
+<P CLASS="western" ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=4><B>Role
+Scoper plugin for WordPress</B></FONT></P>
+<P CLASS="western" ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" ALIGN=CENTER STYLE="margin-bottom: 0in"><B>Compatability
+Issues with other Plugins</B></P>
+<P CLASS="western" ALIGN=CENTER STYLE="margin-bottom: 0in"><B>As of
+Role Scoper 1.0.0 Beta 4 / October 2008</B></P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><B>Ozh Admin Menus</B>
+&ndash; to ensure that elevated users get proper write/manage menus,
+use ozh version 2.3 or later</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><B>WP Super Cache</B> &ndash;
+must use Role Scoper 1.0.0 beta 3 or later</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><B>Event Calendar</B> &ndash;
+earlier versions required caused RS initialization error, but version
+3.1.1 okay</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><B>Exec-PHP</B></P>
+<P CLASS="western" STYLE="margin-bottom: 0in">Recursive has_cap call
+in Exec-PHP seems to cause problems for other has_cap filters</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in">Must modify
+includes/runtime.php as follows:</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in"><B>change</B>:</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in">if
+(!$poster-&gt;has_cap(ExecPhp_CAPABILITY_EXECUTE_ARTICLES))</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in">		</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in"><B>to</B>:</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in">$exec_articles_cap
+= ExecPhp_CAPABILITY_EXECUTE_ARTICLES;</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in">if
+( empty($poster-&gt;allcaps[$exec_articles_cap]) )</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; text-indent: 0.5in; margin-bottom: 0in">
+return $allcaps;</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><B>Maintenance Mode</B>
+&ndash; incompatable due to forced early login check</P>
+<P CLASS="western" STYLE="margin-bottom: 0in">To resolve conflict,
+disable front-end access by administrators during maintenance.  Edit
+maintenance-mode.php as follows:</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in"><B>change</B>:</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in">&amp;&amp;
+!mw_current_user_can_access_on_maintenance()</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in"><B>to</B>:</P>
+<P CLASS="western" STYLE="margin-left: 0.5in; margin-bottom: 0in">//
+&amp;&amp; !mw_current_user_can_access_on_maintenance()</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in">(or support admin
+front-end via at-your-own-risk port of WP core login code to avoid
+early load of pluggable.php)</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><B>Get Recent Comments</B>
+&ndash; not compatable due to direct database query.  Use WP Recent
+Comments widget instead.</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="text-indent: 0.5in; margin-bottom: 0in"><BR>
+</P>
+<P CLASS="western" STYLE="text-indent: 0.5in; margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>
