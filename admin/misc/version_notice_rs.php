@@ -1,4 +1,6 @@
 <?php
+// note: This file was moved into admin/misc subdirectory to avoid detection as a plugin file by the WP plugin updater (due to Plugin Name search string)
+
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
@@ -85,8 +87,7 @@ function scoper_new_version_notice() {
 						if ( file_exists($plugin_path) ) {
 							$plugin_data = implode( '', file( $plugin_path ));
 							
-							$temp = '|Plugin';
-							preg_match( $temp . ' Name:(.*)$|mi', $plugin_data, $name );	// must break up plugin match string to avoid this file being detected as a main plugin file for update purposes
+							preg_match( '|Plugin Name:(.*)$|mi', $plugin_data, $name );
 
 							if ( $name ) {
 								$name = trim($name[1]);

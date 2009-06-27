@@ -189,6 +189,17 @@ _e('Content Maintenance', 'scoper') ?></th>
 </span>
 </div>
 
+<br />
+<?php $all_options []= 'role_admin_blogwide_editor_only';?>
+<div class="agp-vspaced_input">
+<label for="role_admin_blogwide_editor_only">
+<input name="role_admin_blogwide_editor_only" type="checkbox" id="role_admin_blogwide_editor_only" value="1" <?php checked('1', scoper_get_option('role_admin_blogwide_editor_only'));?> />
+<?php _e('Role administration requires a blog-wide Editor role', 'scoper') ?></label><br />
+<span class="rs-subtext">
+<?php if ( $display_hints) _e('Prevent users who lack a blog-wide Editor role from assigning or restricting any roles, even for posts/pages which they can edit.', 'scoper');?>
+</span>
+</div>
+
 </td>
 </tr>
 
@@ -815,17 +826,6 @@ if ( isset($sample_ids[$src_otype]) ) {
 <?php _e('Require a blog-wide Contributor / Author / Editor role to display specified IDs', 'scoper') ?></label><br />
 <span class="rs-subtext">
 <?php if ( $display_hints) _e('Also hide the specified editing elements if the user has only a Reading role blog-wide.', 'scoper');?>
-</span>
-</div>
-
-<br />
-<?php $all_options []= 'role_admin_blogwide_editor_only';?>
-<div class="agp-vspaced_input">
-<label for="role_admin_blogwide_editor_only">
-<input name="role_admin_blogwide_editor_only" type="checkbox" id="role_admin_blogwide_editor_only" value="1" <?php checked('1', scoper_get_option('role_admin_blogwide_editor_only'));?> />
-<?php _e('Role administration requires a blog-wide Editor role', 'scoper') ?></label><br />
-<span class="rs-subtext">
-<?php if ( $display_hints) _e('Prevent users who lack a blog-wide Editor role from assigning or restricting any roles, even for posts/pages which they can edit.', 'scoper');?>
 </span>
 </div>
 

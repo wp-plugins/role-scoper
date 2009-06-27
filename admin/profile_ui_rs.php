@@ -68,30 +68,44 @@ class ScoperProfileUI {
 			}
 		}
 		
+		$disable_role_admin = false;
+		if ( scoper_get_option('role_admin_blogwide_editor_only') ) {
+			global $current_user;
+			$disable_role_admin = empty( $current_user->allcaps['edit_others_posts'] );
+		}
+
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx ) {
 			if ( empty($user->assigned_term_roles[$taxonomy]) )
 				continue;
 			
 			if ( ! $terms = $this->scoper->get_terms($taxonomy, UNFILTERED_RS, COLS_ALL_RS, 0, ORDERBY_HIERARCHY_RS) )
 				continue;
-			
+
+			if ( ! scoper_get_otype_option('use_term_roles', $tx->object_source->name) )
+				continue;
+
+			$admin_terms = ( $disable_role_admin ) ? array() : $this->scoper->get_terms($taxonomy, ADMIN_TERMS_FILTER_RS, COL_ID_RS);
+
 			$strict_terms = $this->scoper->get_restrictions(TERM_SCOPE_RS, $taxonomy);
-				
+
 			$object_types = array();
 			foreach ( array_keys($tx->object_source->object_types) as $object_type)
 				if ( scoper_get_otype_option('use_term_roles', $tx->object_source->name, $object_type) )
 					$object_types []= $object_type;
 			
 			$object_types []= $taxonomy;
-				
+
 			$role_defs = $this->scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $tx->object_source->name, $object_types);
 
 			$term_names = array();
 			foreach ( $terms as $term )
 				$term_names[$term->term_id] = $term->name;
-				
-			$url = SCOPER_ADMIN_URL . "/roles/$taxonomy";
-			echo ("\n<h4><a href='$url'>" . sprintf(_c('%s Roles:|Category Roles', 'scoper'), $tx->display_name) . '</a></h4>' );
+			
+			if ( $admin_terms ) {
+				$url = SCOPER_ADMIN_URL . "/roles/$taxonomy";
+				echo ("\n<h4><a href='$url'>" . sprintf(_c('%s Roles:|Category Roles', 'scoper'), $tx->display_name) . '</a></h4>' );
+			} else
+				echo ("\n<h4>" . sprintf(_c('%s Roles:|Category Roles', 'scoper'), $tx->display_name) . '</h4>' );
 
 			echo '<ul class="rs-termlist" style="padding-left:0.1em;">';
 			echo '<li>';
@@ -99,7 +113,7 @@ class ScoperProfileUI {
 			echo '<th class="rs-tightcol">' . __('Role', 'scoper') . '</th>';
 			echo '<th>' . $tx->display_name_plural . '</th>';
 			echo '</tr></thead><tbody>';
-			
+
 			$style = ' class="rs-backwhite"';
 			foreach ( $role_defs as $role_handle => $role_def ) {
 				if ( isset( $user->assigned_term_roles[$taxonomy][$role_handle] ) ) {
@@ -109,7 +123,9 @@ class ScoperProfileUI {
 					
 					$term_role_list = array();
 					foreach ( $role_terms as $term_id ) {
-						if ( isset($strict_terms['restrictions'][$role_handle][$term_id]) 
+						if ( ! in_array( $term_id, $admin_terms ) )
+							$term_role_list []= $term_names[$term_id];
+						elseif ( isset($strict_terms['restrictions'][$role_handle][$term_id]) 
 						|| ( isset($strict_terms['unrestrictions'][$role_handle]) && is_array($strict_terms['unrestrictions'][$role_handle]) && ! isset($strict_terms['unrestrictions'][$role_handle][$term_id]) ) )
 							$term_role_list []= "<span class='rs-backylw'><a href='$url#item-$term_id'>" . $term_names[$term_id] . '</a></span>';
 						else

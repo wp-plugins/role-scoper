@@ -209,9 +209,13 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 						// a user must have a blog-wide edit cap to modify editing role assignments (even if they have Editor role assigned for some current object)
 						if ( isset($role_ops[OP_EDIT_RS]) || isset($role_ops[OP_ASSOCIATE_RS]) ) 
-							if ( scoper_get_option('role_admin_blogwide_editor_only') )
-								if ( ! $scoper->admin->user_can_edit_blogwide($src_name, $object_type, OP_EDIT_RS) )
+							if ( scoper_get_option('role_admin_blogwide_editor_only') ) {
+								$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
+								
+								global $current_user;
+								if ( empty( $current_user->allcaps[$required_cap] ) )
 									continue;
+							}
 					}
 	
 					foreach ( $role_bases as $role_basis ) {

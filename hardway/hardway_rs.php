@@ -168,17 +168,19 @@ class ScoperHardway
 		$exclusions = '';
 		
 		if ( ! empty( $exclude_tree ) ) {
-			$all_terms = $scoper->get_terms($taxonomies[0], UNFILTERED_RS);
+			$all_terms = $scoper->get_terms($taxonomies[0], UNFILTERED_RS, COL_ID_RS);
+
+			$excluded_trunks = (array) preg_split('/[\s,]+/',$exclude_tree);
 			
-			$excluded_trunks = preg_split('/[\s,]+/',$exclude_tree);
-			foreach( (array) $excluded_trunks as $extrunk ) {
+			foreach( $excluded_trunks as $extrunk ) {
 				$excluded_children = rs_get_term_descendants( $extrunk, $all_terms, $taxonomies[0] );	// replace core call to get_terms to avoid needless filtering
+				
 				$excluded_children[] = $extrunk;
 				foreach( (array) $excluded_children as $exterm ) {
 					if ( empty($exclusions) )
-						$exclusions = ' AND ( t.term_id <> ' . intval($exterm) . ' ';
+						$exclusions = ' AND ( t.term_id <> "' . intval($exterm) . '" ';
 					else
-						$exclusions .= ' AND t.term_id <> ' . intval($exterm) . ' ';
+						$exclusions .= ' AND t.term_id <> "' . intval($exterm) . '" ';
 	
 				}
 			}
@@ -189,9 +191,9 @@ class ScoperHardway
 			if ( count($exterms) ) {
 				foreach ( $exterms as $exterm ) {
 					if (empty($exclusions))
-						$exclusions = ' AND ( t.term_id <> ' . intval($exterm) . ' ';
+						$exclusions = ' AND ( t.term_id <> "' . intval($exterm) . '" ';
 					else
-						$exclusions .= ' AND t.term_id <> ' . intval($exterm) . ' ';
+						$exclusions .= ' AND t.term_id <> "' . intval($exterm) . '" ';
 				}
 			}
 		}
@@ -262,11 +264,11 @@ class ScoperHardway
 			$query = apply_filters('terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser));
 
 			// if no filering was applied because the teaser is enabled, save a redundant query
-			if ( ($query_base != $query) || $parent )
+			if ( ! empty($exclude_tree) || ($query_base != $query) || $parent ) {
 				$terms = scoper_get_results($query);
-			else
+			} else
 				$terms = $results;
-
+			
 			if ( 'all' == $fields )
 				update_term_cache($terms);
 		}

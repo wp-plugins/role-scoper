@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
-Tags: restrict, access, cms, members, user, groups, admin, categories, pages, posts
+Tags: restrict, access, permissions, cms, user, groups, admin, categories, pages, posts
 Requires at least: 2.5
-Tested up to: 2.7.1
-Stable Tag: 1.0.3.4
+Tested up to: 2.8
+Stable Tag: 1.0.4
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -19,9 +19,9 @@ Scoped role requirements and assignments are reflected in every aspect of the Wo
 
 = Partial Feature List =
 * Control Read and/or Edit access
+* Customize access for any number of Categories, Posts or Pages
 * Optionally, assign roles to User Groups
 * Basic Usage is via tabs in Post/Page Edit Form, no further configuration required
-* Customize access for any number of Categories, Posts or Pages
 * Restrictions and Roles can be inherited by subcategories / subpages or as defaults
 * Customizable Hidden Content Teaser (optional)
 * Denial of direct file URL requests if the user can't read a post/page which contains the attachment

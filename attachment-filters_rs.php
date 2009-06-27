@@ -109,6 +109,7 @@ class AttachmentFilters_RS {
 
 	// handle access to uploaded file where request was a direct file URL, which was rewritten according to our .htaccess addition
 	function parse_query_for_direct_access ( &$query ) {
+	
 		if ( empty($query->query_vars['attachment']) || ( false === strpos($_SERVER['QUERY_STRING'], 'scoper_rewrite') ) )
 			return;
 

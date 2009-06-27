@@ -152,7 +152,7 @@ class CapInterceptor_RS
 		
 		// If no object id was passed in, we won't do much.
 		if ( empty($args[2]) ) {
-			if ( ! $this->skip_id_generation ) {
+			if ( ! $this->skip_id_generation && ! defined('XMLRPC_REQUEST') ) {
 				// Try to generate missing object_id argument for problematic current_user_can calls 
 				if ( empty( $scoper->generate_id_caps ) ) {
 					$scoper->generate_id_caps = array('moderate_comments', 'manage_categories', 'edit_published_posts', 'edit_published_pages', 'edit_others_posts', 'edit_others_pages', 'publish_posts', 'publish_pages', 'delete_others_posts', 'delete_others_pages', 'upload_files');
@@ -182,14 +182,13 @@ class CapInterceptor_RS
 						}
 					}
 				}
+
 			} else
 				$this->skip_id_generation = false; // too risky to leave this set
-			
+		
+				
 			if ( empty($args[2]) ) {
 				if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {
-					//rs_errlog("missing caps:");
-					//rs_errlog(serialize($missing_caps));
-					
 					// These checks are only relevant since no object_id was provided.  
 					// Otherwise (in the main body of this function), taxonomy and object caps will be credited via scoped query
 				

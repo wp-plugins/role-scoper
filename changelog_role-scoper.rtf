@@ -4,7 +4,23 @@
 \b0\fs20\par
 \b\fs24 Change Log\b0\fs20\par
 \pard\par
-\b v 1.0.3.4 - 8 May 2009\par
+\b\par
+v 1.0.4 \par
+- \b0 Change : Deny implicit comment moderation rights to Authors if they lack moderate_comments cap\b\par
+- \b0 BugFix : In Edit Post form, non-editors could see / select other users as "author"\par
+- BugFix : Option "role assignment requires blog-wide editor role" was only requiring blog-wide contributor role\b\par
+\b0 - BugFix : Page Parent filtering was broken for Quick Edit\par
+- BugFix : Category Restrictions were not inherited upon new category creation\par
+- BugFix : Option "role assignment requires blog-wide editor role" did not suppress Roles, Restrictions sidebar menu\b\par
+\b0 - BugFix : XML-RPC support (ScribeFire, WLW) was broken for non-administrators\b\par
+\b0 - BugFix : User groups were unusable on DB servers that do not support default value on text columns\b\par
+\b0 - BugFix : exclude_tree argument was ineffective in get_terms / wp_list_categories call\b\par
+\b0 - BugFix : invalid Category / Object role edit links displayed in user profile for non-editors in some configurations \b\par
+\b0 - BugFix : Role Scoper Options inaccessable to administrator with WP 2.8.1\b\par
+\b0 - Change: Moved option "Role administration requires a blog-wide Editor role" to main Options tab\b\par
+\par
+\par
+v 1.0.3.4 - 8 May 2009\par
 - \b0 BugFix : Fifth attempt to prevent re-activation failure following Role Scoper update via WP auto-updater\par
 - BugFix : WP 2.8 Compat: Moved Restrictions, Roles menus back to familiar location unders Users menu\par
 \par

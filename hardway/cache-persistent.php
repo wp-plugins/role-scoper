@@ -137,6 +137,7 @@ function wpp_cache_set($key, $data, $flag = '', $expire = 0) {
 function wpp_cache_test( &$err_msg, $text_domain = '' ) {
 	// intentionally not using WP_CACHE_DIR because we need a known location so rs_cache_flush.php can delete files without loading WP
 	$cache_dir = ( defined( 'CACHE_PATH' ) ) ? CACHE_PATH : ABSPATH.'wp-content'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
+	$err = false;
 	
 	if ( ! defined( 'ENABLE_PERSISTENT_CACHE' ) ) {
 		$err_msg = __('The file cache will not operate because ENABLE_PERSISTENT_CACHE is not defined in wp-config.php or role-scoper.php.', 'scoper');
@@ -159,6 +160,7 @@ function wpp_cache_test( &$err_msg, $text_domain = '' ) {
 			$err_msg = sprintf( __('The file cache cannot operate because file creation attempts fail in %s', $text_domain), $cache_dir );
 			$err = true;
 		} else {
+			$serial = '';
 			fputs($fd, $serial);
 			fclose($fd);
 			

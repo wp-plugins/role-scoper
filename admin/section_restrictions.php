@@ -27,12 +27,9 @@ $role_codes = ScoperAdminBulk::get_role_codes();
 
 echo '<a name="scoper_top"></a>';
 
-//strict_terms[taxonomy][role name][term_id] = array: terms which require Role Scoper assignment for specified role (user blog roles ignored, required caps may be supplied by scoper term role or object-specific assignment)
-											// (for other terms, Role Scoper role assignment is optional (term role assignments will supplement blog caps)
 
-// users can only view/edit role assignment for terms they have an admin cap for
-$args = array('use_object_roles' => false);
-$all_terms = $scoper->get_terms($taxonomy, ADMIN_TERMS_FILTER_RS, COLS_ALL_RS, 0, ORDERBY_HIERARCHY_RS, $args);
+// retrieve all terms to track hierarchical relationship, even though some may not be adminable by current user
+$all_terms = $scoper->get_terms($taxonomy, UNFILTERED_RS, COLS_ALL_RS, 0, ORDERBY_HIERARCHY_RS);
 
 // =========================== Submission Handling =========================
 if ( isset($_POST['rs_submit']) )
@@ -43,19 +40,13 @@ else
 
 // =========================== Prepare Data ===============================
 
-// determine which terms current user can admin
-global $current_user;
-$admin_terms = array();
-
 if ( $col_id = $scoper->taxonomies->member_property($taxonomy, 'source', 'cols', 'id') ) {
 	// determine which terms current user can admin
-	$current_user->get_term_roles($taxonomy, SCOPER_ROLE_TYPE);
-	
-	// determine which terms current user can admin
-	foreach ($all_terms as $term)
-		if ( $is_administrator || $scoper->admin->user_can_admin_terms($taxonomy, $term->$col_id) )
-			$admin_terms[$term->$col_id] = true;
-}
+	if ( $admin_terms = $scoper->get_terms($taxonomy, ADMIN_TERMS_FILTER_RS, COL_ID_RS) ) {
+		$admin_terms = array_fill_keys( $admin_terms, true );
+	}
+} else
+	$admin_terms = array();
 
 // =========================== Display UI ===============================
 ?>
@@ -121,6 +112,8 @@ $ie_link_style = (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) ? ' sty
 
 $args = array( 'include_child_restrictions' => true, 'return_array' => true, 'role_type' => SCOPER_ROLE_TYPE, 'force_refresh' => true );
 $strict_terms = $scoper->get_restrictions(TERM_SCOPE_RS, $taxonomy, $args );
+//strict_terms[taxonomy][role name][term_id] = array: terms which require Role Scoper assignment for specified role (user blog roles ignored, required caps may be supplied by scoper term role or object-specific assignment)
+											// (for other terms, Role Scoper role assignment is optional (term role assignments will supplement blog caps)
 
 $editable_roles = array();
 foreach ( $all_terms as $term ) {

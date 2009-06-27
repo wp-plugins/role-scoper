@@ -819,7 +819,10 @@ function scoper_inherit_parent_restrictions($obj_or_term_id, $scope, $src_or_tx_
 	if ( $parent_restrictions ) {
 		$role_assigner = init_role_assigner();
 
-		$role_defs = $scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_or_tx_name, $object_type);
+		if ( OBJECT_SCOPE_RS == $scope )
+			$role_defs = $scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_or_tx_name, $object_type);
+		else
+			$role_defs = $scoper->role_defs->get_all();
 		
 		foreach ( $parent_restrictions as $row ) {
 			$role_handle = scoper_get_role_handle($row->role_name, $row->role_type);

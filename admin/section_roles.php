@@ -39,9 +39,8 @@ $role_codes = ScoperAdminBulk::get_role_codes();
 
 echo '<a name="scoper_top"></a>';
 
-
-$args = array('use_object_terms' => false);
-$all_terms = $scoper->get_terms($taxonomy, ADMIN_TERMS_FILTER_RS, COLS_ALL_RS, 0, ORDERBY_HIERARCHY_RS, $args);
+// retrieve all terms to track hierarchical relationship, even though some may not be adminable by current user
+$all_terms = $scoper->get_terms($taxonomy, UNFILTERED_RS, COLS_ALL_RS, 0, ORDERBY_HIERARCHY_RS);
 
 
 // =========================== Submission Handling =========================
@@ -58,19 +57,13 @@ $term_roles = array();
 foreach ( $role_bases as $role_basis )
 	$term_roles[$role_basis] = ScoperRoleAssignments::get_assigned_roles( TERM_SCOPE_RS, $role_basis, $taxonomy );
 
-// determine which terms current user can admin
-global $current_user;
-$admin_terms = array();
-
 if ( $col_id = $scoper->taxonomies->member_property($taxonomy, 'source', 'cols', 'id') ) {
 	// determine which terms current user can admin
-	$current_user->get_term_roles($taxonomy, SCOPER_ROLE_TYPE);
-	
-	// determine which terms current user can admin
-	foreach ($all_terms as $term)
-		if ( $is_administrator || $scoper->admin->user_can_admin_terms($taxonomy, $term->$col_id) )
-			$admin_terms[$term->$col_id] = true;
-}
+	if ( $admin_terms = $scoper->get_terms($taxonomy, ADMIN_TERMS_FILTER_RS, COL_ID_RS) ) {
+		$admin_terms = array_fill_keys( $admin_terms, true );
+	}
+} else
+	$admin_terms = array();
 
 // =========================== Display UI ===============================
 ?>

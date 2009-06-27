@@ -66,15 +66,23 @@ class ScoperRoleAssigner
 				}
 		} else {
 			if ( $require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only') )
-				$user_can_edit = $this->scoper->admin->user_can_edit_blogwide($src_name, '', OP_EDIT_RS);
-		
+				global $current_user;
+			
 			foreach ( array_keys($roles) as $role_handle ) {
-				$role_ops = $this->scoper->role_defs->get_role_ops($role_handle);
-
+				// TODO: any reason not to apply the blogwide_editor_only setting to reading roles?
+				//$role_ops = $this->scoper->role_defs->get_role_ops($role_handle);
+				
 				// a user must have a blog-wide edit cap to modify editing role assignments (even if they have Editor role assigned for some current object)
-				if ( $require_blogwide_editor && ! $user_can_edit && ( isset($role_ops[OP_EDIT_RS]) || isset($role_ops[OP_ASSOCIATE_RS]) ) ) {
-					$user_has_role[$role_handle] = false;
-					continue;
+				if ( $require_blogwide_editor ) { //&& ( isset($role_ops[OP_EDIT_RS]) || isset($role_ops[OP_ASSOCIATE_RS]) ) ) {
+					
+					$role_attrib = $this->scoper->role_defs->get_role_attributes($role_handle);
+				
+					$required_cap = ( ( 1 == count($role_attrib->object_types) ) && ( 'page' == $role_attrib->object_types[0] ) ) ? 'edit_others_pages' : 'edit_others_posts';
+				
+					if ( empty( $current_user->allcaps[$required_cap] ) ) {
+						$user_has_role[$role_handle] = false;
+						continue;
+					}
 				}
 				
 				$reqd_caps = $this->scoper->role_defs->role_caps[$role_handle];

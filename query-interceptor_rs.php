@@ -535,7 +535,7 @@ class QueryInterceptor_RS
 			
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
 		}
-
+		
 		// accomodate editing of published posts/pages to revision
 		$script_name = $_SERVER['SCRIPT_NAME'];
 		if ( strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/edit-pages.php') || strpos($script_name, 'p-admin/index.php') ) {
@@ -867,7 +867,7 @@ class QueryInterceptor_RS
 				$where = " AND ( $where_prepend )";
 		}
 	
-		//d_echo ("<br /><br /><b>objects_where output:</b> $where<br /><br />");
+		// d_echo ("<br /><br /><b>objects_where output:</b> $where<br /><br />");
 		//echo "<br />$where<br />";
 		
 		return $where;
@@ -970,7 +970,7 @@ class QueryInterceptor_RS
 					}	
 				}
 			}
-			
+
 			if ( $qualifying_roles ) {  
 				$args = array_merge($args, array( 'qualifying_roles' => $qualifying_roles) );
 				
@@ -981,21 +981,25 @@ class QueryInterceptor_RS
 			}
 
 			if ( ! empty($src->cols->owner) && ! $skip_owner_clause && $user->ID ) {
-				// if owner qualifies for the operation by any different roles than other users, add separate owner clause
-				$owner_reqd_caps = $scoper->cap_defs->remove_owner_caps($reqd_caps_arg);
+				if ( ! $require_full_object_role && ! $this->require_full_object_role ) {
+			
+					// if owner qualifies for the operation by any different roles than other users, add separate owner clause
+					$owner_reqd_caps = $scoper->cap_defs->remove_owner_caps($reqd_caps_arg);
 
-				$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
+					$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
 				
-				if ( ! $owner_reqd_caps ) {
-					// all reqd_caps are granted to owner automatically
-					$where[$cap_name]['owner'] = "$src_table.{$src->cols->owner} = '$user->ID'";
-				} elseif ( $owner_reqd_caps != $reqd_caps_arg ) {
-					$owner_roles = $scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
-
-					if ( $owner_roles ) {
-						$args = array_merge($args, array( 'qualifying_roles' => $owner_roles, 'applied_object_roles' => $applied_object_roles ) );   //TODO: test whether we should just pass existing $objscope_objects, $applied_object_roles here
-						$where[$cap_name]['owner'] = '( ' . $this->objects_where_scope_clauses($src_name, $owner_reqd_caps, $args )
-													. " ) AND $src_table.{$src->cols->owner} = '$user->ID'";
+					if ( ! $owner_reqd_caps ) {
+						// all reqd_caps are granted to owner automatically
+						$where[$cap_name]['owner'] = "$src_table.{$src->cols->owner} = '$user->ID'";
+					} elseif ( $owner_reqd_caps != $reqd_caps_arg ) {
+						$owner_roles = $scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
+	
+						if ( $owner_roles ) {
+							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles, 'applied_object_roles' => $applied_object_roles ) );   //TODO: test whether we should just pass existing $objscope_objects, $applied_object_roles here
+							$scope_temp = $this->objects_where_scope_clauses($src_name, $owner_reqd_caps, $args );
+							if ( $scope_temp != $where[$cap_name]['user'] )
+								$where[$cap_name]['owner'] = '( ' . $scope_temp . " ) AND $src_table.{$src->cols->owner} = '$user->ID'";
+						}
 					}
 				}
 			}
@@ -1012,7 +1016,7 @@ class QueryInterceptor_RS
 		// all reqd caps concat: cap1 clauses [AND] [cap2 clauses] [AND] ...
 		if ( ! empty($where) )
 			$where = agp_implode(' ) AND ( ', $where, ' ( ', ' ) ');
-
+		
 		return $where;
 	}
 	

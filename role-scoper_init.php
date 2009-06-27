@@ -4,6 +4,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 require_once('hardway/cache-persistent.php');
 
+
 // htaccess directive intercepts direct access to uploaded files, converts to WP call with custom args to be caught by subsequent parse_query filter
 // parse_query filter will return content only if user can read a containing post/page
 if ( ! defined('DISABLE_ATTACHMENT_FILTERING') )

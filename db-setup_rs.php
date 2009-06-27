@@ -25,8 +25,8 @@ function scoper_update_schema($last_db_ver) {
 	//first define column(s) to create for default groups
 	$cols = array();
 	$cols[$wpdb->groups_id_col] = "bigint(20) NOT NULL auto_increment";
-	$cols[$wpdb->groups_name_col] = "text NOT NULL default ''";
-	$cols[$wpdb->groups_descript_col] = "text NOT NULL default ''";
+	$cols[$wpdb->groups_name_col] = "text NOT NULL";
+	$cols[$wpdb->groups_descript_col] = "text NOT NULL";
 	$cols[$wpdb->groups_homepage_col] = "varchar(128) NOT NULL default ''";
 	$cols[$wpdb->groups_meta_id_col] = "varchar(32) NOT NULL default ''";
 	
@@ -67,8 +67,8 @@ function scoper_update_schema($last_db_ver) {
 		
 		if ( ! version_compare( $last_db_ver, '1.0.2', '>=') ) {
 			// DB version < 1.0.2 used varchar columns, which don't support unicode
-			$wpdb->query("ALTER TABLE $wpdb->groups_rs MODIFY COLUMN $wpdb->groups_name_col text NOT NULL default ''");
-			$wpdb->query("ALTER TABLE $wpdb->groups_rs MODIFY COLUMN $wpdb->groups_descript_col text NOT NULL default ''");	
+			$wpdb->query("ALTER TABLE $wpdb->groups_rs MODIFY COLUMN $wpdb->groups_name_col text NOT NULL");
+			$wpdb->query("ALTER TABLE $wpdb->groups_rs MODIFY COLUMN $wpdb->groups_descript_col text NOT NULL");	
 		}
 	}
 
@@ -188,7 +188,7 @@ function scoper_update_supplemental_schema($table_name) {
 		 src_or_tx_name varchar(32) NOT NULL default '',
 		 object_type varchar(32) NOT NULL default '',
 		 actual_id bigint(20) NOT NULL default '0',
-		 name text NOT NULL default '',
+		 name text NOT NULL,
 		 parent bigint(20) NOT NULL default '0',
 		 owner bigint(20) NOT NULL default '0',
 		 status varchar(20) NOT NULL default '',

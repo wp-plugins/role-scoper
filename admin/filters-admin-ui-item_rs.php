@@ -51,9 +51,13 @@ class ScoperAdminFiltersItemUI {
 			if ( ! scoper_get_otype_option('use_object_roles', $src_name, $object_type) )
 				continue;
 		
-			if ( $require_blogwide_editor )
-				if ( ! $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type) )
+			if ( $require_blogwide_editor ) {
+				$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
+
+				global $current_user;
+				if ( empty( $current_user->allcaps[$required_cap] ) )
 					continue;
+			}
 			
 			$role_defs = $this->scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_name, $object_type);
 			

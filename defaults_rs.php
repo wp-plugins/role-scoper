@@ -467,8 +467,8 @@ function scoper_core_cap_defs() {
 	'edit_others_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS, 	'attributes' => array('others'), 	'base_cap' => 'edit_posts', 'no_custom_add' => true  ),
 	'edit_private_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS,		'status' => 'private' ),
 	'edit_published_posts' => 	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS,		'status' => 'published' ),
-	'upload_files' => 			(object) array( 'src_name' => 'post', 'object_type' => '', 		'op_type' => '',		),
-	'moderate_comments' => 		(object) array( 'src_name' => 'post', 'object_type' => '', 		'op_type' => '',			'owner_privilege' => true ),
+	'upload_files' => 			(object) array( 'src_name' => 'post', 'object_type' => '', 		'op_type' => ''	),
+	'moderate_comments' => 		(object) array( 'src_name' => 'post', 'object_type' => '', 		'op_type' => '' ),
 	
 	'delete_posts' =>  			(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_DELETE_RS,	'owner_privilege' => true ),
 	'delete_others_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_DELETE_RS, 	'attributes' => array('others'),	'base_cap' => 'delete_posts', 'no_custom_add' => true ),

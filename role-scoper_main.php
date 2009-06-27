@@ -154,7 +154,7 @@ class Scoper
 	
 	function init() {
 		scoper_version_check();
-
+		
 		if ( ! isset($this->data_sources) )
 			$this->load_config();
 
@@ -354,16 +354,16 @@ class Scoper
 	// - optionally get terms for a specific object
 	// - option to order by term hierarchy (but structure as flat array)
 	function get_terms($taxonomy, $filtering = true, $cols = COLS_ALL_RS, $object_id = 0, $order_by = '', $args = array()) {
-		if ( ! $this->taxonomies->is_member($taxonomy) )
+		if ( ! $tx = $this->taxonomies->get($taxonomy) )
 			return array();
 		
 		global $wpdb;
 
 		extract($args); // for $use_object_roles, TODO: defaults
 
-		if ( $filtering && is_administrator_rs() )
+		if ( $filtering && is_administrator_rs($tx->source) )
 			$filtering = 0;
-	
+
 		// try to pull it out of wpcache
 		$ckey = md5( $taxonomy . $cols . $object_id . serialize($args) . $order_by);
 		
@@ -373,12 +373,12 @@ class Scoper
 			if ( ADMIN_TERMS_FILTER_RS == $filtering ) {
 				if ( $reqd_caps = $this->cap_defs->get_matching($src_name, $taxonomy, OP_ADMIN_RS) ) {
 					$args['reqd_caps_by_otype'] = array();
-					$args['reqd_caps_by_otype'][$taxonomy] = array_keys($reqd_caps);
+					$args['reqd_caps_by_otype'][$src_name] = array_keys($reqd_caps);
 				}
 			} else {
 				$args['reqd_caps_by_otype'] = $this->get_terms_reqd_caps($src_name);
 			}
-			
+
 			$ckey = md5( $ckey . serialize($reqd_caps) ); ; // can vary based on request URI
 		
 			global $current_user;
@@ -396,7 +396,7 @@ class Scoper
 			
 		// call base class method to build query
 		$terms_only = ( ! $filtering || empty($use_object_roles) );
-		
+	
 		$query_base = $this->taxonomies->get_terms_query($taxonomy, $cols, $object_id, $terms_only );
 
 		if ( ! $query_base )

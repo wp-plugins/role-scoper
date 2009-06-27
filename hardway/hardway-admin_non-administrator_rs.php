@@ -24,8 +24,6 @@ class ScoperAdminHardway_Ltd {
 		// no recursion
 		if ( scoper_querying_db() )
 			return $query;
-
-		////rs_errlog ("<br />checking $query <br />");
 		
 		// todo: confirm this is still necessary for elevated users
 		// kill extra capability checks for revisions (user already passed our scoped test)		TODO: confirm did_action check is not needed, eliminate it
@@ -219,6 +217,7 @@ class ScoperAdminHardway_Ltd {
 			$reqd_caps['page']['private'] = array('edit_others_pages', 'edit_private_pages', 'moderate_comments');
 
 			$args = array( 'force_reqd_caps' => $reqd_caps );
+			
 			$query = apply_filters('objects_request_rs', $query, 'post', array('post', 'page'), $args);
 			
 			if ( ! strpos($query, "JOIN $posts") )
@@ -318,7 +317,8 @@ class ScoperAdminHardway_Ltd {
 		}
 		
 		return $query;
-	}
+	} // end function flt_last_resort_query
+	
 	
 	function flt_get_others_drafts($results) {
 		global $wpdb, $current_user, $scoper;

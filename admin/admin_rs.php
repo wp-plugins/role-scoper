@@ -324,7 +324,7 @@ class ScoperAdmin
 		$roles_cap = 'read'; // TODO: review this 
 		$restrictions_caption = __('Restrictions', 'scoper');
 		$roles_caption = __('Roles', 'scoper');
-		if ( $tweak_menu ) {
+		if ( $tweak_menu && ! $is_administrator ) {
 			// note: as of WP 2.7-near-beta, custom content dir for menu icon is not supported
 			$menu[$restrictions_menu_key] = array( '0' => $restrictions_caption, 'read', $restrictions_link, __('Role Restrictions', 'scoper'), 'menu-top' );
 			$menu[$restrictions_menu_key][6] = '../wp-content/plugins/' . SCOPER_FOLDER . '/admin/images/menu/restrictions.png';
@@ -344,6 +344,8 @@ class ScoperAdmin
 
 		$path = SCOPER_ABSPATH;
 		
+		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
+		
 		$submenu_types = ( $object_submenus_first ) ? array( 'object', 'term' ) : array( 'term', 'object' );
 		foreach ( $submenu_types as $scope ) {
 			if ( 'term' == $scope ) {
@@ -355,6 +357,12 @@ class ScoperAdmin
 						if ( empty($can_admin_terms[$taxonomy]) )
 							continue;
 						
+						if ( $require_blogwide_editor ) {
+							global $current_user;
+							if ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) )
+								continue;
+						}
+							
 						$show_roles_menu = true;
 					
 						$func = "include_once('$path' . '/admin/section_roles.php');scoper_admin_section_roles('$taxonomy');";
@@ -392,6 +400,14 @@ class ScoperAdmin
 							if ( empty($can_admin_objects[$src_name][$object_type]) )
 								continue;
 		
+							if ( $require_blogwide_editor ) {
+								$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
+								
+								global $current_user;
+								if ( empty( $current_user->allcaps[$required_cap] ) )
+									continue;
+							}
+								
 							$show_roles_menu = true;
 							$show_restrictions_menu = true;
 						
@@ -426,6 +442,7 @@ class ScoperAdmin
 		// Change Role Scoper Options submenu title from default "Roles" to "Options"
 		if ( $is_administrator ) {
 			global $submenu;
+			
 			if ( isset($submenu[$roles_menu][0][2]) && ( $roles_menu == $submenu[$roles_menu][0][2] ) )
 				$submenu[$roles_menu][0][0] = __('Options', 'scoper');
 
@@ -449,6 +466,7 @@ class ScoperAdmin
 				}
 			}
 		}
+		
 		
 		// workaround for WP 2.7's universal inclusion of "Add New" in Posts, Pages menu
 		if ( awp_ver('2.7') ) {
@@ -705,7 +723,7 @@ class ScoperAdmin
 		
 		//  i.e. if user has blog-wide edit_posts, they can see admin divs in Page Edit form based on a page role assignment. )
 		foreach ( array_keys($current_user->blog_roles) as $role_handle ) {
-			if ( $role_ops = $this->scoper->role_defs->get_role_ops($role_handle) )
+			if ( $role_ops = $this->scoper->role_defs->get_role_ops($role_handle) ) {
 				//if ( isset($role_ops[$required_op]) ) {
 				if ( array_intersect( array_keys($role_ops), $qualifying_ops ) ) {
 					if ( ! $src_name && ! $object_type )
@@ -716,6 +734,7 @@ class ScoperAdmin
 							return true;
 					}
 				}
+			}
 		}
 	}
 	

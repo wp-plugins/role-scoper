@@ -28,6 +28,8 @@ foreach ( $scoper->role_defs->get_all() as $role_handle => $role_def ) {
 		$role_display[$role_handle] = ( empty($role_def->abbrev_for_object_ui) ) ? $role_def->abbrev : $role_def->abbrev_for_object_ui;
 }
 
+$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
+
 foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	$otype_count = 0;	
 	
@@ -39,6 +41,15 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	foreach ( $src->object_types as $object_type => $otype ) {
 		$otype_count++;
 	
+		$disable_role_admin = false;
+		if ( $require_blogwide_editor ) {
+			$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
+
+			global $current_user;
+			if ( empty( $current_user->allcaps[$required_cap] ) )
+				$disable_role_admin = true;
+		}
+		
 		if ( ! empty($src->cols->type) && ! empty($otype->val) ) {
 			$col_type = $src->cols->type;
 			$otype_clause = "AND $src->table.$col_type = '$otype->val'";
@@ -96,20 +107,23 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			} else {
 				// for current user's view of their own user profile, just de-link unadminable objects
 				$link_roles = array();
-				foreach ( $results as $key => $row )
-					if ( in_array( $row->$col_id, $cu_admin_results) )
-						$link_roles[$row->$col_id] = true;
-						
-				$args['required_operation'] = OP_EDIT_RS;
-				$args['require_full_object_role'] = false;
-				if ( isset($args['force_reqd_caps']) ) unset($args['force_reqd_caps']);
-				$qry_flt = apply_filters('objects_request_rs', $qry, $src_name, $object_type, $args);
-				$cu_edit_results = scoper_get_col( $qry_flt );
-				
 				$link_objects = array();
-				foreach ( $results as $key => $row )
-					if ( in_array( $row->$col_id, $cu_edit_results) )
-						$link_objects[$row->$col_id] = true;
+				
+				if ( ! $disable_role_admin ) {
+					foreach ( $results as $key => $row )
+						if ( in_array( $row->$col_id, $cu_admin_results) )
+							$link_roles[$row->$col_id] = true;
+							
+					$args['required_operation'] = OP_EDIT_RS;
+					$args['require_full_object_role'] = false;
+					if ( isset($args['force_reqd_caps']) ) unset($args['force_reqd_caps']);
+					$qry_flt = apply_filters('objects_request_rs', $qry, $src_name, $object_type, $args);
+					$cu_edit_results = scoper_get_col( $qry_flt );
+					
+					foreach ( $results as $key => $row )
+						if ( in_array( $row->$col_id, $cu_edit_results) )
+							$link_objects[$row->$col_id] = true;
+				}
 			}
 		}
 		
@@ -117,8 +131,11 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 		$objnames = array();
 		
 		if ( $results ) {
-			$url = SCOPER_ADMIN_URL . "/roles/$src_name/$object_type";
-			echo "<h4><a name='$object_type' href='$url'><b>" . sprintf( _c('%s Roles:|Post/Page Roles', 'scoper'), $otype->display_name) . "</b></a></h4>";
+			if ( ! $disable_role_admin && ( is_administrator_rs() || $cu_admin_results ) ) {
+				$url = SCOPER_ADMIN_URL . "/roles/$src_name/$object_type";
+				echo "<h4><a name='$object_type' href='$url'><b>" . sprintf( _c('%s Roles:|Post/Page Roles', 'scoper'), $otype->display_name) . "</b></a></h4>";
+			} else
+				echo "<h4><b>" . sprintf( _c('%s Roles:|Post/Page Roles', 'scoper'), $otype->display_name) . "</b></h4>";
 
 			$got_object_roles = true;
 		

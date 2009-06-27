@@ -12,11 +12,11 @@ global $scoper;
 if ( isset($_POST['action']) && ($_POST['action'] == 'autosave') && isset($_POST['post_type']) )
 	add_filter('query', array('ScoperAdminHardway', 'flt_autosave_bugstomper') );
 
+// URIs ending in specified filename will not be subjected to low-level query filtering
+$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
+	
 if ( is_admin() ) {
-	$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
-
 	// filter users list for edit-capable users as a convenience to administrator
-	// URIs ending in specified filename will not be subjected to low-level query filtering
 	if ( ! agp_string_ends_in($_SERVER['REQUEST_URI'], $nomess_uris ) )
 		add_filter('query', array('ScoperAdminHardway', 'flt_editable_user_ids') );
 	
@@ -35,7 +35,6 @@ if ( ! $is_administrator = is_administrator_rs() ) {
 }
 
 if ( (is_admin() || defined('XMLRPC_REQUEST') ) && ! $is_administrator ) {
-	// URIs ending in specified filename will not be subjected to low-level query filtering
 	$nomess_uris = array_merge($nomess_uris, array('p-admin/admin-ajax.php'));
 
 	if ( ! agp_string_ends_in($_SERVER['REQUEST_URI'], $nomess_uris, true ) ) {  //arg: actually return true for any strpos value
@@ -208,9 +207,13 @@ class ScoperAdminHardway {
 		$id = $scoper->data_sources->detect('id', 'post');
 
 		// only modify the default authors list if current user can edit_others for the current post/page
-		if ( ! current_user_can( $current_user_reqd_cap, $id ) )
-			return $wp_output;
-			
+		$scoper->query_interceptor->require_full_object_role = true;
+		$have_cap = current_user_can( $current_user_reqd_cap, $id );
+		$scoper->query_interceptor->require_full_object_role = false;
+		
+		//if ( ! $have_cap )
+		 	//return $wp_output;
+		
 		$src_name = $context->source->name;
 			
 		$last_query = $wpdb->last_query;
@@ -299,14 +302,23 @@ class ScoperAdminHardway {
 		
 		if ( $object_id ) {
 			if ( $current_author = $scoper->data_sources->get_from_db('owner', $src_name, $object_id) )
-				$args['preserve_or_clause'] = " uro.user_id = '$current_author'";
+				$force_user_id = $current_author;
 		} else {
 			global $current_user;
-			$args['preserve_or_clause'] = " uro.user_id = '$current_user->ID'";
+			$force_user_id = $current_user->ID;
 		}
 		
-		$users = $scoper->users_who_can($reqd_caps, COLS_ID_DISPLAYNAME_RS, $src_name, $object_id, $args);
+		if ( $have_cap ) {
+			if ( $force_user_id )
+				$args['preserve_or_clause'] = " uro.user_id = '$force_user_id'";
 
+			$users = $scoper->users_who_can($reqd_caps, COLS_ID_DISPLAYNAME_RS, $src_name, $object_id, $args);
+		} else {
+			$display_name = $wpdb->get_var( "SELECT display_name FROM $wpdb->users WHERE ID = '$force_user_id'" );
+			$users = array( (object) array( 'ID' => $force_user_id, 'display_name' => $display_name ) );
+		}
+			
+			
 		$show = 'display_name'; // no way to back this out
 
 		// ----------- begin wp_dropdown_users code copy (from WP 2.7) -------------
@@ -344,10 +356,29 @@ class ScoperAdminHardway {
 			else
 				$current_user_reqd_cap = 'edit_others_posts';
 			
-			$id = $scoper->data_sources->detect('id', 'post');
+			$object_id = $scoper->data_sources->detect('id', 'post');
 			
-			if ( current_user_can( $current_user_reqd_cap, $id ) )
+			$scoper->query_interceptor->require_full_object_role = true;
+			$have_cap = current_user_can( $current_user_reqd_cap, $object_id );
+			$scoper->query_interceptor->require_full_object_role = false;
+			
+			if ( $have_cap )
 				return $scoper->users_who_can($context->reqd_caps, COLS_ALL_RS);
+			else {
+				if ( $object_id ) {
+					if ( $current_author = $scoper->data_sources->get_from_db('owner', 'post', $object_id) )
+						$force_user_id = $current_author;
+				} else {
+					global $current_user;
+					$force_user_id = $current_user->ID;
+				}
+			
+				if ( $force_user_id ) {
+					$display_name = $wpdb->get_var( "SELECT display_name FROM $wpdb->users WHERE ID = '$force_user_id'" );
+					$users = array( (object) array( 'ID' => $force_user_id, 'display_name' => $display_name ) );
+					return $users;
+				}
+			}
 		}
 
 		return $unfiltered_results;

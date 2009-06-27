@@ -323,7 +323,13 @@ class ScoperAdminUI {
 		} else
 			$option_main = '';
 		
-		return "<select name='parent_id' id='parent_id'>\n" . $option_main . $options_html . '</select>';
+		//return "<select name='parent_id' id='parent_id'>\n" . $option_main . $options_html . '</select>';
+		
+		// can't assume name/id for this dropdown (Quick Edit uses "post_parent")
+		$mat = array();
+		preg_match("/<select([^>]*)>/", $orig_options_html, $mat);
+		$sel_tag_content = $mat[1];
+		return "<select{$sel_tag_content}>\n" . $option_main . $options_html . '</select>';
 	}
 	
 	function dropdown_pages($object_id = '', $stored_parent_id = '') {
