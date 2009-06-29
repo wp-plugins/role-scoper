@@ -295,7 +295,11 @@ class ScoperAdmin
 			}
 		}
 		
-
+		if ( $is_administrator ) {
+			global $_registered_pages;
+			 $_registered_pages['admin_page_role-scoper/admin/options'] = SCOPER_FOLDER . "/admin/options.php";
+		}
+		
 		// Register the menus with WP using URI and links determined above
 		global $menu;
 		$tweak_menu = false; // don't mess with menu order unless we know we can get away with it in current WP version
@@ -324,7 +328,7 @@ class ScoperAdmin
 		$roles_cap = 'read'; // TODO: review this 
 		$restrictions_caption = __('Restrictions', 'scoper');
 		$roles_caption = __('Roles', 'scoper');
-		if ( $tweak_menu && ! $is_administrator ) {
+		if ( $tweak_menu ) {
 			// note: as of WP 2.7-near-beta, custom content dir for menu icon is not supported
 			$menu[$restrictions_menu_key] = array( '0' => $restrictions_caption, 'read', $restrictions_link, __('Role Restrictions', 'scoper'), 'menu-top' );
 			$menu[$restrictions_menu_key][6] = '../wp-content/plugins/' . SCOPER_FOLDER . '/admin/images/menu/restrictions.png';
@@ -335,7 +339,6 @@ class ScoperAdmin
 			add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_link, '', '../wp-content/plugins/' . SCOPER_FOLDER . '/admin/images/menu/roles.png');
 		}
 
-		
 		global $submenu;
 
 		
