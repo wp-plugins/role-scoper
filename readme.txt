@@ -93,7 +93,7 @@ In your blog admin, navigate to Roles > Options > Features > Attachments > Attac
 <strong>Where does Role Scoper store its settings?  How can I completely remove it from my database?</strong>
 Role Scoper creates and uses the following tables: groups_rs, user2group_rs, role_scope_rs, user2role2object_rs.  All RS-specific options stored to the WordPress options table have an option name prefixed with "scoper_".
 
-Due to the potential damage incurred by accidental deleteion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
+Due to the potential damage incurred by accidental deletion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
 
 
 == Screenshots ==
@@ -107,6 +107,10 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 
 
 == Changelog ==
+
+= 1.0.5.1 - 5 August 2009 =
+* Bump up version number to force wordpress.org to regenerate .zip.  The 1.0.5 zip was missing many files.
+
 
 = 1.0.5 - 5 August 2009 =
 * Change : Hidden Editing Elements now hidden securely on server side, not via CSS.
