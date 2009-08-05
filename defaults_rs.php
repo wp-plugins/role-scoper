@@ -107,8 +107,8 @@ function scoper_default_otype_options() {
 	$def['teaser_append_excerpt']		['post:page'] = "<br /><small>note: This content requires a higher login level.</small>";
 	$def['teaser_append_excerpt_anon']	['post:page'] = "<br /><small>note: This content requires site login.</small>";
 
-	$def['admin_css_ids'] ['post:post'] = 'passworddiv; slugdiv; authordiv; commentstatusdiv; trackbacksdiv;';
-	$def['admin_css_ids'] ['post:page'] = 'pagepassworddiv; pageslugdiv; pageauthordiv; pageorderdiv; pageparentdiv; pagecommentstatusdiv';
+	$def['admin_css_ids'] ['post:post'] = 'password-span; slugdiv; authordiv; commentstatusdiv; trackbacksdiv;';
+	$def['admin_css_ids'] ['post:page'] = 'password-span; pageslugdiv; pageauthordiv; pageparentdiv; pagecommentstatusdiv';
 	
 	$def['use_term_roles']['post:post'] = 1;
 	$def['use_term_roles']['post:page'] = 0;  // Wordpress core does not categorize pages by default

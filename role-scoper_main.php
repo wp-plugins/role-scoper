@@ -353,13 +353,15 @@ class Scoper
 	// - specify filtered or unfiltered via argument
 	// - optionally get terms for a specific object
 	// - option to order by term hierarchy (but structure as flat array)
-	function get_terms($taxonomy, $filtering = true, $cols = COLS_ALL_RS, $object_id = 0, $order_by = '', $args = array()) {
+	function get_terms($taxonomy, $filtering = true, $cols = COLS_ALL_RS, $object_id = 0, $args = array()) {
 		if ( ! $tx = $this->taxonomies->get($taxonomy) )
 			return array();
 		
 		global $wpdb;
 
-		extract($args); // for $use_object_roles, TODO: defaults
+		$defaults = array( 'order_by' => '', 'use_object_roles' => false, 'access_name' => '' ); // IMPORTANT to default access_name to nullstring
+		$args = array_merge( $defaults, (array) $args );
+		extract($args);
 
 		if ( $filtering && is_administrator_rs($tx->source) )
 			$filtering = 0;
@@ -370,13 +372,13 @@ class Scoper
 		if ( $filtering ) {
 			$src_name = $this->taxonomies->member_property($taxonomy, 'object_source', 'name');
 			
-			if ( ADMIN_TERMS_FILTER_RS == $filtering ) {
+			if ( ADMIN_TERMS_FILTER_RS === $filtering ) {
 				if ( $reqd_caps = $this->cap_defs->get_matching($src_name, $taxonomy, OP_ADMIN_RS) ) {
 					$args['reqd_caps_by_otype'] = array();
 					$args['reqd_caps_by_otype'][$src_name] = array_keys($reqd_caps);
 				}
 			} else {
-				$args['reqd_caps_by_otype'] = $this->get_terms_reqd_caps($src_name);
+				$args['reqd_caps_by_otype'] = $this->get_terms_reqd_caps($src_name, $access_name);
 			}
 
 			$ckey = md5( $ckey . serialize($reqd_caps) ); ; // can vary based on request URI
@@ -415,8 +417,19 @@ class Scoper
 		elseif ( COL_COUNT_RS == $cols )
 			$results = intval( scoper_get_var($query) );
 		else {
+			// for COLS_ALL query, need to call core get_terms call in case another plugin is translating term names
+			if ( has_filter( 'get_terms', array('ScoperHardway', 'flt_get_terms') ) ) {
+				remove_filter( 'get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3 );
+				$all_terms = get_terms('category');
+				add_filter( 'get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3 );
+
+				$term_names = scoper_buffer_property( $all_terms, 'term_id', 'name' );
+			}
+
 			$results = scoper_get_results($query);
-			
+
+			scoper_restore_property( $results, $term_names, 'term_id', 'name' );
+				
 			if ( ORDERBY_HIERARCHY_RS == $order_by ) {
 				require_once('admin/admin_lib_rs.php');
 				if ( $src = $this->taxonomies->member_property($taxonomy, 'source') ) {
@@ -757,13 +770,15 @@ class Scoper
 	
 	// account for different contexts of get_terms calls 
 	// (Scoped roles can dictate different results for front end, edit page/post, manage categories)
-	function get_terms_reqd_caps($src_name) {
+	function get_terms_reqd_caps($src_name, $access_name = '') {
 		global $current_user;	
 	
 		if ( ! $this->data_sources->is_member($src_name) )
 			return;	//todo: error notice?
 		
-		$access_name = ( is_admin() && strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') ) ? 'front' : CURRENT_ACCESS_NAME_RS; // hack to support subscribe2 categories checklist
+		if ( empty($access_name) )
+			$access_name = ( is_admin() && strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') ) ? 'front' : CURRENT_ACCESS_NAME_RS; // hack to support subscribe2 categories checklist
+			
 		if ( ! $arr = $this->data_sources->member_property($src_name, 'terms_where_reqd_caps', $access_name ) )
 			return;
 

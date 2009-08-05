@@ -11,9 +11,11 @@ class AttachmentInterceptor_RS {
 	
 	// handle access to uploaded file where request was a direct file URL, which was rewritten according to our .htaccess addition
 	function act_parse_query_for_direct_access ( &$query ) {
-		if ( empty($query->query_vars['attachment']) || ( false === strpos($_SERVER['QUERY_STRING'], 'scoper_rewrite') ) )
+		if ( empty($query->query_vars['attachment']) || ( false === strpos($_SERVER['QUERY_STRING'], 'scoper_rewrite') ) ) {
+			//rs_errlog( 'not an attachment: ' . serialize($_SERVER) );
 			return;
-
+		}
+			
 		require_once('attachment-filters_rs.php');
 		AttachmentFilters_RS::parse_query_for_direct_access( $query );
 	}

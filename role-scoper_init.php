@@ -479,4 +479,26 @@ function scoper_querying_db() {
 	if ( isset($scoper_status) )
 		return ! empty($scoper_status->querying_db);
 }
+
+
+function scoper_buffer_property( $arr, $id_prop, $buffer_prop ) {
+	if ( ! is_array($arr) )
+		return;
+
+	$buffer = array();
+		
+	foreach ( array_keys($arr) as $key )
+		$buffer[ $arr[$key]->$id_prop ] = $arr[$key]->$buffer_prop;
+
+	return $buffer;
+}
+
+function scoper_restore_property( &$target_arr, $buffer_arr, $id_prop, $buffer_prop ) {
+	if ( ! is_array($target_arr) || ! is_array($buffer_arr) )
+		return;
+		
+	foreach ( array_keys($target_arr) as $key )
+		if ( isset( $buffer_arr[ $target_arr[$key]->$id_prop ] ) )
+			$target_arr[$key]->$buffer_prop = $buffer_arr[ $target_arr[$key]->$id_prop ];
+}
 ?>

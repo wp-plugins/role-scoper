@@ -318,10 +318,11 @@ class CapInterceptor_RS
 				$post_var = isset( $src->http_post_vars->$taxonomy ) ? $src->http_post_vars->$taxonomy : $taxonomy;
 				
 				$selected_terms =  isset( $_POST[$post_var] ) ? $_POST[$post_var] : array();
+				
 				if ( $set_terms = $scoper->filters_admin->flt_pre_object_terms($selected_terms, $taxonomy) ) {
 					$set_terms = array_map('intval', $set_terms);
 					$set_terms = array_unique($set_terms);
-					
+
 					if ( $set_terms != $stored_terms )
 						wp_set_object_terms( $object_id, $set_terms, $taxonomy );
 						
