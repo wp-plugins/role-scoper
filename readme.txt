@@ -62,7 +62,7 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 == Installation ==
 Role Scoper can be installed automatically via the Plugins tab in your blog administration panel.
 
-To install manually instead:
+= To install manually instead: =
 1. Upload `role-scoper_?.zip` to the `/wp-content/plugins/` directory
 1. Extract `role-scoper_?.zip` into the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
