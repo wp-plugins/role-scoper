@@ -208,7 +208,7 @@ if ( empty($tx->object_source->no_object_roles) ) {
 
 echo '<li>';
 _e('Administrators are exempted from Role Restrictions.', 'scoper');
-echo '</li>';
+echo '</li></ul>';
 
 echo('<a href="#scoper_top">' . __('top', 'scoper') . '</a>');
 ?>

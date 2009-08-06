@@ -8,8 +8,74 @@ global $scoper;
 if ( $scoper->data_sources->is_member('link') )
 	add_filter('get_bookmarks', array('ScoperAdminHardway_Ltd', 'flt_get_bookmarks'), 1, 2);	
 
-class ScoperAdminHardway_Ltd {
+add_action( 'check_admin_referer', array('ScoperAdminHardway_Ltd', 'act_check_admin_referer') );
+	
+add_action( 'check_ajax_referer', array('ScoperAdminHardway_Ltd', 'act_check_ajax_referer') );
 
+
+class ScoperAdminHardway_Ltd {
+	
+	// next-best way to handle any permission checks for non-Ajax operations which can't be done via has_cap filter
+	function act_check_admin_referer( $referer_name ) {
+		
+		// filter category parent selection for Category editing
+		if ( ! isset( $_POST['cat_ID'] ) )
+			return;
+	
+		if ( 'update-category_' . $_POST['cat_ID'] == $referer_name ) {
+	
+			$stored_term = get_term( $_POST['cat_ID'], 'category' );
+			
+			$selected_parent = $_POST['category_parent'];
+			
+			if ( -1 == $selected_parent )
+				$selected_parent = 0;
+			
+			if ( $stored_term->parent != $selected_parent ) {
+				global $scoper;
+				
+				if ( $selected_parent ) {
+					$user_terms = $scoper->qualify_terms( 'manage_categories', 'category' );
+					$permit = in_array( $selected_parent, $user_terms );
+				} else {
+					$scoper->cap_interceptor->skip_id_generation = true;
+					$scoper->cap_interceptor->skip_any_term_check = true;
+					$permit = current_user_can( 'manage_categories' );
+					$scoper->cap_interceptor->skip_any_term_check = false;
+				}
+				
+				if ( ! $permit )
+					wp_die( __('You do not have permission to select that Category Parent', 'scoper') );
+			}
+		}
+			
+	}
+	
+	
+	// next-best way to handle permission checks for Ajax operations which can't be done via has_cap filter
+	function act_check_ajax_referer( $referer_name ) {
+		if ( 'add-category' ==  $referer_name ) {
+			if ( ! empty($_POST['newcat_parent']) )
+				$parent = $_POST['newcat_parent'];
+			elseif ( ! empty($_POST['category_parent']) )
+				$parent =  $_POST['category_parent'];
+			else
+				$parent = 0;
+			
+			// Concern here is for addition of top level categories.  Subcat addition attempts will already be filtered by has_cap filter.
+			if ( ! $parent ) {
+				global $scoper;
+				$scoper->cap_interceptor->skip_any_term_check = true;
+				$permit = current_user_can( 'manage_categories' );
+				$scoper->cap_interceptor->skip_any_term_check = false;
+				
+				if ( ! $permit )
+					die('-1');
+			}		
+		}	
+	}
+	
+	
 	// low-level filtering of otherwise unhookable queries
 	//
 	// Todo: review all queries for version-specificity; apply regular expressions to make it less brittle

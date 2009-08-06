@@ -599,7 +599,7 @@ class ScoperAdminFilters
 		if ( ! $is_new_term )
 			if ( $custom_role_objects = get_option( "scoper_custom_{$taxonomy}" ) )
 				$roles_customized = isset( $custom_role_objects[$term_id] );
-		
+			
 		// Inherit parent roles / restrictions, but only for new terms, 
 		// or if a new parent is set and no roles have been manually assigned to this term
 		if ( $is_new_term || ( ! $roles_customized && ($set_parent != $last_parent) ) ) {

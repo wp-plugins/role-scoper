@@ -410,7 +410,7 @@ function scoper_core_taxonomies() {
 		'requires_term' => true,	'uses_standard_schema' => true, 'hierarchical' => true, 'default_term_option' => 'default_category',	
 		'admin_filters' => (object) array( 'pre_object_terms' => 'pre_post_category' ),
 		'admin_actions' => (object) array( 
-			'create_term' => 'create_category', 	'edit_term' => 'edit_category', 	'delete_term' => 'delete_category',		
+			'create_term' => 'created_category', 	'edit_term' => 'edit_category', 	'delete_term' => 'delete_category',		
 			'save_term' => '',	'term_edit_ui' => 'edit_category_form'
 		)
 	); // end outer array

@@ -29,6 +29,7 @@ class CapInterceptor_RS
 		add_filter('user_has_cap', array(&$this, 'flt_user_has_cap'), 99, 3);  // scoping will be defeated if our filter isn't applied last
 	}
 	
+	
 	// ScoperFilters::flt_user_has_cap
 	//
 	// Capability filter applied by WP_User->has_cap (usually via WP current_user_can function)
@@ -527,13 +528,14 @@ class CapInterceptor_RS
 		// WP core edit_post function requires edit_published_posts or edit_published_pages cap to save a post to "publish" status, but does not pass a post ID
 		// Similar situation with edit_others_posts, publish_posts.
 		// So... insert the object ID from POST vars
-		$src_name = $scoper->cap_defs->member_property($required_cap, 'src_name');
+		if ( empty($src_name) )
+			$src_name = $scoper->cap_defs->member_property($required_cap, 'src_name');
 		
 		if ( ! empty( $_POST ) ) {
 			// special case for comment post ID
 			if ( ! empty( $_POST['comment_post_ID'] ) )
 				$_POST['post_ID'] = $_POST['comment_post_ID'];
-
+				
 			if ( $id = $scoper->data_sources->get_from_http_post('id', $src_name) ) {
 				if ( $id > 0 )
 					return $id;
@@ -546,7 +548,18 @@ class CapInterceptor_RS
 							return $id;
 					}
 				}
+			} elseif ( ! $id && ! empty($_POST['id']) ) // in case normal POST variable differs from ajax variable
+				return $_POST['id'];
+				
+
+			// special case for adding categories ( do this to prevent 
+			if ( ( 'manage_categories' == $required_cap ) ) {
+				if ( ! empty($_POST['newcat_parent']) )
+					return $_POST['newcat_parent'];
+				elseif ( ! empty($_POST['category_parent']) )
+					return $_POST['category_parent'];
 			}
+				
 			
 		} elseif ( defined('XMLRPC_REQUEST') ) {
 			global $xmlrpc_post_id_rs;

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Role Scoper 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-05 01:47-0500\n"
+"POT-Creation-Date: 2009-08-06 02:24-0500\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Kevin Behrens\n"
 "Language-Team: agapetry <kevin@agapetry.net>\n"
@@ -2088,31 +2088,38 @@ msgstr ""
 msgid "Administrators are exempted from Role Restrictions."
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/admin/version_notice_rs.php:32
 #: E:\www\wp28\wp-content\plugins\role-scoper/admin/misc/version_notice_rs.php:34
 #, php-format
 msgid "A new version of Role Scoper is available (%s)"
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/admin/version_notice_rs.php:53
 #: E:\www\wp28\wp-content\plugins\role-scoper/admin/misc/version_notice_rs.php:55
 msgid "read more..."
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/admin/version_notice_rs.php:59
 #: E:\www\wp28\wp-content\plugins\role-scoper/admin/misc/version_notice_rs.php:61
 msgid "Read about the update"
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/admin/version_notice_rs.php:60
 #: E:\www\wp28\wp-content\plugins\role-scoper/admin/misc/version_notice_rs.php:62
 msgid "View full changelog"
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/admin/version_notice_rs.php:64
 #: E:\www\wp28\wp-content\plugins\role-scoper/admin/misc/version_notice_rs.php:66
 msgid "Upgrade Automatically"
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/admin/version_notice_rs.php:66
 #: E:\www\wp28\wp-content\plugins\role-scoper/admin/misc/version_notice_rs.php:68
 msgid "Download for manual install"
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/admin/version_notice_rs.php:110
 #: E:\www\wp28\wp-content\plugins\role-scoper/admin/misc/version_notice_rs.php:113
 #, php-format
 msgid "Role Scoper Extensions are available for the following plugins: %s"
@@ -2230,6 +2237,10 @@ msgstr ""
 msgid "You have %1$s, contained within %2$s and %3$s. %4$s %5$s"
 msgstr ""
 
+#: E:\www\wp28\wp-content\plugins\role-scoper/hardway/hardway-admin_non-administrator_rs.php:48
+msgid "You do not have permission to select that Category Parent"
+msgstr ""
+
 #: E:\www\wp28\wp-content\plugins\role-scoper/hardway/hardway-admin_rs.php:239
 msgid "Any"
 msgstr ""
@@ -2238,7 +2249,7 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: E:\www\wp28\wp-content\plugins\role-scoper/hardway/hardway_rs.php:704
+#: E:\www\wp28\wp-content\plugins\role-scoper/hardway/hardway_rs.php:716
 msgid "Invalid Taxonomy"
 msgstr ""
 

@@ -475,8 +475,8 @@ function item_tree_jslinks($mode, $args='') {
 
 	$js_call = "
 	agp_set_display('rs-show_empty','inline',this.id);
-	agp_display_marked_elements('li','no-role-li{$hide_li_sfx}','none');
-	agp_setcss('.no-role{$hide_tr_sfx}','display','none');
+	agp_display_marked_elements('li','no-rol-li{$hide_li_sfx}','none');
+	agp_setcss('.no-rol{$hide_tr_sfx}','display','none');
 	agp_set_display('max_unroled_notice','none');
 	";
 	
@@ -500,8 +500,8 @@ function item_tree_jslinks($mode, $args='') {
 	
 	$js_call = "
 	agp_set_display('rs-hide_empty','inline',this.id);
-	agp_display_marked_elements('li','no-role-li{$hide_li_sfx}','block');
-	agp_setcss('.no-role{$hide_tr_sfx}','display','$tr_display');
+	agp_display_marked_elements('li','no-rol-li{$hide_li_sfx}','block');
+	agp_setcss('.no-rol{$hide_tr_sfx}','display','$tr_display');
 	agp_set_display('max_unroled_notice','block');
 	";
 	$style = ( $default_hide_empty ) ? '' : ' style="display:none;"';
@@ -794,14 +794,14 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 			if ( ROLE_ASSIGNMENT_RS == $mode ) {
 				$role_class = '';
 				if ( ! isset($assigned_roles[ROLE_BASIS_USER][$id]) && ! isset($assigned_roles[ROLE_BASIS_GROUPS][$id]) )
-					$role_class = " no-role-li{$hide_li_sfx}";
+					$role_class = " no-rol-li{$hide_li_sfx}";
 				elseif ( ! isset($assigned_roles[ROLE_BASIS_USER][$id]) )
 					$role_class = " no-user-li";
 				elseif ( ! isset($assigned_roles[ROLE_BASIS_GROUPS][$id]) )
 					$role_class = " no-groups-li";
 			
 			} elseif ( ROLE_RESTRICTION_RS == $mode ) {
-				$role_class = " no-role-li{$hide_li_sfx}";
+				$role_class = " no-rol-li{$hide_li_sfx}";
 				$setting_types = array('restrictions', 'unrestrictions');
 				foreach ( $setting_types as $setting_type ) {
 					if ( isset($strict_items[$setting_type]) ) {
@@ -926,7 +926,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 					// don't hide rows for default roles
 					if ( $id ) {
 						if ( ! isset($assigned_roles[ROLE_BASIS_USER][$id][$role_handle]) && ! isset($assigned_roles[ROLE_BASIS_GROUPS][$id][$role_handle]) )
-							$classes []= "no-role{$hide_tr_sfx}";
+							$classes []= "no-rol{$hide_tr_sfx}";
 						elseif ( ! isset($assigned_roles[ROLE_BASIS_USER][$id][$role_handle]) )
 							$classes []= "no-user";
 						elseif ( ! isset($assigned_roles[ROLE_BASIS_GROUPS][$id][$role_handle]) )
@@ -944,7 +944,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 						
 						// don't hide rows for default restrictions
 						if ( $id )
-							$classes []= " no-role{$hide_tr_sfx}";
+							$classes []= " no-rol{$hide_tr_sfx}";
 					}
 				} // end switch $mode
 

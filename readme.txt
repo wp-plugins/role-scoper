@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed, feeds
 Requires at least: 2.5
 Tested up to: 2.8.3
-Stable Tag: 1.0.5.1
+Stable Tag: 1.0.6
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -64,8 +64,8 @@ Role Scoper can be installed automatically via the Plugins tab in your blog admi
 
 To install manually instead:
 1. Upload `role-scoper_?.zip` to the `/wp-content/plugins/` directory
-2. Extract `role-scoper_?.zip` into the `/wp-content/plugins/` directory
-3. Activate the plugin through the 'Plugins' menu in WordPress
+1. Extract `role-scoper_?.zip` into the `/wp-content/plugins/` directory
+1. Activate the plugin through the 'Plugins' menu in WordPress
 
 Note: For WP 2.2 and 2.3, use <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 0.9</a>
 
@@ -74,7 +74,7 @@ Note: For WP 2.2 and 2.3, use <a href="http://agapetry.net/downloads/role-scoper
 <strong>How does Role Scoper compare to <a href="http://sourceforge.net/projects/role-manager/">Role Manager</a>?</strong>
 Those two plugins are entirely different and complementary.  RM does little more than alter WordPress' definition of the capabilities included in each role.  That's a valuable task, and in many cases will be all the role customization you need.  Since RM's modifications are stored in the main WordPress database, they remain even if RM is deactivated.
 
-Role Scoper is useful when you want to customize access to specific content, not just blog-wide.  It will work with the the WP roles as a starting point, whether customized by Role Manager or not.  To see how Role Scoper's role definitions correlate to your WordPress roles, navigate to Roles > Options > RS Role Definitions in your blog admin.  Role Scoper's modifications remain only while it stays active.
+Role Scoper is useful when you want to customize access to specific content, not just blog-wide.  It will work with the WP roles as a starting point, whether customized by Role Manager or not.  To see how Role Scoper's role definitions correlate to your WordPress roles, navigate to Roles > Options > RS Role Definitions in your blog admin.  Role Scoper's modifications remain only while it stays active.
 
 
 <strong>Why are there so many options? Do I really need Role Scoper?</strong>
@@ -93,7 +93,7 @@ In your blog admin, navigate to Roles > Options > Features > Attachments > Attac
 <strong>Where does Role Scoper store its settings?  How can I completely remove it from my database?</strong>
 Role Scoper creates and uses the following tables: groups_rs, user2group_rs, role_scope_rs, user2role2object_rs.  All RS-specific options stored to the WordPress options table have an option name prefixed with "scoper_".
 
-Due to the potential damage incurred by accidental deletion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
+Due to the potential damage incurred by accidental deleteion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
 
 
 == Screenshots ==
@@ -107,6 +107,15 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.0.6 - 6 August 2009 =
+* BugFix : Failed to re-activate after WordPress auto-update
+* BugFix : In WP-mu, Category Roles not inherited from parent on new category creation
+* BugFix : Users with Category Manager role for a limited no. of cats could change Cat Parent to None
+* BugFix : Users with Category Manager role for a limited no. of cats could create new top-level cats
+* BugFix : Category Edit Form offered selection of a category as its own parent (though not stored)
+* BugFix : In Bulk Roles / Restrictions form, "Collapse All" script hid some Categories / Pages inappropriately
+
 
 = 1.0.5.1 - 5 August 2009 =
 * Bump up version number to force wordpress.org to regenerate .zip.  The 1.0.5 zip was missing many files.

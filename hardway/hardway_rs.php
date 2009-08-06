@@ -99,6 +99,18 @@ class ScoperHardway
 		
 		extract($args, EXTR_SKIP);
 		
+		// don't offer to set a category as its own parent
+		if ( is_admin() && ( 'category' == $taxonomy ) ) {
+			if ( strpos($_SERVER['REQUEST_URI'], 'categories.php') ) {
+				if ( $editing_cat_id = $scoper->data_sources->get_from_uri('id', 'term') ) {
+					if ( $exclude )
+						$exclude .= ',';
+	
+					$exclude .= $editing_cat_id;
+				}
+			}
+		}
+		
 		//-- BEGIN RoleScoper Modification - currently only support single taxonomy call through this filter
 					 // (terms_where filter does support multiple taxonomies and this function could be made to do so)
 		
