@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.0.6
+Version: 1.0.7
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 2.5
@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
-define ('SCOPER_VERSION', '1.0.6');
+define ('SCOPER_VERSION', '1.0.7');
 define ('SCOPER_DB_VERSION', '1.0.2');
 
 define( 'ENABLE_PERSISTENT_CACHE', true );
@@ -56,6 +56,10 @@ To block such files, copy the following line to wp-config.php:
 The Hidden Content Teaser may be configured to display the first X characters of a post/page if no excerpt or more tag is available.
 To specify the number of characters (default is 50), copy the following line to wp-config.php:
 	define('SCOPER_TEASER_NUM_CHARS', 100); // set to any number of your choice
+	
+To disable caching of the pages / categories listing, add the following lines to wp-config.php:
+	define( 'SCOPER_NO_PAGES_CACHE', true );
+	define( 'SCOPER_NO_TERMS_CACHE', true );
 */
 
 // define URL
@@ -173,7 +177,7 @@ if ( ( function_exists('wp_set_current_user') || function_exists('set_current_us
 
 	// this is the normal situation on first pass after activation
 	if ( ! strpos($_SERVER['SCRIPT_NAME'], 'p-admin/plugins.php') || ( function_exists('is_plugin_active') && is_plugin_active(SCOPER_FOLDER . '/' . SCOPER_BASENAME) ) ) {
-		rs_notice('Role Scoper cannot operate because another plugin or theme has already declared the function "set_current_user" or "wp_set_current_user".  All posts, pages and links are currently hidden.  <br />Please remove the offending plugin, or deactivate Role Scoper to revert to blog-wide Wordpress roles.');
+		rs_notice('Role Scoper cannot operate because another plugin or theme has already declared the function "set_current_user" or forced early execution of "pluggable.php".  <strong>All posts, pages and links are currently hidden</strong>.  Please remove the offending plugin, or deactivate Role Scoper to revert to blog-wide Wordpress roles.');
 	}
 	
 	// To prevent inadverant content exposure, default to blocking all content if another plugin steals wp_set_current_user definition.

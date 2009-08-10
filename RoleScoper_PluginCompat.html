@@ -39,7 +39,7 @@ use ozh version 2.3 or later</P>
 <P CLASS="western" STYLE="margin-bottom: 0in"><BR>
 </P>
 <P CLASS="western" STYLE="margin-bottom: 0in"><B>WP Super Cache</B> &ndash;
-must use Role Scoper 1.0.0 beta 3 or later</P>
+Must use Role Scoper 1.0.0 beta 3 or later.  Disable caching for logged users.</P>
 <P CLASS="western" STYLE="margin-bottom: 0in"><BR>
 </P>
 <P CLASS="western" STYLE="margin-bottom: 0in"><BR>
@@ -104,6 +104,9 @@ early load of pluggable.php)</P>
 Comments widget instead.</P>
 <P CLASS="western" STYLE="margin-bottom: 0in"><BR>
 </P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><B>QTranslate</B>
+&ndash; Must use Role Scoper 1.0.7 or later, which disables caching of pages, terms listing.  <br /><br />To enable caching, change QTranslate get_pages and get_terms filter priority to 2 or higher, then add the following line to wp-config.php:<br /> define('SCOPER_QTRANSLATE_COMPAT', true);</P>
+<P CLASS="western" STYLE="margin-bottom: 0in"><BR>
 <P CLASS="western" STYLE="text-indent: 0.5in; margin-bottom: 0in"><BR>
 </P>
 <P CLASS="western" STYLE="text-indent: 0.5in; margin-bottom: 0in"><BR>

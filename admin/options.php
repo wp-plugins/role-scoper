@@ -200,6 +200,18 @@ _e('Content Maintenance', 'scoper') ?></th>
 </span>
 </div>
 
+<br />
+<?php $all_options []= 'admin_others_unattached_files';?>
+<div class="agp-vspaced_input">
+<label for="admin_others_unattached_files">
+<input name="admin_others_unattached_files" type="checkbox" id="admin_others_unattached_files" value="1" <?php checked('1', scoper_get_option('admin_others_unattached_files'));?> />
+<?php _e('Non-administrators see other users\' unattached uploads', 'scoper') ?></label><br />
+<span class="rs-subtext">
+<?php if ( $display_hints) _e('By default, non-administrators will see only their own unattached uploads in the Media Library.', 'scoper');?>
+</span>
+</div>
+
+
 </td>
 </tr>
 

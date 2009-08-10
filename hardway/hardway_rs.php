@@ -44,6 +44,11 @@ class ScoperHardway
 		
 		//d_echo ("<br /><br />----- HARDWAY GET_TERMS ------<br />");
 		
+		// need to skip cache retrieval if QTranslate is filtering get_terms with a priority of 1 or less
+		static $no_cache;
+		if ( ! isset($no_cache) )
+			$no_cache = defined( 'SCOPER_NO_TERMS_CACHE' ) || ( ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate') );
+
 		// --- Role Scoper mod - if array has one element it's still a single taxonomy
 		if ( ! is_array($taxonomies) )
 			$taxonomies = array($taxonomies);
@@ -99,6 +104,10 @@ class ScoperHardway
 		
 		extract($args, EXTR_SKIP);
 		
+		// depth is not really a get_terms arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
+		if ( $exclude && ! $exclude_tree && ! empty( $args['depth'] ) && ( 1 == $args['depth'] ) )
+			$exclude_tree = $exclude;
+	
 		// don't offer to set a category as its own parent
 		if ( is_admin() && ( 'category' == $taxonomy ) ) {
 			if ( strpos($_SERVER['REQUEST_URI'], 'categories.php') ) {
@@ -143,7 +152,7 @@ class ScoperHardway
 		if ( $cache = $current_user->cache_get( $cache_flag ) ) {
 		//-- END RoleScoper Modification --//
 		
-			if ( isset( $cache[ $ckey ] ) )
+			if ( ! $no_cache && isset( $cache[ $ckey ] ) )
 				//-- RoleScoper Modification: alternate filter name --//
 				return apply_filters('get_terms_rs', $cache[ $ckey ], $taxonomies, $args);
 		}
@@ -382,9 +391,10 @@ class ScoperHardway
 		}
 		
 		//-- RoleScoper Modification: store to user/group - specific wp-cache key --//
-		$cache[ $ckey ] = $terms;
-		$current_user->cache_set( $cache, $cache_flag );
-		
+		if ( ! $no_cache ) {
+			$cache[ $ckey ] = $terms;
+			$current_user->cache_set( $cache, $cache_flag );
+		}
 		
 		//-- RoleScoper Modification: alternate filter name --//
 		$terms = apply_filters('get_terms_rs', $terms, $taxonomies, $args);
@@ -403,6 +413,11 @@ class ScoperHardway
 	//	 Enforces cap requirements as specified in WP_Scoped_Data_Source::reqd_caps
 	function flt_get_pages($results, $args = '') {
 		global $wpdb;
+		
+		// need to skip cache retrieval if QTranslate is filtering get_pages with a priority of 1 or less
+		static $no_cache;
+		if ( ! isset($no_cache) )
+			$no_cache = defined( 'SCOPER_NO_PAGES_CACHE' ) || ( ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate') );
 		
 		// buffer titles in case they were filtered previously
 		$titles = scoper_buffer_property( $results, 'ID', 'post_title' );
@@ -435,10 +450,15 @@ class ScoperHardway
 
 		if ( $cache = $current_user->cache_get($cache_flag) ) {
 		//-- END RoleScoper Modification --//
-			if ( isset( $cache[ $ckey ] ) )
+			if ( ! $no_cache && isset( $cache[ $ckey ] ) )
 				//-- RoleScoper Modification: alternate filter name --//
 				return apply_filters('get_pages_rs', $cache[ $ckey ], $r);
 		}
+		
+		
+		// depth is not really a get_pages arg, but remap exclude arg to exclude_tree if wp_list_pages called with depth=1
+		if ( $exclude && ! $exclude_tree && ! empty( $args['depth'] ) && ( 1 == $args['depth'] ) )
+			$exclude_tree = $exclude;
 
 		$inclusions = '';
 		if ( !empty($include) ) {
@@ -594,9 +614,11 @@ class ScoperHardway
 		}
 		
 		// RoleScoper Modification: wp-cache key and flag specific to access type and user/groups
-		$cache[ $ckey ] = $pages;
-		$current_user->cache_set($cache, $cache_flag);
-		
+		if ( ! $no_cache ) {
+			$cache[ $ckey ] = $pages;
+			$current_user->cache_set($cache, $cache_flag);
+		}
+
 		// RoleScoper Modification: alternate hook name
 		$pages = apply_filters('get_pages_rs', $pages, $r);
 		

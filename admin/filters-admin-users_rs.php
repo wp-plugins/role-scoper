@@ -20,7 +20,7 @@ class ScoperAdminUsers {
 
 	function flt_users_custom_column($content = '', $column_name, $id) {
 		if ( 'rs_groups' == $column_name ) {
-			global $scoper;
+			global $scoper, $current_user;
 			static $all_groups;
 			
 			if ( ! isset($all_groups) )
@@ -28,8 +28,9 @@ class ScoperAdminUsers {
 
 			if ( empty($all_groups) )
 				return;
-
-			if ( $group_ids = WP_Scoped_User::get_groups_for_user($id) ) {
+				
+			// query for group membership without cache because otherwise we'll clutter groups col with WP Role Metagroup display  
+			if ( $group_ids = WP_Scoped_User::get_groups_for_user($id, array('no_cache' => true) ) ) {
 
 				$group_names = array();
 				foreach ( array_keys($group_ids) as $group_id ) {

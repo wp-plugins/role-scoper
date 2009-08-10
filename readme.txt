@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed, feeds
 Requires at least: 2.5
 Tested up to: 2.8.3
-Stable Tag: 1.0.6
+Stable Tag: 1.0.7
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -19,9 +19,9 @@ Users of any level can be elevated to read or edit content of your choice.  Rest
 Scoped role restrictions and assignments are reflected in every aspect of the WordPress interface, from front end content and navigation to administrative post and comment totals.  Although Role Scoper provides extreme flexibility and powerful bulk administration forms, basic usage is just a set of user checkboxes in the Post/Page Edit Form.
 
 = Partial Feature List =
+* Customize access for specific Pages, Posts, Categories
 * Assign roles to User Groups (or directly to user)
 * Control Read and/or Edit access
-* Customize access for specific Pages, Posts, Categories
 * Pages and Category listing match modified access
 * Category post counts and tag cloud match modified access
 * Page and category listings maintain tree structure even if some branches are hidden
@@ -107,6 +107,17 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 
 
 == Changelog ==
+
+= 1.0.7 - 10 August 2009 =
+* BugFix : With WP 2.8, new users were not assigned membership in WP Role metagroup until cache flush
+* Change : Exclude role metagroups from groups column in users list (to reduce clutter)
+* Feature : Option for whether non-administrators can see unattached uploads from other users
+* Change : By default, non-administrators see only their own unattached uploads in Media Library
+* Compat : Disable caching of pages, categories listing if QTranslate plugin is active
+* Change : remap get_pages exclude argument to exclude_tree if called with depth=1
+* Change : remap get_terms exclude argument to exclude_tree if called with depth=1
+* Change : more descriptive error message when another plugin prevents RS initialization
+
 
 = 1.0.6 - 6 August 2009 =
 * BugFix : Failed to re-activate after WordPress auto-update

@@ -6,7 +6,19 @@
 \pard\sl240\slmult1\par
 \par
 \par
-\fs20 v 1.0.6 - 6 August 2009\b0\par
+\fs20\par
+v 1.0.7 - 10 August 2009\par
+\b0 - BugFix : With WP 2.8, new users were not assigned membership in WP Role metagroup until cache flush\par
+- Change : Exclude role metagroups from groups column in users list (to reduce clutter)\par
+- Feature : Option for whether non-administrators can see unattached uploads from other users\par
+- Change : By default, non-administrators see only their own unattached uploads in Media Library\par
+- Compat : Disable caching of pages, categories listing if QTranslate plugin is active\par
+- Change : remap get_pages exclude argument to exclude_tree if called with depth=1\par
+- Change : remap get_terms exclude argument to exclude_tree if called with depth=1\par
+- Change : more descriptive error message when another plugin prevents RS initialization\b\par
+\par
+\par
+v 1.0.6 - 6 August 2009\b0\par
 - BugFix : Failed to re-activate after WordPress auto-update\par
 - BugFix : In WP-mu, Category Roles not inherited from parent on new category creation\par
 - BugFix : Users with Cat. Manager role for a limited no. of cats could change Cat Parent to None\par

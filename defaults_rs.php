@@ -52,7 +52,8 @@ function scoper_default_options() {
 		'lock_top_pages' => 0,
 		'display_user_profile_groups' => 1,
 		'display_user_profile_roles' => 1,
-		'user_role_assignment_csv' => 0
+		'user_role_assignment_csv' => 0,
+		'admin_others_unattached_files' => 0
 		//'assume_javascript' => 0  //possible todo: implement this
 	);
 

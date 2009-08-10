@@ -149,9 +149,11 @@ class WP_Scoped_User extends WP_User {
 
 	// can be called statically by external modules
 	function get_groups_for_user( $user_id, $args = '' ) {
-		$cache = wpp_cache_get($user_id, 'group_membership_for_user');
-		if ( is_array($cache) )
-			return $cache;
+		if ( empty($args['no_cache']) ) {
+			$cache = wpp_cache_get($user_id, 'group_membership_for_user');
+			if ( is_array($cache) )
+				return $cache;
+		}
 		
 		global $wpdb;
 		
@@ -180,11 +182,12 @@ class WP_Scoped_User extends WP_User {
 				$user_groups = array_merge( $user_groups, $meta_groups );
 		}
 	
-		if ( $user_groups )
+		if ( $user_groups && empty($args['no_cache']) ) {  // users should always be in at least a metagroup.  Problem with caching empty result on user creation beginning with WP 2.8
 			$user_groups = array_fill_keys($user_groups, 1);
 			
-		wpp_cache_set($user_id, $user_groups, 'group_membership_for_user');
-		
+			wpp_cache_set($user_id, $user_groups, 'group_membership_for_user');
+		}
+	
 		return $user_groups;
 	}
 	
