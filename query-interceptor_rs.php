@@ -1349,9 +1349,13 @@ class QueryInterceptor_RS
 	// currently only used to conditionally launch teaser filtering
 	function flt_objects_results($results, $src_name, $object_types, $args = '') {
 
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/edit-pages.php') && ! is_administrator_rs() )
-			$results = ScoperHardway::redraw_page_hierarchy($results, 0);
-	
+		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/edit-pages.php') && ! is_administrator_rs() ) {
+			$ancestors = rs_get_page_ancestors(); // array of all ancestor IDs for keyed page_id, with direct parent first
+
+			$args = array( 'remap_parents' => false );
+			ScoperHardway::remap_tree( $results, $ancestors, 'ID', 'post_parent', $args );
+		}
+				
 		if ( empty($this->skip_teaser) )
 			// won't do anything unless teaser is enabled for object type(s)
 			$results = apply_filters('objects_teaser_rs', $results, $src_name, $object_types, array('force_teaser' => true));

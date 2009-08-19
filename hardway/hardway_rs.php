@@ -34,50 +34,92 @@ add_filter('posts_where', array('ScoperHardway', 'flt_cat_not_in_subquery'), 1);
  */	
 class ScoperHardway
 {	
-	//  Scoped equivalent to WP 2.7.1 core get_terms
+	//  Scoped equivalent to WP 2.8.3 core get_terms
 	//	Currently, scoped roles cannot be enforced without replicating the whole function 
 	// 
 	// Cap requirements depend on access type, and are specified in the WP_Scoped_Data_Source->get_terms_reqd_caps corresponding to taxonomy in question
 	function flt_get_terms($results, $taxonomies, $args) {
 		global $wpdb;
-		global $scoper;
+		$empty_array = array();
 		
-		//d_echo ("<br /><br />----- HARDWAY GET_TERMS ------<br />");
-		
-		// need to skip cache retrieval if QTranslate is filtering get_terms with a priority of 1 or less
-		static $no_cache;
-		if ( ! isset($no_cache) )
-			$no_cache = defined( 'SCOPER_NO_TERMS_CACHE' ) || ( ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate') );
-
-		// --- Role Scoper mod - if array has one element it's still a single taxonomy
-		if ( ! is_array($taxonomies) )
+		$single_taxonomy = false;
+		if ( !is_array($taxonomies) ) {
+			$single_taxonomy = true;
 			$taxonomies = array($taxonomies);
-
-		$single_taxonomy = ( count($taxonomies) < 2 ); 
-		//---
+		}
+		// === BEGIN Role Scoper MODIFICATION: single-item array is still a single taxonomy ===
+		elseif( count($taxonomies) < 2 )
+			$single_taxonomy = true;
+		// === END Role Scoper MODIFICATION ===
 		
-		// link category roles / restrictions are only scoped for management (TODO: abstract this)
-		if ( $single_taxonomy && ( 'link_category' == $taxonomies[0] ) && $scoper->is_front() )
-			return $results;
-		
-		foreach ( $taxonomies as $taxonomy ) {
-			if ( ! is_taxonomy($taxonomy) )
+		foreach ( (array) $taxonomies as $taxonomy ) {
+			if ( ! is_taxonomy($taxonomy) ) {
+				// === BEGIN Role Scoper MODIFICATION: this caused plugin activation error in some situations (though at that time, the error object was created and return on a single line, not byRef as now) ===
+				//
+				//$error = & new WP_Error('invalid_taxonomy', __('Invalid Taxonomy'));
+				//return $error;
 				return array();
-				//return new WP_Error('invalid_taxonomy', __('Invalid Taxonomy'));  // this caused Fatal error on activation under some conditions
+				//
+				// === END Role Scoper MODIFICATION ===
+			}
 		}
 		
+
+		// === BEGIN Role Scoper ADDITION: global var; various special case exemption checks ===
+		//
+		global $scoper;
+
+		// no backend filter for administrators
 		$parent_or = '';
 		if ( ( is_admin() || defined('XMLRPC_REQUEST') ) ) {
 			if ( is_administrator_rs() ) {
 				return $results;
 			} elseif ( $tx = $scoper->taxonomies->get($taxonomies[0]) ) {
+				// is a Category Edit form being displayed?
 				if ( $term_id = $scoper->data_sources->detect('id', $tx->source) )
-					// for category edit, don't filter parent term out of selection UI even if user can't manage it
-					// Todo: more parent filtering on update
+					// don't filter current parent category out of selection UI even if current user can't manage it
 					$parent_or = " OR t.term_id = (SELECT parent FROM $wpdb->term_taxonomy WHERE term_id = '$term_id') ";
 			}
 		}
+
+		// need to skip cache retrieval if QTranslate is filtering get_terms with a priority of 1 or less
+		static $no_cache;
+		if ( ! isset($no_cache) )
+			$no_cache = defined( 'SCOPER_NO_TERMS_CACHE' ) || ( ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate') );
+
+		// link category roles / restrictions are only scoped for management (TODO: abstract this)
+		if ( $single_taxonomy && ( 'link_category' == $taxonomies[0] ) && $scoper->is_front() )
+			return $results;
+
+		// this filter currently only supports a single taxonomy for each get_terms call
+		// (although the terms_where filter does support multiple taxonomies and this function could be made to do so)
+		$scoped_taxonomies = scoper_get_option('enable_wp_taxonomies');
+		if ( ! $single_taxonomy || ! isset($scoped_taxonomies[ $taxonomies[0] ]) )
+				return $results;
+				
+		// depth is not really a get_terms arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
+		if ( ! empty($args['exclude']) && empty($args['exclude_tree']) && ! empty($args['depth']) && ( 1 == $args['depth'] ) )
+			$args['exclude_tree'] = $args['exclude'];
+	
+		// don't offer to set a category as its own parent
+		if ( is_admin() && ( 'category' == $taxonomy ) ) {
+			if ( strpos($_SERVER['REQUEST_URI'], 'categories.php') ) {
+				if ( $editing_cat_id = $scoper->data_sources->get_from_uri('id', 'term') ) {
+					if ( ! empty($args['exclude']) )
+						$args['exclude'] .= ',';
+	
+					$args['exclude'] .= $editing_cat_id;
+				}
+			}
+		}
+
+		// we'll need this array in most cases, to support a disjointed tree with some parents missing (note alternate function call - was _get_term_hierarchy)
+		$children = rs_get_terms_children($taxonomies[0]);
+		//
+		// === END Role Scoper ADDITION ===
+		// =================================
 		
+
 		$in_taxonomies = "'" . implode("', '", $taxonomies) . "'";
 		
 		$defaults = array('orderby' => 'name', 'order' => 'ASC',
@@ -89,7 +131,7 @@ class ScoperHardway
 		$args['number'] = (int) $args['number'];
 		$args['offset'] = absint( $args['offset'] );
 		if ( !$single_taxonomy || !is_taxonomy_hierarchical($taxonomies[0]) ||
-			'' != $args['parent'] ) {
+			'' !== $args['parent'] ) {
 			$args['child_of'] = 0;
 			$args['hierarchical'] = false;
 			$args['pad_counts'] = false;
@@ -104,73 +146,65 @@ class ScoperHardway
 		
 		extract($args, EXTR_SKIP);
 		
-		// depth is not really a get_terms arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
-		if ( $exclude && ! $exclude_tree && ! empty( $args['depth'] ) && ( 1 == $args['depth'] ) )
-			$exclude_tree = $exclude;
-	
-		// don't offer to set a category as its own parent
-		if ( is_admin() && ( 'category' == $taxonomy ) ) {
-			if ( strpos($_SERVER['REQUEST_URI'], 'categories.php') ) {
-				if ( $editing_cat_id = $scoper->data_sources->get_from_uri('id', 'term') ) {
-					if ( $exclude )
-						$exclude .= ',';
-	
-					$exclude .= $editing_cat_id;
-				}
-			}
-		}
 		
-		//-- BEGIN RoleScoper Modification - currently only support single taxonomy call through this filter
-					 // (terms_where filter does support multiple taxonomies and this function could be made to do so)
-		
-		$scoped_taxonomies = scoper_get_option('enable_wp_taxonomies');
-		if ( ! $single_taxonomy || ! isset($scoped_taxonomies[ $taxonomies[0] ]) )
-				return $results;
-		// END RoleScoper Modification --//
-		
-		//-- RoleScoper Modification: alternate function call (was _get_term_hierarchy) --//
-		$children = rs_get_terms_children($taxonomies[0]);
-		
-		if ( $child_of )
-			if ( ! isset($children[$child_of]) )
-				return array();
+		// === BEGIN Role Scoper MODIFICATION: use the $children array we already have ===		
+		//
+		if ( $child_of && ! isset($children[$child_of]) )
+			return array();
 	
-		if ( $parent )
-			if ( ! isset($children[$parent]) )
-				return array();
-	
+		if ( $parent && ! isset($children[$parent]) )
+			return array();
+		//
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
+
+
 		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
 		$key = md5( serialize( compact(array_keys($defaults)) ) . serialize( $taxonomies ) . $filter_key );
 		
-		//-- BEGIN RoleScoper Modification: wp-cache key specific to access type and user/groups --//
+		
+		// === BEGIN Role Scoper MODIFICATION: cache key specific to access type and user/groups ===
+		//
 		$object_src_name = $scoper->taxonomies->member_property($taxonomies[0], 'object_source', 'name');
 		$ckey = md5( $key . serialize($scoper->get_terms_reqd_caps($object_src_name)) );
 		
 		global $current_user;
 		$cache_flag = SCOPER_ROLE_TYPE . '_get_terms';
 		
-		if ( $cache = $current_user->cache_get( $cache_flag ) ) {
-		//-- END RoleScoper Modification --//
+		$cache = $current_user->cache_get( $cache_flag );
 		
+		if ( false !== $cache ) {
+			if ( !is_array($cache) )
+				$cache = array();
+			
 			if ( ! $no_cache && isset( $cache[ $ckey ] ) )
-				//-- RoleScoper Modification: alternate filter name --//
+				// RS Modification: alternate filter name (get_terms filter is already applied by WP)
 				return apply_filters('get_terms_rs', $cache[ $ckey ], $taxonomies, $args);
 		}
 		
 		// buffer term names in case they were filtered previously
 		$term_names = scoper_buffer_property( $results, 'term_id', 'name' );
+		//
+		// === END Role Scoper MODIFICATION ===
+		// =====================================
 		
-		if ( 'count' == $orderby )
+
+		$_orderby = strtolower($orderby);
+		if ( 'count' == $_orderby )
 			$orderby = 'tt.count';
-		else if ( 'name' == $orderby )
+		else if ( 'name' == $_orderby )
 			$orderby = 't.name';
-		else if ( 'slug' == $orderby )
+		else if ( 'slug' == $_orderby )
 			$orderby = 't.slug';
-		else if ( 'term_group' == $orderby )
+		else if ( 'term_group' == $_orderby )
 			$orderby = 't.term_group';
-		else
+		elseif ( empty($_orderby) || 'id' == $_orderby )
 			$orderby = 't.term_id';
+		elseif ( 'order' == $_orderby )
+			$orderby = 't.term_order';
 	
+		$orderby = apply_filters( 'get_terms_orderby', $orderby, $args );
+
 		$where = '';
 		$inclusions = '';
 		if ( !empty($include) ) {
@@ -193,22 +227,26 @@ class ScoperHardway
 		$exclusions = '';
 		
 		if ( ! empty( $exclude_tree ) ) {
-			$all_terms = $scoper->get_terms($taxonomies[0], UNFILTERED_RS, COL_ID_RS);
-
-			$excluded_trunks = (array) preg_split('/[\s,]+/',$exclude_tree);
+			// === BEGIN Role Scoper MODIFICATION: temporarily unhook this filter for unfiltered get_terms calls ===
+			remove_filter('get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3);
+			// === END Role Scoper MODIFICATION ===
 			
-			foreach( $excluded_trunks as $extrunk ) {
-				$excluded_children = rs_get_term_descendants( $extrunk, $all_terms, $taxonomies[0] );	// replace core call to get_terms to avoid needless filtering
-				
+			$excluded_trunks = preg_split('/[\s,]+/',$exclude_tree);
+			foreach( (array) $excluded_trunks as $extrunk ) {
+				$excluded_children = (array) get_terms($taxonomies[0], array('child_of' => intval($extrunk), 'fields' => 'ids'));
 				$excluded_children[] = $extrunk;
 				foreach( (array) $excluded_children as $exterm ) {
 					if ( empty($exclusions) )
-						$exclusions = ' AND ( t.term_id <> "' . intval($exterm) . '" ';
+						$exclusions = ' AND ( t.term_id <> ' . intval($exterm) . ' ';
 					else
-						$exclusions .= ' AND t.term_id <> "' . intval($exterm) . '" ';
+						$exclusions .= ' AND t.term_id <> ' . intval($exterm) . ' ';
 	
 				}
 			}
+			
+			// === BEGIN Role Scoper MODIFICATION: re-hook this filter
+			add_filter('get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3);
+			// === END Role Scoper MODIFICATION ===
 		}
 
 		if ( !empty($exclude) ) {
@@ -236,111 +274,105 @@ class ScoperHardway
 	
 		if ( !empty($name__like) )
 			$where .= " AND t.name LIKE '{$name__like}%'";
+		
+		if ( '' != $parent ) {
+			$parent = (int) $parent;
 			
-		// Instead, manually remove truly empty cats at the bottom of this function, so we don't exclude cats with private but readable posts
+			// === BEGIN Role Scoper MODIFICATION: otherwise termroles only work if parent terms also have role
+			if ( ( $parent ) || ('ids' != $fields) )
+				$where .= " AND tt.parent = '$parent'";
+			// === END Role Scoper MODIFICATION ===
+		}
+			
+		
+		// === BEGIN Role Scoper MODIFICATION: instead, manually remove truly empty cats at the bottom of this function, so we don't exclude cats with private but readable posts
 		//if ( $hide_empty && !$hierarchical )
 		//	$where .= ' AND tt.count > 0';
+		// === END Role Scoper MODIFICATION ===
+		
+
+		// don't limit the query results when we have to descend the family tree 
+		if ( ! empty($number) && ! $hierarchical && empty( $child_of ) && '' == $parent ) {
+			if( $offset )
+				$limit = 'LIMIT ' . $offset . ',' . $number;
+			else
+				$limit = 'LIMIT ' . $number;
 	
-		$where_base = $where;
-		
-		if ( ( $parent ) && ('ids' == $fields) && isset($scoper->all_user_term_ids[$taxonomies[0]][$where_base]) ) {
-			// use the previous results (all user-accessible terms) for this parent requirement
-			if ( isset($children[$parent]) )
-				$terms = array_intersect($scoper->all_user_term_ids[$taxonomies[0]][$where_base], $children[$parent]);
-
-		} else { // do the query
-			if ( '' != $parent ) {
-				$parent = (int) $parent;
-				
-				// Role scoper mod: otherwise termroles only work if parent terms also have role
-				if ( ( $parent ) || ('ids' != $fields) )
-					$where .= " AND tt.parent = '$parent'";
-			}
-				
-			// don't limit the query results when we have to descend the family tree 
-			if ( ! empty($number) && ! $hierarchical && empty( $child_of ) && '' == $parent ) {
-				if( $offset )
-					$limit = 'LIMIT ' . $offset . ',' . $number;
-				else
-					$limit = 'LIMIT ' . $number;
-		
-			} else
-				$limit = '';
-		
-			if ( ! empty($search) ) {
-				$search = like_escape($search);
-				$where .= " AND (t.name LIKE '%$search%')";
-			}
-				
-			$select_this = '';
-			if ( 'all' == $fields )
-				$select_this = 't.*, tt.*';
-			else if ( 'ids' == $fields )
-				$select_this = 't.term_id, tt.parent, tt.count';
-			else if ( 'names' == $fields )
-				$select_this = 't.term_id, tt.parent, tt.count, t.name';
-
-			$query_base = "SELECT DISTINCT $select_this FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE 1=1 AND tt.taxonomy IN ($in_taxonomies) $where $parent_or ORDER BY $orderby $order $limit";
-
-			// --- Role Scoper mod: ---
-			// only force application of scoped query filter if we're NOT doing a teaser  
-			$do_teaser = ( $scoper->is_front() && empty($skip_teaser) && scoper_get_otype_option('do_teaser', 'post') );
-
-			$query = apply_filters('terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser));
-
-			// if no filering was applied because the teaser is enabled, save a redundant query
-			if ( ! empty($exclude_tree) || ($query_base != $query) || $parent ) {
-				$terms = scoper_get_results($query);
-			} else
-				$terms = $results;
-			
-			if ( 'all' == $fields )
-				update_term_cache($terms);
+		} else
+			$limit = '';
+	
+		if ( ! empty($search) ) {
+			$search = like_escape($search);
+			$where .= " AND (t.name LIKE '%$search%')";
 		}
-		
+			
+		$selects = array();
+		if ( 'all' == $fields )
+			$selects = array('t.*', 'tt.*');
+		else if ( 'ids' == $fields )
+			$selects = array('t.term_id', 'tt.parent', 'tt.count');
+		else if ( 'names' == $fields )
+			$selects = array('t.term_id', 'tt.parent', 'tt.count', 't.name');
+	        
+		$select_this = implode(', ', apply_filters( 'get_terms_fields', $selects, $args ));
+
+
+		// === BEGIN Role Scoper MODIFICATION: run the query through scoping filter
+		//
+		$query_base = "SELECT DISTINCT $select_this FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE 1=1 AND tt.taxonomy IN ($in_taxonomies) $where $parent_or ORDER BY $orderby $order $limit";
+
+		// only force application of scoped query filter if we're NOT doing a teaser  
+		$do_teaser = ( $scoper->is_front() && empty($skip_teaser) && scoper_get_otype_option('do_teaser', 'post') );
+
+		$query = apply_filters('terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser));
+
+		// if no filering was applied because the teaser is enabled, prevent a redundant query
+		if ( ! empty($exclude_tree) || ($query_base != $query) || $parent ) {
+			$terms = scoper_get_results($query);
+		} else
+			$terms = $results;
+			
+		if ( 'all' == $fields )
+			update_term_cache($terms);
+
+		// RS: don't cache an empty array, just in case something went wrong
 		if ( empty($terms) )
 			return array();
+		//
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
 
 
+		// === BEGIN Role Scoper ADDITION: Support a disjointed terms tree with some parents hidden
+		//
 		if ( 'all' == $fields ) {
-			//====== Role Scoper Mod: Support a disjointed pages tree with some parents hidden ========
-			$filtered_terms_by_id = array();
-			foreach ( $terms as $term )
-				$filtered_terms_by_id[$term->term_id] = true;
-				
-			foreach ( $terms as $key => $term ) {
-				if ( $term->parent && ! isset($filtered_terms_by_id[$term->parent]) && ( $child_of != $term->parent ) ) {
-					// remap to a visible ancestor, if any
-					$ancestor_id = $term->parent;
-					$visible_ancestor_id = 0;
-					do {
-						foreach ( $children as $maybe_papa_id => $child_ids ) {
-							if ( in_array( $ancestor_id, $child_ids ) ) {
-								$ancestor_id = $maybe_papa_id;
-								
-								if ( isset($filtered_terms_by_id[$ancestor_id]) || ($ancestor_id == $child_of) ) {
-									$visible_ancestor_id = $ancestor_id;
-									break 2;
-								}
-								else
-									continue 2;
-							}	
-						}
-					} while ( false ); // fall out of the do loop if the whole children array is traversed without finding a visible ancestor
-					
-					if ( ! $visible_ancestor_id )
-						$terms[$key]->parent = 0;
-					else
-						$terms[$key]->parent = $visible_ancestor_id;
-				}
+			$ancestors = rs_get_term_ancestors( $taxonomy ); // array of all ancestor IDs for keyed term_id, with direct parent first
+
+			$args = compact( 'child_of', 'parent', 'depth', 'orderby' );
+			
+			if ( $parent > 0 )
+				$args['remap_parents'] = false;
+			else {
+				if ( $args['remap_parents'] = scoper_get_option( 'remap_term_parents' ) )
+					$args['enforce_actual_depth'] = scoper_get_option( 'enforce_actual_term_depth' );
 			}
-			//=============================================================================
+			
+			ScoperHardway::remap_tree( $terms, $ancestors, 'term_id', 'parent', $args );
 		}
-		
-		//-- RoleScoper Modification - call alternate function (was _get_term_children) --//
+		//
+		// === END Role Scoper ADDITION ===
+		// ================================
+
+	
+		// === BEGIN Role Scoper MODIFICATION: call alternate functions 
+		// rs_tally_term_counts() replaces _pad_term_counts()
+		// rs_get_term_descendants replaces _get_term_children()
+		//
 		if ( ( $child_of || $hierarchical ) && ! empty($children) )
 			$terms = rs_get_term_descendants($child_of, $terms, $taxonomies[0]);
 		
+			//dump($terms);
+			
 		if ( ! $terms )
 			return array();
 		
@@ -367,13 +399,21 @@ class ScoperHardway
 			}
 		}
 		reset ( $terms );
+		//
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
 		
-		// do this instead of 'count > 0' clause in initial query, so we don't exclude cats with private but readable posts
+		
+		// === BEGIN Role Scoper ADDITION: hide empty cats based on actual query result instead of 'count > 0' clause, so we don't exclude cats with private but readable posts
 		if ( $terms && empty( $hierarchical ) && ! empty( $hide_empty ) ) {
 			foreach ( $terms as $key => $term )
 				if ( ! $term->count )
 					unset( $terms[$key] );
 		}
+		//
+		// === END Role Scoper ADDITION ===
+		// ================================
+		
 		
 		$_terms = array();
 		if ( 'ids' == $fields ) {
@@ -390,29 +430,39 @@ class ScoperHardway
 			$terms = array_slice($terms, $offset, $number);
 		}
 		
-		//-- RoleScoper Modification: store to user/group - specific wp-cache key --//
+		
+		// === BEGIN Role Scoper MODIFICATION: cache key is specific to user/group
+		//
 		if ( ! $no_cache ) {
 			$cache[ $ckey ] = $terms;
 			$current_user->cache_set( $cache, $cache_flag );
 		}
 		
-		//-- RoleScoper Modification: alternate filter name --//
+		// RS Modification: alternate filter name (get_terms filter is already applied by WP)
 		$terms = apply_filters('get_terms_rs', $terms, $taxonomies, $args);
-
+		
 		// restore buffered term names in case they were filtered previously
 		scoper_restore_property( $terms, $term_names, 'term_id', 'name' );
+		//
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
+	
 		
 		return $terms;
 	}
 
 	
-	// Scoped equivalent to WP core get_pages
-	//	 As of WP 2.7, scoped roles cannot be enforced without replicating the whole function 
-	//	 following get_pages execution or wp_cache retrieval.  Modifications from WP 2.7.1-beta1 get_pages are noted.
+	//  Scoped equivalent to WP 2.8.3 core get_pages
+	//	Currently, scoped roles cannot be enforced without replicating the whole function  
 	//
-	//	 Enforces cap requirements as specified in WP_Scoped_Data_Source::reqd_caps
+	//	Enforces cap requirements as specified in WP_Scoped_Data_Source::reqd_caps
 	function flt_get_pages($results, $args = '') {
 		global $wpdb;
+
+
+		// === BEGIN Role Scoper ADDITION: global var; various special case exemption checks ===
+		//
+		global $scoper, $current_user;
 		
 		// need to skip cache retrieval if QTranslate is filtering get_pages with a priority of 1 or less
 		static $no_cache;
@@ -424,41 +474,56 @@ class ScoperHardway
 
 		if ( ! scoper_get_otype_option( 'use_object_roles', 'post', 'page' ) )
 			return $results;
-
+			
+		// depth is not really a get_terms arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
+		if ( ! empty($args['exclude']) && empty($args['exclude_tree']) && ! empty($args['depth']) && ( 1 == $args['depth'] ) )
+			$args['exclude_tree'] = $args['exclude'];
+		//
+		// === END Role Scoper ADDITION ===
+		// =================================
+	
 		$defaults = array(
 			'child_of' => 0, 'sort_order' => 'ASC',
 			'sort_column' => 'post_title', 'hierarchical' => 1,
 			'exclude' => '', 'include' => '',
 			'meta_key' => '', 'meta_value' => '',
-			'authors' => '', 'parent' => -1, 'exclude_tree' => ''
+			'authors' => '', 'parent' => -1, 'exclude_tree' => '',
+			'number' => '', 'offset' => 0
 		);
 		
-		// RoleScoper modification to support xmlrpc getpagelist method
+		// === BEGIN Role Scoper ADDITION: support xmlrpc getpagelist method
 		$defaults['fields'] = "$wpdb->posts.*";
-	
+		// === END Role Scoper MODIFICATION ===
+		
+
 		$r = wp_parse_args( $args, $defaults );
 		extract( $r, EXTR_SKIP );
+		$number = (int) $number;
+		$offset = (int) $offset;
 		
+
+		// === BEGIN Role Scoper MODIFICATION: wp-cache key and flag specific to access type and user/groups
+		//
 		$key = md5( serialize( $r ) );
-		
-		//-- BEGIN RoleScoper Modification: wp-cache key and flag specific to access type and user/groups --//
-		global $scoper, $current_user;
 		$ckey = md5 ( $key . CURRENT_ACCESS_NAME_RS );
 		
 		global $current_user;
 		$cache_flag = SCOPER_ROLE_TYPE . '_get_pages';
 
-		if ( $cache = $current_user->cache_get($cache_flag) ) {
-		//-- END RoleScoper Modification --//
+		$cache = $current_user->cache_get($cache_flag);
+		
+		if ( false !== $cache ) {
+			if ( !is_array($cache) )
+				$cache = array();
+
 			if ( ! $no_cache && isset( $cache[ $ckey ] ) )
-				//-- RoleScoper Modification: alternate filter name --//
+				// alternate filter name (WP core already applied get_pages filter)
 				return apply_filters('get_pages_rs', $cache[ $ckey ], $r);
 		}
-		
-		
-		// depth is not really a get_pages arg, but remap exclude arg to exclude_tree if wp_list_pages called with depth=1
-		if ( $exclude && ! $exclude_tree && ! empty( $args['depth'] ) && ( 1 == $args['depth'] ) )
-			$exclude_tree = $exclude;
+		//
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
+
 
 		$inclusions = '';
 		if ( !empty($include) ) {
@@ -522,7 +587,9 @@ class ScoperHardway
 			}
 		}
 	
-		// BEGIN RoleScoper Modifications: split query into join, where clause for filtering
+		
+		// === BEGIN Role Scoper MODIFICATION: split query into join, where clause for filtering
+		//
 		$where_base = " AND post_type = 'page' AND post_status='publish' $exclusions $inclusions $author_query ";
 		
 		if ( $parent >= 0 )
@@ -536,10 +603,10 @@ class ScoperHardway
 			$where_base .= " AND $wpdb->postmeta.meta_key = '$meta_key' AND $wpdb->postmeta.meta_value = '$meta_value'";
 		} else
 			$join_base = '';
-
+	
 		$request = "SELECT DISTINCT $fields FROM $wpdb->posts $join_base WHERE 1=1 $where_base ORDER BY $sort_column $sort_order ";
-		
-		// option to omit private pages from page listing even if user can read them
+
+
 		if ( ! $list_private_pages = scoper_get_otype_option('private_items_listable', 'post', 'page') ) {
 			// As an extra precaution to make sure we can PREVENT private page listing even if private status is included in query,
 			// temporarily set the required cap for reading private pages to a nonstandard cap name (which is probably not owned by any user)
@@ -574,28 +641,48 @@ class ScoperHardway
 			// now that the request filter has been applied, restore reqd_caps value to normal
 			if ( ! $list_private_pages )
 				$scoper->data_sources->members['post']->reqd_caps['read']['page']['private'] = $def_caps;
-			
+
 			// Execute the filtered query
 			$pages = scoper_get_results($request);
 		}
-
+		
 		if ( empty($pages) )
-			// RoleScoper Modification: alternate hook name
+			// alternate hook name (WP core already applied get_pages filter)
 			return apply_filters('get_pages_rs', array(), $r);
 		
 		// restore buffered titles in case they were filtered previously
 		scoper_restore_property( $pages, $titles, 'ID', 'post_title' );
-
+		//
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
+		
+		
 		// Role Scoper note: WP core get_pages has already updated wp_cache and pagecache with unfiltered results.
 		// TODO: Suggest moving WP core apply_filters call back before cache update
 		update_page_cache($pages);
 		
 		
-		//====== Role Scoper Mod: Support a disjointed pages tree with some parents hidden ========
-		if ( empty($tease_all) || $child_of ) {  // if we're including all pages with teaser, no need to continue thru redraw_page_hierarchy processing
-			$pages = ScoperHardway::redraw_page_hierarchy($pages, $child_of);
+		// === BEGIN Role Scoper MODIFICATION: Support a disjointed pages tree with some parents hidden ========
+		if ( $child_of || empty($tease_all) ) {  // if we're including all pages with teaser, no need to continue thru tree remapping
+		
+			$ancestors = rs_get_page_ancestors(); // array of all ancestor IDs for keyed page_id, with direct parent first
+
+			$args = compact( 'child_of', 'parent', 'depth' );
+			
+			$args['orderby'] = $sort_column;
+			$args['exclude'] = $exclude;
+			
+			if ( $parent > 0 )
+				$args['remap_parents'] = false;
+			else {
+				if ( $args['remap_parents'] = scoper_get_option( 'remap_page_parents' ) )
+					$args['enforce_actual_depth'] = scoper_get_option( 'enforce_actual_page_depth' );
+			}
+
+			ScoperHardway::remap_tree( $pages, $ancestors, 'ID', 'post_parent', $args );
 		}
-		//===================================================
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
 		
 		if ( ! empty($exclude_tree) ) {
 			$exclude = array();
@@ -613,93 +700,146 @@ class ScoperHardway
 			}
 		}
 		
-		// RoleScoper Modification: wp-cache key and flag specific to access type and user/groups
+		// re-index the array, just in case anyone cares
+        $pages = array_values($pages);
+		
+			
+		// === BEGIN Role Scoper MODIFICATION: cache key and flag specific to access type and user/groups
+		//
 		if ( ! $no_cache ) {
 			$cache[ $ckey ] = $pages;
 			$current_user->cache_set($cache, $cache_flag);
 		}
 
-		// RoleScoper Modification: alternate hook name
+		// alternate hook name (WP core already applied get_pages filter)
 		$pages = apply_filters('get_pages_rs', $pages, $r);
-		
+		//
+		// === END Role Scoper MODIFICATION ===
+		// ====================================
+
 		return $pages;
 	}
 	
-	function redraw_page_hierarchy($pages, $child_of) {
-		global $scoper;
+	
+	
+	function remap_tree( &$items, $ancestors, $col_id, $col_parent, $args ) {
+		$defaults = array(
+			'child_of' => 0, 			'parent' => -1,
+			'orderby' => 'post_title',	'depth' => 0,
+			'remap_parents' => true, 	'enforce_actual_depth' => true,
+			'exclude' => ''
+		);
 
-		if ( $child_of )
-			$ancestors = rs_get_page_ancestors();
-			
-		$filtered_pages_by_id = array();
-		foreach ( $pages as $page )
-			$filtered_pages_by_id[$page->ID] = true;
-		
-		$skip_root_remap = false;
-		
-		if ( $scoper->is_front() && awp_is_plugin_active('fold_page_list.php') ) {
-			// Fold Page List plugin can't deal with remapping of subpages to root
-			
-			if ( defined('FOLD_PAGE_LIST_ONLY') ) // define this if the debug_backtrace call is a performance concern
-				$skip_root_remap = true;
-				
-			elseif ( $call_stack = debug_backtrace() ) {
-				// don't disable remapping of pages to root unless this is actually a fold_page_list call
-				foreach ( array_keys($call_stack) as $key )
-					if ( 'wswwpx_fold_page_list' == $call_stack[$key]['function'] ) {
-						$skip_root_remap = true;
-						break;
-					}
-			}
-		}
+		$args = wp_parse_args( $args, $defaults );
+		extract($args, EXTR_SKIP);
 
-		foreach ( $pages as $key => $page ) {
+		$exclude = preg_split('/[\s,]+/',$exclude);
+		
+		$filtered_items_by_id = array();
+		foreach ( $items as $item )
+			$filtered_items_by_id[$item->$col_id] = true;
+
+		$remapped_items = array();
+
+		// temporary WP bug workaround
+		//$any_top_items = false;
+		$first_child_of_match = -1;
+			
+		// The desired "root" is included in the ancestor array if using $child_of arg, but not if child_of = 0
+		$one_if_root = ( $child_of ) ? 0 : 1;
+		
+		foreach ( $items as $key => $item ) {
 			if ( ! empty($child_of) ) {
-				if ( ! isset($ancestors[$page->ID]) || ! in_array($child_of, $ancestors[$page->ID]) ) {
-					unset($pages[$key]);
+				if ( ! isset($ancestors[$item->$col_id]) || ! in_array($child_of, $ancestors[$item->$col_id]) ) {
+					unset($items[$key]);
+					
 					continue;
 				}
 			}
-
-			//if ( $skip_root_remap )
-			//	continue;
 			
-			if ( $page->post_parent && ( ! isset($filtered_pages_by_id[$page->post_parent]) || ( $child_of && ( $child_of == $page->post_parent ) ) ) ) {
-				if ( $child_of && ( $child_of == $page->post_parent ) )
-					// for child_of requests, remap first-gen children to root
-					$visible_ancestor_id = 0;
-				else {
-					if ( ! isset($children) )
-						$children = rs_get_page_children();
+			if ( $remap_parents ) {
+				$id = $item->$col_id;
+				$parent_id = $item->$col_parent;
 				
-					// remap to a visible ancestor, if any
-					$ancestor_id = $page->post_parent;
-					$visible_ancestor_id = 0;
-					do {
-						foreach ( $children as $maybe_papa_id => $child_ids ) {
-							if ( in_array( $ancestor_id, $child_ids ) ) {
-								$ancestor_id = $maybe_papa_id;
-								
-								if ( isset($filtered_pages_by_id[$ancestor_id]) || ($ancestor_id == $child_of) ) {
+				if ( $parent_id && ( $child_of != $parent_id ) && isset($ancestors[$id]) ) {
+					
+					// Don't use any ancestors higher than $child_of
+					if ( $child_of ) {
+						$max_key = array_search( $child_of, $ancestors[$id] );
+						if ( false !== $max_key )
+							$ancestors[$id] = array_slice( $ancestors[$id], 0, $max_key + 1 );
+					}
+					
+					// Apply depth cutoff here so Walker is not thrown off by parent remapping.
+					if ( $depth && $enforce_actual_depth ) {
+						if ( count($ancestors[$id]) > ( $depth - $one_if_root ) )
+							unset( $items[$key]	);
+					}
+
+					if ( ! isset($filtered_items_by_id[$parent_id]) ) {
+					
+						// Remap to a visible ancestor, if any 
+						if ( ! $depth || isset($items[$key]) ) {
+							$visible_ancestor_id = 0;
+	
+							foreach( $ancestors[$id] as $ancestor_id ) {
+								if ( isset($filtered_items_by_id[$ancestor_id]) || ($ancestor_id == $child_of) ) {
+									// don't remap through a parent which was explicitly excluded
+									if( $exclude && in_array( $items[$key]->$col_parent, $exclude ) )
+										break;
+
 									$visible_ancestor_id = $ancestor_id;
-									break 2;
+									break;
 								}
-								else
-									continue 2;
-							}	
+							}
+							
+							if ( $visible_ancestor_id )
+								$items[$key]->$col_parent = $visible_ancestor_id;
+
+							elseif ( ! $child_of )
+								$items[$key]->$col_parent = 0;
+	
+							// if using custom ordering, force remapped items to the bottom
+							if ( ( $visible_ancestor_id == $child_of ) && ( false !== strpos( $orderby, 'order' ) ) ) {
+								$remapped_items [$key]= $items[$key];
+								unset( $items[$key]	);
+							}
 						}
-					} while ( false ); // fall out of the do loop if the whole children array is traversed without finding a visible ancestor
+					}
 				}
-				
-				if ( $visible_ancestor_id )
-					$pages[$key]->post_parent = $visible_ancestor_id;
-				elseif ( ! $skip_root_remap )
-					$pages[$key]->post_parent = 0;
+			} // end if not skipping page parent remap
+			
+			
+			// temporary WP bug workaround: need to keep track of parent, for reasons described below
+			if (  $child_of && ! $remapped_items ) {
+				//if ( ! $any_top_items && ( 0 == $items[$key]->$col_parent ) )
+				//	$any_top_items = true;
+
+				if ( ( $first_child_of_match < 0 ) && ( $child_of == $items[$key]->$col_parent ) )
+					$first_child_of_match = $key;
 			}
 		}
 		
-		return $pages;
-	}
+		// temporary WP bug workaround
+		//if ( $child_of && ( $parent < 0 ) && ( ! $any_top_items ) && $first_child_of_match ) {
+		if ( $child_of && ( $parent < 0 ) && $first_child_of_match ) {
+			$first_item = reset($items);
+			
+			if ( $child_of != $first_item->$col_parent ) {
+				// As of WP 2.8.4, Walker class with botch this array because it assumes that the first element in the page array is a child of the display root
+				// To work around, we must move first element with the desired child_of up to the top of the array
+				$_items = array( $items[$first_child_of_match] );
+				
+				unset( $items[$first_child_of_match] );
+				$items = array_merge( $_items, $items );
+			}
+		}
+
+		if ( $remapped_items )
+			$items = array_merge($items, $remapped_items);
+
+	} // end function rs_remap_tree
+			
 
 	function flt_cat_not_in_subquery( $where ) {
 		global $wpdb;
@@ -757,9 +897,6 @@ function rs_get_term($term, $taxonomy) {
 // renamed for clarity (was get_term_children)
 // Also adds support for taxonomies that don't use wp_term_taxonomy schema
 function &rs_get_term_descendants($requested_parent_id, $qualified_terms, $taxonomy) {
-	//d_echo ("qualified terms:");	
-	//dump($qualified_terms);
-	
 	if ( empty($qualified_terms) )
 		return array();
 

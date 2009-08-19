@@ -324,33 +324,17 @@ class ScoperAdminLib {
 		$got_any = scoper_get_var("SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE scope = 'blog' AND role_type = 'wp_cap' LIMIT 1");
 		return ( $got_any );
 	}
-	
-	// This is currently only used following WP core role deletion to delete ALL role assignments for specified rolename and type
-	// In the future, additional args could be handled for selective assignment deletions
-	function delete_role($role_name, $role_type = 'rs') {
-		global $wpdb;
-		scoper_query("DELETE FROM $wpdb->user2role2object_rs WHERE role_type = '$role_type' AND role_name = '$role_name'");
-		
-		wpp_cache_flush();
-	
-		$hook = "update_option_{$wpdb->prefix}user_roles";
-		// Role Manager doesn't actually rename the role until after the referer check, so defer our maintenance operation
-		add_action( $hook, array('ScoperAdminLib', 'sync_all_wproles'), 99 );
-	}
 
+	// this function is currently RoleManager-specific
 	function rename_role($role_name_old, $role_type = 'rs') {
 		$role_name_new = $_POST['role-name'];
 		if ( ! $role_name_old )
 			return;
 
-		wpp_cache_flush();
-
 		global $wpdb;
 		scoper_query("UPDATE $wpdb->user2role2object_rs SET role_name = '$role_name_new' WHERE role_type = '$role_type' AND role_name = '$role_name_old'");
 
-		$hook = "update_option_{$wpdb->prefix}user_roles";
-		// Role Manager doesn't actually rename the role until after the referer check, so defer our maintenance operation
-		add_action( $hook, array('ScoperAdminLib', 'sync_all_wproles'), 99 );
+		ScoperAdminLib::schedule_role_sync();	// sync_wp_roles() will also flush cache on role rename
 	}
 
 	function sync_wproles($user_ids = '') {
@@ -362,7 +346,12 @@ class ScoperAdminLib {
 	function sync_all_wproles() {
 		ScoperAdminLib::sync_wproles();
 	} // end sync_wproles function
-	
+
+	function schedule_role_sync() {
+		// Role Manager / Capability Manager don't actually create the role until after the option update we're hooking on, so defer our maintenance operation
+		add_action( 'shutdown', array('ScoperAdminLib', 'sync_all_wproles') );
+	}
+
 	function agent_ids_from_csv( $csv_id, $role_basis ) {
 		static $groups_by_name;
 	

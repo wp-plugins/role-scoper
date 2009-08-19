@@ -53,7 +53,11 @@ function scoper_default_options() {
 		'display_user_profile_groups' => 1,
 		'display_user_profile_roles' => 1,
 		'user_role_assignment_csv' => 0,
-		'admin_others_unattached_files' => 0
+		'admin_others_unattached_files' => 0,
+		'remap_page_parents' => 1,
+		'enforce_actual_page_depth' => 1,
+		'remap_term_parents' => 1,
+		'enforce_actual_term_depth' => 1
 		//'assume_javascript' => 0  //possible todo: implement this
 	);
 

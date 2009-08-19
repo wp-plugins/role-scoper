@@ -69,9 +69,12 @@ class ScoperProfileUI {
 		}
 		
 		$disable_role_admin = false;
-		if ( scoper_get_option('role_admin_blogwide_editor_only') ) {
+		if ( $require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only') ) {
+			if ( ( 'admin' == $require_blogwide_editor ) && ! is_administrator_rs() )
+				return false;
+	
 			global $current_user;
-			$disable_role_admin = empty( $current_user->allcaps['edit_others_posts'] );
+			$disable_role_admin = empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] );
 		}
 
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx ) {

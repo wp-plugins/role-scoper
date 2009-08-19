@@ -241,7 +241,16 @@ class UserGroups_tp {
 			
 			$admin_ids = $scoper->users_who_can( 'activate_plugins', COL_ID_RS );
 	
-			$eligible_ids = scoper_get_option('role_admin_blogwide_editor_only') ? $scoper->users_who_can('edit_posts', COL_ID_RS) : '';
+			$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
+			
+			if ( 'admin' == $require_blogwide_editor )
+				$eligible_ids = $admin_ids;
+			elseif ( $require_blogwide_editor ) {
+				$post_editors = $scoper->users_who_can('edit_others_posts', COL_ID_RS);
+				$page_editors = $scoper->users_who_can('edit_others_pages', COL_ID_RS);
+				$eligible_ids = array_unique( array_merge($post_editors, $page_editors) );
+			} else
+				$eligible_ids = '';
 
 		} else {
 			$current_ids = ($group_id) ? array_flip(ScoperAdminLib::get_group_members($group_id, COL_ID_RS)) : array();

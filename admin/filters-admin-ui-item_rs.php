@@ -47,6 +47,9 @@ class ScoperAdminFiltersItemUI {
 
 		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 
+		if ( ( 'admin' == $require_blogwide_editor ) && ! is_administrator_rs() )
+			return;
+
 		foreach ( $box_object_types as $object_type ) {
 			if ( ! scoper_get_otype_option('use_object_roles', $src_name, $object_type) )
 				continue;

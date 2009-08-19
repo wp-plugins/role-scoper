@@ -10,6 +10,7 @@ require_once('hardway/cache-persistent.php');
 if ( ! defined('DISABLE_ATTACHMENT_FILTERING') )
 	add_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
 	
+
 function scoper_version_check() {
 	$ver_change = false;
 	
@@ -23,98 +24,107 @@ function scoper_version_check() {
 	}
 	
 	// These maintenance operations only apply when a previous version of RS was installed 
-	// To force in unusual circumstances, define SCOPER_NEED_ROLE_SYNC
-	if ( ! empty($ver['version']) || defined('SCOPER_NEED_ROLE_SYNC') ) {
+	if ( ! empty($ver['version']) ) {
 		
-		if ( version_compare( SCOPER_VERSION, $ver['version'], '>') || defined('SCOPER_NEED_ROLE_SYNC') ) {
+		if ( version_compare( SCOPER_VERSION, $ver['version'], '>') ) {
 			$ver_change = true;
 			
 			if ( function_exists( 'wpp_cache_flush' ) )
 				wpp_cache_flush();
 				
-			// added WP role metagroups in v0.9.9
-			if ( ( ! empty($ver['version']) && version_compare( $ver['version'], '0.9.9', '<') ) || defined('SCOPER_NEED_ROLE_SYNC') ) {
-				global $wp_roles;
+			// single-pass do loop to easily skip unnecessary version checks
+			do {
+				// stopped using rs_get_page_children() in 1.0.8
+				if ( version_compare( $ver['version'], '1.0.8', '<') ) {
+					delete_option('scoper_page_children');
+				} else break;
+	
+	
+				// htaccess rules modified in v1.0.0-rc9.9303
+				if ( version_compare( $ver['version'], '1.0.0-rc9.9303', '<') ) {
+					global $wp_rewrite;
+					if ( ! empty($wp_rewrite) ) // non-object error in scoper_version_check on some installations
+						$wp_rewrite->flush_rules();	
+				} else break;
 				
-				if ( empty($wp_roles) ) {
-					// lost interest in pursuing the mystery of why init / set_current_user sometimes fires 
-					// once before wp_roles or user_id are set, then again after
-					if ( ! defined('SCOPER_NEED_ROLE_SYNC') )
-						define ('SCOPER_NEED_ROLE_SYNC', true);  
-				} else {
-					require_once('admin/admin_lib_rs.php');
-					ScoperAdminLib::sync_wproles();
-				}
-			}
-			
-			// fixed failure to properly maintain scoper_page_ancestors options in 1.0.0-rc5
-			if ( version_compare( $ver['version'], '1.0.0-rc5', '<') ) {
-				delete_option('scoper_page_children');
-				delete_option('scoper_page_ancestors');
-			}
+				
+				if ( version_compare( $ver['version'], '1.0.0-rc6', '<') && version_compare( $ver['version'], '1.0.0-rc2', '>=') ) {
+					// In rc2 through rc4, we forced invalid img src attribute for image attachments on servers deemed non-apache
+					// note: false === stripos( php_sapi_name(), 'apache' ) was the criteria used by the offending code
+					// Need to update all affected post_content to convert attachment_id URL to file URL
+					if ( false === stripos( php_sapi_name(), 'apache' ) && ! get_option('scoper_fixed_img_urls') ) {
+						global $wpdb, $wp_rewrite;
 	
-			// changed default teaser_hide_private otype option to separate entries for posts, pages in v1.0.0-rc4 / 1.0.0
-			if ( version_compare( $ver['version'], '1.0.0-rc4', '<') ) {
-				$teaser_hide_private = get_option('scoper_teaser_hide_private');
-	
-				if ( isset($teaser_hide_private['post']) && ! is_array($teaser_hide_private['post']) ) {
-					if ( $teaser_hide_private['post'] )
-						// despite "for posts and pages" caption, previously this option caused pages to be hidden but posts still teased
-						update_option( 'scoper_teaser_hide_private', array( 'post:post' => 0, 'post:page' => 1 ) );
-					else
-						update_option( 'scoper_teaser_hide_private', array( 'post:post' => 0, 'post:page' => 0 ) );
-				}
-			}
-			
-			// htaccess rules modified in v1.0.0-rc9.9303
-			if ( version_compare( $ver['version'], '1.0.0-rc9.9303', '<') ) {
-				global $wp_rewrite;
-				if ( ! empty($wp_rewrite) ) // non-object error in scoper_version_check on some installations
-					$wp_rewrite->flush_rules();	
-			}
-			
-			if ( version_compare( $ver['version'], '0.9.15', '<') || defined('SCOPER_FIX_PARENT_RECURSION') ) { // 0.9.15 eliminated ability to set recursive page parents
-				require_once('admin/update_rs.php');
-				scoper_fix_page_parent_recursion();
-			}
-			
-			if ( version_compare( $ver['version'], '1.0.0-rc2', '>=') ) {
-				// In rc2 through rc4, we forced invalid img src attribute for image attachments on servers deemed non-apache
-				// note: false === stripos( php_sapi_name(), 'apache' ) was the criteria used by the offending code
-				// Need to update all affected post_content to convert attachment_id URL to file URL
-				if ( false === stripos( php_sapi_name(), 'apache' ) && ! get_option('scoper_fixed_img_urls') ) {
-					global $wpdb, $wp_rewrite;
-	
-					if ( ! empty($wp_rewrite) ) {
-						$blog_url = get_bloginfo('url');
-						if ( $results = $wpdb->get_results( "SELECT ID, guid, post_parent FROM $wpdb->posts WHERE post_type = 'attachment' && post_date > '2008-12-7'" ) ) {
-							foreach ( $results as $row ) {
-								$data = array();
-								$data['post_content'] = $wpdb->get_var( "SELECT post_content FROM $wpdb->posts WHERE ID = '$row->post_parent'" );
-								
-								if ( $row->guid ) {
-									$attachment_link_raw = $blog_url . "/?attachment_id={$row->ID}";
-									$data['post_content'] = str_replace('src="' . $attachment_link_raw, 'src="' . $row->guid, $data['post_content']);
+						if ( ! empty($wp_rewrite) ) {
+							$blog_url = get_bloginfo('url');
+							if ( $results = $wpdb->get_results( "SELECT ID, guid, post_parent FROM $wpdb->posts WHERE post_type = 'attachment' && post_date > '2008-12-7'" ) ) {
+								foreach ( $results as $row ) {
+									$data = array();
+									$data['post_content'] = $wpdb->get_var( "SELECT post_content FROM $wpdb->posts WHERE ID = '$row->post_parent'" );
 									
-									$attachment_link = get_attachment_link($row->ID);
-									$data['post_content'] = str_replace('src="' . $attachment_link, 'src="' . $row->guid, $data['post_content']);
-								}
-		
-								if ( ! empty($data['post_content']) ) {
-									$wpdb->update($wpdb->posts, $data, array("ID" => $row->post_parent) );
+									if ( $row->guid ) {
+										$attachment_link_raw = $blog_url . "/?attachment_id={$row->ID}";
+										$data['post_content'] = str_replace('src="' . $attachment_link_raw, 'src="' . $row->guid, $data['post_content']);
+										
+										$attachment_link = get_attachment_link($row->ID);
+										$data['post_content'] = str_replace('src="' . $attachment_link, 'src="' . $row->guid, $data['post_content']);
+									}
+			
+									if ( ! empty($data['post_content']) ) {
+										$wpdb->update($wpdb->posts, $data, array("ID" => $row->post_parent) );
+									}
 								}
 							}
+						
+							update_option('scoper_fixed_img_urls', true);
 						}
-					
-						update_option('scoper_fixed_img_urls', true);
 					}
-				}
-			} // endif last RS version might have corrupted stored img attributes
+				} else break;
+	
+				
+				// fixed failure to properly maintain scoper_page_ancestors options in 1.0.0-rc5
+				if ( version_compare( $ver['version'], '1.0.0-rc5', '<') ) {
+					delete_option('scoper_page_ancestors');
+				} else break;
+		
+				
+				// changed default teaser_hide_private otype option to separate entries for posts, pages in v1.0.0-rc4 / 1.0.0
+				if ( version_compare( $ver['version'], '1.0.0-rc4', '<') ) {
+					$teaser_hide_private = get_option('scoper_teaser_hide_private');
+		
+					if ( isset($teaser_hide_private['post']) && ! is_array($teaser_hide_private['post']) ) {
+						if ( $teaser_hide_private['post'] )
+							// despite "for posts and pages" caption, previously this option caused pages to be hidden but posts still teased
+							update_option( 'scoper_teaser_hide_private', array( 'post:post' => 0, 'post:page' => 1 ) );
+						else
+							update_option( 'scoper_teaser_hide_private', array( 'post:post' => 0, 'post:page' => 0 ) );
+					}
+				} else break;
+				
+				// 0.9.15 eliminated ability to set recursive page parents
+				if ( version_compare( $ver['version'], '0.9.15', '<') ) { 
+					require_once('admin/update_rs.php');
+					scoper_fix_page_parent_recursion();
+				} else break;
+				
+				
+				// added WP role metagroups in v0.9.9
+				if ( ( ! empty($ver['version']) && version_compare( $ver['version'], '0.9.9', '<') ) ) {
+					global $wp_roles;
+					
+					if ( ! empty($wp_roles) ) {
+						require_once('admin/admin_lib_rs.php');
+						ScoperAdminLib::sync_wproles();
+					}
+				} else break;
+			
+			} while ( 0 ); // end single-pass version check loop
 			
 		} // endif RS version has increased since last execution (or the maintenance operations are being forced)
 		
 	} // endif we have a record of some previous RS version (or the maintenance operations are being forced)
 	
+
 	if ( $ver_change ) {
 		$ver = array(
 			'version' => SCOPER_VERSION, 
@@ -193,7 +203,6 @@ function scoper_deactivate() {
 	if ( function_exists( 'wpp_cache_flush' ) )
 		wpp_cache_flush();
 	
-	delete_option('scoper_page_children');
 	delete_option('scoper_page_ancestors');
 	
 	global $wp_taxonomies;
@@ -201,6 +210,7 @@ function scoper_deactivate() {
 		foreach ( array_keys($wp_taxonomies) as $taxonomy ) {
 			delete_option("{$taxonomy}_children");
 			delete_option("{$taxonomy}_children_rs");
+			delete_option("{$taxonomy}_ancestors_rs");
 		}
 	}
 	

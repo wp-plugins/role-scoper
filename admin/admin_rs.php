@@ -157,18 +157,23 @@ class ScoperAdmin
 		// optional hack to prevent roles / restrictions menu for non-Administrators
 		//
 		// This is now handled as a Role Scoper Option.
-		// On the Realm tab, Access Types section: deselect "editing and administering content"
+		// In Roles > Options > Features > Content Maintenance, set "Roles and Restrictions can be set" to "Administrators only" 
+		//
+		// To prevent Role Scoper from filtering the backend at all, go to Roles > Options > Realm > Access Types and deselect "editing and administering content"
 		//
 		// end optional hack
 		*/
+		
+		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
+		
+		if ( ! $is_administrator && ( 'admin' == $require_blogwide_editor ) )
+			return;
 
 		$can_manage_options = $is_administrator || current_user_can('manage_options');
 		$can_edit_users = $is_administrator || current_user_can('edit_users');
 
 		$can_admin_objects = array();
 		$can_admin_terms = array();
-		
-		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 		
 		// which object types does this user have any administration over?
 		foreach ( $this->scoper->data_sources->get_all() as $src_name => $src ) {
@@ -178,13 +183,12 @@ class ScoperAdmin
 			$object_types = ( isset($src->object_types) ) ? $src->object_types : array( $src_name => true );
 
 			foreach ( array_keys($object_types) as $object_type ) {
-				if ( is_administrator_rs($src) 
-				|| ( $this->user_can_admin_object($src_name, $object_type, 0, true) && ( ! $require_blogwide_editor || $this->user_can_edit_blogwide($src_name, $object_type) ) ) )
+				if ( is_administrator_rs($src) || $this->user_can_admin_object($src_name, $object_type, 0, true) )
 					if ( scoper_get_otype_option('use_object_roles', "$src_name:$object_type") )
 						$can_admin_objects[$src_name][$object_type] = true;
 			}
 		}
-		
+
 		// which taxonomies does this user have any administration over?
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx ) {
 			if ( is_administrator_rs($tx->source) || $this->user_can_admin_terms($taxonomy) )
@@ -309,8 +313,10 @@ class ScoperAdmin
 		// Register the menus with WP using URI and links determined above
 		global $menu;
 		$tweak_menu = false; // don't mess with menu order unless we know we can get away with it in current WP version
-		
-		if ( ! defined( 'SCOPER_DISABLE_MENU_TWEAK' ) ) {
+			
+		//  Manually set menu indexes for positioning below Users menu,
+		//  but not if Flutter (a.k.a. Fresh Page) plugin is active.  It re-indexes menu items 
+		if ( ! defined( 'SCOPER_DISABLE_MENU_TWEAK' ) && ! awp_is_plugin_active('fresh-page') && ! awp_is_plugin_active('flutter') ) {
 			if ( awp_ver('2.8-dev') ) {
 				if ( ! awp_ver('2.9') ) { // review and increment this with each WP version until there's a clean way to force menu proximity to 'Users'
 					$tweak_menu = true;
@@ -361,8 +367,6 @@ class ScoperAdmin
 
 		$path = SCOPER_ABSPATH;
 		
-		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
-		
 		$first_pass = true;
 
 		$submenu_types = ( $object_submenus_first ) ? array( 'object', 'term' ) : array( 'term', 'object' );
@@ -378,7 +382,7 @@ class ScoperAdmin
 						
 						if ( $require_blogwide_editor ) {
 							global $current_user;
-							if ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) )
+							if ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) && empty( $current_user->allcaps['manage_categories'] ) )
 								continue;
 						}
 						
@@ -594,6 +598,15 @@ class ScoperAdmin
 		if ( is_administrator_rs() )
 			return true;
 
+		static $require_blogwide_editor;
+			
+		if ( ! isset($require_blogwide_editor) )
+			$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
+			
+		if ( 'admin' == $require_blogwide_editor )
+			return false;
+
+
 		static $role_ops;
 
 		if ( ! isset($role_ops) )
@@ -605,19 +618,8 @@ class ScoperAdmin
 		// user can't view or edit role assignments unless they have all rolecaps
 		// however, if this is a new post, allow read role to be assigned even if contributor doesn't have read_private cap blog-wide
 		if ( $item_id || ( $role_ops[$role_handle] != array( 'read' => 1 ) ) ) {
-			static $require_blogwide_edit;
-			static $can_edit_blogwide;
 			static $reqd_caps;
 			
-			if ( ! isset($require_blogwide_edit) )
-				$require_blogwide_edit = scoper_get_option('role_admin_blogwide_editor_only');
-			
-			if ( ! isset($can_edit_blogwide) )
-				$can_edit_blogwide = array();
-				
-			if ( ! isset($can_edit_blogwide[$src_name][$object_type]) )
-				$can_edit_blogwide[$src_name][$object_type] = $this->user_can_edit_blogwide($src_name, $object_type, OP_EDIT_RS);
-
 			if ( ! isset($reqd_caps) )
 				$reqd_caps = array();
 				
@@ -627,10 +629,20 @@ class ScoperAdmin
 			if ( ! awp_user_can(array_keys($reqd_caps[$role_handle]), $item_id) )
 				return false;
 
-			// a user must have a blog-wide edit cap to modify editing role assignments (even if they have Editor role assigned for some current object)
-			if ( isset($role_ops[$role_handle][OP_EDIT_RS]) || isset($role_ops[$role_handle][OP_ASSOCIATE_RS]) )
-				if ( $require_blogwide_edit && ! $can_edit_blogwide[$src_name][$object_type] )
+			
+			// are we also applying the additional requirement (based on RS Option setting) that the user is a blog-wide editor?
+			if ( $require_blogwide_editor ) {
+				static $can_edit_blogwide;
+
+				if ( ! isset($can_edit_blogwide) )
+					$can_edit_blogwide = array();
+					
+				if ( ! isset($can_edit_blogwide[$src_name][$object_type]) )
+					$can_edit_blogwide[$src_name][$object_type] = $this->user_can_edit_blogwide($src_name, $object_type, array( 'require_others_cap' => true ) );
+	
+				if ( ! $can_edit_blogwide[$src_name][$object_type] )
 					return false;
+			}
 		}
 		
 		return true;
@@ -646,7 +658,7 @@ class ScoperAdmin
 			return true;
 		
 		if ( $new_object = ! $object_id && ( false !== $object_id ) ) {
-			//for new objects, default to requiring caps for 1st defuned status (=published for posts)
+			//for new objects, default to requiring caps for 1st defined status (=published for posts)
 			$src = $this->scoper->data_sources->get($src_name);
 			reset ($src->statuses);
 			$status_name = key($src->statuses);
@@ -671,7 +683,7 @@ class ScoperAdmin
 			$delete_caps = $this->scoper->cap_defs->get_matching($src_name, $object_type, OP_DELETE_RS, $status_name, $base_caps_only);
 			$reqd_caps = array_merge( array_keys($admin_caps), array_keys($delete_caps) );
 		}
-		
+
 		if ( ! $reqd_caps )
 			return true;	// apparantly this src/otype has no admin caps, so no restriction to apply
 			
@@ -679,12 +691,14 @@ class ScoperAdmin
 		// Normally we want to disregard "others" cap requirements if a role is assigned directly for an object
 		// This is an exception - we need to retain a "delete_others" cap requirement in case it is the
 		// distinguishing cap of an object administrator
-		
+
 		$this->scoper->cap_interceptor->require_full_object_role = true;
 		$return = awp_user_can($reqd_caps, $object_id);
 		$this->scoper->cap_interceptor->require_full_object_role = false;
 		
 		if ( ! $return && ! $object_id && $any_obj_role_check ) {
+			// No object ID was specified, and current user does not have the cap blog-wide.  Credit user for capability on any individual object.
+			
 			$admin_caps = $this->scoper->cap_defs->get_matching($src_name, $object_type, OP_ADMIN_RS, STATUS_ANY_RS);
 			$delete_caps = $this->scoper->cap_defs->get_matching($src_name, $object_type, OP_DELETE_RS, STATUS_ANY_RS);
 			
@@ -760,33 +774,63 @@ class ScoperAdmin
 	} // end function
 	
 	
-	function user_can_edit_blogwide( $src_name = '', $object_type = '', $qualifying_ops = '' ) {
-		global $current_user;
+	function user_can_edit_blogwide( $src_name = '', $object_type = '', $args = '' ) {
+		global $scoper, $current_user;
 		
+		$defaults = array( 'qualifying_ops' => array( 'edit' ),  $require_others_cap = false );
+		$args = array_merge( $defaults, (array) $args );
+		extract($args);
+
 		if ( is_administrator_rs($src_name) )
 			return true;
-		
-		if ( empty($qualifying_ops) )
-			$qualifying_ops = array( 'delete', 'admin' );
 
 		if ( ! is_array($qualifying_ops) )
 			$qualifying_ops = (array) $qualifying_ops;
 		
-		//  i.e. if user has blog-wide edit_posts, they can see admin divs in Page Edit form based on a page role assignment. )
-		foreach ( array_keys($current_user->blog_roles) as $role_handle ) {
-			if ( $role_ops = $this->scoper->role_defs->get_role_ops($role_handle) ) {
-				//if ( isset($role_ops[$required_op]) ) {
-				if ( array_intersect( array_keys($role_ops), $qualifying_ops ) ) {
-					if ( ! $src_name && ! $object_type )
-						return true;
-					else {
-						$role_attribs = $this->scoper->role_defs->get_role_attributes($role_handle);
-						if ( in_array($src_name, $role_attribs->src_names) && ( ! $object_type || in_array($object_type, $role_attribs->object_types) ) )
-							return true;
-					}
-				}
+
+		// if no admin/delete/publish caps are defined for this object type, accept blog-wide possession of an edit cap instead 
+		if ( ( array('edit') !== $qualifying_ops ) && ! array_intersect( array_keys($role_ops), $qualifying_ops ) ) {
+			foreach ( $qualifying_ops as $op_type ) {
+				if ( $cap_defs = $scoper->cap_defs->get_matching($src_name, $object_type, $op_type) )
+					break;
 			}
+			
+			if ( ! $cap_defs )
+				$qualifying_ops = array( 'edit' );
 		}
+		
+		
+		$op_match = false;
+		$others_cap_defined = false;
+
+		foreach ( $qualifying_ops as $op_type ) {
+			$cap_defs = $scoper->cap_defs->get_matching($src_name, $object_type, $op_type);
+			
+			foreach ( $cap_defs as $cap_name => $cap_def ) {
+				
+		    	if ( $require_others_cap ) {
+				   	$is_others_cap = ! empty($cap_def->attributes) && in_array('others', $cap_def->attributes);
+				   	$others_cap_defined = $others_cap_defined || $is_others_cap;
+				}
+				   
+				// is this capability in any of the current user's roles?
+				foreach ( array_keys($current_user->blog_roles) as $role_handle ) {
+					
+					if ( ! empty( $scoper->role_defs->role_caps[$role_handle][$cap_name] ) ) {
+						if ( ! $require_others_cap || $is_others_cap )
+							return true;
+						else
+							$op_match = true;
+		 			}
+				}
+
+			}
+		}	
+			
+
+		// We matched the op type but not others requirement.  If no others caps are defined for this object type, call it good.
+		if ( $op_match  && ! $others_cap_defined )
+			return true;
 	}
 	
 	// primary use is to account for different contexts of users query

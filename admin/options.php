@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
-if ( ! current_user_can('manage_options') )
+if ( ! current_user_can('manage_options') && ! current_user_can('activate_plugins') )
 	wp_die(__('Cheatin&#8217; uh?'));
 
 if ( isset($_POST['all_otype_options']) ) {
@@ -134,6 +134,22 @@ $all_options []= 'strip_private_caption';?>
 </span>
 <br /><br />
 
+<?php $all_options []= 'no_frontend_admin'; ?>
+<label for="no_frontend_admin">
+<input name="no_frontend_admin" type="checkbox" id="no_frontend_admin" value="1" <?php checked('1', scoper_get_option('no_frontend_admin'));?> />
+<?php _e('Assume No Front-end Admin', 'scoper') ?></label><br />
+<span class="rs-subtext">
+<?php if ( $display_hints) _e('Reduce memory usage for front-end access by assuming no content, categories or users will be created or edited there. Worst case scenario if you assume wrong: manually assign roles/restrictions to new content or re-sync user roles via plugin re-activation.', 'scoper');?>
+</span>
+</td></tr>
+
+
+
+<tr valign="top">
+<th scope="row"><?php 		// --- PAGES LISTING SECTION ---
+_e('Pages Listing', 'scoper') ?></th>
+<td>
+
 <?php
 	$option_name = "private_items_listable";
 	$all_otype_options []= $option_name;
@@ -162,14 +178,73 @@ $all_options []= 'strip_private_caption';?>
 	} // endif default option isset
 ?>
 <br /><br />
-<?php $all_options []= 'no_frontend_admin'; ?>
-<label for="no_frontend_admin">
-<input name="no_frontend_admin" type="checkbox" id="no_frontend_admin" value="1" <?php checked('1', scoper_get_option('no_frontend_admin'));?> />
-<?php _e('Assume No Front-end Admin', 'scoper') ?></label><br />
+
+<?php
+$all_options []= 'remap_page_parents';
+$do_remap = scoper_get_option('remap_page_parents');
+$js_call = "agp_display_if('enforce_actual_page_depth_div', 'remap_page_parents');";
+echo '<label for="remap_page_parents">';
+echo "<input name='remap_page_parents' type='checkbox' onclick=\"$js_call\" id='remap_page_parents' value='1' ";
+checked('1', $do_remap);
+echo ' /> ';
+_e('Remap pages to visible ancestor', 'scoper');
+?>
+</label><br />
 <span class="rs-subtext">
-<?php if ( $display_hints) _e('Reduce memory usage for front-end access by assuming no content, categories or users will be created or edited there. Worst case scenario if you assume wrong: manually assign roles/restrictions to new content or re-sync user roles via plugin re-activation.', 'scoper');?>
+<?php if ( $display_hints) _e('If a page\'s parent is not visible to the user, it will be listed below a visible grandparent instead.', 'scoper');?>
 </span>
+
+<?php
+$all_options []= 'enforce_actual_page_depth';
+$css_display = ( $do_remap ) ? 'block' : 'none';
+echo "<div id='enforce_actual_page_depth_div' style='display:$css_display; margin-top: 1em;'>";
+?>
+<label for="enforce_actual_page_depth">
+<input name="enforce_actual_page_depth" type="checkbox" id="enforce_actual_page_depth" value="1" <?php checked('1', scoper_get_option('enforce_actual_page_depth'));?> />
+<?php _e('Enforce actual page depth', 'scoper') ?></label><br />
+<span class="rs-subtext">
+<?php if ( $display_hints) _e('When remapping page parents, apply any depth limits to the actual depth below the requested root page.  If disabled, depth limits apply to apparant depth following remap.', 'scoper');?>
+</span>
+</div>
+
 </td></tr>
+
+
+
+<tr valign="top">
+<th scope="row"><?php 		// --- CATEGORIES LISTING SECTION ---
+_e('Categories Listing', 'scoper') ?></th>
+<td>
+
+<?php
+$all_options []= 'remap_term_parents';
+$do_remap = scoper_get_option('remap_term_parents');
+$js_call = "agp_display_if('enforce_actual_term_depth_div', 'remap_term_parents');";
+echo '<label for="remap_term_parents">';
+echo "<input name='remap_term_parents' type='checkbox' onclick=\"$js_call\" id='remap_term_parents' value='1' ";
+checked('1', $do_remap);
+echo ' /> ';
+_e('Remap terms to visible ancestor', 'scoper');?>
+</label><br />
+<span class="rs-subtext">
+<?php if ( $display_hints) _e('If a category\'s parent is not visible to the user, it will be listed below a visible grandparent instead.', 'scoper');?>
+</span>
+
+<?php
+$all_options []= 'enforce_actual_term_depth';
+$css_display = ( $do_remap ) ? 'block' : 'none';
+echo "<div id='enforce_actual_term_depth_div' style='display:$css_display; margin-top: 1em;'>";
+?>
+<label for="enforce_actual_term_depth">
+<input name="enforce_actual_term_depth" type="checkbox" id="enforce_actual_term_depth" value="1" <?php checked('1', scoper_get_option('enforce_actual_term_depth'));?> />
+<?php _e('Enforce actual term depth', 'scoper') ?></label><br />
+<span class="rs-subtext">
+<?php if ( $display_hints) _e('When remapping category parents, apply any depth limits to the actual depth below the requested root category.  If disabled, depth limits apply to apparant depth following remap.', 'scoper');?>
+</span>
+</div>
+
+</td></tr>
+
 
 
 <tr valign="top">
@@ -189,25 +264,44 @@ _e('Content Maintenance', 'scoper') ?></th>
 </span>
 </div>
 
+
 <br />
-<?php $all_options []= 'role_admin_blogwide_editor_only';?>
+<?php 
+$id = 'role_admin_blogwide_editor_only';
+$all_options []= $id;
+$current_setting = strval( scoper_get_option($id) );  // force setting and corresponding keys to string, to avoid quirks with integer keys
+
+?>
 <div class="agp-vspaced_input">
 <label for="role_admin_blogwide_editor_only">
-<input name="role_admin_blogwide_editor_only" type="checkbox" id="role_admin_blogwide_editor_only" value="1" <?php checked('1', scoper_get_option('role_admin_blogwide_editor_only'));?> />
-<?php _e('Role administration requires a blog-wide Editor role', 'scoper') ?></label><br />
+<?php
+_e( 'Roles and Restrictions can be set:', 'scoper' );
+
+$captions = array( '0' => __('by the Author or Editor of any Post/Category/Page', 'scoper'), '1' => __('by blog-wide Editors and Administrators', 'scoper'), 'admin' => __('by Administrators only', 'scoper') );
+foreach ( $captions as $key => $value) {
+	$key = strval($key);
+	echo "<div style='margin: 0 0 0.5em 2em;'><label for='{$id}_{$key}'>";
+	$checked = ( $current_setting === $key ) ? "checked='checked'" : '';
+
+	echo "<input name='$id' type='radio' id='{$id}_{$key}' value='$key' $checked />";
+	echo $value;
+	echo '</label></div>';
+}
+?>
 <span class="rs-subtext">
-<?php if ( $display_hints) _e('Prevent users who lack a blog-wide Editor role from assigning or restricting any roles, even for posts/pages which they can edit.', 'scoper');?>
+<?php if ( $display_hints) _e('Specify which users can assign and restrict roles <strong>for their content</strong> - via Post/Page Edit Form or Roles/Restrictions sidebar menu.', 'scoper');?>
 </span>
 </div>
+
 
 <br />
 <?php $all_options []= 'admin_others_unattached_files';?>
 <div class="agp-vspaced_input">
 <label for="admin_others_unattached_files">
 <input name="admin_others_unattached_files" type="checkbox" id="admin_others_unattached_files" value="1" <?php checked('1', scoper_get_option('admin_others_unattached_files'));?> />
-<?php _e('Non-administrators see other users\' unattached uploads', 'scoper') ?></label><br />
+<?php _e('Non-editors see other users\' unattached uploads', 'scoper') ?></label><br />
 <span class="rs-subtext">
-<?php if ( $display_hints) _e('By default, non-administrators will see only their own unattached uploads in the Media Library.', 'scoper');?>
+<?php if ( $display_hints) _e('If enabled, users who are not blog-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper');?>
 </span>
 </div>
 
@@ -290,7 +384,7 @@ if ( $cache_selected && ! wpp_cache_test( $cache_msg, 'scoper' ) ) {
 	echo '<div class="agp-vspaced_input"><span class="rs-warning">';
 	echo $cache_msg;
 	echo '</span></div>';
-} elseif ( $cache_enabled && ! file_exists('..\rs_cache_flush.php') ) {
+} elseif ( $cache_enabled && ! file_exists('../rs_cache_flush.php') && ! file_exists('..\rs_cache_flush.php') ) {
 	echo '<div class="agp-vspaced_input"><span class="rs-warning">';	
 	_e('<strong>Note:</strong> the internal cache may be susceptible to corruption in multi-author installations. For manual or automatic recovery, copy rs_cache_flush.php into your WP root directory and execute directly.', 'scoper');
 	echo '</span></div>';
@@ -298,6 +392,7 @@ if ( $cache_selected && ! wpp_cache_test( $cache_msg, 'scoper' ) ) {
 ?>
 
 <?php if($cache_enabled):?>
+<br />
 <span class="submit" style="border:none;float:left;margin-top:0">
 <input type="submit" name="rs_flush_cache" value="<?php _e('Flush Cache', 'scoper') ?>" />
 </span>
@@ -783,7 +878,7 @@ _e('Limited Editing Elements', 'scoper') ?></th>
 <?php
 	if ( $display_hints) {
 		echo ('<div class="agp-vspaced_input">');
-		_e('Remove Edit Form elements with these html ids from users who do not have full editing capabilities for the post/page. Separate with&nbsp;;', 'scoper');
+		_e('Remove Edit Form elements with these html IDs from users who do not have full editing capabilities for the post/page. Separate with&nbsp;;', 'scoper');
 		echo '</div>';
 	}
 ?>
@@ -818,7 +913,7 @@ _e('Limited Editing Elements', 'scoper') ?></th>
 <?php
 if ( isset($sample_ids[$src_otype]) ) {
 	$js_call = "agp_set_display('rs_sample_ids_$src_otype', 'inline');";
-	printf(__('%1$s sample ids:%2$s %3$s', 'scoper'), "<a href='javascript:void(0)' onclick=\"$js_call\">", '</a>', $sample_ids[$src_otype] );
+	printf(__('%1$s sample IDs:%2$s %3$s', 'scoper'), "<a href='javascript:void(0)' onclick=\"$js_call\">", '</a>', $sample_ids[$src_otype] );
 }
 ?>
 </div>

@@ -8,8 +8,9 @@ if ( DEFINE_GROUPS_RS && ( awp_ver('2.8') || defined('scoper_users_custom_column
 	add_action('manage_users_custom_column', array('ScoperAdminUsers', 'flt_users_custom_column'), 10, 3);
 }
 
-// abuse referer check to detect Role Manager operations (need to do this even if queryfilters are disabled for wp-admin)
-add_action('check_admin_referer', array('ScoperAdminUsers', 'act_rolemanager_referer'));
+// abuse referer check to detect Role Manager role rename operation
+add_action( 'check_admin_referer', array('ScoperAdminUsers', 'act_rolemanager_referer') );
+
 
 class ScoperAdminUsers {
 
@@ -57,27 +58,12 @@ class ScoperAdminUsers {
 	function act_rolemanager_referer($action) {
 		// Role Manager referers
 		if ( strpos($action, 'rolemanager') ) { // don't search for 1st char or strpos will return zero
+
 			// Role Manager plugin renamed a WP role
 			if ( $pos = strpos($action, 'rename_role_') ) {
 				if ( ! strpos($action, 'rename_role_form') ) {
 					$role_name = substr($action, $pos + strlen('rename_role_') );
 					ScoperAdminLib::rename_role($role_name, 'wp');
-				}
-				
-			// Role Manager plugin deleted a WP role
-			} elseif ( $pos = strpos($action, 'delete_role_') ) {
-				if ( ! strpos($action, 'delete_role_form') ) {
-					$role_name = substr($action, $pos + strlen('delete_role_') );
-					ScoperAdminLib::delete_role($role_name, 'wp');
-				}
-			
-			// Role Manager copied a WP role.  Resynchronize to include it in our WP metagroups checklist.
-			} elseif ( ( strpos($action, 'copy_role_') || strpos($action, 'create_new_role') ) ) {
-				if ( ! strpos($action, 'copy_role_form') && ! strpos($action, 'create_new_role_form') ) {
-					global $wpdb;
-					$hook = "update_option_{$wpdb->prefix}user_roles";
-					// Role Manager doesn't actually create / copy the role until after the referer check, so defer our maintenance operation
-					add_action( $hook, array('ScoperAdminLib', 'sync_all_wproles'), 99 );
 				}
 			}
 		}

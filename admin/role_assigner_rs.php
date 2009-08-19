@@ -65,15 +65,20 @@ class ScoperRoleAssigner
 					$user_has_role[$role_handle] = $this->user_has_role_in_term( array($role_handle => 1), $src_or_tx_name, $item_id, $args);
 				}
 		} else {
-			if ( $require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only') )
+			if ( $require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only') ) {
 				global $current_user;
 			
-			foreach ( array_keys($roles) as $role_handle ) {
-				// TODO: any reason not to apply the blogwide_editor_only setting to reading roles?
-				//$role_ops = $this->scoper->role_defs->get_role_ops($role_handle);
+				$is_administrator = is_administrator_rs();
+			}
 				
+			foreach ( array_keys($roles) as $role_handle ) {
 				// a user must have a blog-wide edit cap to modify editing role assignments (even if they have Editor role assigned for some current object)
-				if ( $require_blogwide_editor ) { //&& ( isset($role_ops[OP_EDIT_RS]) || isset($role_ops[OP_ASSOCIATE_RS]) ) ) {
+				if ( $require_blogwide_editor ) {
+					
+					if ( ! $is_administrator && ( 'admin' == $require_blogwide_editor ) ) {
+						$user_has_role[$role_handle] = false;
+						continue;	
+					}
 					
 					$role_attrib = $this->scoper->role_defs->get_role_attributes($role_handle);
 				

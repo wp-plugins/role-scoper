@@ -78,7 +78,10 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			}
 		}
 		
-		if ( ! empty($delete_metagroup_ids) || ! empty($insert_group_ids) || ! empty($update_metagroup_ids) ) {
+		if ( ! empty($delete_metagroup_ids) || ! empty($update_metagroup_ids) ) {
+			wpp_cache_flush();  // role deletion / rename might affect other cached data or settings, so flush the whole cache
+
+		} elseif ( ! empty($insert_group_ids) ) {
 			wpp_cache_flush_group( 'all_usergroups' );
 			wpp_cache_flush_group( 'usergroups_for_groups' );
 			wpp_cache_flush_group( 'usergroups_for_user' );
@@ -135,12 +138,13 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			$stored_roles = array();
 			$delete_roles = array();
 			foreach ( array_keys($user_roles) as $role_type ) {
-				$results = scoper_get_results("SELECT role_name, assignment_id FROM $uro_table WHERE scope = 'blog' AND role_type = '$role_type' AND user_id = '$user_id'");
+				$results = scoper_get_results("SELECT role_name, assignment_id FROM $uro_table WHERE role_type = '$role_type' AND user_id = '$user_id'");
 				if ( $results ) {
 					//rs_errlog("results: " . serialize($results));
 					foreach ( $results as $row ) {
-						// log stored roles, and delete any roles which user no longer has 
-						// (maybe WP role changes were made while Role Scoper was deactivated)	
+						// Log stored roles, and delete any roles which user no longer has (possibly because the WP role definition was deleted).
+						// Only Role Scoper's mirroring of WP blog roles is involved here unless Role Scoper was configured and used with a Role Type of "WP".
+						// This also covers any WP role changes made while Role Scoper was deactivated.
 						if ( in_array( $row->role_name, $user_roles[$role_type]) )
 							$stored_roles[$role_type] []= $row->role_name;
 						else
@@ -177,6 +181,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	} // end scoper_sync_wproles function
 
 
+	// legacy function called when upgrading from versions older than 0.9.15
 	function scoper_fix_page_parent_recursion() {
 		global $wpdb;
 		$arr_parent = array();

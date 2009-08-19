@@ -144,8 +144,13 @@ class ScoperAdminFilters
 		// added this with WP 2.7 because QuickPress does not call pre_post_category
 		if ( ! is_administrator_rs() && awp_ver('2.7-dev') )
 			add_filter('pre_option_default_category', array(&$this, 'flt_default_category') );
+			
+		// Follow up on role creation / deletion by Role Manager, Capability Manager or other equivalent plugin
+		// Role Manager / Capability Manager don't actually modify the stored role def until after the option update we're hooking on, so defer our maintenance operation
+		global $wpdb;
+		add_action( "update_option_{$wpdb->prefix}user_roles", array('ScoperAdminLib', 'schedule_role_sync') );
 	}
-	
+
 	function act_log_revision_save() {
 		$this->revision_save_in_progress = true;
 	}
@@ -477,7 +482,6 @@ class ScoperAdminFilters
 			$object_type = scoper_determine_object_type($src_name, $object_id, $object);
 			
 		if ( 'page' == $object_type ) {
-			delete_option('scoper_page_children');
 			delete_option('scoper_page_ancestors');
 			scoper_flush_cache_groups('get_pages');
 		}
@@ -512,7 +516,6 @@ class ScoperAdminFilters
 		$inserted_objects[$src_name][$object_id] = 1;
 		
 		if ( 'page' == $object_type ) {
-			delete_option('scoper_page_children');
 			delete_option('scoper_page_ancestors');
 			scoper_flush_cache_groups('get_pages');
 		}
@@ -523,6 +526,7 @@ class ScoperAdminFilters
 		
 		scoper_term_cache_flush();
 		delete_option( "{$taxonomy}_children_rs" );
+		delete_option( "{$taxonomy}_ancestors_rs" );
 	}
 	
 	function mnt_edit_term($taxonomy, $args, $term_ids, $term = '') {
@@ -621,6 +625,7 @@ class ScoperAdminFilters
 		
 		scoper_term_cache_flush();
 		delete_option( "{$taxonomy}_children_rs" );
+		delete_option( "{$taxonomy}_ancestors_rs" );
 	}
 
 	function mnt_delete_term($taxonomy, $args, $term_id) {
@@ -633,6 +638,7 @@ class ScoperAdminFilters
 		$this->item_deletion_aftermath( TERM_SCOPE_RS, $taxonomy, $term_id );
 
 		delete_option( "{$taxonomy}_children_rs" );
+		delete_option( "{$taxonomy}_ancestors_rs" );
 		
 		scoper_term_cache_flush();
 		scoper_flush_roles_cache(TERM_SCOPE_RS, '', '', $taxonomy);

@@ -339,7 +339,10 @@ class ScoperAdminHardway_Ltd {
 				$parent_query = apply_filters('objects_request_rs', $parent_query, 'post', array('post', 'page') );
 
 				global $current_user;
-				$unattached_clause = ( ! empty( $current_user->allcaps['upload_files'] ) ) ? "$wpdb->posts.post_parent = '0' OR " : '';
+				
+				$author_clause = ( ! empty( $current_user->allcaps['edit_others_posts'] ) || ! empty( $current_user->allcaps['edit_others_pages'] ) || scoper_get_option( 'admin_others_unattached_files' ) ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+				
+				$unattached_clause = ( ! empty( $current_user->allcaps['upload_files'] ) ) ? "( $wpdb->posts.post_parent = '0' $author_clause )  OR " : '';
 
 				$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) ) ) AND ";
 				
@@ -353,12 +356,14 @@ class ScoperAdminHardway_Ltd {
 		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
 		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
 		if ( strpos($query, ".post_type = 'attachment'") && strpos($query, '* FROM') ) {
+
 			if ( $where_pos = strpos($query, 'WHERE ') ) {
 				global $current_user;
-
+				
 				if ( ! empty( $current_user->allcaps['upload_files'] ) ) {
-					$author_clause = scoper_get_option( 'admin_others_unattached_files' ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-					
+					// optionally hide other users' unattached uploads, but not from blog-wide Editors
+					$author_clause = ( ! empty( $current_user->allcaps['edit_others_posts'] ) || ! empty( $current_user->allcaps['edit_others_pages'] ) || scoper_get_option( 'admin_others_unattached_files' ) ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+
 					$unattached_clause = "( $wpdb->posts.post_type = 'attachment' AND $wpdb->posts.post_parent = '0' $author_clause ) OR ";
 					$query = str_replace( 'AND ( ( wp_trunk_posts.post_parent IN', "AND $unattached_clause ( ( wp_trunk_posts.post_parent IN", $query );
 
@@ -423,9 +428,8 @@ class ScoperAdminHardway_Ltd {
 		return $items;
 	}
 
-	// scoped equivalent to WP core get_bookmarks
-	//	 As of WP 2.7, scoped roles cannot be enforced without replicating the whole function 
-	//	 following get_pages execution or wp_cache retrieval.  Modifications from WP 2.7.1-beta1 get_bookmarks are noted.
+	// scoped equivalent to WP 2.8.3 core get_bookmarks
+	//	 Currently, scoped roles cannot be enforced without replicating the whole function 
 	//
 	// Enforces cap requirements as specified in WP_Scoped_Data_Source::reqd_caps
 	function flt_get_bookmarks($results, $args) {
@@ -442,21 +446,34 @@ class ScoperAdminHardway_Ltd {
 		$r = wp_parse_args( $args, $defaults );
 		extract( $r, EXTR_SKIP );
 		
+		
+		// === BEGIN RoleScoper ADDITION: exemption for administrators
 		if ( is_administrator_rs() )
 			return $results;
+		// === END RoleScoper ADDITION ===
+			
 		
-		//-- BEGIN RoleScoper Modification: wp-cache key and flag specific to access type and user/groups --//
+		// === BEGIN RoleScoper MODIFICATION: wp-cache key and flag specific to access type and user/groups --//
+		//
 		global $current_user;
 		$ckey = md5 ( serialize( $r ) . CURRENT_ACCESS_NAME_RS );
 		
 		$cache_flag = SCOPER_ROLE_TYPE . '_get_bookmarks';
 		
-		if ( $cache = $current_user->cache_get( $cache_flag ) ) {
-		//-- END RoleScoper Modification --//
-			if ( isset( $cache[ $ckey ] ) )
-				//-- RoleScoper Modification: alternate filter name --//
+		$cache = $current_user->cache_get( $cache_flag );
+		
+		if ( false !== $cache ) {
+			if ( !is_array($cache) )
+				$cache = array();
+		
+			if ( isset( $cache[ $key ] ) )
+				//alternate filter name (WP core already called get_bookmarks filter)
 				return apply_filters('get_bookmarks_rs', $cache[ $ckey ], $r);
 		}
+		//
+		// === END RoleScoper MODIFICATION ===
+		// ===================================
+
 		
 		$inclusions = '';
 		if ( !empty($include) ) {
@@ -494,6 +511,8 @@ class ScoperAdminHardway_Ltd {
 		if ( ! empty($category_name) ) {
 			if ( $category = get_term_by('name', $category_name, 'link_category') )
 				$category = $category->term_id;
+			else
+				return array();
 		}
 	
 		if ( ! empty($search) ) {
@@ -556,25 +575,34 @@ class ScoperAdminHardway_Ltd {
 		if ($limit != -1)
 			$query .= " LIMIT $limit";
 			
-		// RoleScoper Modification: run query through scoping filter 
+
+		// === BEGIN RoleScoper MODIFICATION:  run query through scoping filter, cache key specific to user/group
 		$query = apply_filters('objects_request_rs', $query, 'link', '', '');
 		
-		//d_echo("<br /><br />get_bookmarks filtered: $query<br /><br />");
 		$results = scoper_get_results($query);
 
-		// RoleScoper Modification: wp-cache key and flag specific to access type and user/groups
+		// cache key and flag specific to access type and user/groups
 		$cache[ $ckey ] = $results;
 		$current_user->cache_set( $cache, $cache_flag );
 		
-		// RoleScoper Modification: alternate hook name
+		// alternate hook name (WP core already applied get_bookmarks)
 		$links = apply_filters('get_bookmarks_rs', $results, $r);
+		//
+		// === END RoleScoper MODIFICATION ===
+		// ===================================
 		
-		// RoleScoper Modification: memory cache akin to page_cache to assist bulk operations
+		
+		// === BEGIN RoleScoper ADDITION: memory cache akin to page_cache to assist bulk operations
+		//
 		global $scoper;
 		$ilim = count($links);
 		for ($i = 0; $i < $ilim; $i++)
 			$scoper->listed_ids['link'][$links[$i]->link_id] = true;
-		
+		//
+		// === END RoleScoper ADDITION ===
+		// ===================================
+			
+
 		return $links;
 	}
 	

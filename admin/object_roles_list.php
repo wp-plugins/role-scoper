@@ -30,6 +30,9 @@ foreach ( $scoper->role_defs->get_all() as $role_handle => $role_def ) {
 
 $require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 
+if ( ( 'admin' == $require_blogwide_editor ) && ! is_administrator_rs() )
+	return false;
+
 foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	$otype_count = 0;	
 	

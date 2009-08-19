@@ -59,7 +59,7 @@ function scoper_new_version_notice() {
 				$msg .= '<br />';
 
 			$msg .= '<a href="http://agapetry.net/category/role-scoper/" target="_blank">' . __('Read about the update', 'scoper') . '</a>';
-			$msg .= '&nbsp;&nbsp;&nbsp;<a href="http://agapetry.net/downloads/changelog_role-scoper.rtf" target="_blank">' . __('View full changelog', 'scoper') . '</a>';
+			$msg .= '&nbsp;&nbsp;&nbsp;<a href="http://wordpress.org/extend/plugins/role-scoper/changelog/" target="_blank">' . __('View full changelog', 'scoper') . '</a>';
 
 			if ( version_compare( strval($theVersion), '1.0.0', '>=' ) ) {
 				$url = awp_plugin_update_url( SCOPER_BASENAME );

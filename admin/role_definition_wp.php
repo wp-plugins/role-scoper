@@ -12,7 +12,7 @@ global $scoper;
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-optionhint">';
 	echo '<p style="margin-top:0">';
-	_e('These WordPress role definitions may be modified via the Role Manager plugin.', 'scoper');
+	_e('These WordPress role definitions may be modified via the Capability Manager or Role Manager plugin.', 'scoper');
 	echo '</p>';
 	
 	if ( 'rs' == SCOPER_ROLE_TYPE ) {

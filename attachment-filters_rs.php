@@ -84,7 +84,7 @@ class AttachmentFilters_RS {
 		$file = $query->query_vars['attachment'];
 		$file_path = WP_UPLOAD_DIR_RS . "/$file";
 		
-		rs_errlog( $file_path );
+		//rs_errlog( $file_path );
 		
 		// don't filter the direct file URL request if filtering is disabled, or if the request is from wp-admin
 		// DISABLE_ATTACHMENT_FILTERING check here is only pertinent until next htaccess rule flush
@@ -94,7 +94,7 @@ class AttachmentFilters_RS {
 
 			$mime_type = wp_check_filetype($file_path);
 			
-			rs_errlog("skipping filtering for $mime_type");
+			//rs_errlog("skipping filtering for $mime_type");
 			
 			if ( is_array($mime_type) && isset($mime_type['type']) )
 				$mime_type = $mime_type['type'];
@@ -104,14 +104,14 @@ class AttachmentFilters_RS {
 		}
 		
 		if ( file_exists( $file_path ) ) {
-			rs_errlog("$file_path exists.");
+			//rs_errlog("$file_path exists.");
 		
 			$file_url = WP_UPLOAD_URL_RS . "/$file";
 
 			// Resized copies have -NNNxNNN suffix, but the base filename is stored as attachment.  Strip the suffix out for db query.
 			$orig_file_url = preg_replace( "/-[0-9]{2,4}x[0-9]{2,4}./", '.', $file_url );
 
-			rs_errlog("orig file URL: $orig_file_url");
+			//rs_errlog("orig file URL: $orig_file_url");
 			
 			global $wpdb, $wp_query;
 			$qry = "SELECT * FROM $wpdb->posts WHERE post_type = 'attachment' AND guid = '$orig_file_url' AND post_parent > 0";
@@ -124,7 +124,7 @@ class AttachmentFilters_RS {
 					$return_file = true;
 			} else {
 				foreach ( $results as $attachment ) {
-					rs_errlog( "found attachment: " . serialize($attachment) );
+					//rs_errlog( "found attachment: " . serialize($attachment) );
 				
 					if ( empty($mime_type) )
 						$mime_type = $attachment->post_mime_type;
@@ -154,7 +154,7 @@ class AttachmentFilters_RS {
 			}
 			
 			if ( $return_file ) {
-				rs_errlog( "returning: $file_path" );
+				//rs_errlog( "returning: $file_path" );
 				agp_return_file($file_path, $mime_type);
 				exit;
 			} 

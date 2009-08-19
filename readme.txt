@@ -1,9 +1,9 @@
 === Plugin Name ===
 Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
-Tags: restrict, access, permissions, cms, user, groups, members, admin, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed, feeds
+Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
-Tested up to: 2.8.3
+Tested up to: 2.8.4
 Stable Tag: 1.0.7
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
@@ -63,27 +63,26 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 Role Scoper can be installed automatically via the Plugins tab in your blog administration panel.
 
 = To install manually instead: =
-1. Upload `role-scoper_?.zip` to the `/wp-content/plugins/` directory
-1. Extract `role-scoper_?.zip` into the `/wp-content/plugins/` directory
+1. Upload `role-scoper&#95;?.zip` to the `/wp-content/plugins/` directory
+1. Extract `role-scoper&#95;?.zip` into the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 Note: For WP 2.2 and 2.3, use <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 0.9</a>
 
 
 == Frequently Asked Questions ==
-<strong>How does Role Scoper compare to <a href="http://sourceforge.net/projects/role-manager/">Role Manager</a>?</strong>
-Those two plugins are entirely different and complementary.  RM does little more than alter WordPress' definition of the capabilities included in each role.  That's a valuable task, and in many cases will be all the role customization you need.  Since RM's modifications are stored in the main WordPress database, they remain even if RM is deactivated.
+<strong>How can I prevent low-level users from seeing the Roles/Restrictions menus and Edit boxes?</strong>
+In your blog admin, navigate to Roles > Options.  In the "Content Maintenance" section, set the option "Roles and Restrictions can be set" to "by blog-wide Editors and Administrators" or "by Administrators only".  Click the Update button.
 
-Role Scoper is useful when you want to customize access to specific content, not just blog-wide.  It will work with the WP roles as a starting point, whether customized by Role Manager or not.  To see how Role Scoper's role definitions correlate to your WordPress roles, navigate to Roles > Options > RS Role Definitions in your blog admin.  Role Scoper's modifications remain only while it stays active.
+
+<strong>How does Role Scoper compare to <a href="http://sourceforge.net/projects/role-manager/">Role Manager</a> or <a href="http://wordpress.org/extend/plugins/capsman/">Capability Manager</a>?</strong>
+Role Scoper's functionality is entirely different and complementary to RM and CM.  RM/CM do little more than alter WordPress' definition of the capabilities included in each role.  That's a valuable task, and in many cases will be all the role customization you need.  Since RM/CM modifications are stored in the main WordPress database, they remain even if RM/CM is deactivated.
+
+Role Scoper is useful when you want to customize access to specific content, not just blog-wide.  It will work with the WP roles as a starting point, whether customized by RM/CM or not.  To see how Role Scoper's role definitions correlate to your WordPress roles, navigate to Roles > Options > RS Role Definitions in your blog admin.  Role Scoper's modifications remain only while it stays active.
 
 
 <strong>Why are there so many options? Do I really need Role Scoper?</strong>
-It depends on what you're trying to accomplish with your blog.  Role Scoper is designed to be functionally comprehensive and flexible.  Great pains were taken to maintain performance and user-friendliness.  Yet there are simpler permission plugins out there, particularly if you only care about read access.  Review Role Scoper's feature list and decide what's important to you.
-
-
-<strong>How can I prevent low-level users from seeing the Roles/Restrictions menus and Edit boxes?</strong>
-In your blog admin, navigate to Roles > Options.  Check the "Role administration requires a blog-wide Editor role" box.  Click the Update button.
-
+It depends on what you're trying to accomplish with your WordPress installation.  Role Scoper is designed to be functionally comprehensive and flexible.  Great pains were taken to maintain performance and user-friendliness.  Yet there are simpler permission plugins out there, particularly if you only care about read access.  Review Role Scoper's feature list and decide what's important to you.
 
 <strong>Why doesn't Role Scoper limit direct access to files that I've uploaded via FTP?</strong>
 Role Scoper only filters files in the WP uploads folder (or a subfolder).  The uploads folder must be a branch of the WordPress directory tree.  The files must be formally attached to a post / page via the WordPress uploader or via the RS Attachments Utility.
@@ -91,9 +90,9 @@ Role Scoper only filters files in the WP uploads folder (or a subfolder).  The u
 In your blog admin, navigate to Roles > Options > Features > Attachments > Attachments Utility.
 
 <strong>Where does Role Scoper store its settings?  How can I completely remove it from my database?</strong>
-Role Scoper creates and uses the following tables: groups_rs, user2group_rs, role_scope_rs, user2role2object_rs.  All RS-specific options stored to the WordPress options table have an option name prefixed with "scoper_".
+Role Scoper creates and uses the following tables: groups&#95;rs, user2group&#95;rs, role&#95;scope&#95;rs, user2role2object&#95;rs.  All RS-specific options stored to the WordPress options table have an option name prefixed with "scoper&#95;".
 
-Due to the potential damage incurred by accidental deleteion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
+Due to the potential damage incurred by accidental deletion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
 
 
 == Screenshots ==
@@ -107,6 +106,22 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 
 
 == Changelog ==
+= 1.0.8 - 18 Aug 2009 =
+* Feature : Option to prevent non-Administrators from assigning or viewing content-specific roles
+* Feature : For front-end Page and Category listings, parent remapping behavior is now adjustable via RS Options
+* Change : When a depth limit is specified for pages/categories listing, default to enforcing that limit based on actual depth prior to parent remap
+* Bugfix : Fix compatibility with various custom child_of / depth / exclude / order combinations in pages, categories listing
+* BugFix : Pages listing filter did not honor number, offset arguments
+* BugFix : Terms (categories) listing filter did not apply custom ordering filter with WP 2.8
+* Change : Work around WP bug when page / category listing is generated with child_of arg, but first element in result array is not a direct child
+* Compat : Simple Section Navigation plugin displayed misplaced subpages in some situations
+* Compat : My Category Order plugin
+* Compat : Flutter/FreshPage plugin (disable custom menu indexing if plugin is active)
+* Compat : Capability Manager plugin (automatically re-sync role defs on role creation / deletion)
+* BugFix : When hiding other users' unattached uploads in Media Library, attachment count did not match 
+* Change : Blog-wide Editors always see all unattached uploads in Media Library, regardless of option setting
+* Doc : Replaced standalone change log and plugin compat documents with readme.txt sections
+
 
 = 1.0.7 - 10 August 2009 =
 * BugFix : With WP 2.8, new users were not assigned membership in WP Role metagroup until cache flush
@@ -114,8 +129,8 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 * Feature : Option for whether non-administrators can see unattached uploads from other users
 * Change : By default, non-administrators see only their own unattached uploads in Media Library
 * Compat : Disable caching of pages, categories listing if QTranslate plugin is active
-* Change : remap get_pages exclude argument to exclude_tree if called with depth=1
-* Change : remap get_terms exclude argument to exclude_tree if called with depth=1
+* Change : remap get&#95;pages exclude argument to exclude&#95;tree if called with depth=1
+* Change : remap get&#95;terms exclude argument to exclude&#95;tree if called with depth=1
 * Change : more descriptive error message when another plugin prevents RS initialization
 
 
@@ -138,12 +153,12 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 * Change : Updated sample IDs displayed on Role Scoper Options form for Hidden Editing Elements
 * Change : Updated default IDs for Hidden Editing Elements
 * Compat : Conflict with QTranslation plugin - translation of page titles, term names, bulk admin post titles
-* Compat : Support SCOPER_DISABLE_MENU_TWEAK definition for compat with Flutter plugin
+* Compat : Support SCOPER&#95;DISABLE&#95;MENU&#95;TWEAK definition for compat with Flutter plugin
 * BugFix : New pages by non-Editors initially saved as Pending even if Publish was clicked
 * BugFix : Administrator could not modify default category with WP 2.8
 * BugFix : Default Groups could not be edited with WP 2.8
 * BugFix : Attachments Utility (in RS Options) was not accessible under WP 2.8
-* BugFix : In some configurations, fatal error when unavailable user_can_for_any_object() function called with administrator logged in
+* BugFix : In some configurations, fatal error when unavailable user&#95;can&#95;for&#95;any&#95;object() function called with administrator logged in
 * BugFix : When editing group, could not remove last group administrator
 * BugFix : Group roles were not displayed in group edit form if no members in group
 * BugFix : Eliminated orphaned role deletion (no longer needed and deleted non-orphan group roles in some situations)
@@ -157,7 +172,7 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 
 
 = 1.0.4 - 26 June 2009 =
-* Change : Deny implicit comment moderation rights to Authors if they lack moderate_comments cap
+* Change : Deny implicit comment moderation rights to Authors if they lack moderate&#95;comments cap
 * BugFix : In Edit Post form, non-editors could see / select other users as "author"
 * BugFix : Option "role assignment requires blog-wide editor role" was only requiring blog-wide contributor role
 * BugFix : Page Parent filtering was broken for Quick Edit
@@ -165,7 +180,7 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 * BugFix : Option "role assignment requires blog-wide editor role" did not suppress Roles, Restrictions sidebar menu
 * BugFix : XML-RPC support (ScribeFire, WLW) was broken for non-administrators
 * BugFix : User groups were unusable on DB servers that do not support default value on text columns
-* BugFix : exclude_tree argument was ineffective in get_terms / wp_list_categories call
+* BugFix : exclude&#95;tree argument was ineffective in get&#95;terms / wp&#95;list&#95;categories call
 * BugFix : invalid Category / Object role edit links displayed in user profile for non-editors in some configurations 
 * BugFix : Role Scoper Options inaccessable to administrator with WP 2.8.1
 * Change : Moved option "Role administration requires a blog-wide Editor role" to main Options tab
@@ -193,7 +208,7 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 
 
 = 1.0.2 - 7 May 2009 =
-* BugFix : Template function is_restricted_rs / is_exclusive_rs was non-functional on home page (since rc9.9311)
+* BugFix : Template function is&#95;restricted&#95;rs / is&#95;exclusive&#95;rs was non-functional on home page (since rc9.9311)
 * BugFix : With Attachments Filter enabled, attachments larger than 10MB fail to download on some installations
 * BugFix : Fatal Error when viewing a single post entry after RS Options modified to disable front-end filtering
 * BugFix : Auto-delete orphaned role assignments left in DB by previous versions following category / group deletion
@@ -209,7 +224,7 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 * BugFix : If a memberless group was deleted, any assigned roles were left (orphaned) in the database
 * Plugin :  Conflict with WP-Wall plugin caused non-listing or double-listing of wall comments
 * Feature : Option to accept CSV entry for user role assignment
-* Feature : Bottom-right submit button on bulk admin forms if SCOPER_EXTRA_SUBMIT_BUTTON is defined
+* Feature : Bottom-right submit button on bulk admin forms if SCOPER&#95;EXTRA&#95;SUBMIT&#95;BUTTON is defined
 
 
 = 1.0.1 - 27 March 2009 =
@@ -220,8 +235,8 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 * BugFix : Post/Page Edit divs configured as Hidden Editing Elements were not hidden for draft posts/pages
 * BugFix : After a group was deleted, its role assignments were left in the database
 * BugFix : PHP warnings viewing users list with WP < 2.8
-* Change : WP 2.7 users with hacked WP template.php user_row code must define("scoper_users_custom_column", "true");
-* BugFix : Failed to return results for manual WP_Query calls which include category exclusion argument
+* Change : WP 2.7 users with hacked WP template.php user&#95;row code must define("scoper&#95;users&#95;custom&#95;column", "true");
+* BugFix : Failed to return results for manual WP&#95;Query calls which include category exclusion argument
 * BugFix : Role Scoper error messages were formatted with unreadable colors with WP 2.7
 * BugFix : Conflict with ozhAdminMenus plugin - Page menus missing in some configurations
 * BugFix : Conflict with WP-Wall plugin caused fatal error
@@ -230,3 +245,44 @@ Due to the potential damage incurred by accidental deleteion, no automatic remov
 
 = 1.0.0 - 21 March 2009 =
 * BugFix : In some installations, DB error for anonymous user front-end access (since rc9.9220)
+
+
+== Other Notes ==
+= Documentation =
+* A slightly outdated <a href="http://agapetry.net/downloads/RoleScoper_UsageGuide.htm">Usage Guide</a> is available.  It includes both an overview of the permissions model and a How-To section with step by step directions.  Volunteer contributions to expand, revise or reformat this document are welcome.
+* Role Scoper's menus, onscreen captions and inline descriptive footnotes <a href="http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/">can be translated using poEdit</a>.  I will gladly include any user-contributed languages!.
+
+= General Plugin Compatibility Requirements =
+* No other plugin or theme shall define function wp_set_current_user() or function set_current_user().  A custom merge of the code may be possible in some situations.
+* No other plugin or theme shall make an include or require call to force early execution of the file pluggable.php (for the reason listed above).
+
+= Specific Plugin Compatibility Issues =
+* WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
+* QTranslate : use Role Scoper 1.0.7 or later, which disables caching of pages, terms listing.  To enable caching, change QTranslate get_pages and get_terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
+* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget instead.
+* Maintenance Mode : not compatible due to forced early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Comment out the following line in maintenance-mode.php: `&& !mw&#95;current&#95;user&#95;can&#95;access&#95;on&#95;maintenance()`
+
+
+**Attachment Filtering**
+Read access to uploaded file attachments is normally filtered to match post/page access.
+
+To disable this attachment filtering, copy the following line to wp-config.php: 
+`define('DISABLE_ATTACHMENT_FILTERING', true);`
+
+If manually disabling attachment filtering on an Apache server, remove the following line from the .htaccess file in your WP folder:
+`RewriteRule ^(.*)wp-content/uploads/(.*) /YOUR_WP_FOLDER/index.php?attachment=$2&scoper_rewrite=1 [NC,L]`
+
+To reinstate attachment filtering, remove the definition from wp-config.php and deactivate/reactivate Role Scoper.
+
+To fail with a null response (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php:
+`define ('SCOPER_QUIET_FILE_404', true);`
+
+Normally, files which are in the uploads directory but have no post/page attachment will not be blocked.
+To block such files, copy the following line to wp-config.php:
+`define('SCOPER_BLOCK_UNATTACHED_UPLOADS', true);`
+
+
+**Hidden Content Teaser**
+The Hidden Content Teaser may be configured to display the first X characters of a post/page if no excerpt or more tag is available.
+To specify the number of characters (default is 50), copy the following line to wp-config.php:
+`define('SCOPER_TEASER_NUM_CHARS', 100); // set to any number of your choice`

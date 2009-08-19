@@ -107,23 +107,17 @@ function rs_get_terms_children( $taxonomy, $option_value = '' ) {
 	return $children;
 }
 
+// note: rs_get_page_children() is no longer used internally by Role scoper
 function rs_get_page_children() {
-	$children = get_option("scoper_page_children");
-
-	if ( is_array($children) )
-		return $children;
-
 	$children = array();
-	
+
 	global $wpdb;
 	if ( $pages = scoper_get_results("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type != 'revision'") ) {
 		foreach ( $pages as $page )
 			if ( $page->post_parent )
 				$children[$page->post_parent][] = $page->ID;
 	}
-	
-	update_option("scoper_page_children", $children);
-	
+
 	return $children;
 }
 
@@ -143,7 +137,7 @@ function rs_get_page_ancestors() {
 				$parents[$page->ID] = $page->post_parent;
 
 		foreach ( $pages as $page ) {
-			$ancestors[$page->ID] = _rs_walk_page_ancestors($page->ID, array(), $parents);
+			$ancestors[$page->ID] = _rs_walk_ancestors($page->ID, array(), $parents);
 			if ( empty( $ancestors[$page->ID] ) )
 				unset( $ancestors[$page->ID] );
 		}
@@ -154,13 +148,51 @@ function rs_get_page_ancestors() {
 	return $ancestors;
 }
 
-function _rs_walk_page_ancestors($child_id, $page_ancestors, $parents) {
+function _rs_walk_ancestors($child_id, $ancestors, $parents) {
 	if ( isset($parents[$child_id]) ) {
-		$page_ancestors []= $parents[$child_id];
-		$page_ancestors = _rs_walk_page_ancestors($parents[$child_id], $page_ancestors, $parents);
+		$ancestors []= $parents[$child_id];
+		$ancestors = _rs_walk_ancestors($parents[$child_id], $ancestors, $parents);
 	}
-	return $page_ancestors;
+	return $ancestors;
 }
+
+
+function rs_get_term_ancestors($taxonomy) {
+	$ancestors = get_option("{$taxonomy}_ancestors_rs");
+
+	if ( is_array($ancestors) )
+		return $ancestors;
+
+	global $scoper;
+
+	$tx = $scoper->taxonomies->get($taxonomy);	
+	$col_id = $tx->source->cols->id;	
+	$col_parent = $tx->source->cols->parent;
+	
+	$terms = $scoper->get_terms($taxonomy, UNFILTERED_RS);
+
+	$ancestors = array();
+
+	if ( $terms ) {
+		$parents = array();
+		
+		foreach ( $terms as $term )
+			if ( $term->$col_parent )
+				$parents[$term->$col_id] = $term->$col_parent;
+
+		foreach ( $terms as $term ) {
+			$term_id = $term->$col_id;
+			$ancestors[$term_id] = _rs_walk_ancestors($term_id, array(), $parents);
+			if ( empty( $ancestors[$term_id] ) )
+				unset( $ancestors[$term_id] );
+		}
+		
+		update_option("{$taxonomy}_ancestors_rs", $ancestors);
+	}
+	
+	return $ancestors;
+}
+
 
 function rs_get_post_revisions($post_id, $use_memcache = true) {
 	global $wpdb;

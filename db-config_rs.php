@@ -4,6 +4,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 global $wpdb;
 
+
 //table names for scoper-specific data; usually no reason to alter these
 $wpdb->user2role2object_rs = $wpdb->prefix . 'user2role2object_rs'; 
 $wpdb->role_scope_rs = $wpdb->prefix . 'role_scope_rs';

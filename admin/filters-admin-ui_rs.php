@@ -136,19 +136,22 @@ class ScoperAdminFiltersUI
 		$css_ids = str_replace(',', ';', $css_ids);
 		$css_ids = explode(';', $css_ids);	// option storage is as semicolon-delimited string
 	
+		if ( empty($css_ids) )
+			return;
+
 		$object_id = $this->scoper->data_sources->detect('id', $src_name, '', $object_type);
 
-		$blogwide_edit = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type, OP_EDIT_RS);
+		$blogwide_edit = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type);
 
 		if ( $blogwide_edit ) {
-			// don't hide anything if user is creating a new object
+			// don't hide anything if a blog-wide Contributor/Author/Editor is creating a new object
 			if ( ! $object_id )
 				return;
-				
+
 			if ( ! $object = $this->scoper->data_sources->get_object($src_name, $object_id) )
 				return;
-			
-			// don't hide anything if a user is editing their own object
+
+			// don't hide anything if a blog-wide Contributor/Author/Editor is editing their own object
 			global $current_user;
 			if ( empty($object->$col_owner) || ( $object->$col_owner == $current_user->ID) )
 				return;

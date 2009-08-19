@@ -180,105 +180,108 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( $new_role_settings && ! empty($_POST['rs_object_roles']) && ( empty($_POST['action']) || ( 'autosave' != $_POST['action'] ) ) && ! defined('XMLRPC_REQUEST') ) {
 			$role_assigner = init_role_assigner();
 		
-			if ( $object_type && $scoper->admin->user_can_admin_object($src_name, $object_type, $object_id) ) {
-				// store any object role (read/write/admin access group) selections
-				$role_bases = array();
-				if ( GROUP_ROLES_RS )
-					$role_bases []= ROLE_BASIS_GROUPS;
-				if ( USER_ROLES_RS )
-					$role_bases []= ROLE_BASIS_USER;
-				
-				$set_roles = array_fill_keys( $role_bases, array() );
-				$set_restrictions = array();
-				
-				$default_restrictions = $scoper->get_default_restrictions(OBJECT_SCOPE_RS);
-				
-				foreach ( $role_defs as $role_handle => $role_def) {
-					if ( ! isset($role_def->valid_scopes[OBJECT_SCOPE_RS]) )
-						continue;
-
-					$role_code = 'r' . array_search($role_handle, $role_handles);
-						
-					$role_ops = $scoper->role_defs->get_role_ops($role_handle);
+			$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
+			if ( is_administrator_rs() || ( 'admin' != $require_blogwide_editor ) ) {
 			
-					// user can't view or edit role assignments unless they have all rolecaps
-					// however, if this is a new post, allow read role to be assigned even if contributor doesn't have read_private cap blog-wide
-					if ( ! is_administrator_rs() && ( ! $is_new_object || $role_ops != array( 'read' => 1 ) ) ) {
-						$reqd_caps = $scoper->role_defs->role_caps[$role_handle];
-						if ( ! awp_user_can(array_keys($reqd_caps), $object_id) )
+				if ( $object_type && $scoper->admin->user_can_admin_object($src_name, $object_type, $object_id) ) {
+					// store any object role (read/write/admin access group) selections
+					$role_bases = array();
+					if ( GROUP_ROLES_RS )
+						$role_bases []= ROLE_BASIS_GROUPS;
+					if ( USER_ROLES_RS )
+						$role_bases []= ROLE_BASIS_USER;
+					
+					$set_roles = array_fill_keys( $role_bases, array() );
+					$set_restrictions = array();
+					
+					$default_restrictions = $scoper->get_default_restrictions(OBJECT_SCOPE_RS);
+					
+					foreach ( $role_defs as $role_handle => $role_def) {
+						if ( ! isset($role_def->valid_scopes[OBJECT_SCOPE_RS]) )
 							continue;
 	
-						// a user must have a blog-wide edit cap to modify editing role assignments (even if they have Editor role assigned for some current object)
-						if ( isset($role_ops[OP_EDIT_RS]) || isset($role_ops[OP_ASSOCIATE_RS]) ) 
-							if ( scoper_get_option('role_admin_blogwide_editor_only') ) {
-								$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
+						$role_code = 'r' . array_search($role_handle, $role_handles);
+							
+						$role_ops = $scoper->role_defs->get_role_ops($role_handle);
+				
+						// user can't view or edit role assignments unless they have all rolecaps
+						// however, if this is a new post, allow read role to be assigned even if contributor doesn't have read_private cap blog-wide
+						if ( ! is_administrator_rs() && ( ! $is_new_object || $role_ops != array( 'read' => 1 ) ) ) {
+							$reqd_caps = $scoper->role_defs->role_caps[$role_handle];
+							if ( ! awp_user_can(array_keys($reqd_caps), $object_id) )
+								continue;
+		
+							// a user must have a blog-wide edit cap to modify editing role assignments (even if they have Editor role assigned for some current object)
+							if ( isset($role_ops[OP_EDIT_RS]) || isset($role_ops[OP_ASSOCIATE_RS]) ) 
+								if ( $require_blogwide_editor ) {
+									$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
+									
+									global $current_user;
+									if ( empty( $current_user->allcaps[$required_cap] ) )
+										continue;
+								}
+						}
+		
+						foreach ( $role_bases as $role_basis ) {
+							$id_prefix = $role_code . substr($role_basis, 0, 1);
+							
+							$for_entity_agent_ids = (isset( $_POST[$id_prefix]) ) ? $_POST[$id_prefix] : array();
+							$for_children_agent_ids = ( isset($_POST["p_$id_prefix"]) ) ? $_POST["p_$id_prefix"] : array();
+							
+	
+							// handle csv-entered agent names
+							$csv_id = "{$id_prefix}_csv";
+							
+							if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( $csv_id, $role_basis ) )
+								$for_entity_agent_ids = array_merge($for_entity_agent_ids, $csv_for_item);
+							
+							if ( $csv_for_children = ScoperAdminLib::agent_ids_from_csv( "p_$csv_id", $role_basis ) )
+								$for_children_agent_ids = array_merge($for_children_agent_ids, $csv_for_children);
 								
-								global $current_user;
-								if ( empty( $current_user->allcaps[$required_cap] ) )
-									continue;
-							}
-					}
-	
-					foreach ( $role_bases as $role_basis ) {
-						$id_prefix = $role_code . substr($role_basis, 0, 1);
-						
-						$for_entity_agent_ids = (isset( $_POST[$id_prefix]) ) ? $_POST[$id_prefix] : array();
-						$for_children_agent_ids = ( isset($_POST["p_$id_prefix"]) ) ? $_POST["p_$id_prefix"] : array();
-						
-
-						// handle csv-entered agent names
-						$csv_id = "{$id_prefix}_csv";
-						
-						if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( $csv_id, $role_basis ) )
-							$for_entity_agent_ids = array_merge($for_entity_agent_ids, $csv_for_item);
-						
-						if ( $csv_for_children = ScoperAdminLib::agent_ids_from_csv( "p_$csv_id", $role_basis ) )
-							$for_children_agent_ids = array_merge($for_children_agent_ids, $csv_for_children);
+							$set_roles[$role_basis][$role_handle] = array();
+		
+							if ( $for_both_agent_ids = array_intersect($for_entity_agent_ids, $for_children_agent_ids) )
+								$set_roles[$role_basis][$role_handle] = $set_roles[$role_basis][$role_handle] + array_fill_keys($for_both_agent_ids, ASSIGN_FOR_BOTH_RS);
 							
-						$set_roles[$role_basis][$role_handle] = array();
-	
-						if ( $for_both_agent_ids = array_intersect($for_entity_agent_ids, $for_children_agent_ids) )
-							$set_roles[$role_basis][$role_handle] = $set_roles[$role_basis][$role_handle] + array_fill_keys($for_both_agent_ids, ASSIGN_FOR_BOTH_RS);
-						
-						if ( $for_entity_agent_ids = array_diff( $for_entity_agent_ids, $for_children_agent_ids ) )
-							$set_roles[$role_basis][$role_handle] = $set_roles[$role_basis][$role_handle] + array_fill_keys($for_entity_agent_ids, ASSIGN_FOR_ENTITY_RS);
-				
-						if ( $for_children_agent_ids = array_diff( $for_children_agent_ids, $for_entity_agent_ids ) )
-							$set_roles[$role_basis][$role_handle] = $set_roles[$role_basis][$role_handle] + array_fill_keys($for_children_agent_ids, ASSIGN_FOR_CHILDREN_RS);
+							if ( $for_entity_agent_ids = array_diff( $for_entity_agent_ids, $for_children_agent_ids ) )
+								$set_roles[$role_basis][$role_handle] = $set_roles[$role_basis][$role_handle] + array_fill_keys($for_entity_agent_ids, ASSIGN_FOR_ENTITY_RS);
+					
+							if ( $for_children_agent_ids = array_diff( $for_children_agent_ids, $for_entity_agent_ids ) )
+								$set_roles[$role_basis][$role_handle] = $set_roles[$role_basis][$role_handle] + array_fill_keys($for_children_agent_ids, ASSIGN_FOR_CHILDREN_RS);
+								
 							
+						}
 						
+						if ( isset($default_restrictions[$src_name][$role_handle]) ) {
+							$max_scope = BLOG_SCOPE_RS;
+							$item_restrict = empty($_POST["objscope_{$role_code}"]);
+							$child_restrict = empty($_POST["objscope_children_{$role_code}"]);
+						} else {
+							$max_scope = OBJECT_SCOPE_RS;
+							$item_restrict = ! empty($_POST["objscope_{$role_code}"]);
+							$child_restrict = ! empty($_POST["objscope_children_{$role_code}"]);
+						}
+						
+						$set_restrictions[$role_handle] = array( 'max_scope' => $max_scope, 'for_item' => $item_restrict, 'for_children' => $child_restrict );
 					}
 					
-					if ( isset($default_restrictions[$src_name][$role_handle]) ) {
-						$max_scope = BLOG_SCOPE_RS;
-						$item_restrict = empty($_POST["objscope_{$role_code}"]);
-						$child_restrict = empty($_POST["objscope_children_{$role_code}"]);
-					} else {
-						$max_scope = OBJECT_SCOPE_RS;
-						$item_restrict = ! empty($_POST["objscope_{$role_code}"]);
-						$child_restrict = ! empty($_POST["objscope_children_{$role_code}"]);
-					}
+					$args = array('implicit_removal' => true, 'object_type' => $object_type);
 					
-					$set_restrictions[$role_handle] = array( 'max_scope' => $max_scope, 'for_item' => $item_restrict, 'for_children' => $child_restrict );
-				}
-				
-				$args = array('implicit_removal' => true, 'object_type' => $object_type);
-				
-				// don't record first-time storage of default roles as custom settings
-				if ( ! $new_role_settings )
-					$args['is_auto_insertion'] = true;
-				
-				// Add or remove object role restrictions as needed (no DB update in nothing has changed)
-				$role_assigner->restrict_roles(OBJECT_SCOPE_RS, $src_name, $object_id, $set_restrictions, $args );
-				
-				// Add or remove object role assignments as needed (no DB update in nothing has changed)
-				foreach ( $role_bases as $role_basis )
-					$role_assigner->assign_roles(OBJECT_SCOPE_RS, $src_name, $object_id, $set_roles[$role_basis], $role_basis, $args );
-			} // endif object type is known and user can admin this object
+					// don't record first-time storage of default roles as custom settings
+					if ( ! $new_role_settings )
+						$args['is_auto_insertion'] = true;
+					
+					// Add or remove object role restrictions as needed (no DB update in nothing has changed)
+					$role_assigner->restrict_roles(OBJECT_SCOPE_RS, $src_name, $object_id, $set_restrictions, $args );
+					
+					// Add or remove object role assignments as needed (no DB update in nothing has changed)
+					foreach ( $role_bases as $role_basis )
+						$role_assigner->assign_roles(OBJECT_SCOPE_RS, $src_name, $object_id, $set_roles[$role_basis], $role_basis, $args );
+				} // endif object type is known and user can admin this object
+			} // end if current user is an Administrator, or doesn't need to be
 		} //endif roles were manually edited by user (and not autosave)
 		
 		if ( 'page' == $object_type ) {
-			delete_option('scoper_page_children');
 			delete_option('scoper_page_ancestors');
 			scoper_flush_cache_groups('get_pages');
 		}
