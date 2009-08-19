@@ -253,36 +253,38 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Role Scoper's menus, onscreen captions and inline descriptive footnotes <a href="http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/">can be translated using poEdit</a>.  I will gladly include any user-contributed languages!.
 
 = General Plugin Compatibility Requirements =
-* No other plugin or theme shall define function wp_set_current_user() or function set_current_user().  A custom merge of the code may be possible in some situations.
+* No other plugin or theme shall define function wp&#95;set&#95;current&#95;user() or function set&#95;current&#95;user().  A custom merge of the code may be possible in some situations.
 * No other plugin or theme shall make an include or require call to force early execution of the file pluggable.php (for the reason listed above).
 
 = Specific Plugin Compatibility Issues =
 * WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
-* QTranslate : use Role Scoper 1.0.7 or later, which disables caching of pages, terms listing.  To enable caching, change QTranslate get_pages and get_terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
+* QTranslate : use Role Scoper 1.0.7 or later, which disables caching of pages, terms listing.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
 * Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget instead.
 * Maintenance Mode : not compatible due to forced early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Comment out the following line in maintenance-mode.php: `&& !mw&#95;current&#95;user&#95;can&#95;access&#95;on&#95;maintenance()`
 
 
 **Attachment Filtering**
+
 Read access to uploaded file attachments is normally filtered to match post/page access.
 
 To disable this attachment filtering, copy the following line to wp-config.php: 
-`define('DISABLE_ATTACHMENT_FILTERING', true);`
+ `define('DISABLE_ATTACHMENT_FILTERING', true);`
 
 If manually disabling attachment filtering on an Apache server, remove the following line from the .htaccess file in your WP folder:
-`RewriteRule ^(.*)wp-content/uploads/(.*) /YOUR_WP_FOLDER/index.php?attachment=$2&scoper_rewrite=1 [NC,L]`
+ `RewriteRule ^(.*)wp-content/uploads/(.*) /YOUR_WP_FOLDER/index.php?attachment=$2&scoper_rewrite=1 [NC,L]`
 
 To reinstate attachment filtering, remove the definition from wp-config.php and deactivate/reactivate Role Scoper.
 
 To fail with a null response (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php:
-`define ('SCOPER_QUIET_FILE_404', true);`
+ `define ('SCOPER_QUIET_FILE_404', true);`
 
 Normally, files which are in the uploads directory but have no post/page attachment will not be blocked.
 To block such files, copy the following line to wp-config.php:
-`define('SCOPER_BLOCK_UNATTACHED_UPLOADS', true);`
+ `define('SCOPER_BLOCK_UNATTACHED_UPLOADS', true);`
 
 
 **Hidden Content Teaser**
+
 The Hidden Content Teaser may be configured to display the first X characters of a post/page if no excerpt or more tag is available.
 To specify the number of characters (default is 50), copy the following line to wp-config.php:
-`define('SCOPER_TEASER_NUM_CHARS', 100); // set to any number of your choice`
+ `define('SCOPER_TEASER_NUM_CHARS', 100); // set to any number of your choice`
