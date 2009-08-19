@@ -269,18 +269,18 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 Read access to uploaded file attachments is normally filtered to match post/page access.
 
 To disable this attachment filtering, copy the following line to wp-config.php:
-    define('DISABLE&#95;ATTACHMENT&#95;FILTERING', true);
+    `define('DISABLE&#95;ATTACHMENT&#95;FILTERING', true);`
 
 If manually disabling attachment filtering on an Apache server, remove the following line from the .htaccess file in your WP folder: 
-    RewriteRule ^(.*)wp-content/uploads/(.*) /YOUR&#95;WP&#95;FOLDER/index.php?attachment=$2&scoper&#95;rewrite=1 [NC,L]
+    `RewriteRule ^(.*)wp-content/uploads/(.*) /YOUR&#95;WP&#95;FOLDER/index.php?attachment=$2&scoper&#95;rewrite=1 [NC,L]`
 
 To reinstate attachment filtering, remove the definition from wp-config.php and deactivate/reactivate Role Scoper.
 
 To fail with a null response (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php: 
-    define ('SCOPER&#95;QUIET&#95;FILE&#95;404', true);
+    `define ('SCOPER&#95;QUIET&#95;FILE&#95;404', true);`
 
 Normally, files which are in the uploads directory but have no post/page attachment will not be blocked.  To block such files, copy the following line to wp-config.php: 
-    define('SCOPER&#95;BLOCK&#95;UNATTACHED&#95;UPLOADS', true);
+    `define('SCOPER&#95;BLOCK&#95;UNATTACHED&#95;UPLOADS', true);`
 
 
 **Hidden Content Teaser**
@@ -288,4 +288,4 @@ Normally, files which are in the uploads directory but have no post/page attachm
 The Hidden Content Teaser may be configured to display the first X characters of a post/page if no excerpt or more tag is available.
 
 To specify the number of characters (default is 50), copy the following line to wp-config.php: 
-    define('SCOPER&#95;TEASER&#95;NUM&#95;CHARS', 100); // set to any number of your choice
+    `define('SCOPER&#95;TEASER&#95;NUM&#95;CHARS', 100); // set to any number of your choice`
