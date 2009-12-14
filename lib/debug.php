@@ -1,7 +1,8 @@
 <?php
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
+	
 if ( ! function_exists('d_echo') ) {
 function d_echo($str) {
 	if ( ! defined('RS_DEBUG') )
@@ -26,14 +27,50 @@ if ( ! function_exists('rs_errlog') ) {
 	}
 }
 
-
-function agp_bt_die() {
+if ( ! function_exists('agp_bt_die') ) {
+function agp_bt_die( $die = true ) {
 	if ( ! defined('RS_DEBUG') )
 		return;
 
 	dump(debug_backtrace(),false,false);
-	die;
+	
+	if ( $die )
+		die;
 }
+}
+
+
+if ( ! function_exists('memory_new_usage_rs') ) {
+function memory_new_usage_rs () {
+	if ( ! defined('RS_DEBUG') || ! defined('SCOPER_MEMORY_LOG') )
+		return;
+	
+	static $last_mem_usage;
+	
+	if ( ! isset($last_mem_usage) )
+		$last_mem_usage = 0;
+	
+	$current_mem_usage = memory_get_usage(true);
+	$new_mem_usage = $current_mem_usage - $last_mem_usage;
+	$last_mem_usage = $current_mem_usage;
+	
+	return $new_mem_usage;
+}
+}
+
+if ( ! function_exists('log_mem_usage_rs') ) {
+function log_mem_usage_rs( $label, $display_total = true ) {
+	if ( ! defined('RS_DEBUG') || ! defined('SCOPER_MEMORY_LOG') )
+		return;
+		
+	$total = $display_total ? " (" . memory_get_usage(true) . ")" : '';
+		
+	rs_errlog($label);
+	rs_errlog( memory_new_usage_rs() . $total );
+	rs_errlog( '' );
+}
+}
+
 
 ////////////////////////////////////////////////////////
 // Function:         dump
@@ -65,7 +102,7 @@ function dump(&$var, $info = FALSE, $display_objects = true)
     $var = $old;
 
     echo "<pre id='agp_debug' style='margin: 0px 0px 10px 0px; display: block; background: white; color: black; font-family: Verdana; border: 1px solid #cccccc; padding: 5px; font-size: 10px; line-height: 13px;'>";
-    if($info != FALSE) echo "<b style='color: red;'>$info:</b><br />";
+    if($info != FALSE) echo "<b style='color: red;'>$info:</strong><br />";
     do_dump($var, $display_objects, '$'.$vname);
     echo "</pre>";
 }
@@ -135,6 +172,23 @@ function do_dump(&$var, $display_objects = true, $var_name = NULL, $indent = NUL
 
         $var = $var[$keyvar];
     }
+}
+}
+
+if ( ! function_exists('awp_usage_message') ) {
+function awp_usage_message( $translate = true ) {
+	if ( function_exists('memory_get_usage') ) {
+		if ( $translate )
+			return sprintf( __('%1$s queries in %2$s seconds. %3$s MB used.', 'scoper'), get_num_queries(), round(timer_stop(0), 1), round( memory_get_usage() / (1024 * 1024), 3), 'scoper' ) . ' ';
+		else
+			return get_num_queries() . ' queries in ' . round(timer_stop(0), 1) . ' seconds. ' . round( memory_get_usage() / (1024 * 1024), 3) . ' MB used. ';
+	}
+}
+}
+
+if ( ! function_exists('awp_echo_usage_message') ) {
+function awp_echo_usage_message( $translate = true ) {
+	echo awp_usage_message( $translate );
 }
 }
 

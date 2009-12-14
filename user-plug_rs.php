@@ -2,6 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
+
 function set_current_user($id, $name = '') {
 	return wp_set_current_user($id, $name);
 }
@@ -9,6 +10,10 @@ function set_current_user($id, $name = '') {
 function wp_set_current_user($id, $name = '') {
 	global $current_user;
 
+	//log_mem_usage_rs( 'start wp_set_current_user.php' );
+	
+	require_once('db-config_rs.php');
+	
 	// need this for async-upload.php (otherwise current_user not loaded)
 	if ( ! empty($_POST['auth_cookie']) ) {
 		$cookie_key = 'wordpress_' . COOKIEHASH;
@@ -35,7 +40,11 @@ function wp_set_current_user($id, $name = '') {
 	else
 		require_once('scoped-user_anon.php');
 	
+	//log_mem_usage_rs( 'required scoped-user.php' );
+		
 	$current_user = new WP_Scoped_User($id, $name);
+	
+	//log_mem_usage_rs( 'new WP_Scoped_User' );
 	
 	// from default wp_set_current_user: Setup global user vars.  Used by WP set_current_user() for back compat.
 	global $user_login, $userdata, $user_level, $user_ID, $user_email, $user_url, $user_pass_md5, $user_identity;

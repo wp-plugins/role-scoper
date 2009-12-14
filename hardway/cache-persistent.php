@@ -5,13 +5,34 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 // cache.php from WP 2.3, with added ability to flush a specific flag/subdirectory
 //
 // Also added safeguards against retaining an invalid cache after failed update / flush attempt
+//
+// Added better MU support
+//
+function wpp_suffix_flag( $flag ) {
+	if ( IS_MU_RS ) {
+		global $wpp_object_cache;
+		
+		if ( ! in_array( $flag, $wpp_object_cache->global_groups ) ) {
+			global $blog_id;
+			$flag .= "_$blog_id";
+		}
+	}
+	
+	return $flag;
+}
 
-function wpp_cache_add($key, $data, $flag = '', $expire = 0) {
+function wpp_cache_add($key, $data, $flag = '', $expire = 0, $append_blog_suffix = true) {
 	if ( ! empty($_POST) )	// kevinB: reduce elusive anomolies and allow flushing optimization by disabling cache updates during POST operation
 		return;
 		
 	global $wpp_object_cache;
-	$data = unserialize(serialize($data));
+	
+	if ( $append_blog_suffix )
+		$flag = wpp_suffix_flag( $flag );
+	
+	//$data = unserialize(serialize($data));
+	if ( is_serialized( $data ) )
+		$data = unserialize($data);
 	
 	if ( empty($wpp_object_cache) )
 		return;
@@ -28,9 +49,12 @@ function wpp_cache_close() {
 	return $wpp_object_cache->save();
 }
 
-function wpp_cache_delete($id, $flag = '') {
+function wpp_cache_delete($id, $flag = '', $append_blog_suffix = true) {
 	global $wpp_object_cache;
 
+	if ( $append_blog_suffix )
+		$flag = wpp_suffix_flag( $flag );
+	
 	//rs_errlog("wpp_cache_delete: $id, $flag");
 	
 	if ( empty($wpp_object_cache) )
@@ -55,8 +79,11 @@ function wpp_cache_flush() {
 }
 
 // added by kevinB for use with Role Scoper
-function wpp_cache_flush_group($flag) {
+function wpp_cache_flush_group($flag, $append_blog_suffix = true) {
 	global $wpp_object_cache;
+	
+	if ( $append_blog_suffix )
+		$flag = wpp_suffix_flag( $flag );
 	
 	if ( ! empty($_POST) ) {	// kevinB: since cache updating during POST operation is disabled, improve perf by flushing each group only once
 		static $already_flushed;
@@ -80,22 +107,28 @@ function wpp_cache_flush_group($flag) {
 	return $flush_okay;
 }
 
-function wpp_cache_get($id, $flag = '') {
+function wpp_cache_get($id, $flag = '', $append_blog_suffix = true) {
 	global $wpp_object_cache;
 
+	if ( $append_blog_suffix )
+		$flag = wpp_suffix_flag( $flag );
+	
 	if ( empty($wpp_object_cache) )
 		return;
 		
 	return $wpp_object_cache->get($id, $flag);
 }
 
-function wpp_cache_init() {
+function wpp_cache_init( $sitewide_groups = true ) {
 	global $wpp_object_cache;
-
+	
 	if ( isset($wpp_object_cache) )
 		$wpp_object_cache->save();
-	
+		
 	$GLOBALS['wpp_object_cache'] = new WP_Persistent_Object_Cache();
+	
+	if ( IS_MU_RS && $sitewide_groups )
+		$GLOBALS['wpp_object_cache']->global_groups = array_merge( $GLOBALS['wpp_object_cache']->global_groups, array( 'all_usergroups', 'group_members' ) );
 	
 	// added by kevinB: if a flush fails, try try again (and meanwhile, DON'T use the old invalid cache)
 	$need_flush = ( function_exists('scoper_get_option') ) ? scoper_get_option('need_cache_flush') : get_option('scoper_need_cache_flush');
@@ -109,12 +142,18 @@ function wpp_cache_init() {
 		
 }
 
-function wpp_cache_replace($key, $data, $flag = '', $expire = 0) {
+function wpp_cache_replace($key, $data, $flag = '', $expire = 0, $append_blog_suffix = true) {
 	if ( ! empty($_POST) )	// kevinB: reduce elusive anomolies and allow flushing optimization by disabling cache updates during POST operation
 		return;
 
 	global $wpp_object_cache;
-	$data = unserialize(serialize($data));
+	
+	if ( $append_blog_suffix )
+		$flag = wpp_suffix_flag( $flag );
+	
+	//$data = unserialize(serialize($data));
+	if ( is_serialized( $data ) )
+		$data = unserialize($data);
 
 	if ( empty($wpp_object_cache) )
 		return;
@@ -122,12 +161,18 @@ function wpp_cache_replace($key, $data, $flag = '', $expire = 0) {
 	return $wpp_object_cache->replace($key, $data, $flag, $expire);
 }
 
-function wpp_cache_set($key, $data, $flag = '', $expire = 0) {
+function wpp_cache_set($key, $data, $flag = '', $expire = 0, $append_blog_suffix = true) {
 	if ( ! empty($_POST) )	// kevinB: reduce elusive anomolies and allow flushing optimization by disabling cache updates during POST operation
 		return;
 
 	global $wpp_object_cache;
-	$data = unserialize(serialize($data));
+	
+	if ( $append_blog_suffix )
+		$flag = wpp_suffix_flag( $flag );
+	
+	//$data = unserialize(serialize($data));
+	if ( is_serialized( $data ) )
+		$data = unserialize($data);
 
 	if ( empty($wpp_object_cache) )
 		return;
@@ -138,7 +183,7 @@ function wpp_cache_set($key, $data, $flag = '', $expire = 0) {
 // returns true on success
 function wpp_cache_test( &$err_msg, $text_domain = '' ) {
 	// intentionally not using WP_CACHE_DIR because we need a known location so rs_cache_flush.php can delete files without loading WP
-	$cache_dir = ( defined( 'CACHE_PATH' ) ) ? CACHE_PATH : ABSPATH.'wp-content'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
+	$cache_dir = ( defined( 'CACHE_PATH' ) ) ? CACHE_PATH : WP_CONTENT_DIR.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
 	$err = false;
 	
 	if ( ! defined( 'ENABLE_PERSISTENT_CACHE' ) ) {
@@ -195,12 +240,13 @@ class WP_Persistent_Object_Cache {
 	var $non_existant_objects = array ();
 	var $global_groups = array ('users', 'userlogins', 'usermeta');
 	var $non_persistent_groups = array('comment');
-	var $blog_id;
+	var $blog_id;									// Note: wpp_cache_get() / wpp_cache_set() / wpp_cache_delete() functions also attach blog_id suffix to flag.  This blog_id property is just to establish a separate physical cache subfolder for each blog
 	var $cold_cache_hits = 0;
 	var $warm_cache_hits = 0;
 	var $cache_misses = 0;
 	var $secret = '';
-
+	var $is_404;
+	
 	function WP_Persistent_Object_Cache() {
 		global $blog_id;
 		
@@ -220,13 +266,13 @@ class WP_Persistent_Object_Cache {
 		else {
 			// Intentionally not using WP_CACHE_DIR because we need a known location so rs_cache_flush.php can delete files without loading WP.
 			// Using the correct separator eliminates some cache flush errors on Windows
-			$this->cache_dir = ABSPATH.'wp-content'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
+			$this->cache_dir = WP_CONTENT_DIR.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
 		}
 		
 		if (is_writable($this->cache_dir) && is_dir($this->cache_dir)) {
 				$this->cache_enabled = true;
 		} else {
-			if (is_writable(ABSPATH.'wp-content')) {
+			if (is_writable(WP_CONTENT_DIR)) {
 				$this->cache_enabled = true;
 			}
 		}
@@ -531,6 +577,13 @@ class WP_Persistent_Object_Cache {
 
 		//rs_errlog ("<br />setting $id/$group:<br />");
 		
+		// is_404() function is no longer available at the execution of this wpp_cache_close, so check it here
+		if ( function_exists( 'is_404' ) && is_404() && empty( $this->is_404 ) )
+			$this->is_404 = true;
+		
+		if ( ! empty( $this->is_404 ) )
+			return true;
+			
 		$this->cache[$group][$id] = $data;
 		unset ($this->non_existant_objects[$group][$id]);
 		$this->dirty_objects[$group][] = $id;
@@ -549,10 +602,13 @@ class WP_Persistent_Object_Cache {
 		if (empty ($this->dirty_objects))
 			return true;
 			
+		if ( ! empty( $this->is_404 ) )  // is_404() function is no longer available at the execution of this wpp_cache_close
+			return true;
+			
 		//rs_errlog ("<br />saving pers cache:<br />");
 		
-		// Give the new dirs the same perms as wp-content.
-		$stat = stat(ABSPATH.'wp-content');
+		// Give the new dirs the same perms as WP_CONTENT_DIR
+		$stat = stat(WP_CONTENT_DIR);
 		$dir_perms = $stat['mode'] & 0007777; // Get the permission bits.
 		$file_perms = $dir_perms & 0000666; // Remove execute bits for files.
 

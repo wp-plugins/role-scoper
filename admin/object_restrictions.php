@@ -9,18 +9,18 @@ global $scoper;
 if ( ! ( $src = $scoper->data_sources->get($src_name) ) || ! empty($src->no_object_roles) || ! empty($src->taxonomy_only) || ($src_name == 'group') )
 	wp_die(__('Invalid data source', 'scoper'));
 
-$is_administrator = is_administrator_rs($src);
+$is_administrator = is_administrator_rs($src, 'user');
 
 $role_bases = array();
 
-if ( USER_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) || current_user_can('edit_users') ) )
+if ( USER_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) ) )
 	$role_bases []= ROLE_BASIS_USER;
 	
-if ( GROUP_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) || current_user_can('edit_users') || current_user_can('manage_groups') ) )
+if ( GROUP_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) || current_user_can('manage_groups') ) )
 	$role_bases []= ROLE_BASIS_GROUPS;
 
 if ( empty($role_bases) )
-	wp_die(__('Cheatin&#8217; uh?'));
+	wp_die(__awp('Cheatin&#8217; uh?'));
 	
 $otype = $scoper->data_sources->member_property($src_name, 'object_types', $object_type);
 	
@@ -39,6 +39,9 @@ echo '<a name="scoper_top"></a>';
 $err = 0;
 if ( isset($_POST['rs_submit'] ) )
 	$err = ScoperAdminBulk::role_submission(OBJECT_SCOPE_RS, ROLE_RESTRICTION_RS, '', $src_name, $role_codes, '', $nonce_id);
+	
+	if ( scoper_get_option( 'file_filtering' ) )
+		scoper_flush_file_rules();
 ?>
 
 <div class="wrap agp-width97">
@@ -54,7 +57,9 @@ echo '<h2>' . sprintf(__('%s Restrictions', 'scoper'), $display_name)
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
 	
-	$link_open = "<a href='" . SCOPER_ADMIN_URL . "/roles/$src_name/$object_type'>";
+	
+	
+	$link_open = "<a href='admin.php?page=rs-/roles/$src_name/$object_type'>";
 	
 	$tx_names = $scoper->data_sources->member_property($src_name, 'uses_taxonomies');
 	if ( $tx_names && (1 == count($tx_names) ) && scoper_get_otype_option('use_term_roles', $src_name, $object_type) ) {
@@ -87,14 +92,14 @@ else
 		ASSIGN_FOR_BOTH_RS => sprintf(__('for selected and sub-%s', 'scoper'), $display_name_plural)
 	);
 
-$max_scopes = array( 'object' => __('Restrict selected roles', 'scoper'), 'blog' => __('Unrestrict selected roles', 'scoper') );
-$args = array( 'max_scopes' => $max_scopes );
+$max_scopes = array( 'object' => __('Restrict selected roles', 'scoper'), 'blog' => __('Unrestrict selected roles', 'scoper')  );
+$args = array( 'max_scopes' => $max_scopes, 'scope' => OBJECT_SCOPE_RS );
 ScoperAdminBulk::display_inputs(ROLE_RESTRICTION_RS, $assignment_modes, $args);
 
 $role_display = array();
 $editable_roles = array();
-foreach ( $scoper->role_defs->get_all() as $role_handle => $role_def ) {
-	$role_display[$role_handle] = ( empty($role_def->abbrev_for_object_ui) ) ? $role_def->abbrev : $role_def->abbrev_for_object_ui;
+foreach ( $scoper->role_defs->get_all_keys() as $role_handle ) {
+	$role_display[$role_handle] = $scoper->role_defs->get_abbrev( $role_handle, OBJECT_UI_RS );
 	if ( $scoper->admin->user_can_admin_role($role_handle, 0, $src_name, $object_type) )
 		$editable_roles[0][$role_handle] = true;
 }
@@ -104,8 +109,8 @@ $args = array( 'default_hide_empty' => ! empty($otype->admin_default_hide_empty)
 ScoperAdminBulk::item_tree_jslinks(ROLE_RESTRICTION_RS, $args );
 
 // buffer prev/next caption for display with each obj type
-$prevtext = _c('prev|abbreviated link to previous item', 'scoper');
-$nexttext = _c('next|abbreviated link to next item', 'scoper');
+$prevtext = _x('prev', 'abbreviated link to previous item', 'scoper');
+$nexttext = _x('next', 'abbreviated link to next item', 'scoper');
 
 $site_url = get_option('siteurl');
 

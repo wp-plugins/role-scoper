@@ -20,8 +20,8 @@ class QueryInterceptor_RS
 	function QueryInterceptor_RS() {
 		global $scoper;
 		//$this->scoper =& $scoper;	
-		
-		$is_administrator = is_administrator_rs();
+
+		$is_administrator = is_content_administrator_rs();
 
 		// ---- ABSTRACT ROLE SCOPER HOOKS - wrap around source-specific hooks based on DataSources config ------
 		//
@@ -42,29 +42,20 @@ class QueryInterceptor_RS
 		
 		// filter args: $item, $src_name, $object_type, $args (note: to customize other args, filter must be called directly)
 		
-		// WP causes PHP notice if plugins add their own hooks without prepping the global array
-		$setargs = array( 'is_global' => true );
-		awp_force_set('wp_filter', array(), $setargs, 'objects_distinct_rs', 50);
-		awp_force_set('wp_filter', array(), $setargs, 'objects_join_rs', 2);
-		awp_force_set('wp_filter', array(), $setargs, 'objects_where_rs', 2);
-		awp_force_set('wp_filter', array(), $setargs, 'objects_request_rs', 2);
-		awp_force_set('wp_filter', array(), $setargs, 'objects_results_rs', 50);
-		awp_force_set('wp_filter', array(), $setargs, 'objects_teaser_rs', 50);
-		
-		add_filter('objects_distinct_rs', array($this, 'flt_objects_distinct'), 50);
-		add_filter('objects_join_rs', array($this, 'flt_objects_join'), 2, 4);
+		//add_filter('objects_distinct_rs', array($this, 'flt_objects_distinct'), 50);
+		//add_filter('objects_join_rs', array($this, 'flt_objects_join'), 2, 4);
 		add_filter('objects_where_rs', array($this, 'flt_objects_where'), 2, 4);
 		add_filter('objects_request_rs', array($this, 'flt_objects_request'), 2, 4);
 		add_filter('objects_results_rs', array($this, 'flt_objects_results'), 50, 4);
 		add_filter('objects_teaser_rs', array($this, 'flt_objects_teaser'), 50, 4);
 		
-		// Append any limiting clauses to WHERE clause for taxonomy query
-		// args: ($where, $taxonomy, $object_type = '', $reqd_op = '')  e.g. ($where, 'categories', 'post', 'edit')
-		// Note: If any of the optional args are missing or nullstring, an attempt is made
-		// to determine them from URI based on Scoped_Taxonomy properties
-		awp_force_set('wp_filter', array(), $setargs, 'terms_request_rs', 50);
-		add_filter('terms_request_rs', array(&$this, 'flt_terms_request'), 50, 4);
-		
+		if ( ! $scoper->direct_file_access ) {
+			// Append any limiting clauses to WHERE clause for taxonomy query
+			// args: ($where, $taxonomy, $object_type = '', $reqd_op = '')  e.g. ($where, 'categories', 'post', 'edit')
+			// Note: If any of the optional args are missing or nullstring, an attempt is made
+			// to determine them from URI based on Scoped_Taxonomy properties
+			add_filter('terms_request_rs', array(&$this, 'flt_terms_request'), 50, 4);
+		}
 		
 		// note: If DISABLE_QUERYFILTERS_RS is set, the RS filters are still defined above for selective internal use,
 		//		 but in that case are not mapped to the defined data source hooks ('posts_where', etc.) below
@@ -77,9 +68,10 @@ class QueryInterceptor_RS
 					continue;
 			
 				if ( ! $is_administrator ) {
-					if ( isset($src->query_hooks->where) && isset($src->query_hooks->join) ) {
+					//if ( isset($src->query_hooks->where) && isset($src->query_hooks->join) ) {
+					if ( isset($src->query_hooks->where) ) {
 						$rs_hooks[$src->query_hooks->where] = 	(object) array( 'name' => 'objects_where_rs',	'rs_args' => "'$src_name', '', '' ");	
-						$rs_hooks[$src->query_hooks->join] =  	(object) array( 'name' => 'objects_join_rs', 	'rs_args' => "'$src_name', '', '' ");	
+						//$rs_hooks[$src->query_hooks->join] =  	(object) array( 'name' => 'objects_join_rs', 	'rs_args' => "'$src_name', '', '' ");	
 					
 					} elseif ( isset($src->query_hooks->request) )
 						$rs_hooks[$src->query_hooks->request] = (object) array( 'name' => 'objects_request_rs',	'rs_args' => "'$src_name', '', '' ");
@@ -89,8 +81,8 @@ class QueryInterceptor_RS
 				if ( isset($src->query_hooks->results) )
 					$rs_hooks[$src->query_hooks->results] = 	(object) array( 'name' => 'objects_results_rs', 'rs_args' => "'$src_name', '', '' ");
 	
-				if ( isset($src->query_hooks->distinct) )
-					$rs_hooks[$src->query_hooks->distinct] = 	(object) array( 'name' => 'objects_distinct_rs','rs_args' => '');	
+				//if ( isset($src->query_hooks->distinct) )
+				//	$rs_hooks[$src->query_hooks->distinct] = 	(object) array( 'name' => 'objects_distinct_rs','rs_args' => '');	
 			} //foreach data_sources
 
 			// call our abstract handlers with a lambda function that passes in original hook name
@@ -103,12 +95,22 @@ class QueryInterceptor_RS
 				$comma = ( $rs_hook->rs_args ) ? ',' : '';
 				$func = "return apply_filters( '$rs_hook->name', $arg_str $comma $rs_hook->rs_args );";
 				add_filter( $original_hook, create_function( $arg_str, $func ), 50, $orig_hook_numargs );	
+
 				//d_echo ("adding filter: $original_hook -> $func <br />");
 			}
 		}
+		
+		//add_filter( 'query', array( &$this, 'flt_debug_query'), 999 );
 	}
 	
-
+	/*
+	function flt_debug_query( $query ) {
+		d_echo( $query . '<br /><br />' );
+		return $query;
+	}
+	*/
+	
+	
 	// Append any limiting clauses to WHERE clause for taxonomy query
 	//$reqd_caps_by_taxonomy[tx_name][op_type] = array of cap names
 	function flt_terms_request($request, $taxonomies, $reqd_caps = '', $args = '') {
@@ -177,52 +179,50 @@ class QueryInterceptor_RS
 
 		
 		// Note that capabilities (i.e. "manage_categories") a user/group has on a particular 
-		// term are implemented as Term Roles on the taxonomy data source.  This was done
-		// mostly for development expedience/administrative convenience, whereas a more stricly
-		// consistent model would have been to assign Object Roles on the terms in question.
+		// term are implemented as Term Roles on the taxonomy data source.
 		//
 		// Call objects_where_role_clauses() with src_name of the taxonomy source
 		// This works as a slight subversion of the normal flt_objects_where query building
 		// because we are also forcing taxonomies explicitly and passing the terms_query arg
-		//
-		// Remember, the output here is only a WHERE clause which can be applied to some
-		// SELECT and JOIN other than the typical flt_objects_request usage. In this case, it will
-		// probably be used in a SELECT FROM wp_terms JOIN ON wp_term_taxonomy
 		
 		$args['terms_query'] = true;
 		$args['use_object_roles'] = false;
-		
+
 		$args['skip_owner_clause'] = true;
 		$args['terms_reqd_caps'] = $reqd_caps_by_otype;
 
-		$rs_join = $this->flt_objects_join('', $src_name, '', $args);  // 3rd arg is object_types, never passed in as of RC9 
-
+		// As of RS 1.1, using subselects in where clause instead
+		//$rs_join = $this->flt_objects_join('', $src_name, '', $args);
+		
 		$where = $this->flt_objects_where($where, $src_name, '', $args);
 		
+		if ( $pos_where === false )
+			$request = $request . ' WHERE 1=1 ' . $where;
+		else
+			$request = substr($request, 0, $pos_where) . ' WHERE 1=1 ' . $where; // any pre-exising join clauses remain in $request
+		
+		/*
 		if ( $pos_where === false )
 			$request = $request . ' ' . $rs_join . ' WHERE 1=1 ' . $where;
 		else
 			$request = substr($request, 0, $pos_where) . ' ' . $rs_join . 'WHERE 1=1 ' . $where; // any pre-exising join clauses remain in $request
-		
+		*/
+			
 		//d_echo ("<br /><br />terms_request output:$request<br /><br />");
 		
 		return $request;
 	}
 	
-	function flt_objects_distinct($distinct) {
-		return 'DISTINCT';
-	}
-	
 	function flt_objects_request($request, $src_name, $object_types = '', $args = '') {
 		if ( $args ) {
 			$defaults = array( 'skip_teaser' => false );
-			$args = array_diff_key($args, array_flip( array('request', 'src_name', 'object_types') ) );
+			$args = array_diff_key($args, array_flip( array('request', 'src_name', 'object_types' ) ) );
 			$args = array_merge( $defaults, (array) $args );
 			extract($args);
 		}
-
-		global $scoper;
 		
+		global $scoper;
+
 		// Filtering in user_has_cap sufficiently controls revision access; a match here should be for internal, pre-validation purposes
 		if ( strpos( $request, "post_type = 'revision'") )
 			return $request; 
@@ -244,176 +244,66 @@ class QueryInterceptor_RS
 			$pos_where = $pos_suffix;
 		}
 
-		$args['request'] = $request;
-		
-		$rs_join = $this->flt_objects_join('', $src_name, $object_types, $args);
+		// As of RS 1.1, using subselects in where clause instead
+		//$args['request'] = $request;
+		//$rs_join = $this->flt_objects_join('', $src_name, $object_types, $args);
 		
 		// TODO: abstract this
-		if ( strpos( $request, ".post_type = 'attachment'" ) ) {
+		if ( strpos( $request, "post_type = 'attachment'" ) ) {
 			// The listed objects are attachments, so query filter is based on objects they inherit from
 			global $wpdb;
 			// filter attachments on upload page by inserting a scoped subquery based on user roles on the post/page attachment is tied to
 			$rs_where = $this->flt_objects_where('', $src_name, $object_types, $args);
-			$subqry = "SELECT ID FROM $wpdb->posts $rs_join WHERE 1=1 $rs_where";
-			$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( ( $wpdb->posts.post_parent IN ($subqry) AND $wpdb->posts.post_type = 'attachment' ) )", $request);
+			$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
+			
+			if ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS ) {
+				$author_clause = '';
+
+				if ( is_admin() ) {
+					// optionally hide other users' unattached uploads, but not from blog-wide Editors
+					global $current_user;
+					if ( ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) ) && ! scoper_get_option( 'admin_others_unattached_files' ) )
+						$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+				}
+				
+				$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
+			} else
+				$unattached_clause = '';
+			
+			$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( $wpdb->posts.post_type = 'attachment' AND ( $unattached_clause $wpdb->posts.post_parent IN ($subqry) ) )", $request);
+		
 		} else {
+			// used by objects_where_scope_clauses() to determine whether to add a subselect or make use of existing JOIN	
+			$args['join'] = ( $pos_where ) ? substr( $request, 0, $pos_where + 1 ) : '';
+
 			// Generate a query filter based on roles for the listed objects
 			$rs_where = $this->flt_objects_where($where, $src_name, $object_types, $args);
 
 			if ( $pos_where === false )
+				$request = $request . ' WHERE 1=1 ' . $where;
+			else
+				$request = substr($request, 0, $pos_where) . ' WHERE 1=1 ' . $rs_where; // any pre-exising join clauses remain in $request
+			
+			/*
+			if ( $pos_where === false )
 				$request = $request . ' ' . $rs_join . ' WHERE 1=1 ' . $where;
 			else
 				$request = substr($request, 0, $pos_where) . ' ' . $rs_join . ' WHERE 1=1 ' . $rs_where; // any pre-exising join clauses remain in $request
+			*/
 		}
-		
-		//d_echo ("<br /><b>filtered request:</b> $request <br /><br />");
-		
+	
 		return $request;
 	}
 	
-	function flt_objects_join($join, $src_name, $object_types = '', $args = '' ) {
-		$defaults = array( 'user' => '', 'use_object_roles' => -1, 'use_term_roles' => -1, 'skip_teaser' => false, 'source_alias' => '',
-							'taxonomies' => array(), 'request' => '', 'terms_query' => false, 'terms_reqd_caps' => '');
-		$args = array_merge( $defaults, (array) $args );
-		extract($args);
-
+	function is_term_table_joined( $request, $taxonomy ) {
 		global $scoper;
-		
-		if ( ! $src = $scoper->data_sources->get($src_name) ) {
-			rs_notice ( sprintf( 'Role Scoper Config Error (%1$s): Data source (%2$s) is not defined', 'objects_join_clause', $src_name ) );  
-			return $join;
-		}
 	
-		$object_types = $this->_get_object_types($src, $object_types);
-
-		$tease_otypes = $this->_get_teaser_object_types($src_name, $object_types, $args);
-		
-		if ( empty($skip_teaser) && ! array_diff($object_types, $tease_otypes) )
-			return $join;  // all object types potentially returned by this query will have a teaser filter applied to results
-			
-		// filtering in user_has_cap sufficiently controls revision access; a match here should be for internal, pre-validation purposes
-		if ( ! empty($args['request']) && strpos( $args['request'], "post_type = 'revision'") )
-			return $join; 
-		
-		if ( ! empty($src->no_object_roles) )
-			$use_object_roles = false;
-		
-		if ( ! $object_types )
-			$object_types = array_keys($src->object_types);  // include all defined otypes in the query if none were specified
-		
-		if ( ! is_array($object_types) )
-			$object_types = array($object_types);
-		
-		if ( in_array('group', $object_types) )
-			$use_object_roles = true;
-		
-		if ( -1 === $use_object_roles ) {
-			foreach ( $object_types as $object_type ) // do the join if any of the object types consider object roles
-				if ( scoper_get_otype_option( 'use_object_roles', $src_name, $object_type ) ) {
-					$use_object_roles = true;
-					break;
-				}
-			
-			if ( ! is_admin() && ! is_preview() ) {
-				if ( -1 === $use_object_roles )
-					$use_object_roles = false;
-			}
-		}
-		
-		if ( -1 === $use_term_roles ) {
-			foreach ( $object_types as $object_type ) // do the join if any of the object types consider term roles
-				if( scoper_get_otype_option( 'use_term_roles', $src_name, $object_type ) ) {
-					$use_term_roles = true;
-					break;
-				}
-		
-			if ( ! is_admin() ) {
-				if ( -1 === $use_term_roles )
-					$use_term_roles = false;
-			}
-		}
-		
-		if ( $use_object_roles ) {
-			if ( ! is_object($user) ) {
-				global $current_user;
-				$user = $current_user;
-			}	
-		}
-
-		// allow calling function to pass in custom alias for data source table
-		$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
-		
-		// support mirroring of inconveniently stored 3rd party plugin data into data_rs table (by RS Extension plugins)
-		$rs_data_clause = ( ! empty($src->uses_rs_data_table) ) ? "AND $src_table.topic = 'object' AND $src_table.src_or_tx_name = '$src_name' AND $src_table.object_type IN ('" . implode("', '", $object_types) . "')" : '';
-
-		if ( $use_term_roles && ! empty($src->uses_taxonomies) ) {
-			$joined_taxonomies = array();
-			
-			// taxonomies arg is for limiting; default is to include all associated taxonomies in where clause
-			$taxonomies = array_intersect($src->uses_taxonomies, array_diff($src->uses_taxonomies, $taxonomies) );
-			
-			foreach ($taxonomies as $taxonomy) {
-				$qvars = $scoper->taxonomies->get_terms_query_vars($taxonomy);
-				
-				// allow calling function to pass in custom alias for data source table
-				if ( ! empty($source_alias) )
-					$object_table_alias = $source_alias;
-				elseif ( ! empty($qvars->obj->alias) )
-					$object_table_alias = $qvars->obj->alias;
-
-				if ( isset($joined_taxonomies[$qvars->obj->table][$qvars->term->table]) )
-					continue;
-			
-				$joined_taxonomies[$qvars->obj->table][$qvars->term->table] = true;
-				
-				// join this taxonomy source on the object source being queried
-				if ( ! $terms_query ) {
-					// if full current request was passed in, use it to avoid redundant joins
-					$new_join = " {$qvars->term->table} {$qvars->term->as} ";
-					if ( ! strpos($join, $new_join) && ! strpos($request, $new_join) )
-						// note: inner join was disallowing author edit of own draft without category selection
-						$join .= " LEFT JOIN{$new_join}ON $src_table.{$src->cols->id} = {$qvars->term->alias}.{$qvars->term->col_obj_id} $rs_data_clause";
-				}
-				
-				// join this object source on the taxonomy source being queried		//TODO: confirm term_reqd_caps clause is not necessary
-				if ( $terms_query && ( $use_object_roles || $terms_reqd_caps ) ) {
-					// join term2obj table
-					$qvt = $scoper->taxonomies->get_terms_query_vars($taxonomy, true);
-
-					$new_join = " {$qvars->term->table} {$qvars->term->as} ";
-					if ( ! strpos($join, $new_join) && ! strpos($request, $new_join) )
-						$join .= " LEFT JOIN{$new_join}ON {$qvt->term->alias}.{$qvt->term->col_id} = {$qvars->term->alias}.{$qvars->term->col_id} ";
-				
-					// join object source
-					$new_join = " {$qvars->obj->table} {$qvars->obj->as} ";
-					if ( ! strpos($join, $new_join) && ! strpos($request, $new_join) )
-						$join .= " LEFT JOIN{$new_join}ON {$qvars->term->alias}.{$qvars->term->col_obj_id} = {$object_table_alias}.{$qvars->obj->col_id} $rs_data_clause";
-				}
-			}
-		}
-		
-		if ( $use_object_roles && $user->ID ) {
-			global $wpdb;
-			
-			$u_g_clause = $user->get_user_clause('uro');
-			
-			if ( $terms_query ) {
-				$new_join = " $wpdb->user2role2object_rs AS uro ";
-				if ( ! strpos($join, $new_join) && ! strpos($request, $new_join) )
-					$join .= " LEFT JOIN{$new_join}ON uro.obj_or_term_id = {$qvars->term->alias}.{$qvars->term->col_id} AND uro.src_or_tx_name = '$src_name' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') $u_g_clause ";
-			} else {
-				$new_join = " $wpdb->user2role2object_rs AS uro ";
-				if ( ! strpos($join, $new_join) && ! strpos($request, $new_join) )
-					$join .= " LEFT JOIN{$new_join}ON uro.obj_or_term_id = $src_table.{$src->cols->id} AND uro.src_or_tx_name = '$src_name' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') $u_g_clause $rs_data_clause";
-			}
-		}
-		
-		//d_echo("<br /><br />join output:$join<br /><br />"); 
-		
-		return $join;
+		if ( $qvars = $scoper->taxonomies->get_terms_query_vars($taxonomy) )
+			if ( false !== strpos($request, " {$qvars->term->table} {$qvars->term->as} ") )
+				return true;
 	}
 	
-	// called by flt_objects_where, flt_objects_join, flt_objects_results
+	// called by flt_objects_where, flt_objects_results
 	function _get_object_types($src, $object_types = '') {
 		global $scoper;
 	
@@ -442,12 +332,12 @@ class QueryInterceptor_RS
 		return $object_types;
 	}
 	
-	// called by flt_objects_where, flt_objects_join, flt_objects_results
+	// called by flt_objects_where, flt_objects_results
 	function _get_teaser_object_types($src_name, $object_types, $args = '') {
 		if ( ! is_array($args) )
 			$args = array();
 
-		if ( ! empty($args['skip_teaser']) || is_admin() || is_administrator_rs() || is_attachment_rs() || defined('XMLRPC_REQUEST') || ! empty($this->skip_teaser) )
+		if ( ! empty($args['skip_teaser']) || is_admin() || is_content_administrator_rs() || is_attachment_rs() || defined('XMLRPC_REQUEST') || ! empty($this->skip_teaser) )
 			return array();
 			
 		if ( empty($object_types) )
@@ -475,7 +365,8 @@ class QueryInterceptor_RS
 		$defaults = array( 'user' => '', 'use_object_roles' => -1, 'use_term_roles' => -1, 
 							'taxonomies' => array(), 'request' => '', 'terms_query' => 0, 'force_statuses' => '',
 							'force_reqd_caps' => '', 'alternate_reqd_caps' => '',	'source_alias' => '',
-							'required_operation' => '', 'terms_reqd_caps' => '', 'skip_teaser' => false );
+							'required_operation' => '', 'terms_reqd_caps' => '', 'skip_teaser' => false,
+							'join' => '' );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 		
@@ -487,7 +378,7 @@ class QueryInterceptor_RS
 
 		$where_prepend = '';
 
-		//d_echo ("<br /><b>object_where input:</b> $where<br />");
+		//d_echo ("<br /><strong>object_where input:</strong> $where<br />");
 		//echo "<br />$where<br />";
 		
 		if ( ! is_object($user) ) {
@@ -500,7 +391,7 @@ class QueryInterceptor_RS
 			return $where;	// the specified data source is not know to Role Scoper
 			
 		$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
-			
+
 		// verify table name and id col definition (the actual existance checked at time of admin entry)
 		if ( ! ($src->table && $src->cols->id) )
 			rs_notice( sprintf( 'Role Scoper Configuration Error: table_basename or col_id are undefined for the %s data source.', $src_name) );
@@ -511,7 +402,7 @@ class QueryInterceptor_RS
 		$tease_otypes = $this->_get_teaser_object_types($src_name, $object_types, $args);
 		$tease_otypes = array_intersect($object_types, $tease_otypes);
 		
-		if ( ! $src->uses_taxonomies )
+		if ( empty($src->uses_taxonomies) )
 			$use_term_roles = false;
 
 		if ( ! empty($src->no_object_roles) )
@@ -538,8 +429,10 @@ class QueryInterceptor_RS
 		
 		// accomodate editing of published posts/pages to revision
 		$script_name = $_SERVER['SCRIPT_NAME'];
-		if ( strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/edit-pages.php') || strpos($script_name, 'p-admin/index.php') ) {
-			if ( awp_ver('2.6') && scoper_get_option('pending_revisions') ) {
+		$revision_uris = apply_filters( 'scoper_revision_uris', array( 'p-admin/edit.php', 'p-admin/edit-pages.php', 'p-admin/widgets.php' ) );
+				
+		if ( strpos($script_name, 'p-admin/index.php') || agp_strpos_any($script_name, $revision_uris) ) {
+			if ( defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {
 				$strip_capreqs = array('edit_published_posts', 'edit_private_posts', 'edit_published_pages', 'edit_private_pages');
 
 				foreach ( array_keys($otype_status_reqd_caps) as $listing_otype ) 
@@ -547,12 +440,13 @@ class QueryInterceptor_RS
 						$otype_status_reqd_caps[$listing_otype][$status] = array_diff($otype_status_reqd_caps[$listing_otype][$status], $strip_capreqs);
 			}
 		}
-
-		// todo: update this doc
+		
 		// Since Role Scoper can restrict or expand access regardless of post_status, query must be modified such that
-		// 	* all statuses are listed apart from owner inclusion clause (each will be replaced with scoped equivalent)
-		//	* WP_Query:get_posts owner inclusion clause (or others of the same format) expanded to include all scoper-defined statuses			
-		if ( $src->cols->owner && $user->ID ) {
+		//  * the default owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" is removed
+		//  * all statuses are listed apart from owner inclusion clause (and each of these status clauses is subsequently replaced with a scoped equivalent which imposes any necessary access limits)
+		//  * a new scoped owner clause is constructed where appropriate (see $where[$cap_name]['owner'] in function objects_where_role_clauses()
+		//
+		if ( ! $src->cols->owner && $user->ID ) {
 			// force standard query padding
 			$where = preg_replace("/{$src->cols->owner}\s*=\s*/", "{$src->cols->owner} = ", $where);
 			
@@ -592,7 +486,7 @@ class QueryInterceptor_RS
 				
 			if ( ! $status_vals )
 				return $where;
-		
+				
 			// force standard query padding
 			$where = preg_replace("/$col_status\s*=\s*'/", "$col_status = '", $where);
 			
@@ -628,17 +522,21 @@ class QueryInterceptor_RS
 				// if col_status appears again, query will include all statuses defined for this access type
 				$pos_second = strpos($where, $search, $status_clause_pos + 1);
 				if ( ! $pos_second ) {
-					$force_single_status = true;
+					// Eliminate a primary plugin incompatibility by skipping this preservation of existing single status requirements if we're on the front end and the requirement is 'publish'.  
+					// (i.e. include private posts/pages that this user has access to via RS role assignment).  
+					if ( ! $scoper->is_front() || ( 'publish' != $first_status_val ) || empty( $args['user']->ID ) || defined('SCOPER_RETAIN_PUBLISH_FILTER') ) {  
+						$force_single_status = true;
 
-					$startpos = $status_clause_pos + strlen($search);
-					$endpos = strpos($where, "'", $startpos + 1 );
-					if ( $endpos > $startpos ) {
-						$this_status_val = substr($where, $startpos, $endpos - $startpos );
-						
-						foreach ($otype_status_reqd_caps as $object_type => $status_reqd_caps)
-							foreach (array_keys($status_reqd_caps) as $status_name)
-								if ( $this_status_val != $status_vals[$status_name] )
-									unset($otype_status_reqd_caps[$object_type][$status_name]);
+						$startpos = $status_clause_pos + strlen($search);
+						$endpos = strpos($where, "'", $startpos + 1 );
+						if ( $endpos > $startpos ) {
+							$this_status_val = substr($where, $startpos, $endpos - $startpos );
+							
+							foreach ($otype_status_reqd_caps as $object_type => $status_reqd_caps)
+								foreach (array_keys($status_reqd_caps) as $status_name)
+									if ( $this_status_val != $status_vals[$status_name] )
+										unset($otype_status_reqd_caps[$object_type][$status_name]);
+						}
 					}
 				}
 			} // endif passed-in where clause has a status clause
@@ -672,6 +570,8 @@ class QueryInterceptor_RS
 						foreach ( array_keys($otype_status_reqd_caps) as $object_type )
 							if ( $this_type_val != $object_type )
 								unset($otype_status_reqd_caps[$object_type]);
+							else
+								$object_types = array( $object_type );
 					}
 				}
 			} // endif passed-in where clause has a status clause
@@ -686,15 +586,22 @@ class QueryInterceptor_RS
 				$check_otype = ( count($tease_otypes) && in_array('post', $tease_otypes) ) ? 'post' : $tease_otypes[0];
 
 				if ( ! scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) {
-					$in_statuses = "'" . implode("', '", $status_vals ) . "'";
-					$use_status_col = ( $status_col_with_table ) ? "{$src_table}.$col_status" : $col_status;
-					$where = str_replace( $basic_status_clause['published'], "$use_status_col IN ($in_statuses)", $where);
+					if ( count($status_vals) == count($src->statuses) ) {
+						$where = str_replace( $basic_status_clause['published'], "1=1", $where);
+					} else {
+						$in_statuses = "'" . implode("', '", $status_vals ) . "'";
+						$use_status_col = ( $status_col_with_table ) ? "{$src_table}.$col_status" : $col_status;
+						$where = str_replace( $basic_status_clause['published'], "$use_status_col IN ($in_statuses)", $where);
+					}
 				}
 			}
-				
+			
 			return $where;  // all object types potentially returned by this query will have a teaser filter applied to results
 		}
 
+
+		$is_administrator = is_content_administrator_rs();	// make sure administrators never have content limited
+		
 		$status_or = '';
 		$status_where = array();
 		
@@ -723,8 +630,6 @@ class QueryInterceptor_RS
 
 			$otype_val = $scoper->data_sources->member_property($src_name, 'object_types', $object_type, 'val');
 			if ( ! $otype_val ) $otype_val = $object_type;
-
-			$is_administrator = is_administrator_rs();	// make sure administrators never have content limited
 			
 			//now step through all statuses and corresponding cap requirements for this otype and access type
 			// (will replace "col_status = status_name" with "col_status = status_name AND ( [scoper requirements] )
@@ -734,9 +639,6 @@ class QueryInterceptor_RS
 				elseif ( empty($skip_teaser) && in_array($object_type, $tease_otypes) )
 					$status_where[$status_name][$object_type] = "{$src_table}.{$src->cols->type} = '$otype_val'"; // this object type will be teaser-filtered
 				else {
-					//d_echo($status_name);
-					//dump($reqd_caps);
-				
 					// filter defs for otypes which don't define a status will still have a single status element with value ''
 					$clause = $this->objects_where_role_clauses($src_name, $reqd_caps, $args);
 					
@@ -809,12 +711,13 @@ class QueryInterceptor_RS
 			}
 
 			// We may be replacing or inserting status clauses
-
+			
 			if ( ! empty($duplicate_clause[$status_name]) ) {
 				// We generated duplicate clauses for some statuses
-				foreach ( array_keys($duplicate_clause[$status_name]) as $other_name )
+				foreach ( array_keys($duplicate_clause[$status_name]) as $other_name ) {
 					$where = str_replace($basic_status_clause[$other_name], '1=2', $where);
-
+				}
+					
 				$duplicate_clause[$status_name] = array_merge($duplicate_clause[$status_name], array($status_name=>1) );
 				
 				// convert status names to status values to revise sql clause
@@ -822,11 +725,15 @@ class QueryInterceptor_RS
 				foreach ( array_keys($duplicate_clause[$status_name]) as $other_name )
 					$clause_status_vals[$status_vals[$other_name]] = true;
 			
-				$name_in = "'" . implode("', '", array_keys($clause_status_vals)) . "'";
-				$status_prefix = "$col_status IN ($name_in)";
-			} elseif ( $col_status && $status_name )
-				$status_prefix = $basic_status_clause[$status_name];
-			else
+				if ( count($clause_status_vals) == count($src->statuses) ) {
+					$status_prefix = "1=1";
+				} else {
+					$name_in = "'" . implode("', '", array_keys($clause_status_vals)) . "'";
+					$status_prefix = "$col_status IN ($name_in)";
+				}
+			} elseif ( $col_status && $status_name ) {
+				$status_prefix = $basic_status_clause[$status_name];	
+			} else
 				$status_prefix = '';
 
 			if ( $this_status_where && ( $this_status_where != '1=2' || count($status_where) > 1 ) ) {  //todo: confirm we can OR the 1=2 even if only one status clause
@@ -867,7 +774,7 @@ class QueryInterceptor_RS
 				$where = " AND ( $where_prepend )";
 		}
 	
-		// d_echo ("<br /><br /><b>objects_where output:</b> $where<br /><br />");
+		//d_echo ("<br /><br /><strong>objects_where output:</strong> $where<br /><br />");
 		//echo "<br />$where<br />";
 		
 		return $where;
@@ -880,7 +787,7 @@ class QueryInterceptor_RS
 		$defaults = array('user' => '', 'taxonomies' => array(), 'use_term_roles' => true, 
 						'use_object_roles' => -1, 'terms_query' => false, 'alternate_reqd_caps' => '', 
 						'custom_user_blogcaps' => '', 'skip_owner_clause' => false, 'object_type' => '',
-						'require_full_object_role' => false );
+						'require_full_object_role' => false, 'join' => '' );
 
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -905,6 +812,12 @@ class QueryInterceptor_RS
 			return ' 1=2 ';
 		}
 		
+		// special case to include pending / scheduled revisions by object role
+		if ( ! isset( $args['objrole_revisions_clause'] ) ) {
+			$args['objrole_revisions_clause'] = strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit.php' ) || strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit-pages.php' );
+		}
+		
+		
 		if ( 'group' ==  $src_name ) {
 			$use_object_roles = true;
 		} elseif ( ! empty($src->no_object_roles) )
@@ -915,8 +828,8 @@ class QueryInterceptor_RS
 		$args['use_object_roles'] = $use_object_roles;	
 
 		if ( $use_object_roles ) {
-			$applied_object_roles = $scoper->role_defs->get_applied_object_roles($user);
-		
+			$applied_object_roles = $scoper->role_defs->get_applied_object_roles($user); // no content date limits involved for object roles
+			
 			// Return all object_ids that require any role to be object-assigned 
 			// We will use an ID NOT IN clause so these are not satisfied by blog/term role assignment
 			$objscope_objects = $scoper->get_restrictions(OBJECT_SCOPE_RS, $src_name);
@@ -949,15 +862,17 @@ class QueryInterceptor_RS
 			} else
 				$exclude_object_types = array();
 
+
 			$qualifying_roles = $scoper->role_defs->qualify_roles($reqd_caps_arg, '', $object_type, array('exclude_object_types' => $exclude_object_types) );   // 'blog' arg: Account for WP blog_roles even if scoping with RS roles  
 			
 			// For object assignment, replace any "others" reqd_caps array. 
 			// Also exclude any roles which have never been assigned to any object
 			if ( $use_object_roles ) {
 				$base_caps_only = ! $require_full_object_role && ! $this->require_full_object_role;
+
 				$qualifying_object_roles = $scoper->role_defs->qualify_object_roles($reqd_caps_arg, $object_type, $applied_object_roles, $base_caps_only);
 			}
-
+			
 			if ( $alternate_reqd_caps ) { // $alternate_reqd_caps[setnum] = array of cap_names
 				foreach ( $alternate_reqd_caps as $alternate_capset ) {
 					foreach ( $alternate_capset as $alternate_reqd_caps ) {
@@ -970,7 +885,7 @@ class QueryInterceptor_RS
 					}	
 				}
 			}
-
+			
 			if ( $qualifying_roles ) {  
 				$args = array_merge($args, array( 'qualifying_roles' => $qualifying_roles) );
 				
@@ -997,7 +912,8 @@ class QueryInterceptor_RS
 						if ( $owner_roles ) {
 							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles, 'applied_object_roles' => $applied_object_roles ) );   //TODO: test whether we should just pass existing $objscope_objects, $applied_object_roles here
 							$scope_temp = $this->objects_where_scope_clauses($src_name, $owner_reqd_caps, $args );
-							if ( $scope_temp != $where[$cap_name]['user'] )
+
+							if ( ( $scope_temp != $where[$cap_name]['user'] ) && ! is_null($scope_temp) ) // TODO: why is null ever returned?
 								$where[$cap_name]['owner'] = '( ' . $scope_temp . " ) AND $src_table.{$src->cols->owner} = '$user->ID'";
 						}
 					}
@@ -1024,7 +940,7 @@ class QueryInterceptor_RS
 		$defaults = array( 'user' => '', 'qualifying_roles' => array(), 'qualifying_object_roles' => array(), 'taxonomies' => '', 
 		'use_blog_roles' => true, 'use_term_roles' => true, 'use_object_roles' => true, 'terms_query' => false, 
 		'objscope_objects' => '', 'skip_objscope_check' => false, 'applied_object_roles' => '', 'object_type' => '',
-		'require_full_object_role' => false );
+		'require_full_object_role' => false, 'objrole_revisions_clause' => false, 'join' => '' );
 		
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -1036,6 +952,8 @@ class QueryInterceptor_RS
 			return ' 1=2 ';
 		}
 		
+		$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
+		
 		if ( 'group' == $src_name )
 			$use_object_roles = true;
 		elseif ( ! empty($src->no_object_roles) )
@@ -1045,7 +963,7 @@ class QueryInterceptor_RS
 			$object_type = $scoper->data_sources->detect('type', $src);
 			
 		// ---- The following default argument generation is included to support potential direct usage of this function 
-		//								(not needed by call from flt_objects_where / objects_where_role_clauses -----------------
+		//								(not needed by call from flt_objects_where / objects_where_role_clauses) -----------------
 		if ( ! is_object($user) ) {
 			global $current_user;
 			$user = $current_user;
@@ -1075,6 +993,7 @@ class QueryInterceptor_RS
 		}
 		//---------------------------------------------------------------------------------
 
+		
 		//d_echo ("qualifying obj roles");
 		
 		// for term admin query, object source type is passed in, but rs qualifying roles are by taxonomy
@@ -1090,6 +1009,9 @@ class QueryInterceptor_RS
 		if ( -1 === $use_object_roles )
 			$use_object_roles = scoper_get_otype_option('use_object_roles', $src_name, $object_type);
 		
+		if ( $use_object_roles )
+			$user_qualifies_for_obj_roles = ( $user->ID || defined( 'SCOPER_ANON_METAGROUP' ) );
+
 		$where = array();
 		
 		if ( 'wp' == SCOPER_ROLE_TYPE ) {
@@ -1098,7 +1020,7 @@ class QueryInterceptor_RS
 				if ( array_intersect_key($scoper->role_defs->role_caps[ANON_ROLEHANDLE_RS], array_flip($reqd_caps) ) )
 					$qualifying_roles = array_merge($qualifying_roles, array(ANON_ROLEHANDLE_RS => 1));
 		}
-
+		
 		if ( $use_term_roles ) {
 			// taxonomies arg is for limiting; default is to include all associated taxonomies in where clause
 			if ( $taxonomies )
@@ -1107,28 +1029,28 @@ class QueryInterceptor_RS
 				$taxonomies = $src->uses_taxonomies;
 		}
 		
+		$user_blog_roles = array( '' => array() );
+		
 		if ( $use_blog_roles ) {
-			$user_blog_roles = array_intersect_key( $user->blog_roles, $qualifying_roles );
-			
+			foreach( array_keys($user->blog_roles) as $date_key )
+				$user_blog_roles[$date_key] = array_intersect_key( $user->blog_roles[$date_key], $qualifying_roles );
+				
 			if ( 'rs' == SCOPER_ROLE_TYPE ) {
 				// Also include user's WP blogrole(s),
 				// but via equivalent RS role(s) to support scoping requirements (strict (i.e. restricted) terms, objects)
 				if ( $wp_qualifying_roles = $scoper->role_defs->qualify_roles($reqd_caps, 'wp') ) {
-
-					if ( $user_blog_roles_wp = array_intersect_key( $user->blog_roles, $wp_qualifying_roles ) ) {
+					if ( $user_blog_roles_wp = array_intersect_key( $user->blog_roles[ANY_CONTENT_DATE_RS], $wp_qualifying_roles ) ) {
 						// Credit user's qualifying WP blogrole via contained RS role(s)
 						// so we can also enforce "term restrictions", which are based on RS roles
 						$user_blog_roles_via_wp = $scoper->role_defs->get_contained_roles( array_keys($user_blog_roles_wp), false, 'rs');
 						$user_blog_roles_via_wp = array_intersect_key($user_blog_roles_via_wp, $qualifying_roles);
-						$user_blog_roles = array_merge( $user_blog_roles, $user_blog_roles_via_wp);
+						
+						$user_blog_roles[ANY_CONTENT_DATE_RS] = array_merge( $user_blog_roles[ANY_CONTENT_DATE_RS], $user_blog_roles_via_wp);
 					}
 				}
 			}
-			
-		} else
-			$user_blog_roles = array();
-		
-		//dump($qualifying_roles);
+		}
+
 		//dump($objscope_objects);
 
 		/*
@@ -1143,8 +1065,6 @@ class QueryInterceptor_RS
 		foreach ( array_keys($qualifying_roles) as $role_handle ) {
 		
 			if ( $use_object_roles && empty($require_blog_and_obj_role) ) {
-				$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
-			
 				if ( ! empty($objscope_objects['restrictions'][$role_handle]) ) {
 					$objscope_clause = " AND $src_table.{$src->cols->id} NOT IN ('" . implode("', '", array_keys($objscope_objects['restrictions'][$role_handle])) . "')";
 				}
@@ -1159,17 +1079,17 @@ class QueryInterceptor_RS
 				$objscope_clause = '';
 
 				
-			$all_terms_qualified = false;
+			$all_terms_qualified = array();
+			$all_taxonomies_qualified = array();
+			
 			if ( $use_term_roles ) {
 				$args['return_id_type'] = COL_TAXONOMY_ID_RS;
 				
-				$any_strict_taxonomy = false;
+				$strict_taxonomies = array();
 				
 				foreach ($taxonomies as $taxonomy)
-					if ( $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
-						$any_strict_taxonomy = true;
-						break;
-					}
+					if ( $scoper->taxonomies->member_property($taxonomy, 'requires_term') )
+						$strict_taxonomies[$taxonomy] = true;
 					
 				foreach ($taxonomies as $taxonomy) {
 					// we only need a separate clause for each role if considering object roles (and therefore considering that some objects might require some roles to be object-assigned)
@@ -1184,10 +1104,10 @@ class QueryInterceptor_RS
 					// So if none of the taxonomies require each object to have a term 
 					// AND the user has a qualifying role via blog assignment, we can skip the taxonomies clause altogether.
 					// Otherwise, will consider current user's termroles 
-					if ( ! $any_strict_taxonomy ) {
-						if ( array_intersect_key($role_handle_arg, $user->blog_roles) ) {
+					if ( ! $strict_taxonomies ) {
+						if ( array_intersect_key($role_handle_arg, $user->blog_roles[ANY_CONTENT_DATE_RS]) ) {
 							// User has a qualifying role by blog assignment, so term_id clause is not required 	
-							$all_terms_qualified = true;
+							$all_taxonomies_qualified[ANY_CONTENT_DATE_RS] = true;
 							break;
 						}
 					}
@@ -1202,155 +1122,246 @@ class QueryInterceptor_RS
 					$args['object_type'] = $object_type;
 
 					
-					if ( $user_terms = $scoper->qualify_terms($reqd_caps, $taxonomy, $role_handle_arg, $args) ) {
+					if ( $user_terms = $scoper->qualify_terms_daterange($reqd_caps, $taxonomy, $role_handle_arg, $args) ) {
 						
 						if ( ! isset($term_count[$taxonomy]) )
 							$term_count[$taxonomy] = $scoper->get_terms($taxonomy, UNFILTERED_RS, COL_COUNT_RS);
 					
-						if ( count($user_terms) ) {
-							// don't bother applying term requirements if user has cap for all terms in this taxonomy
-							if ( (count($user_terms) >= $term_count[$taxonomy]) && $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
-								// User is qualified for all terms in this taxonomy; no need for any term_id clauses
-								$all_terms_qualified = true;
-								break;
-							} else {
-								$where[$objscope_clause][TERM_SCOPE_RS][$taxonomy] = ( isset($where[$objscope_clause][TERM_SCOPE_RS][$taxonomy]) ) ? array_merge($where[$objscope_clause][TERM_SCOPE_RS][$taxonomy], $user_terms) : $user_terms;
+						foreach ( array_keys($user_terms) as $date_key ) {
+							if ( count($user_terms[$date_key]) ) {
+								// don't bother applying term requirements if user has cap for all terms in this taxonomy
+								if ( (count($user_terms[$date_key]) >= $term_count[$taxonomy]) && $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
+
+									// User is qualified for all terms in this taxonomy; no need for any term_id clauses
+									$all_terms_qualified[$date_key][$taxonomy] = true;
+								} else {
+									$where[$date_key][$objscope_clause][TERM_SCOPE_RS][$taxonomy] = ( isset($where[$date_key][$objscope_clause][TERM_SCOPE_RS][$taxonomy]) ) ? array_unique( array_merge($where[$date_key][$objscope_clause][TERM_SCOPE_RS][$taxonomy], $user_terms[$date_key]) ) : $user_terms[$date_key];
+								}
 							}
+							
+							$all_taxonomies_qualified[$date_key] = ! empty( $all_terms_qualified[$date_key] ) && ( count($all_terms_qualified[$date_key]) == count($strict_taxonomies) );
 						}
 					}
 				} // end foreach taxonomy
 			}
 			
-			if ( $all_terms_qualified || ( ! $use_term_roles && ! empty($user_blog_roles[$role_handle]) ) ) {
-				if ( $objscope_clause || ! empty($require_blog_and_obj_role) )
-					$where[$objscope_clause][BLOG_SCOPE_RS] = "1=1";
-				else {
-					return "1=1";  // no need to include other clause if user has a qualifying role blog-wide or in all terms, and that role does not require object assignment for any objects
+			foreach ( array_keys($user_blog_roles) as $date_key ) {
+				if ( ! empty($all_taxonomies_qualified[$date_key]) || ( ! $use_term_roles && ! empty($user_blog_roles[$date_key][$role_handle]) ) ) {
+					if ( $date_key || $objscope_clause || ! empty($require_blog_and_obj_role) )
+						$where[$date_key][$objscope_clause][BLOG_SCOPE_RS] = "1=1";
+					else {
+						return "1=1";  // no need to include other clause if user has a qualifying role blog-wide or in all terms, it is not date-limited, and that role does not require object assignment for any objects
+					}
 				}
 			}
-			
-			if ( $use_object_roles && isset($qualifying_object_roles[$role_handle]) && $user->ID ) {  // want to apply objscope requirements for anon user, but not apply any obj roles
+		
+			// if object roles should be applied, populatate array key to force inclusion of OBJECT_SCOPE_RS query clauses below
+			if ( $use_object_roles && isset($qualifying_object_roles[$role_handle]) && $user_qualifies_for_obj_roles ) {  // want to apply objscope requirements for anon user, but not apply any obj roles
 				if ( $role_spec = scoper_explode_role_handle($role_handle) )
-					$where[''][OBJECT_SCOPE_RS][$role_spec->role_type][$role_spec->role_name] = true;
+					$where[ANY_CONTENT_DATE_RS][NO_OBJSCOPE_CLAUSE_RS][OBJECT_SCOPE_RS][$role_spec->role_type][$role_spec->role_name] = true;
 			}
 			
 			// we only need a separate clause for each role if considering object roles (and therefore considering that some objects might require some roles to be object-assigned)
-			if ( ! $use_object_roles && ! empty($where) )
+			if ( ! $use_object_roles && ! empty($where[ANY_CONTENT_DATE_RS]) )
 				break;
 		} // end foreach role
 
-		// include any roles which qualify only for object assignment
-		if ( $use_object_roles && isset( $qualifying_object_roles ) && $user->ID ) {
+		
+		// also include object scope clauses for any roles which qualify only for object-assignment
+		if ( $use_object_roles && isset( $qualifying_object_roles ) && $user_qualifies_for_obj_roles ) {	// want to apply objscope requirements for anon user, but not apply any obj roles
 			if ( $obj_only_roles = array_diff_key( $qualifying_object_roles, $qualifying_roles ) ) {
 				foreach ( array_keys($obj_only_roles) as $role_handle )
 					if ( $role_spec = scoper_explode_role_handle($role_handle) )
-						$where[''][OBJECT_SCOPE_RS][$role_spec->role_type][$role_spec->role_name] = true;
+						$where[ANY_CONTENT_DATE_RS][NO_OBJSCOPE_CLAUSE_RS][OBJECT_SCOPE_RS][$role_spec->role_type][$role_spec->role_name] = true;
 			}
 		}
-		
-		// perf enhancement: if any terms are included regardless of post ID, don't also include those terms in ID-specific clause
-		foreach ( array_keys($where) as $objscope_clause ) {
-			if ( $objscope_clause && isset($where[$objscope_clause][TERM_SCOPE_RS]) ) {
-				foreach ( $where[$objscope_clause][TERM_SCOPE_RS] as $taxonomy => $terms ) {
-					if ( ! empty($terms) && ! empty($where[''][TERM_SCOPE_RS][$taxonomy]) ) {
-						$where[$objscope_clause][TERM_SCOPE_RS][$taxonomy] = array_diff( $where[$objscope_clause][TERM_SCOPE_RS][$taxonomy], $where[''][TERM_SCOPE_RS][$taxonomy] );
-						if ( empty($where[$objscope_clause][TERM_SCOPE_RS][$taxonomy]) )
-							unset( $where[$objscope_clause][TERM_SCOPE_RS][$taxonomy] );
+
+		// DB query perf enhancement: if any terms are included regardless of post ID, don't also include those terms in ID-specific clause
+		foreach ( array_keys($where) as $date_key ) {
+			foreach ( array_keys($where[$date_key]) as $objscope_clause ) {
+				if ( $objscope_clause && isset($where[$date_key][$objscope_clause][TERM_SCOPE_RS]) ) {
+					foreach ( $where[$date_key][$objscope_clause][TERM_SCOPE_RS] as $taxonomy => $terms ) {
+						
+						if ( ! empty($terms) && ! empty($where[$date_key][NO_OBJSCOPE_CLAUSE_RS][TERM_SCOPE_RS][$taxonomy]) ) {
+							$where[$date_key][$objscope_clause][TERM_SCOPE_RS][$taxonomy] = array_diff( $where[$date_key][$objscope_clause][TERM_SCOPE_RS][$taxonomy], $where[$date_key][NO_OBJSCOPE_CLAUSE_RS][TERM_SCOPE_RS][$taxonomy] );
+						
+							if ( empty( $where[$date_key][$objscope_clause][TERM_SCOPE_RS][$taxonomy] ) ) {
+								unset( $where[$date_key][$objscope_clause][TERM_SCOPE_RS][$taxonomy] );
+	
+								// if we removed a taxonomy array, don't leave behind a term scope array with no taxonomies
+								if ( empty( $where[$date_key][$objscope_clause][TERM_SCOPE_RS] ) ) {
+									unset( $where[$date_key][$objscope_clause][TERM_SCOPE_RS] );
+					
+									// if we removed a term scope array, don't leave behind an objscope array with no scopes
+									if ( empty( $where[$date_key][$objscope_clause] ) )
+										unset( $where[$date_key][$objscope_clause] );
+								}
+							}
+						}
 					}
 				}
 			}
 		}
+
 		//d_echo ("where_scope_clauses where array");
-		//dump($where);
+		
+		// since object roles are not pre-loaded prior to this call, role date limits are handled via subselect, within the date_key = '' iteration
+		$object_roles_duration_clause = scoper_get_duration_clause();
 		
 		// implode the array of where criteria into a query as concisely as possible 
-		foreach ( $where as $objscope_clause => $scope_criteria ) {
-			foreach ( array_keys($scope_criteria) as $scope ) {
-				switch ($scope) {
-				case BLOG_SCOPE_RS:
-					$where[$objscope_clause][BLOG_SCOPE_RS] = $where[$objscope_clause][BLOG_SCOPE_RS] . " $objscope_clause";
-					break;
+		foreach ( $where as $date_key => $objscope_clauses ) {
+	
+			foreach ( $objscope_clauses as $objscope_clause => $scope_criteria ) {
 				
-				case TERM_SCOPE_RS:
-					$taxonomy_clauses = array();
-					foreach ( $scope_criteria[TERM_SCOPE_RS] as $taxonomy => $terms ) {
-						if ( $objscope_clause )	
-							// Avoid " term_id IN (5) OR ( term_id IN (5) AND ID NOT IN (100) )  
-							// Otherwise this redundancy can occur when various qualifying roles require object role assignment for different objects
-							if ( ! empty($where[''][TERM_SCOPE_RS][$taxonomy]) )
-								if ( ! $terms = array_diff($terms, $where[''][TERM_SCOPE_RS][$taxonomy]) ) {  
-									unset($scope_criteria[TERM_SCOPE_RS][$taxonomy]);
-									continue;
-								}
-
-						$terms = array_unique($terms);
-						if ( $qvars = $scoper->taxonomies->get_terms_query_vars($taxonomy) )
-							if ( $terms_query && ! $use_object_roles ) {
-								$qtv = $scoper->taxonomies->get_terms_query_vars($taxonomy, true);
-								$taxonomy_clauses []= "{$qtv->term->alias}.{$qtv->term->col_id} IN ('" . implode("', '", $terms) . "') $objscope_clause";
-							} else
-								$taxonomy_clauses []= "{$qvars->term->alias}.{$qvars->term->col_id} IN ('" . implode("', '", $terms) . "') $objscope_clause";
-					}
-
-					// all taxonomy clauses concat: [taxonomy 1 clauses] [OR] [taxonomy 2 clauses] [OR] ...
-					if ( $taxonomy_clauses )
-						$where[$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) OR ( ', $taxonomy_clauses, ' ( ', ' ) ');
-					break;
-
-				case OBJECT_SCOPE_RS:	// should only exist with nullstring objscope_clause
-					if ( $user->ID ) {
-						foreach ( array_keys($scope_criteria[OBJECT_SCOPE_RS]) as $role_type ) { //should be only one
-							// Combine all qualifying (and applied) object roles into a single OR clause						
-							$role_in = "'" . implode("', '", array_keys($scope_criteria[OBJECT_SCOPE_RS][$role_type])) . "'";
-							$where[$objscope_clause][OBJECT_SCOPE_RS] = "uro.role_type = '$role_spec->role_type' AND uro.role_name IN ($role_in) ";
-						}
-					}
+				foreach ( array_keys($scope_criteria) as $scope ) {
 					
-					break;
-				} // end scope switch
+					switch ($scope) {
+					case BLOG_SCOPE_RS:
+						$where[$date_key][$objscope_clause][BLOG_SCOPE_RS] = $where[$date_key][$objscope_clause][BLOG_SCOPE_RS] . " $objscope_clause";
+						break;
+					
+					case TERM_SCOPE_RS:
+						$taxonomy_clauses = array();
+						
+						foreach ( $scope_criteria[TERM_SCOPE_RS] as $taxonomy => $terms ) {
+							$is_strict = ! empty( $strict_taxonomies[$taxonomy] );
+							
+							if ( $objscope_clause )	
+								// Avoid " term_id IN (5) OR ( term_id IN (5) AND ID NOT IN (100) )  
+								// Otherwise this redundancy can occur when various qualifying roles require object role assignment for different objects
+								if ( ! empty($where[$date_key][NO_OBJSCOPE_CLAUSE_RS][TERM_SCOPE_RS][$taxonomy]) )
+									if ( ! $terms = array_diff($terms, $where[$date_key][NO_OBJSCOPE_CLAUSE_RS][TERM_SCOPE_RS][$taxonomy]) ) {  
+										//unset($scope_criteria[TERM_SCOPE_RS][$taxonomy]);  // this doesn't affect anything (removed in v1.1)
+										continue;
+									}
+
+							$terms = array_unique($terms);
+							if ( $qvars = $scoper->taxonomies->get_terms_query_vars($taxonomy) )
+								if ( $terms_query && ! $use_object_roles ) {
+									$qtv = $scoper->taxonomies->get_terms_query_vars($taxonomy, true);
+									$taxonomy_clauses[$is_strict] []= "{$qtv->term->alias}.{$qtv->term->col_id} IN ('" . implode("', '", $terms) . "') $objscope_clause";
+								} else {
+									$this_tx_clause = "{$qvars->term->alias}.{$qvars->term->col_id} IN ('" . implode("', '", $terms) . "')";
+
+									// If the request already has a corresponding join on the object2term (term_relationships) table, use it.  Otherwise, use a subselect rather than adding our own LEFT JOIN.
+									if( $this->is_term_table_joined( $join, $taxonomy ) )
+										$taxonomy_clauses[$is_strict] []= "$this_tx_clause $objscope_clause";
+									else {
+										$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause";
+										$taxonomy_clauses[$is_strict] []= "$src_table.{$src->cols->id} IN ( $terms_subselect ) $objscope_clause";
+									}
+								}
+						}
+
+						if ( $taxonomy_clauses ) {
+							// all taxonomy clauses concat: [taxonomy 1 clauses] [OR] [taxonomy 2 clauses] [OR] ...
+							//$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) OR ( ', $taxonomy_clauses, ' ( ', ' ) ');
+
+							// strict taxonomy clauses
+							if ( ! empty( $taxonomy_clauses[true] ) )
+								$taxonomy_clauses[true] = agp_implode(' ) AND ( ', $taxonomy_clauses[true], ' ( ', ' ) ');
+
+							// non-strict taxonomy clauses
+							if ( ! empty( $taxonomy_clauses[false] ) )
+								$taxonomy_clauses[false] = agp_implode(' ) OR ( ', $taxonomy_clauses[false], ' ( ', ' ) ');
+
+							// all taxonomy clauses concat: ( [strict taxonomy clause 1] [AND] [strict taxonomy clause 2]... ) [OR] [taxonomy 3 clauses] [OR] ...
+							$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) OR ( ', $taxonomy_clauses, ' ( ', ' ) ');
+						}
+
+						break;
+	
+					case OBJECT_SCOPE_RS:	// should only exist with nullstring objscope_clause
+						if ( $user_qualifies_for_obj_roles ) {
+							global $wpdb;
+							$u_g_clause = $user->get_user_clause('uro');
+							
+							// support mirroring of inconveniently stored 3rd party plugin data into data_rs table (by RS Extension plugins)
+							$rs_data_clause = ( ! empty($src->uses_rs_data_table) ) ? "AND $src_table.topic = 'object' AND $src_table.src_or_tx_name = '$src_name' AND $src_table.object_type IN ('" . implode("', '", $object_types) . "')" : '';
+							
+							foreach ( array_keys($scope_criteria[OBJECT_SCOPE_RS]) as $role_type ) { //should be only one
+								// Combine all qualifying (and applied) object roles into a single OR clause						
+								$role_in = "'" . implode("', '", array_keys($scope_criteria[OBJECT_SCOPE_RS][$role_type])) . "'";
+								//$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "uro.role_type = '$role_spec->role_type' AND uro.role_name IN ($role_in) ";
+								
+								$objrole_subselect = "SELECT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause";
+								$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "$src_table.{$src->cols->id} IN ( $objrole_subselect )";
+								
+								if ( $objrole_revisions_clause ) 
+									$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "( {$where[$date_key][$objscope_clause]['object']} OR ( $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ( $objrole_subselect ) ) )";
+							}
+						}
+						
+						break;
+					} // end scope switch
+				} // end foreach scope
+				
+				/*
+				// --- optional hack to require read_private cap via blog role AND object role
+				if ( ! empty($require_blog_and_obj_role) ) {
+					if ( ! isset($where[$date_key][''][BLOG_SCOPE_RS]) )
+						$where[$date_key][''][BLOG_SCOPE_RS] = '1=2';
+					
+					if ( ! isset($where[$date_key][''][TERM_SCOPE_RS]) )
+						$where[$date_key][''][TERM_SCOPE_RS] = '1=2';
+						
+					if ( ! isset($where[$date_key][''][OBJECT_SCOPE_RS]) )
+						$where[$date_key][''][OBJECT_SCOPE_RS] = '1=2';
+	
+					$where[$date_key][''] = "( ( {$where[$date_key]['']['blog']} ) OR ( {$where[$date_key]['']['term']} ) ) AND ( {$where[$date_key]['']['object']} )";
+				} 
+				else
+				// --- end hack
+				*/
+				// all scope clauses concat: [object roles] OR [term ids] OR [blogrole1 clause] [OR] [blogrole2 clause] [OR] ...
+				// Collapse the array to a string even if it's empty
+				$where[$date_key][$objscope_clause] = agp_implode(' ) OR ( ', $where[$date_key][$objscope_clause], ' ( ', ' ) ');
+			} // end foreach objscope clause
+			
+			$date_clause = '';
+			
+			if ( $date_key && is_serialized($date_key) ) {
+				$content_date_limits = unserialize($date_key);
+				
+				if ( $content_date_limits->content_min_date_gmt )
+					$date_clause .= " AND $src_table.{$src->cols->date} >= '" . $content_date_limits->content_min_date_gmt . "'";
+					
+				if ( $content_date_limits->content_max_date_gmt )
+					$date_clause .= " AND $src_table.{$src->cols->date} <= '" . $content_date_limits->content_max_date_gmt . "'";
 			}
 			
-			/*
-			// --- optional hack to require read_private cap via blog role AND object role
-			if ( ! empty($require_blog_and_obj_role) ) {
-				if ( ! isset($where[''][BLOG_SCOPE_RS]) )
-					$where[''][BLOG_SCOPE_RS] = '1=2';
+			foreach ( array_keys($where[$date_key]) as $objscope_clause )
+				if ( empty ($where[$date_key][$objscope_clause]) )
+					unset($where[$date_key][$objscope_clause]);
 				
-				if ( ! isset($where[''][TERM_SCOPE_RS]) )
-					$where[''][TERM_SCOPE_RS] = '1=2';
-					
-				if ( ! isset($where[''][OBJECT_SCOPE_RS]) )
-					$where[''][OBJECT_SCOPE_RS] = '1=2';
-
-				$where[''] = "( ( {$where['']['blog']} ) OR ( {$where['']['term']} ) ) AND ( {$where['']['object']} )";
-			} 
-			else
-			// --- end hack
-			*/
+			// all objscope clauses concat: [clauses w/o objscope] [OR] [objscope 1 clauses] [OR] [objscope 2 clauses]
+			$where[$date_key] = agp_implode(' ) OR ( ', $where[$date_key], ' ( ', ' ) ');
 			
-			// all scope clauses concat: [object roles] OR [term ids] OR [blogrole1 clause] [OR] [blogrole2 clause] [OR] ...
-			// Collapse the array to a string even if it's empty
-			$where[$objscope_clause] = agp_implode(' ) OR ( ', $where[$objscope_clause], ' ( ', ' ) ');
-		}
+			if ( $date_clause && $where[$date_key] )
+				$where[$date_key] = "( $where[$date_key]{$date_clause} )"; 
+			
+		} // end foreach datekey (set of content date limits for which role(s) apply)
 		
-		foreach ( $where as $objscope_clause => $scope_criteria )
-			if ( empty ($where[$objscope_clause]) )
-				unset($where[$objscope_clause]);
 		
-		// all clauses concat: [clauses w/o objscope] [OR] [objscope 1 clauses] [OR] [objscope 2 clauses]
+		foreach ( array_keys($where) as $date_key )
+			if ( empty ($where[$date_key]) )
+				unset($where[$date_key]);
+
+		// all date clauses concat: [clauses w/o content date limits] [OR] [content date range 1 clauses] [OR] [content date range 2 clauses]
 		$where = agp_implode(' ) OR ( ', $where, ' ( ', ' ) ');
 		
 		if ( empty($where) )
 			$where = '1=2';
-		
+
 		return $where;
 	}
 	
 	// currently only used to conditionally launch teaser filtering
 	function flt_objects_results($results, $src_name, $object_types, $args = '') {
 
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/edit-pages.php') && ! is_administrator_rs() ) {
-			$ancestors = rs_get_page_ancestors(); // array of all ancestor IDs for keyed page_id, with direct parent first
+		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/edit-pages.php') && ! is_content_administrator_rs() ) {
+			// ScoperAncestry class is loaded by hardway_rs.php
+			$ancestors = ScoperAncestry::get_page_ancestors(); // array of all ancestor IDs for keyed page_id, with direct parent first
 
 			$args = array( 'remap_parents' => false );
 			ScoperHardway::remap_tree( $results, $ancestors, 'ID', 'post_parent', $args );
@@ -1392,4 +1403,28 @@ class QueryInterceptor_RS
 	}
 
 } // end class
+
+
+function agp_parse_after_WHERE_11( $request, &$pos_where, &$pos_suffix ) {
+	$request_u = strtoupper($request);
+	$pos_where = strpos( $request_u, ' WHERE 1=1 ');
+	
+	if ( ! $pos_where ) {
+		$suffix_terms = array(' ORDER BY ', ' GROUP BY ', ' LIMIT ');
+		$pos_suffix = strlen($request) + 1;
+		foreach ( $suffix_terms as $suffix_term )
+			if ( $pos = strrpos($request_u, $suffix_term) )
+				if ( $pos < $pos_suffix )
+					$pos_suffix = $pos;
+		
+		if ( $pos_suffix )
+			$where =  substr($request, $pos_suffix); 
+
+	} else {
+		// note: this will still also contain any orderby/limit/groupby clauses ( okay since we won't append anything to the end )
+		$where = substr($request, $pos_where + strlen(' WHERE 1=1 ')); 
+	}
+	
+	return $where;	
+}
 ?>

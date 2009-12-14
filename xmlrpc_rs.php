@@ -2,11 +2,14 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
+if ( ! defined( 'WLW_XMLRPC_HACK' ) )
+	return;
+		
 // clean up after xmlrpc clients that don't specify a post_type for mw_editPost
 // Couldn't find a clean way to filter args into default methods, and this is much better than forking entire method
 //
 global $HTTP_RAW_POST_DATA;
-						
+
 if ( isset($HTTP_RAW_POST_DATA) && $pos = strpos($HTTP_RAW_POST_DATA, '<string>') )
 	if ( $pos_end = strpos($HTTP_RAW_POST_DATA, '</string>', $pos) ) {
 		$post_id = substr($HTTP_RAW_POST_DATA, $pos + strlen('<string>'), $pos_end - ($pos + strlen('<string>')) ); 

@@ -2,16 +2,19 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
-if ( ! current_user_can('manage_options') )
-	wp_die(__('Cheatin&#8217; uh?'));
+if ( ! is_option_administrator_rs() )
+	wp_die(__awp('Cheatin&#8217; uh?'));
 
 function scoper_attach_linked_uploads( $echo = false ) {
 	global $wpdb;
 
+	require_once( 'uploads_rs.php' );
+	$uploads = scoper_get_upload_info();
+	
 	$site_url = untrailingslashit( get_option('siteurl') );
-	if ( false === strpos(WP_UPLOAD_URL_RS, $site_url) ) {
+	if ( false === strpos( $uploads['baseurl'], $site_url ) ) {
 		if ( $echo ) {
-			_e('<b>Note</b>: Direct access to uploaded file attachments cannot be filtered because your WP_CONTENT_DIR is not in the WordPress branch.', 'scoper');
+			_e('<strong>Note</strong>: Direct access to uploaded file attachments cannot be filtered because your WP_CONTENT_DIR is not in the WordPress branch.', 'scoper');
 			echo '<br /><br />';
 			_e('The operation was terminated due to an invalid configuration.', 'scoper');
 		}
@@ -39,7 +42,7 @@ function scoper_attach_linked_uploads( $echo = false ) {
 		if ( $num_posts % $bite_size )
 			$num_bites++;
 		
-		$upload_path = WP_UPLOAD_URL_RS;
+		$upload_path = $uploads['baseurl'];
 
 		if ( $echo ) {
 			printf(__( "<strong>checking %s posts / pages...</strong>", 'scoper' ), $num_posts);
@@ -80,7 +83,7 @@ function scoper_attach_linked_uploads( $echo = false ) {
 						// links can't be registered as attachments unless they're in the WP uploads path
 						if ( false === strpos($file_url, $upload_path) ) {
 							if ( $echo ) {
-								printf( _c( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s|post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+								printf( _x( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 								echo '<br /><br />';
 							}
 						
@@ -122,12 +125,12 @@ function scoper_attach_linked_uploads( $echo = false ) {
 						$num_inserted++;
 						
 						if ( $echo )
-							printf(_c( '<span class="rs-green"><strong>new attachment</strong> in %1$s "%2$s":</span> %3$s|post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+							printf(_x( '<span class="rs-green"><strong>new attachment</strong> in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 
 						wp_insert_attachment( $att );
 					} else {
 						if ( $echo )
-							printf(_c( '<span class="rs-blue">attachment OK in %1$s "%2$s":</span> %3$s|post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+							printf(_x( '<span class="rs-blue">attachment OK in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 					}
 					
 					if ( $echo )
@@ -161,12 +164,12 @@ function scoper_attach_linked_uploads( $echo = false ) {
 <td width = "90%">
 <h2><?php _e('Attachments Utility', 'scoper') ?></h2>
 <?php 
-printf( _c('Back to %1$sRole Scoper Options%2$s|arguments are link open, link close', 'scoper'), "<a href='" . SCOPER_ADMIN_URL . "/options.php'>", '</a>');
+printf( _x('Back to %1$sRole Scoper Options%2$s', 'arguments are link open, link close', 'scoper'), "<a href='admin.php?page=rs-options'>", '</a>');
 ?>
 </td>
 <td>
 <div class="submit" style="border:none;float:right;margin:0;">
-<input type="submit" name="rs_submit" value="<?php _e('Update &raquo;', 'scoper');?>" />
+<input type="submit" name="rs_submit" class="button-primary" value="<?php _e('Update &raquo;', 'scoper');?>" />
 </div>
 </td>
 </tr></table>
@@ -186,7 +189,10 @@ if ( false !== strpos( $upload_path, 'http://www.' ) )
 else
 	$www_msg = __('Note that to be detected as attachments, your file references must <strong>NOT include www.</strong>');
 
-printf(__('Files linked from WP Posts and Pages must be in %1$s (or a subdirectory of it) to be filtered. After moving files, you may use %2$s a search and replace plugin%3$s to conveniently update the URLs stored in your Post / Page content. %4$s', 'scoper'), WP_UPLOAD_URL_RS, "<a href='$search_replace_url'>", '</a>', $www_msg);
+require_once( SCOPER_ABSPATH . '/uploads_rs.php' );
+$uploads = scoper_get_upload_info();
+	
+printf(__('Files linked from WP Posts and Pages must be in %1$s (or a subdirectory of it) to be filtered. After moving files, you may use %2$s a search and replace plugin%3$s to conveniently update the URLs stored in your Post / Page content. %4$s', 'scoper'), '<strong>' . $uploads['baseurl'] . '</strong>', "<a href='{$uploads['baseurl']}'>", '</a>', $www_msg);
 echo '</li><li>';
 _e( 'Files which are <strong>already appropriately located and linked</strong> must also have their post-file attachment relationship stored to the WP database.  This is normally accomplished by clicking the "Insert into Post" button in the WP file uploader / Media Library.  Files which were instead uploaded manually via FTP or CPanel <strong>can receive their attachment record via this utility</strong>.', 'scoper');
 echo '</li></ol></div>';

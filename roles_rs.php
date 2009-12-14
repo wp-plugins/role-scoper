@@ -9,6 +9,9 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 	var $role_caps = array();
 	var $role_caps_anon = array();
 	var $role_types = array();
+	var $display_names = array();	// display_names, abbrevs necessary for WP roles.
+	var $abbrevs = array();
+	var $micro_abbrevs = array();
 	
 	function WP_Scoped_Roles(&$cap_defs, $role_types) {
 		$this->cap_defs =& $cap_defs;
@@ -17,6 +20,34 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		foreach ( $cap_defs->get_all() as $cap_name => $cap )
 			if ( ! empty($cap->anon_user_has) )
 				$this->role_caps_anon[$cap_name] = 1;
+	}
+
+	function get_display_name( $role_handle, $context = '' ) {
+		if ( isset( $this->display_names[$role_handle] ) )
+			return $this->display_names[$role_handle];
+		
+		require_once( 'roles-strings_rs.php' );
+		return ScoperRoleStrings::get_display_name( $role_handle, $context );
+	}
+	
+	function get_abbrev( $role_handle, $context = '' ) {
+		if ( isset( $this->abbrevs[$role_handle] ) )
+			return $this->abbrevs[$role_handle];
+		
+		require_once( 'roles-strings_rs.php' );
+		return ScoperRoleStrings::get_abbrev( $role_handle, $context );
+	}
+	
+	function get_micro_abbrev( $role_handle, $context = '' ) {
+		if ( isset( $this->micro_abbrevs[$role_handle] ) )
+			return $this->micro_abbrevs[$role_handle];
+
+		require_once( 'roles-strings_rs.php' );
+		
+		if( ! $return = ScoperRoleStrings::get_micro_abbrev( $role_handle, $context ) )
+			$return = ScoperRoleStrings::get_abbrev( $role_handle, $context );
+		
+		return $return;
 	}
 	
 	function &add($name, $defining_module_name, $display_name = '', $abbrev = '', $role_type = 'rs', $args = '') {
@@ -29,10 +60,25 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		
 		$key = ( $name == ANON_ROLEHANDLE_RS ) ? $name : scoper_get_role_handle($name, $role_type);
 		
+		if ( 'wp' == $role_type ) {
+			if ( ! $display_name )
+				$display_name = ucwords( str_replace('_', ' ', $name) );
+								
+			if ( ! $abbrev )
+				$abbrev = $display_name;
+		}
+			
+		if ( $display_name )
+			$this->display_names[$key] = $display_name;
+			
+		if ( $abbrev )
+			$this->abbrevs[$key] = $abbrev;
+
+		
 		if ( isset($this->members[$key]) )
 			unset($this->members[$key]);
 			
-		$this->members[$key] = new WP_Scoped_Role($name, $defining_module_name, $display_name, $abbrev, $role_type, $args);
+		$this->members[$key] = new WP_Scoped_Role($name, $defining_module_name, $role_type, $args);
 		$this->process($this->members[$key]);
 		
 		return $this->members[$key];
@@ -54,14 +100,6 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		// role type was prefixed for array key, but should remove for name property
 		foreach ( $this->role_types as $role_type )
 			$role_def->name = str_replace("{$role_type}_", '', $role_def->name);
-			
-		if ( is_admin() ) {
-			if ( empty ($role_def->display_name) )
-				$role_def->display_name = ucwords( str_replace('_', ' ', $role_def->name) );
-				
-			if ( empty ($role_def->abbrev) )
-				$role_def->abbrev = $role_def->display_name;
-		}
 		
 		if ( ! isset($role_def->valid_scopes) )
 			$role_def->valid_scopes = array('blog' => 1, 'term' => 1, 'object' => 1);
@@ -70,6 +108,23 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 			$role_def->object_type = '';
 	}
 	
+	function add_role_caps( $user_role_caps ) {
+		if ( ! is_array( $user_role_caps ) )
+			return;
+		
+		foreach ( array_keys($this->role_caps) as $role_handle )
+			if ( ! empty($user_role_caps[$role_handle]) )
+				$this->role_caps[$role_handle] = array_merge($this->role_caps[$role_handle], $user_role_caps[$role_handle]);
+	}
+	
+	function remove_role_caps( $disabled_role_caps ) {
+		if ( ! is_array( $disabled_role_caps ) )
+			return;
+		
+		foreach ( array_keys($this->role_caps) as $role_handle )
+			if ( ! empty($disabled_role_caps[$role_handle]) )
+				$this->role_caps[$role_handle] = array_diff_key($this->role_caps[$role_handle], $disabled_role_caps[$role_handle]);
+	}
 	
 	function filter_role_handles_by_type($role_handles, $role_type) {
 		$qualifying_handles = array();
@@ -262,11 +317,29 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 			foreach ( array_keys($this->role_caps) as $other_role_handle ) {
 				if ( ($other_role_handle != $role_handle) || $include_this_role )
 					if ( ! array_diff_key($this->role_caps[$other_role_handle], $this->role_caps[$role_handle]) )
-						if ( $this->role_caps[$other_role_handle] ) // don't take credit for including roles that have no pertinent caps
+						if ( $this->role_caps[$other_role_handle] ) { // don't take credit for including roles that have no pertinent caps
+							
+							// don't count Post Reader as being contained by Page roles, and vice versa	
+							$ambiguous_roles = array( 'post' => 'rs_post_reader', 'page' => 'rs_page_reader' );
+							if ( in_array( $other_role_handle, $ambiguous_roles ) ) {
+								
+								$role_info = scoper_explode_role_handle( $role_handle );
+								if ( 'rs' == $role_info->role_type ) {
+									foreach ( $ambiguous_roles as $a_object_type => $a_role_handle ) {
+										if ( $a_role_handle == $other_role_handle ) {
+											$a_role_attrib = $this->get_role_attributes( $role_handle );
+											if ( ! in_array( $a_object_type, $a_role_attrib->object_types ) )
+												continue 2;
+										}
+									}
+								}
+							}
+							
 							$contained_roles[$other_role_handle] = 1;
+						}
 			}
 		}
-
+		
 		if ( $role_type ) {
 			$filtered_role_handles = $this->filter_role_handles_by_type( array_keys($this->members), $role_type );
 			$contained_roles = array_intersect_key($contained_roles, array_flip($filtered_role_handles) );
@@ -327,7 +400,8 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 			$caps = array_intersect($role->capabilities, array(true) );
 			
 			// we only care about WP caps that are RS-defined
-			$caps = array_intersect_key($role->capabilities, array_flip($this->cap_defs->get_all_keys()) );
+			if ( $caps && is_array($caps) )
+				$caps = array_intersect_key($caps, array_flip($this->cap_defs->get_all_keys()) );
 
 			$this->add( $role_name, 'wordpress', '', '', 'wp' );
 
@@ -385,7 +459,7 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 	//$rolecaps[role_handle] = array of cap names
 	// returns array of role_handles
 	function qualify_roles($reqd_caps, $role_type = SCOPER_ROLE_TYPE, $object_type = '', $args = '') {
-		$defaults = array( 'exclude_object_types' => array() );
+		$defaults = array( 'exclude_object_types' => array(), 'all_wp_caps' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 		
@@ -417,7 +491,17 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		$good_roles = array();
 		foreach ( $role_handles as $role_handle )
 			if ( isset($this->role_caps[$role_handle]) ) {
-				if ( ! array_diff($reqd_caps, array_keys($this->role_caps[$role_handle]) ) ) {
+				
+				if ( $all_wp_caps && ( 0 === strpos( $role_handle, 'wp_' ) ) ) {
+					global $wp_roles;
+					if ( isset( $wp_roles->roles[ substr($role_handle, 3) ]['capabilities'] ) )
+						$role_caps = $wp_roles->roles[ substr($role_handle, 3) ]['capabilities'];
+					else
+						$role_caps = $this->role_caps[$role_handle];
+				} else
+					$role_caps = $this->role_caps[$role_handle];
+				
+				if ( ! array_diff($reqd_caps, array_keys($role_caps) ) ) {
 					
 					// the role qualifies unless its object type is a mismatch
 					if ( $object_type && ($object_type != $this->members[$role_handle]->object_type) ) {
@@ -460,27 +544,28 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 			$reqd_caps = $this->cap_defs->get_base_caps($reqd_caps);
 		
 		$roles = $this->qualify_roles($reqd_caps, SCOPER_ROLE_TYPE, $object_type);
-
+		
 		if ( ! $applied_obj_roles )
 			$applied_obj_roles = $this->get_applied_object_roles();
 		
 		return array_intersect_key( $roles, $applied_obj_roles );
 	}
 
+	
 	// returns array of role_handles which have been applied to any object
 	// if $user arg is supplied, returns only roles applied for that user (or that user's groups) 
 	function get_applied_object_roles( $user = '' ) {
 		$SCOPER_ROLE_TYPE = SCOPER_ROLE_TYPE;
 		
 		if ( is_object( $user ) ) {
-			$cache_flag = SCOPER_ROLE_TYPE . '_object_roles';
+			$cache_flag = SCOPER_ROLE_TYPE . '_object-roles';			// v 1.1: changed cache key from "object_roles" to "object-roles" to match new key format for blog, term roles
 			$cache = $user->cache_get($cache_flag);
 			
 			$limit = '';
 			$u_g_clause = $user->get_user_clause('');
 			
 		} else {
-			$cache_flag = SCOPER_ROLE_TYPE . '_applied_object_roles';
+			$cache_flag = SCOPER_ROLE_TYPE . '_applied_object-roles';	// v 1.1: changed cache key from "object_roles" to "object-roles" to match new key format for blog, term roles
 			$cache_id = 'all';
 			$cache = wpp_cache_get($cache_id, $cache_flag);
 			
@@ -494,12 +579,16 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 			
 		global $wpdb;
 		
-		if ( $role_names = scoper_get_col("SELECT DISTINCT role_name FROM $wpdb->user2role2object_rs WHERE role_type='$SCOPER_ROLE_TYPE' AND scope='object' $u_g_clause") ) {
+		// object roles support date limits, but content date limits (would be redundant and a needless performance hit)
+		$duration_clause = scoper_get_duration_clause( '', $wpdb->user2role2object_rs );
+		
+		if ( $role_names = scoper_get_col("SELECT DISTINCT role_name FROM $wpdb->user2role2object_rs WHERE role_type='$SCOPER_ROLE_TYPE' AND scope='object' $duration_clause $u_g_clause") ) {
+			
 			$role_handles = scoper_role_names_to_handles($role_names, SCOPER_ROLE_TYPE, true); //arg: return role keys as array key
 			
 			//$role_handles = array_intersect_key($role_handles, $this->members);
 		}
-				
+		
 		if ( is_object($user) )
 			$user->cache_set($role_handles, $cache_flag);
 		else
@@ -507,6 +596,7 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		
 		return $role_handles;
 	}
+
 	
 	// Currently, new custom-defined post, page or link roles are problematic because objects or categories with all roles restricted 
 	// will suddenly be non-restricted to users whose WP role contains the newly defined RS role.
@@ -514,7 +604,7 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 	// TODO: make all custom-defined roles default restricted
 	function remove_invalid() {
 		if ( 'rs' == SCOPER_ROLE_TYPE ) {
-			if ( $custom_members = array_diff( array_keys($this->members), array( 'rs_post_reader', 'rs_private_post_reader', 'rs_post_contributor', 'rs_post_author', 'rs_post_editor', 'rs_page_reader', 'rs_private_page_reader', 'rs_page_contributor', 'rs_page_author', 'rs_page_editor', 'rs_page_associate', 'rs_link_editor', 'rs_category_manager', 'rs_group_manager' ) ) ) {
+			if ( $custom_members = array_diff( array_keys($this->members), array( 'rs_post_reader', 'rs_private_post_reader', 'rs_post_contributor', 'rs_post_author', 'rs_post_revisor', 'rs_post_editor', 'rs_page_reader', 'rs_private_page_reader', 'rs_page_contributor', 'rs_page_author', 'rs_page_revisor', 'rs_page_editor', 'rs_page_associate', 'rs_link_editor', 'rs_category_manager', 'rs_group_manager' ) ) ) {
 				foreach ( $custom_members as $role_handle ) {
 					if ( $role_attrib = $this->get_role_attributes($role_handle) ) {
 						if ( in_array( 'post', $role_attrib->src_names ) ) {
@@ -534,20 +624,15 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 } // end class WP_Scoped_Roles
 
 class WP_Scoped_Role extends AGP_Config_Item {
-	var $display_name;
-	var $abbrev;
-	var $abbrev_for_object_ui; //optional
 	var $valid_scopes;
 	var $role_type;
 	var $objscope_equivalents;
 	var $anon_user_has;
 	
-	function WP_Scoped_Role($name, $defining_module_name, $display_name = '', $abbrev = '', $role_type = 'rs', $args = '' ) {
+	function WP_Scoped_Role($name, $defining_module_name, $role_type = 'rs', $args = '' ) {
 		$this->AGP_Config_Item($name, $defining_module_name, $args);
 		
 		$this->role_type = $role_type;
-		$this->display_name = $display_name;
-		$this->abbrev = $abbrev;	
 	}
 }
 ?>

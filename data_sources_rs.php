@@ -23,7 +23,7 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 		); // end outer array
 		
 		// $src_name, $table_basename, $display_name, $display_name_plural, $col_id, $col_name
-		$this->add('term', 'role-scoper', __('Term'), __('Terms'), 'terms', 'term_id', 'name', $args );
+		$this->add('term', 'role-scoper', __('Term', 'scoper'), __('Terms', 'scoper'), 'terms', 'term_id', 'name', $args );
 	}
 	
 	function &add( $name, $defining_module_name, $display_name, $display_name_plural, $table_basename, $col_id, $col_name, $args) {	
@@ -106,16 +106,15 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 	}
 	
 	// note: this is called by the parent class in AGP_Data_Sources::get_from_db
-	function get_object($src_name, $object_id) {
+	function get_object($src_name, $object_id, $cols = '') {
 		// special cases to take advantage of cached post/link
-		switch ( $src_name ) {
-		case 'post' :
+		if ( ('post' == $src_name) && ! $cols )
 			return get_post($object_id);
 				
-		case 'link' :
+		elseif ( 'link' == $src_name )
 			return get_bookmark($object_id);
-				
-		default:
+		
+		else {
 			if ( ! $src = $this->get($src_name) )
 				return;
 				
@@ -124,7 +123,13 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 				
 			global $wpdb;
 			
-			return scoper_get_results("SELECT * FROM $src->table WHERE $src->cols->id = '$object_id' LIMIT 1");
+			if ( ! $cols )
+				$cols = '*';
+
+			if ( empty($object_id) )
+				return array();
+				
+			return scoper_get_row("SELECT $cols FROM $src->table WHERE {$src->cols->id} = '$object_id' LIMIT 1");
 		} // end switch
 	}
 	
@@ -135,12 +140,17 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 			return;
 	
 		// if there is only one possible answer, give it
-		if ( $it = $this->get_the_only($what, $src) )
-			return $it;
-		
-		if ( $it = $this->get_from_func($what, $src) )
-			return $it;
+		if ( 'id' != $what ) {
+			if ( $it = $this->get_the_only($what, $src) )
+				return $it;
 			
+			if ( $it = $this->get_from_func($what, $src) )
+				return $it;
+		} else {
+			if ( defined('XMLRPC_REQUEST') && ! empty( $xmlrpc_post_id_rs ) )
+				return $xmlrpc_post_id_rs;
+		}
+	
 		// Is it set as a $_POST variable?
 		if ( $it = $this->get_from_http_post($what, $src, $object_type) )
 			return $it;
@@ -161,7 +171,7 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 		if ( $object_id )
 			if ( $it = $this->get_from_db($what, $src, $object_id) )
 				return $it;
-		
+				
 		// Is it one of the query variables in current URI?
 		if ( $it = $this->get_from_uri($what, $src, $object_type) )
 			return $it;
@@ -218,9 +228,11 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 		if ( ! isset($src->cols->$what) )
 			return;
 			
-		if ( $object = $this->get_object($src->name, $object_id) )
-			if ( isset( $object->{$src->cols->$what} ) ) {
-				$val = $object->{$src->cols->$what};
+		$col = $src->cols->$what;
+
+		if ( $object = $this->get_object($src->name, $object_id, $col) )
+			if ( isset( $object->$col ) ) {
+				$val = $object->$col;
 				return $this->get_from_val($what, $val, $src);
 			}
 	}
@@ -271,7 +283,7 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 	
 	// determines, using cfg->data_sources config, the URI query variable for desired information, then returns its value if present
 	function get_from_uri($what, $src, $object_type = '') {
-		$full_uri = $_SERVER['REQUEST_URI'];
+		$full_uri = urldecode($_SERVER['REQUEST_URI']);
 
 		if ( ! $src = $this->get($src) )
 			return;
@@ -453,7 +465,7 @@ class WP_Scoped_Data_Source extends AGP_Config_Item {
 	var $taxonomy_only = 0;			// This data source is significant only as a taxonomy for other data sources
 	var $uses_taxonomies = array();
 	
-	var $query_hooks;				// (object) array( 'request' => 'posts_request', 'results' => 'posts_results', 'listing' => 'the_posts', 'distinct' => 'posts_distinct' ),
+	var $query_hooks;				// (object) array( 'request' => 'posts_request', 'results' => 'posts_results', 'listing' => 'the_posts' ),
 	var $query_replacements = array();
 
 	var $reqd_caps = array();				// see core_default_data_sources in defaults_rs.php
@@ -472,75 +484,6 @@ class WP_Scoped_Data_Source extends AGP_Config_Item {
 		$this->display_name = $display_name;
 		$this->display_name_plural = $display_name_plural;
 		$this->table_basename = $table_basename;
-	}
-	
-	function add_object_type( $object_type, $type_val = '', $args = '' ) {
-		if ( $this->locked ) {
-			$notice = sprintf('A plugin or theme is too late in its attempt to define an object type (%1$s) for the %2$s data source.', $object_type, $this->display_name)
-					. '<br /><br />' . 'This must be done via the define_data_sources_rs hook.';
-			rs_notice($notice);
-			return;
-		}
-	
-		if ( ! isset($this->object_types[$object_type]) )
-			$this->object_types[$object_type] = (array) $args;
-			if ( $type_val )
-				$this->object_types[$object_type]->val = $type_val;
-	}
-	
-	function add_taxonomy( $taxonomy ) {
-		if ( ! in_array($taxonomy, $this->uses_taxonomies) )
-			$this->uses_taxonomies[] = $taxonomy;
-	}
-	
-	function add_status( $status_name, $status_val ) {
-		$this->statuses[$status_name] = $status_val;
-	}
-	
-	function add_usage( $topic, $items, $usage_scenario, $usage_criteria = 'access_type' ) {
-		if ( ! is_array($items) ) 
-			$items = array($items);
-		$this->usage->$topic->$usage_criteria->$usage_scenario = $items;
-	}
-	
-	function add_reqd_caps($op_type, $object_type, $status_name, $cap_names) {
-		if ( $this->locked ) {
-			rs_notice('A plugin or theme is too late in its attempt to define a required capability for the following data source' . ': ' . $this->name . '<br />' . 'This must be done via the define_data_sources_rs hook.');
-			return;
-		}
-	
-		if ( ! is_array($cap_names) )
-			$cap_names = array($cap_names);
-			
-		foreach ($cap_names as $cap_name)
-			if ( ! in_array($cap_name, $this->reqd_caps[$op_type][$object_type][$status_name]) )
-				$this->reqd_caps[$op_type][$object_type][$status_name] []= $cap_name;
-	}
-	
-	function add_query_replacement( $find, $replace ) {
-		$this->query_replacements[$find] = $replace;
-	}
-
-	function add_terms_where_reqd_caps( $access_name, $uri_substring, $reqd_caps ) {
-		if ( $this->locked ) {
-			rs_notice('A plugin or theme is too late in its attempt to define a required capability for the following data source' . ': ' . $this->name . '<br />' . 'This must be done via the define_data_sources_rs hook.');
-			return;
-		}
-	
-		if ( ! is_array($reqd_caps) ) 
-			$items = array($reqd_caps);
-		$this->terms_where_reqd_caps[$access_name][$uri_substring] = $reqd_caps;
-	}
-	
-	function add_users_where_reqd_caps( $access_name, $uri_substring, $reqd_caps ) {
-		if ( $this->locked ) {
-			rs_notice('A plugin or theme is too late in its attempt to define a required capability for the following data source' . ': ' . $this->name . '<br />' . 'This must be done via the define_data_sources_rs hook.');
-			return;
-		}
-	
-		if ( ! is_array($reqd_caps) ) 
-			$items = array($reqd_caps);
-		$this->users_where_reqd_caps[$access_name][$uri_substring] = $reqd_caps;
 	}
 }
 

@@ -74,63 +74,24 @@ function agp_get_lambda_argstring($num_args) {
 	return $arg_str;
 }
 
-function agp_parse_after_WHERE_11( $request, &$pos_where, &$pos_suffix ) {
-	$request_u = strtoupper($request);
-	$pos_where = strpos( $request_u, ' WHERE 1=1 ');
-	
-	if ( ! $pos_where ) {
-		$suffix_terms = array(' ORDER BY ', ' GROUP BY ', ' LIMIT ');
-		$pos_suffix = strlen($request) + 1;
-		foreach ( $suffix_terms as $suffix_term )
-			if ( $pos = strrpos($request_u, $suffix_term) )
-				if ( $pos < $pos_suffix )
-					$pos_suffix = $pos;
-		
-		if ( $pos_suffix )
-			$where =  substr($request, $pos_suffix); 
-
-	} else {
-		// note: this will still also contain any orderby/limit/groupby clauses ( okay since we won't append anything to the end )
-		$where = substr($request, $pos_where + strlen(' WHERE 1=1 ')); 
-	}
-	
-	return $where;	
-}
-
-function agp_string_ends_in($haystack, $needles, $any_substr_pos = false) {
+function agp_strpos_any($haystack, $needles, $any_substr_pos = true) {
 	if ( ! $needles )
 		return false;
 
 	if ( ! is_array($needles) )
 		$needle = array($needles);
 	
+	if ( ! $any_substr_pos )
+		$haystack_length = strlen($haystack);
+
 	foreach($needles as $needle) {
 		$pos = strpos($haystack, $needle);
-		if ( is_numeric($pos) && ($any_substr_pos || ( $pos == strlen($haystack) - strlen($needle) ) ) )
+		if ( is_numeric($pos) && ( $any_substr_pos || ( $pos == ( $haystack_length - strlen($needle) ) ) ) )
 			return true;
 	}
 }
 
-function agp_force_distinct($query) {
-	if ( ! $pos_from = strpos($query, ' from ') )
-		return $query;
-		
-	$pos_distinct = strpos($query, ' distinct ');
-	if ( $pos_distinct && ( $pos_distinct < $pos_from ) )
-		return $query;
-
-	$sel_clause = 'select ';
-	$pos_select = strpos($query, $sel_clause);
-	$query = substr( $query, 0, $pos_select + strlen($sel_clause) ) . 'DISTINCT ' . substr($query, $pos_select + strlen($sel_clause) );
-	return $query;
+function agp_string_ends_in($haystack, $needles, $any_substr_pos = false) {
+	agp_strpos_any( $haystack, $needles, $any_substr_pos );
 }
-
-function agp_is_ie6() {
-	$agent = strtolower($_SERVER['HTTP_USER_AGENT']);
-	
-	if ( (false !== strpos($agent, 'msie 6.0') || false !== strpos($agent, 'msie 5.5')) 
-	&& ( false === strpos($agent, 'opera') &&  false === strpos($agent, 'firefox') && false === strpos($agent, 'safari') ) )
-		return true;
-}
-
 ?>

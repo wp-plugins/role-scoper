@@ -20,7 +20,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * @copyright 	Copyright 2009
  * 
  */
-
+ 
 function scoper_default_options() {
 	$def = array(
 		'persistent_cache' => 1,
@@ -28,17 +28,18 @@ function scoper_default_options() {
 		'enable_group_roles' => 1,
 		'enable_user_roles' => 1,
 		'role_type' => 'rs',
-		'rs_blog_roles' => 1,
+		/*'rs_blog_roles' => 1, */
 		'custom_user_blogcaps' => 0,
-		'enable_wp_taxonomies' => array( 'category' => 1, 'link_category' => 1),
+		'enable_wp_taxonomies' => array(), /* NOTE: category and link_category taxonomies are always enabled by hardcode (but their roles/restrictions can be disabled via otype option) */
+		'user_role_caps' => array(),	/* NOTE: "user" here does not refer to WP user account(s), but to the user of the plugin.  The option value adds capabilities to RS Role Definitions, and would have been better named "custom_role_caps"  */
+		'disabled_role_caps' => array(),
+		'disabled_access_types' => array(),
 		'no_frontend_admin' => 0,
 		'indicate_blended_roles' => 1,
-		'force_autosave_enable' => 0,
 		'version_update_notice' => 1,
 		'version_check_minutes' => 30,
 		'strip_private_caption' => 0,
 		'display_hints' => 1,
-		'pending_revisions' => 0,
 		'hide_non_editor_admin_divs' => 1,
 		'role_admin_blogwide_editor_only' => 0,
 		'feed_link_http_auth' => 'logged',
@@ -49,21 +50,34 @@ function scoper_default_options() {
 		'rs_page_author_role_objscope' => 0,
 		'rs_post_reader_role_objscope' => 0,
 		'rs_post_author_role_objscope' => 0,
+		'rs_page_revisor_role_objscope' => 0,
+		'rs_post_revisor_role_objscope' => 0,
 		'lock_top_pages' => 0,
 		'display_user_profile_groups' => 1,
 		'display_user_profile_roles' => 1,
 		'user_role_assignment_csv' => 0,
 		'admin_others_unattached_files' => 0,
-		'remap_page_parents' => 1,
+		'remap_page_parents' => 0,
 		'enforce_actual_page_depth' => 1,
-		'remap_term_parents' => 1,
-		'enforce_actual_term_depth' => 1
-		//'assume_javascript' => 0  //possible todo: implement this
+		'remap_thru_excluded_page_parent' => 0,
+		'remap_term_parents' => 0,
+		'enforce_actual_term_depth' => 1,
+		'remap_thru_excluded_term_parent' => 0,
+		'limit_user_edit_by_level' => 1,
+		'file_filtering' => 1,
+		'mu_sitewide_groups' => 1,  // version check code will set this to 0 for first-time execution of this version on mu installations that ran a previous RS version
+		'role_duration_limits' => 1,
+		'role_content_date_limits' => 1,
+		'filter_users_dropdown' => 1,
+		'auto_private' => 1
 	);
 
 	return $def;
 }
 
+function scoper_po_trigger( $string ) {
+	return $string;	
+}
 
 function scoper_default_otype_options() {
 	$def = array();
@@ -78,8 +92,8 @@ function scoper_default_otype_options() {
 	$def['teaser_logged_only'] ['post:post'] = 0;
 	$def['teaser_logged_only'] ['post:page'] = 0;
 
-	$def['teaser_replace_content']		['post:post'] = "Sorry, this content requires additional permissions.  Please contact an administrator for help.";
-	$def['teaser_replace_content_anon']	['post:post'] = "Sorry, you don't have access to this content.  Please log in or contact a site administrator for help.";
+	$def['teaser_replace_content']		['post:post'] = scoper_po_trigger( "Sorry, this content requires additional permissions.  Please contact an administrator for help." );
+	$def['teaser_replace_content_anon']	['post:post'] = scoper_po_trigger( "Sorry, you don't have access to this content.  Please log in or contact a site administrator for help." );
 	$def['teaser_prepend_content']		['post:post'] = '';
 	$def['teaser_prepend_content_anon']	['post:post'] = '';
 	$def['teaser_append_content']		['post:post'] = '';
@@ -92,11 +106,11 @@ function scoper_default_otype_options() {
 	$def['teaser_replace_excerpt_anon']	['post:post'] = '';
 	$def['teaser_prepend_excerpt']		['post:post'] = '';
 	$def['teaser_prepend_excerpt_anon']	['post:post'] = '';
-	$def['teaser_append_excerpt']		['post:post'] = "<br /><small>note: This content requires a higher login level.</small>";
-	$def['teaser_append_excerpt_anon']	['post:post'] = "<br /><small>note: This content requires site login.</small>";
+	$def['teaser_append_excerpt']		['post:post'] = "<br /><small>" . scoper_po_trigger( "note: This content requires a higher login level." ) . "</small>";
+	$def['teaser_append_excerpt_anon']	['post:post'] = "<br /><small>" . scoper_po_trigger( "note: This content requires site login." ) . "</small>";
 	
-	$def['teaser_replace_content']		['post:page'] = "Sorry, this content requires additional permissions.  Please contact an administrator for help.";
-	$def['teaser_replace_content_anon']	['post:page'] = "Sorry, you don't have access to this content.  Please log in or contact a site administrator for help.";
+	$def['teaser_replace_content']		['post:page'] = scoper_po_trigger( "Sorry, this content requires additional permissions.  Please contact an administrator for help." );
+	$def['teaser_replace_content_anon']	['post:page'] = scoper_po_trigger( "Sorry, you don't have access to this content.  Please log in or contact a site administrator for help." );
 	$def['teaser_prepend_content']		['post:page'] = '';
 	$def['teaser_prepend_content_anon']	['post:page'] = '';
 	$def['teaser_append_content']		['post:page'] = '';
@@ -109,11 +123,11 @@ function scoper_default_otype_options() {
 	$def['teaser_replace_excerpt_anon']	['post:page'] = '';
 	$def['teaser_prepend_excerpt']		['post:page'] = '';
 	$def['teaser_prepend_excerpt_anon']	['post:page'] = '';
-	$def['teaser_append_excerpt']		['post:page'] = "<br /><small>note: This content requires a higher login level.</small>";
-	$def['teaser_append_excerpt_anon']	['post:page'] = "<br /><small>note: This content requires site login.</small>";
+	$def['teaser_append_excerpt']		['post:page'] = "<br /><small>" . scoper_po_trigger( "note: This content requires a higher login level." ) . "</small>";
+	$def['teaser_append_excerpt_anon']	['post:page'] = "<br /><small>" . scoper_po_trigger( "note: This content requires site login." ) . "</small>";
 
-	$def['admin_css_ids'] ['post:post'] = 'password-span; slugdiv; authordiv; commentstatusdiv; trackbacksdiv;';
-	$def['admin_css_ids'] ['post:page'] = 'password-span; pageslugdiv; pageauthordiv; pageparentdiv; pagecommentstatusdiv';
+	$def['admin_css_ids'] ['post:post'] = 'password-span; slugdiv; authordiv; commentstatusdiv; trackbacksdiv; postcustom; revisionsdiv';
+	$def['admin_css_ids'] ['post:page'] = 'password-span; pageslugdiv; pageauthordiv; pageparentdiv; pagecommentstatusdiv; pagecustomdiv; revisionsdiv';
 	
 	$def['use_term_roles']['post:post'] = 1;
 	$def['use_term_roles']['post:page'] = 0;  // Wordpress core does not categorize pages by default
@@ -127,6 +141,21 @@ function scoper_default_otype_options() {
 	
 	$def['private_items_listable']['post:page'] = 1;
 	
+	$def['default_private']['post:post'] = 0;
+	$def['default_private']['post:page'] = 0;
+	
+	$def['sync_private']['post:post'] = 0;
+	$def['sync_private']['post:page'] = 0;
+	
+	$def['restrictions_column']['post:post'] = 1;
+	$def['restrictions_column']['post:page'] = 1;
+	
+	$def['term_roles_column']['post:post'] = 1;
+	$def['term_roles_column']['post:page'] = 1;
+	
+	$def['object_roles_column']['post:post'] = 1;
+	$def['object_roles_column']['post:page'] = 1;
+
 	return $def;
 }
 
@@ -134,11 +163,10 @@ function scoper_core_access_types() {
 	$arr = array( 'front' => (object) array(), 'admin' => (object) array() );
 	
 	if ( is_admin() ) {
-		$arr['front']->display_name = _c('front-end|front-end access', 'scoper');
-		$arr['admin']->display_name = _c('admin|wp-admin access', 'scoper');
+		$arr['front']->display_name = _x('front-end', 'front-end access', 'scoper');
+		$arr['admin']->display_name = _x('admin', 'wp-admin access', 'scoper');
 	}
 
-	// possible future TODO: reinstate property 'uri_substrings' => array() to support custom-defined access types
 	return $arr;	
 }
 
@@ -155,7 +183,7 @@ function scoper_core_data_sources() {
 	'cols' => (object) array( 
 		'id' => 'ID', 					'name' => 'post_title', 		'type' => 'post_type', 
 		'owner' => 'post_author', 		'content' => 'post_content', 	'parent' => 'post_parent',
-		'status' => 'post_status', 		'excerpt' => 'post_excerpt'
+		'status' => 'post_status', 		'excerpt' => 'post_excerpt',	'date' => 'post_date_gmt'
 		),	
 	'http_post_vars' => (object) array( 'id' => 'post_ID', 'category' => 'post_category' ),
 	'uri_vars' => (object) array( 'id' => 'post' ),
@@ -182,21 +210,21 @@ function scoper_core_data_sources() {
 		),
 
 	'statuses' => array( 
-		'published' => 'publish', 'private' => 'private', 'draft' => 'draft', 'future' => 'future', 'pending' => 'pending' 
+		'published' => 'publish', 'private' => 'private', 'draft' => 'draft', 'future' => 'future', 'pending' => 'pending', 'trash' => 'trash' 
 		),
 
 	'usage' => (object) array(
 		'statuses' => (object) array(
 			'access_type' => array(
 				'front' => array( 'published', 'private' ), 
-				'admin' => array( 'published', 'private', 'draft', 'future', 'pending' )
+				'admin' => array( 'published', 'private', 'draft', 'future', 'pending', 'trash' )
 				)
 			)
 		),
 
 	'uses_taxonomies' => array( 'category' ),
 
-	'query_hooks' => (object) array( 'request' => 'posts_request', 'results' => 'posts_results', 'listing' => 'the_posts', 'distinct' => 'posts_distinct' ),
+	'query_hooks' => (object) array( 'request' => 'posts_request', 'results' => 'posts_results', 'listing' => 'the_posts' ),
 	
 	'query_replacements' => array( "OR post_author = [user_id] AND post_status = 'private'" => "OR post_status = 'private'" ),
 		
@@ -221,14 +249,16 @@ function scoper_core_data_sources() {
 				'private' => 	array( 'edit_others_posts', 'edit_published_posts', 'edit_private_posts' ), 
 				'draft' => 		array( 'edit_others_posts' ),
 				'pending' => 	array( 'edit_others_posts' ),
-				'future' => 	array( 'edit_others_posts' )
+				'future' => 	array( 'edit_others_posts' ),
+				'trash' => 		array( 'edit_others_posts' )
 				),
 			'page' => array(
 				'published' => 	array( 'edit_others_pages', 'edit_published_pages' ),
 				'private' => 	array( 'edit_others_pages', 'edit_published_pages', 'edit_private_pages' ), 
 				'draft' => 		array( 'edit_others_pages' ),
 				'pending' => 	array( 'edit_others_pages' ),
-				'future' => 	array( 'edit_others_pages' )
+				'future' => 	array( 'edit_others_pages' ),
+				'trash' => 		array( 'edit_others_pages' )
 				)
 			),
 		'admin' => array(
@@ -237,14 +267,16 @@ function scoper_core_data_sources() {
 				'private' => 	array( 'delete_others_posts', 'delete_published_posts', 'delete_private_posts' ), 
 				'draft' => 		array( 'delete_others_posts' ),
 				'pending' => 	array( 'delete_others_posts' ),
-				'future' => 	array( 'delete_others_posts' )
+				'future' => 	array( 'delete_others_posts' ),
+				'trash' => 		array( 'delete_others_posts' )
 				),
 			'page' => array(
 				'published' => 	array( 'delete_others_pages', 'delete_published_pages' ),
 				'private' => 	array( 'delete_others_pages', 'delete_published_pages', 'delete_private_pages' ), 
 				'draft' => 		array( 'delete_others_pages' ),
 				'pending' => 	array( 'delete_others_pages' ),
-				'future' => 	array( 'delete_others_pages' )
+				'future' => 	array( 'delete_others_pages' ),
+				'trash' => 		array( 'delete_others_posts' )
 				)
 			)
 		),
@@ -277,10 +309,11 @@ function scoper_core_data_sources() {
 
 	$arr[$name]->query_replacements = array( "OR $wpdb->posts.post_author = [user_id] AND $wpdb->posts.post_status = 'private'" => "OR $wpdb->posts.post_status = 'private'" );
 	
+	// preview supports non-published statuses, but requires edit capability
 	if ( ! empty($_GET['preview']) ) {
-		$arr[$name]->usage->statuses->access_type['front'] = array( 'draft', 'pending', 'future' ) + $arr[$name]->usage->statuses->access_type['front'];
-		$arr[$name]->reqd_caps['read']['post'] = array ( 'draft' => array('edit_others_posts'), 'pending' => array('edit_others_posts'), 'future' => array('edit_others_posts') ) + $arr[$name]->reqd_caps['read']['post'];
-		$arr[$name]->reqd_caps['read']['page'] = array ( 'draft' => array('edit_others_pages'), 'pending' => array('edit_others_pages'), 'future' => array('edit_others_pages') ) + $arr[$name]->reqd_caps['read']['page'];
+		$arr[$name]->usage->statuses->access_type['front'] = array( 'draft', 'pending', 'future', 'published', 'private' );
+		$arr[$name]->reqd_caps['read']['post'] = array ( 'draft' => array('edit_others_posts'), 'pending' => array('edit_others_posts'), 'future' => array('edit_others_posts'), 'published' => array('edit_others_posts'), 'private' => array('edit_others_posts') );
+		$arr[$name]->reqd_caps['read']['page'] = array ( 'draft' => array('edit_others_pages'), 'pending' => array('edit_others_pages'), 'future' => array('edit_others_pages'), 'published' => array('edit_others_pages'), 'private' => array('edit_others_pages') );
 	}
 	
 	/* Post data source and others following the "save_{src_name}", etc. pattern
@@ -302,14 +335,14 @@ function scoper_core_data_sources() {
 	
 	// define html inserts for object role administration only if this is an admin URI
 	if ( $is_admin ) {
-		$arr['post']->display_name = __('Post', 'scoper');
-		$arr['post']->display_name_plural = __('Posts', 'scoper');
+		$arr['post']->display_name = __awp('Post');
+		$arr['post']->display_name_plural = __awp('Posts');
 		
-		$arr['post']->object_types['post']->display_name = __('Post', 'scoper');
-		$arr['post']->object_types['post']->display_name_plural = __('Posts', 'scoper');
+		$arr['post']->object_types['post']->display_name = __awp('Post');
+		$arr['post']->object_types['post']->display_name_plural = __awp('Posts');
 		
-		$arr['post']->object_types['page']->display_name = __('Page', 'scoper');
-		$arr['post']->object_types['page']->display_name_plural = __('Pages', 'scoper');
+		$arr['post']->object_types['page']->display_name = __awp('Page');
+		$arr['post']->object_types['page']->display_name_plural = __awp('Pages');
 		
 		$arr['post']->edit_url = 'post.php?action=edit&amp;post=%d';  // xhtml validation fails with &post=
 	
@@ -355,18 +388,19 @@ function scoper_core_data_sources() {
 		
 		if ( $is_admin ) {
 			$arr['link']->display_name = __('Link', 'scoper');
-			$arr['link']->display_name_plural = __('Links', 'scoper');
+			$arr['link']->display_name_plural = __awp('Links');
 			$arr['link']->edit_url = 'link.php?action=edit&amp;link_id=%s';
 		}
 		
 		
 		//groups table 
-		// scoper-defined with wp prefix by default, but can be customized to an existing non-WP table by editing db-config_rs.php
+		// scoper-defined table can be customized via db-config_rs.php
 		$name = 'group';
 		$arr[$name] = (object) array(
-		'table_basename' => $wpdb->groups_basename,		
+		'table_no_prefix' => true,
+		'table_basename' => $wpdb->groups_rs,
 		'cols' => (object) array(
-			'id' => $wpdb->groups_id_col,	'name' => $wpdb->groups_name_col
+			'id' => $wpdb->groups_id_col,	'name' => $wpdb->groups_name_col, 'owner' => '', 'status' => '', 'type' => ''
 			),
 		'uri_vars' => array( 'id' => 'id'),
 		'http_post_vars' => array( 'id' => 'id'),
@@ -379,9 +413,9 @@ function scoper_core_data_sources() {
 		$arr['group']->reqd_caps['edit']['group'][''] = array( 'manage_groups' );
 		
 		if ( $is_admin ) {
-			$arr['group']->display_name = _c('Group|of users', 'scoper');
-			$arr['group']->display_name_plural = _c('Groups|of users', 'scoper');
-			$arr['group']->edit_url = SCOPER_ADMIN_URL . '/groups.php&mode=edit&id=%d';
+			$arr['group']->display_name = _x('Group', 'of users', 'scoper');
+			$arr['group']->display_name_plural = _x('Groups', 'of users', 'scoper');
+			$arr['group']->edit_url = 'admin.php?page=rs-groups&amp;mode=edit&amp;id=%d';
 		}
 	}
 	
@@ -421,8 +455,8 @@ function scoper_core_taxonomies() {
 	); // end outer array
 	
 	if ( $is_admin ) {
-		$arr['category']->display_name = __('Category', 'scoper');
-		$arr['category']->display_name_plural = __('Categories', 'scoper');
+		$arr['category']->display_name = __awp('Category');
+		$arr['category']->display_name_plural = __awp('Categories');
 		$arr['category']->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
 	}
 	
@@ -455,7 +489,7 @@ function scoper_core_taxonomies() {
 		); // end outer array
 	
 		$arr['link_category']->display_name = __('Link Category', 'scoper');
-		$arr['link_category']->display_name_plural = __('Link Categories', 'scoper');
+		$arr['link_category']->display_name_plural = __awp('Link Categories');
 		$arr['link_category']->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
 	}
 	
@@ -469,14 +503,15 @@ function scoper_core_cap_defs() {
 	
 	'read_private_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_READ_RS, 	'owner_privilege' => true, 'status' => 'private' ),
 	'edit_posts' =>  			(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 'no_custom_remove' => true ),
-	'edit_others_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS, 	'attributes' => array('others'), 	'base_cap' => 'edit_posts', 'no_custom_add' => true  ),
-	'edit_private_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS,		'status' => 'private' ),
+	'edit_others_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS, 	'attributes' => array('others'), 	'base_cap' => 'edit_posts', 'no_custom_remove' => true  ),
+	'edit_private_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 'status' => 'private' ),
 	'edit_published_posts' => 	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_EDIT_RS,		'status' => 'published' ),
 	'upload_files' => 			(object) array( 'src_name' => 'post', 'object_type' => '', 		'op_type' => ''	),
 	'moderate_comments' => 		(object) array( 'src_name' => 'post', 'object_type' => '', 		'op_type' => '' ),
+	'unfiltered_html' => 		(object) array( 'src_name' => 'post', 'object_type' => '', 		'op_type' => '' ),
 	
 	'delete_posts' =>  			(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_DELETE_RS,	'owner_privilege' => true ),
-	'delete_others_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_DELETE_RS, 	'attributes' => array('others'),	'base_cap' => 'delete_posts', 'no_custom_add' => true ),
+	'delete_others_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_DELETE_RS, 	'attributes' => array('others'),	'base_cap' => 'delete_posts' ),
 	'delete_private_posts' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_DELETE_RS,	'status' => 'private' ),
 	'delete_published_posts' => (object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_DELETE_RS,	'status' => 'published' ),
 	'publish_posts' =>  		(object) array( 'src_name' => 'post', 'object_type' => 'post', 'op_type' => OP_PUBLISH_RS ),
@@ -484,10 +519,10 @@ function scoper_core_cap_defs() {
 	'read_private_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_READ_RS, 	'owner_privilege' => true, 'status' => 'private' ),
 	'edit_pages' =>  			(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 'no_custom_remove' => true ),
 	'edit_others_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_EDIT_RS, 	'attributes' => array('others'),	'base_cap' => 'edit_pages', 'no_custom_remove' => true ),
-	'edit_private_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_EDIT_RS,		'status' => 'private' ),
+	'edit_private_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 'status' => 'private' ),
 	'edit_published_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_EDIT_RS,		'status' => 'published' ),
 	'delete_pages' =>  			(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_DELETE_RS,	'owner_privilege' => true ),
-	'delete_others_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_DELETE_RS, 	'attributes' => array('others'),	'base_cap' => 'delete_pages', 'no_custom_add' => true ),
+	'delete_others_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_DELETE_RS, 	'attributes' => array('others'),	'base_cap' => 'delete_pages' ),
 	'delete_private_pages' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_DELETE_RS,	'status' => 'private' ),
 	'delete_published_pages' => (object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_DELETE_RS,	'status' => 'published' ),
 	'publish_pages' =>  		(object) array( 'src_name' => 'post', 'object_type' => 'page', 'op_type' => OP_PUBLISH_RS ),	
@@ -526,6 +561,13 @@ function scoper_core_role_caps() {
 			'edit_posts' => true,
 			'delete_posts' => true,
 			'read' => true
+		),
+		'rs_post_revisor' => array(
+			'edit_posts' => true,
+			'delete_posts' => true,
+			'read' => true,
+			'read_private_posts' => true,
+			'edit_others_posts' => true
 		),
 		'rs_post_author' => array(
 			'upload_files' => true,
@@ -571,6 +613,13 @@ function scoper_core_role_caps() {
 			'delete_pages' => true,
 			'read' => true
 		),
+		'rs_page_revisor' => array(
+			'edit_pages' => true,
+			'delete_pages' => true,
+			'read' => true,
+			'read_private_pages' => true,
+			'edit_others_pages' => true
+		),
 		'rs_page_author' => array(
 			'upload_files' => true,
 			'publish_pages' => true,
@@ -610,8 +659,34 @@ function scoper_core_role_caps() {
 		
 	); // end role_caps array
 	
+	if ( ! defined( 'RVY_VERSION' ) )
+		$arr = array_diff_key( $arr, array( 'rs_post_revisor' => 1, 'rs_page_revisor' => 1 ) );
+	
 	return $arr;
 }
+
+
+function scoper_supplemental_wp_role_caps() {
+	// separate array is friendlier to php array function
+	$arr = array(
+		'wp_revisor' => array(
+			'read' => true,
+			'edit_posts' => true,
+			'delete_posts' => true,
+			'edit_others_posts' => true,
+			'edit_pages' => true,
+			'delete_pages' => true,
+			'edit_others_pages' => true,
+			'level_3' => true,
+			'level_2' => true,
+			'level_1' => true,
+			'level_0' => true
+		)
+	);
+	
+	return $arr;
+}
+
 //
 //
 //note: rs_ is a role type prefix which is required for array key, but will be stripped off for name property
@@ -622,18 +697,20 @@ function scoper_core_role_defs() {
 	'rs_post_reader' => 		(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ),  'object_type' => 'post', 'anon_user_blogrole' => true ),
 	'rs_private_post_reader' =>	(object) array( 'objscope_equivalents' => array('rs_post_reader') ),
 
-	'rs_post_contributor' =>	(object) array(),
+	'rs_post_contributor' =>	(object) array( 'objscope_equivalents' => array('rs_post_revisor') ),
 	'rs_post_author' => 		(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ) ),
+	'rs_post_revisor' => 		(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ) ),
 	'rs_post_editor' => 		(object) array( 'objscope_equivalents' => array('rs_post_author') ),
 	
 	'rs_page_reader' => 		(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ), 'object_type' => 'page', 'anon_user_blogrole' => true ),
 	'rs_private_page_reader' =>	(object) array( 'objscope_equivalents' => array('rs_page_reader') ),
 
-	'rs_page_contributor' =>	(object) array(),
+	'rs_page_contributor' =>	(object) array( 'objscope_equivalents' => array('rs_page_revisor') ),
+	'rs_page_revisor' => 		(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ) ),
 	'rs_page_author' => 		(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ) ),
 	'rs_page_editor' => 		(object) array( 'objscope_equivalents' => array('rs_page_author') ),
     /* 'rs_page_associate' =>		(object) array(), //including this confuses determination of equiv. RS roles from WP blogrole */
-													  // TODO: can we include it now after rc9.9222.b fix
+													  // TODO: can we include it now after rc9.9222.b fix ?
 	'rs_link_editor' =>			(object) array(),
 
 	'rs_category_manager' =>	(object) array( 'no_custom_caps' => true ),
@@ -641,82 +718,15 @@ function scoper_core_role_defs() {
 	'rs_group_manager' =>		(object) array()
 	); // end role_defs array
 	
+	if ( ! defined( 'RVY_VERSION' ) )
+		$arr = array_diff_key( $arr, array( 'rs_post_revisor' => 1, 'rs_page_revisor' => 1 ) );
+
 	if ( is_admin() ) {
 		$arr['rs_page_associate']->no_custom_caps = true;
 		
-		//display_name
-		$arr['rs_post_reader']->display_name = 			_c('Post Reader|role', 'scoper');
-		$arr['rs_private_post_reader']->display_name = 	_c('Private Post Reader|role', 'scoper');
-		$arr['rs_post_contributor']->display_name = 	_c('Post Contributor|role', 'scoper');
-		$arr['rs_post_author']->display_name = 			_c('Post Author|role', 'scoper');
-		$arr['rs_post_editor']->display_name = 			_c('Post Editor|role', 'scoper');
-		
-		$arr['rs_page_reader']->display_name = 			_c('Page Reader|role', 'scoper');
-		$arr['rs_private_page_reader']->display_name = 	_c('Private Page Reader|role', 'scoper');
-		$arr['rs_page_associate']->display_name = 		_c('Page Associate|role', 'scoper');
-		$arr['rs_page_contributor']->display_name = 	_c('Page Contributor|role', 'scoper');
-		$arr['rs_page_author']->display_name = 			_c('Page Author|role', 'scoper');
-		$arr['rs_page_editor']->display_name = 			_c('Page Editor|role', 'scoper');
-	
-		$arr['rs_link_editor']->display_name = 			_c('Link Admin|role', 'scoper');
-		
-		$arr['rs_category_manager']->display_name = 	_c('Category Manager|role', 'scoper');
-		
-		$arr['rs_group_manager']->display_name =		_c('Group Manager|role', 'scoper');
-		
-		//abbreviations
-		$arr['rs_post_reader']->abbrev = 			_c('Readers|role', 'scoper');
-		$arr['rs_private_post_reader']->abbrev = 	_c('Private Readers|role', 'scoper');
-		$arr['rs_post_contributor']->abbrev = 		_c('Contributors|role', 'scoper');
-		$arr['rs_post_author']->abbrev = 			_c('Authors|role', 'scoper');
-		$arr['rs_post_editor']->abbrev = 			_c('Editors|role', 'scoper');
-		
-		$arr['rs_page_reader']->abbrev = 			_c('Readers|role', 'scoper');
-		$arr['rs_private_page_reader']->abbrev = 	_c('Private Readers|role', 'scoper');
-		$arr['rs_page_associate']->abbrev = 		_c('Associates|role', 'scoper');
-		$arr['rs_page_contributor']->abbrev = 		_c('Contributors|role', 'scoper');
-		$arr['rs_page_author']->abbrev = 			_c('Authors|role', 'scoper');
-		$arr['rs_page_editor']->abbrev = 			_c('Editors|role', 'scoper');
-	
-		$arr['rs_link_editor']->abbrev = 			_c('Admins|role', 'scoper');
-		
-		$arr['rs_category_manager']->abbrev = 		_c('Managers|role', 'scoper');
-			
-		$arr['rs_group_manager']->abbrev =			_c('Managers|role', 'scoper');
-		
-		//micro abbreviations
-		$arr['rs_post_reader']->micro_abbrev = 			_c('Reader|role', 'scoper');
-		$arr['rs_private_post_reader']->micro_abbrev = 	_c('Pvt Reader|role', 'scoper');
-		$arr['rs_post_contributor']->micro_abbrev = 	_c('Contrib|role', 'scoper');
-		$arr['rs_post_author']->micro_abbrev = 			_c('Author|role', 'scoper');
-		$arr['rs_post_editor']->micro_abbrev = 			_c('Editor|role', 'scoper');
-		
-		$arr['rs_page_reader']->micro_abbrev = 			_c('Reader|role', 'scoper');
-		$arr['rs_private_page_reader']->micro_abbrev = 	_c('Pvt Reader|role', 'scoper');
-		$arr['rs_page_associate']->micro_abbrev = 		_c('Assoc|role', 'scoper');
-		$arr['rs_page_contributor']->micro_abbrev = 	_c('Contrib|role', 'scoper');
-		$arr['rs_page_author']->micro_abbrev = 			_c('Author|role', 'scoper');
-		$arr['rs_page_editor']->micro_abbrev = 			_c('Editor|role', 'scoper');
-	
-		$arr['rs_link_editor']->micro_abbrev = 			_c('Admin|role', 'scoper');
-		
-		$arr['rs_category_manager']->micro_abbrev = 	_c('Manager|role', 'scoper');
-			
-		$arr['rs_group_manager']->micro_abbrev =		_c('Manager|role', 'scoper');
-		
-		// We want the object-assigned reading role to enable the user/group regardless of post status setting.
-		// But we don't want the caption to imply that assigning this object role MAKES the post_status private
-		// Also want the "role from other scope" indication in post edit UI to reflect the post's current status
-		$arr['rs_private_post_reader']->display_name_for_object_ui = _c('Post Reader|role', 'scoper');
-		$arr['rs_private_post_reader']->abbrev_for_object_ui = _c('Readers|role', 'scoper');
-		$arr['rs_private_post_reader']->micro_abbrev_for_object_ui = _c('Reader|role', 'scoper');
 		$arr['rs_private_post_reader']->other_scopes_check_role = array( 'private' => 'rs_private_post_reader', '' => 'rs_post_reader' );
-		
-		$arr['rs_private_page_reader']->display_name_for_object_ui = _c('Page Reader|role', 'scoper');
-		$arr['rs_private_page_reader']->abbrev_for_object_ui = _c('Readers|role', 'scoper');
-		$arr['rs_private_page_reader']->micro_abbrev_for_object_ui = _c('Reader|role', 'scoper');
 		$arr['rs_private_page_reader']->other_scopes_check_role = array( 'private' => 'rs_private_page_reader', '' => 'rs_page_reader' );
-	} // endif is_admin
+	}
 	
 	foreach ( array_keys($arr) as $key )
 		$arr[$key]->role_type = 'rs';

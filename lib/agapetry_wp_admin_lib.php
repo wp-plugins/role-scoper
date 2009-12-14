@@ -1,27 +1,6 @@
 <?php
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-	
-function awp_query_descendant_ids( $table_name, $col_id, $col_parent, $parent_id ) {
-	global $wpdb;
-	
-	$descendant_ids = array();
-	
-	// todo: abstract this
-	$type_clause = ( $table_name == $wpdb->posts ) ? "AND post_type != 'revision'" : '';
-	
-	$query = "SELECT $col_id FROM $table_name WHERE $col_parent = '$parent_id' $type_clause";
-	if ( $results = scoper_get_col($query) ) {
-		foreach ( $results as $id ) {
-			if ( ! in_array( $id, $descendant_ids ) ) {
-				$descendant_ids []= $id;
-				$next_generation = awp_query_descendant_ids($table_name, $col_id, $col_parent, $id, $descendant_ids);
-				$descendant_ids = array_merge($descendant_ids, $next_generation);
-			}
-		}
-	}
-	return $descendant_ids;
-}
 
 // Decipher the ever-changing meta/advanced action names into a version-insensitive question:
 // "Has metabox drawing been initiated?"

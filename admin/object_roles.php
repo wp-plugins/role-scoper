@@ -9,18 +9,18 @@ global $scoper;
 if ( ! ( $src = $scoper->data_sources->get($src_name) ) || ! empty($src->no_object_roles) || ! empty($src->taxonomy_only) || ($src_name == 'group') )
 	wp_die(__('Invalid data source', 'scoper'));
 
-$is_administrator = is_administrator_rs($src);
+$is_administrator = is_administrator_rs($src, 'user');
 
 $role_bases = array();
 
-if ( USER_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) || current_user_can('edit_users') ) )
+if ( USER_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) ) )
 	$role_bases []= ROLE_BASIS_USER;
 	
-if ( GROUP_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) || current_user_can('edit_users') || current_user_can('manage_groups') ) )
+if ( GROUP_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_object($src_name, $object_type, 0, true) || current_user_can('manage_groups') ) )
 	$role_bases []= ROLE_BASIS_GROUPS;
 
 if ( empty($role_bases) )
-	wp_die(__('Cheatin&#8217; uh?'));
+	wp_die(__awp('Cheatin&#8217; uh?'));
 
 $otype = $scoper->data_sources->member_property($src_name, 'object_types', $object_type);
 	
@@ -61,7 +61,14 @@ echo '<h2>' . sprintf(__('%s Roles', 'scoper'), $display_name)
 	
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
-	printf(_c('Expand access to a %2$s, potentially beyond what a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.|arguments are link open, object type name, link close', 'scoper'), "<a href='" . SCOPER_ADMIN_URL . "/restrictions/$src_name/$object_type'>", $display_name, '</a>');
+	
+	if ( ( $src_name != $object_type ) && ( 'post' != $object_type ) ) {
+		$restrictions_page = "rs-restrictions-{$object_type}_{$src_name}";
+	} else {
+		$restrictions_page = "rs-restrictions-$object_type";
+	}
+	
+	printf(_x('Expand access to a %2$s, potentially beyond what a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'arguments are link open, object type name, link close', 'scoper'), "<a href='admin.php?page=$restrictions_page'>", $display_name, '</a>');
 	echo '</div>';
 }
 
@@ -86,7 +93,7 @@ else
 		ASSIGN_FOR_BOTH_RS => sprintf(__('Assign for selected and sub-%s', 'scoper'), $display_name_plural),
 		REMOVE_ASSIGNMENT_RS =>__('Remove', 'scoper')
 	);
-$args = array( 'role_bases' => $role_bases, 'agents' => $agents, 'agent_caption_plural' => $agent_caption_plural );
+$args = array( 'role_bases' => $role_bases, 'agents' => $agents, 'agent_caption_plural' => $agent_caption_plural, 'scope' => OBJECT_SCOPE_RS, 'src_or_tx_name' => $src_name );
 ScoperAdminBulk::display_inputs(ROLE_ASSIGNMENT_RS, $assignment_modes, $args);
 
 echo '<br />';
@@ -94,8 +101,8 @@ $args = array( 'role_bases' => $role_bases, 'default_hide_empty' => ! empty($oty
 ScoperAdminBulk::item_tree_jslinks(ROLE_ASSIGNMENT_RS, $args );
 
 // buffer prev/next caption for display with each obj type
-$prevtext = _c('prev|abbreviated link to previous item', 'scoper');
-$nexttext = _c('next|abbreviated link to next item', 'scoper');
+$prevtext = _x('prev', 'abbreviated link to previous item', 'scoper');
+$nexttext = _x('next', 'abbreviated link to next item', 'scoper');
 
 $site_url = get_option('siteurl');
 
@@ -166,8 +173,8 @@ else
 
 $role_display = array();
 $editable_roles = array();
-foreach ( $scoper->role_defs->get_all() as $role_handle => $role_def ) {
-	$role_display[$role_handle] = ( empty($role_def->abbrev_for_object_ui) ) ? $role_def->abbrev : $role_def->abbrev_for_object_ui;
+foreach ( $scoper->role_defs->get_all_keys() as $role_handle ) {
+	$role_display[$role_handle] = $scoper->role_defs->get_abbrev( $role_handle, OBJECT_UI_RS );
 	
 	if ( $scoper->admin->user_can_admin_role($role_handle, 0, $src->name, $object_type) )
 		$editable_roles[0][$role_handle] = true;

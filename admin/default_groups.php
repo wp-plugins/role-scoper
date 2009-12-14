@@ -9,7 +9,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 </h2>
 
 <?php
-$groups_url = SCOPER_ADMIN_URL . '/groups.php';
+$groups_url = 'admin.php?page=rs-groups';
 echo "<a href='$groups_url'>Back to Groups</a>";
 ?>
 
@@ -24,7 +24,7 @@ global $scoper;
 if ( isset($_POST['rs_submit']) ) {
 	$groups = ( isset($_POST['group']) ) ? $_POST['group'] : array();
 
-	update_option( 'scoper_default_groups', $groups );
+	scoper_update_option( 'default_groups', $groups );
 
 	echo '<div id="message" class="updated fade"><p>';
 	printf(__('Default Groups Updated: %s groups', 'scoper'), count($groups) );
@@ -38,7 +38,7 @@ if ( ! $all_groups = ScoperAdminLib::get_all_groups(UNFILTERED_RS) )
 if ( $editable_ids = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS) ) {
 	echo "<div id='default_groupsdiv_rs' style='margin-top:1em'>";
 	
-	if ( ! $stored_groups = get_option( 'scoper_default_groups' ) ) {
+	if ( ! $stored_groups = scoper_get_option( 'default_groups' ) ) {
 		$stored_groups = array();
 		echo '<p><strong>';
 		_e( 'No default groups defined.', 'scoper' );

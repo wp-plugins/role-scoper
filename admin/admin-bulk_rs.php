@@ -47,7 +47,7 @@ function agent_captions_plural($role_bases) {
 	if ( count($role_bases) > 1 )
 		return __('Users or Groups', 'scoper');
 	elseif ( in_array(ROLE_BASIS_USER, $role_bases) )
-		return __('Users', 'scoper');
+		return __awp('Users');
 	elseif ( in_array(ROLE_BASIS_GROUPS, $role_bases) )
 		return __('Groups', 'scoper');
 }
@@ -76,7 +76,7 @@ function get_role_codes() {
 }
 
 function display_inputs($mode, $assignment_modes, $args = '') {
-	$defaults = array( 'role_bases' => '', 'agents' => '', 'agent_caption_plural' => '', 'max_scopes' => array());
+	$defaults = array( 'role_bases' => '', 'agents' => '', 'agent_caption_plural' => '', 'max_scopes' => array(), 'scope' => '', 'src_or_tx_name' => '' );
 	$args = array_merge($defaults, (array) $args);
 	extract($args);
 	
@@ -85,9 +85,32 @@ function display_inputs($mode, $assignment_modes, $args = '') {
 	echo "<br /><a name='scoper_submit'></a>";
 
 	echo '<ul class="rs-list_horiz"><li style="float:left;"><h3>1.&nbsp;';
-	$msg = ( ROLE_ASSIGNMENT_RS == $mode ) ? __('Select Assignment Mode', 'scoper') : __('Select Restriction Mode', 'scoper');
-	echo "$msg</h3></li>";
-	$num = ( ROLE_ASSIGNMENT_RS == $mode ) ? 4 : 3;
+	
+	if ( ROLE_ASSIGNMENT_RS == $mode ) {
+		$msg = __('Select Assignment Mode', 'scoper');
+		echo "$msg</h3></li>";
+		
+		if ( OBJECT_SCOPE_RS == $scope ) {
+			$src = $scoper->data_sources->get($src_or_tx_name);
+			$date_col_defined = ! empty( $src->cols->date );
+		} elseif ( TERM_SCOPE_RS == $scope ) {
+			$tx = $scoper->taxonomies->get($src_or_tx_name);
+			$date_col_defined = ! empty( $tx->object_source->cols->date );
+		} else
+			$date_col_defined = true;
+
+		$duration_limits_enabled = $date_col_defined && scoper_get_option('role_duration_limits');
+		$content_date_limits_enabled = ( OBJECT_SCOPE_RS != $scope ) && $date_col_defined && scoper_get_option('role_content_date_limits');
+
+		$num = ( $duration_limits_enabled || $content_date_limits_enabled ) ? 5 : 4;
+	} else {
+		$msg = __('Select Restriction Mode', 'scoper');
+		echo "$msg</h3></li>";
+		$num = 3;
+		
+		$duration_limits_enabled = $content_date_limits_enabled = false;
+	}
+	
 	echo "<li style='float:right;'><h3>$num.&nbsp;";
 	_e('Review and Submit', 'scoper');
 	echo '</h3></li>';
@@ -108,12 +131,11 @@ function display_inputs($mode, $assignment_modes, $args = '') {
 		}
 		echo '</select></li>';
 	}
-	
-	$for_name = ( ROLE_ASSIGNMENT_RS == $mode ) ? 'assign_for' : 'require_for';
 	?>
 	
 	<li style="margin-left:0.5em">
 	<?php
+	$for_name = ( ROLE_ASSIGNMENT_RS == $mode ) ? 'assign_for' : 'require_for';
 	echo "<select id='$for_name' name='$for_name'>";
 		$retain_value = ( isset($_POST[$for_name]) ) ? $_POST[$for_name] : 0;
 
@@ -127,14 +149,14 @@ function display_inputs($mode, $assignment_modes, $args = '') {
 	
 	</li>
 	<li style='float:right;margin: 0 0.25em 0.25em 0.25em;'><span class="submit" style="border:none;">
-	<input type="submit" name="rs_submit" value="<?php _e('Update &raquo;', 'scoper');?>" />
+	<input type="submit" name="rs_submit" class="button-primary" value="<?php _e('Update &raquo;', 'scoper');?>" />
 	</span></li>
 	</ul>
 	<p style="clear:both"></p>
 	<?php
 	if ( ROLE_ASSIGNMENT_RS == $mode ) {
 		echo '<br /><h3>2.&nbsp;';
-		printf( _c('Select %s to Modify|Users or Groups', 'scoper'), $agent_caption_plural );
+		printf( _x('Select %s to Modify', 'Users or Groups', 'scoper'), $agent_caption_plural );
 		echo '</h3>';
 		
 		$args = array( 'suppress_extra_prefix' => true, 'filter_threshold' => 20, 'default_hide_threshold' => 20, 'check_for_incomplete_submission' => true );
@@ -146,10 +168,26 @@ function display_inputs($mode, $assignment_modes, $args = '') {
 	}
 	//=================== end users/groups and assignment mode selection display ====================
 	
-	$num = ( ROLE_ASSIGNMENT_RS == $mode ) ? 3 : 2;
-	echo "<br /><h3>$num.&nbsp;";
-	$msg = ( ROLE_ASSIGNMENT_RS == $mode ) ? __('Select Roles to Assign / Remove', 'scoper') : __('Select Roles to Modify', 'scoper');
-	echo "$msg</h3>";
+	if ( $duration_limits_enabled || $content_date_limits_enabled ) {
+		echo '<br /><h3 style="margin-bottom: 0">3.&nbsp;';
+		_e('Set Role Duration and/or Content Date Limits', 'scoper');
+		echo '</h3>';
+
+		include_once( 'admin_lib-bulk_rs.php' );
+		ScoperAdminBulkLib::display_date_limit_inputs( $duration_limits_enabled, $content_date_limits_enabled );
+	}
+
+	if ( ROLE_ASSIGNMENT_RS == $mode ) {
+		$num =  ( $duration_limits_enabled || $content_date_limits_enabled ) ? 4 : 3;
+		echo "<br /><h3>$num.&nbsp;";
+		$msg = __('Select Roles to Assign / Remove', 'scoper');
+		echo "$msg</h3>";
+	} else {
+		$num = 2;
+		echo "<br /><h3>$num.&nbsp;";
+		$msg = __('Select Roles to Modify', 'scoper');
+		echo "$msg</h3>";
+	}
 }
 
 function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_codes, $agent_caption_plural, $nonce_id) {
@@ -163,11 +201,19 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 	$set_roles = array();
 	$selected_roles = $_POST['roles'];
 	
+	if ( OBJECT_SCOPE_RS == $scope ) {
+		$src = $scoper->data_sources->get($src_or_tx_name);
+		$date_col_defined = ! empty( $src->cols->date );
+	} elseif ( TERM_SCOPE_RS == $scope ) {
+		$tx = $scoper->taxonomies->get($src_or_tx_name);
+		$date_col_defined = ! empty( $tx->object_source->cols->date );
+	} else
+		$date_col_defined = true;
+	
 	switch ($mode) {
 		case ROLE_ASSIGNMENT_RS:
 			$assign_for = $_POST['assign_for'];
 
-			// todo: support alternate ID
 			$selected_agents = array();
 			foreach ( $role_bases as $role_basis ) {
 				if ( ! empty($_POST[$role_basis]) )
@@ -183,32 +229,47 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 
 			$agents_msg = array();
 			$valid_role_selection = ! empty($selected_roles);
+			
+			$duration_limits_enabled = $date_col_defined && scoper_get_option('role_duration_limits');
+			$content_date_limits_enabled = $date_col_defined && scoper_get_option('role_content_date_limits');
 		break;
 		
 		case ROLE_RESTRICTION_RS:
 			$role_bases = array('n/a');
-			$default_restrictions = $_POST['default_restrictions'];
+			$default_restrictions = isset($_POST['default_restrictions']) ? $_POST['default_restrictions'] : array();
 			$max_scope = $_POST['max_scope'];
 			$require_for = $_POST['require_for'];
 			$selected_agents = array('n/a' => array(0) );
 			$valid_role_selection = ! empty($selected_roles) || ! empty($default_restrictions);
 			$modcount = 0;
+			
+			$duration_limits_enabled = $content_date_limits_enabled = false;
 		break;
 	}
 
 	if ( ! $selected_agents ) {
 		$_POST['scoper_error'] = 1;
-		echo '<div id="message" class="error"><p><b>';
+		echo '<div id="message" class="error"><p><strong>';
 		printf( __('Error: no %s were selected!', 'scoper'), $agent_caption_plural);
-		echo '</b></p></div>';
+		echo '</strong></p></div>';
 		$err = 1;
 	} elseif ( ! $valid_role_selection ) {
 		$_POST['scoper_error'] = 1;
-		echo '<div id="message" class="error"><p><b>';
+		echo '<div id="message" class="error"><p><strong>';
 		_e('Error: no roles were selected!', 'scoper');
-		echo '</b></p></div>';
+		echo '</strong></p></div>';
 		$err = 2;
 	} else {
+		if ( $duration_limits_enabled )
+			$set_role_duration = (object) array( 'date_limited' => $_POST['date_limited'], 'start_date_gmt' => $_POST['start_date_gmt'], 'end_date_gmt' => $_POST['end_date_gmt'] );
+		else
+			$set_role_duration = '';
+
+		if ( $content_date_limits_enabled )
+			$set_content_date_limits = (object) array( 'content_date_limited' => $_POST['content_date_limited'], 'content_min_date_gmt' => $_POST['content_min_date_gmt'], 'content_max_date_gmt' => $_POST['content_max_date_gmt'] );
+		else
+			$set_content_date_limits = '';
+
 		foreach ( $role_bases as $role_basis ) {
 			foreach($selected_agents[$role_basis] as $agent_id) {
 				// must set default restrictions first
@@ -256,9 +317,24 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 				}
 
 				if ( ROLE_ASSIGNMENT_RS == $mode ) {
+					$args = array( 'force_flush' => true, 'set_role_duration' => $set_role_duration, 'set_content_date_limits' => $set_content_date_limits );
+					
+					if ( ! empty($_POST['set_role_duration']) || ! empty($_POST['set_content_date_limits']) )
+						$date_entries_gmt = ScoperAdminBulkLib::process_role_date_entries();
+		
+					if ( $duration_limits_enabled && ! empty($_POST['set_role_duration']) ) {
+						$is_limited = ( $date_entries_gmt->start_date_gmt || ( $date_entries_gmt->end_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['start_date_gmt_keep-timestamp'] ) || ! empty( $_POST['end_date_gmt_keep-timestamp'] ) );
+						$args[ 'set_role_duration' ] = (object) array( 'date_limited' => $is_limited, 'start_date_gmt' => $date_entries_gmt->start_date_gmt, 'end_date_gmt' => $date_entries_gmt->end_date_gmt );
+					}
+					
+					if( $content_date_limits_enabled && ! empty($_POST['set_content_date_limits']) ) {
+						$is_limited = ( $date_entries_gmt->content_min_date_gmt || ( $date_entries_gmt->content_max_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['content_min_date_gmt_keep-timestamp'] ) || ! empty( $_POST['content_max_date_gmt_keep-timestamp'] ) );
+						$args[ 'set_content_date_limits' ] = (object) array( 'content_date_limited' => $is_limited, 'content_min_date_gmt' => $date_entries_gmt->content_min_date_gmt, 'content_max_date_gmt' => $date_entries_gmt->content_max_date_gmt );	
+					}
+
 					if ( isset($set_roles[$role_basis]) )
 						foreach ( $set_roles[$role_basis] as $id => $item_roles )
-							$role_assigner->assign_roles($scope, $src_or_tx_name, $id, $item_roles, $role_basis, array('force_flush' => true) );
+							$role_assigner->assign_roles($scope, $src_or_tx_name, $id, $item_roles, $role_basis, $args );
 				} else {
 					foreach ( $set_roles as $id => $item_roles )
 						$role_assigner->restrict_roles($scope, $src_or_tx_name, $id, $item_roles, array('force_flush' => true) );
@@ -267,9 +343,9 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 
 			if ( ! empty($selected_agents[$role_basis]) ) {
 				if ( ROLE_BASIS_USER == $role_basis )
-					$agents_msg []= sprintf(__ngettext("%d user", "%d users", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
+					$agents_msg []= sprintf(_n("%d user", "%d users", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
 				else
-					$agents_msg []= sprintf(__ngettext("%d group", "%d groups", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
+					$agents_msg []= sprintf(_n("%d group", "%d groups", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
 			}
 		} // end foreach role basis
 		
@@ -277,13 +353,13 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 		
 		switch ($mode) {
 			case ROLE_ASSIGNMENT_RS:
-				$roles_msg = sprintf(__ngettext("%d role selection", "%d role selections", count($selected_roles), 'scoper'), count($selected_roles) );
+				$roles_msg = sprintf(_n("%d role selection", "%d role selections", count($selected_roles), 'scoper'), count($selected_roles) );
 				$agents_msg = implode( ", ", $agents_msg );
-				printf(_c('Role Assignments Updated: %1$s for %2$s|n role selections for x users, y groups', 'scoper'), $roles_msg, $agents_msg );
+				printf(_x('Role Assignments Updated: %1$s for %2$s', 'n role selections for x users, y groups', 'scoper'), $roles_msg, $agents_msg );
 			break;
 			
 			case ROLE_RESTRICTION_RS:
-				printf(__ngettext("Role Restrictions Updated: %d setting", "Role Restrictions Updated: %d settings", $modcount, 'scoper'), $modcount );
+				printf(_n("Role Restrictions Updated: %d setting", "Role Restrictions Updated: %d settings", $modcount, 'scoper'), $modcount );
 			break;
 		}
 
@@ -301,10 +377,8 @@ function get_objects_info($object_ids, &$object_names, &$object_status, &$unlist
 	global $wpdb;
 	
 	// buffer titles in case they are translated
-	if ( 'page' == $otype->val ) {
-		$pages = get_pages();
-		$titles = scoper_buffer_property( $pages, 'ID', 'post_title' );
-	}
+	if ( 'page' == $otype->val )
+		$titles = ScoperAdminUI::get_page_titles();
 	
 	$col_id = $src->cols->id;
 	$col_name = $src->cols->name;
@@ -367,8 +441,8 @@ function get_objects_info($object_ids, &$object_names, &$object_status, &$unlist
 	
 	// restore buffered page titles in case they were filtered previously
 	if ( 'page' == $otype->val ) {
-		scoper_restore_property( $listed_objects, $titles, 'ID', 'post_title' );
-		scoper_restore_property( $unlisted_objects, $titles, 'ID', 'post_title' );
+		scoper_restore_property_array( $listed_objects, $titles, 'ID', 'post_title' );
+		scoper_restore_property_array( $unlisted_objects, $titles, 'ID', 'post_title' );
 	}
 
 	return $listed_objects;
@@ -392,7 +466,7 @@ function filter_objects_listing($mode, &$role_settings, $src, $object_type) {
 		$filter_args['force_reqd_caps'] = $reqd_caps;
 	}
 	
-	$qry = "SELECT DISTINCT $src->table.{$src->cols->id} FROM $src->table WHERE 1=1";
+	$qry = "SELECT $src->table.{$src->cols->id} FROM $src->table WHERE 1=1";
 	
 	$filter_args['require_full_object_role'] = true;
 	$qry_flt = apply_filters('objects_request_rs', $qry, $src->name, $object_type, $filter_args);
@@ -607,16 +681,16 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	static $prevtext, $nexttext, $is_administrator, $role_header, $agents_header;
 	if ( empty($prevtext) ) {
 		// buffer prev/next caption for display with each term
-		$prevtext = _c('prev|abbreviated link to previous item', 'scoper');
-		$nexttext = _c('next|abbreviated link to next item', 'scoper');
+		$prevtext = _x('prev', '|abbreviated link to previous item', 'scoper');
+		$nexttext = _x('next', '|abbreviated link to next item', 'scoper');
 
-		$is_administrator = is_administrator_rs($src);
+		$is_administrator = is_administrator_rs($src, 'user');
 	
-		$role_header = __('Role', 'scoper');
+		$role_header = __awp('Role');
 		
 		switch ( $mode ) {
 			case ROLE_ASSIGNMENT_RS:
-				$agents_header = sprintf( _c('Current %s|users or groups', 'scoper'), $agent_caption_plural);
+				$agents_header = sprintf( _x('Current %s', 'users or groups', 'scoper'), $agent_caption_plural);
 			
 			break;
 			case ROLE_RESTRICTION_RS:
@@ -628,6 +702,8 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 		}
 	}
 	
+	global $scoper;
+	
 	// disregard roles that don't apply to this scope
 	foreach ( $role_defs_by_otype as $object_type => $role_defs )
 		foreach ( $role_defs as $role_handle => $role )
@@ -637,13 +713,9 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	// for object scope, assign "private post reader" role, but label it as "post reader" to limit confusion
 	$role_display_name = array();
 	foreach ( $role_defs_by_otype as $role_defs )
-		foreach ( $role_defs as $role_handle => $role ) {
-			if ( (OBJECT_SCOPE_RS == $scope) && ! empty($role->display_name_for_object_ui) )
-				$role_display_name[$role_handle] = $role->display_name_for_object_ui;
-			else
-				$role_display_name[$role_handle] = $role->display_name;
-		}
-	
+		foreach ( array_keys($role_defs) as $role_handle )
+			$role_display_name[$role_handle] = $scoper->role_defs->get_display_name( $role_handle, $scope . '_ui' );
+
 	// display a separate role assignment list for each individual term / object
 	$last_id = -1;
 	$last_name = '';
@@ -678,14 +750,14 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 				
 				$object_names[0] = $root_caption;
 				
-				$status_names = ( 'post' == $src->name ) ? get_post_statuses() : array(); // possible TODO: status display names in source def
+				$status_names = ( 'post' == $src->name ) ? get_post_statuses() : array();
 			}
 		}
 	}
 	
 	$title_roles = __('edit roles', 'scoper');
-	$title_item = sprintf(_c('edit %s|post/page/category/etc.', 'scoper'), strtolower($display_name) );
-	//$title_term = sprintf(_c('edit %s|category/link category/etc', 'scoper'), strtolower($display_name) );
+	$title_item = sprintf(_x('edit %s', 'post/page/category/etc.', 'scoper'), strtolower($display_name) );
+	//$title_term = sprintf(_x('edit %s', 'category/link category/etc', 'scoper'), strtolower($display_name) );
 
 	foreach($all_items as $key => $item) {
 		$id = $item->$col_id;
@@ -732,7 +804,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 			$link_span_close = ( $status_text ) ? "</span>" : '';
 				
 			// link from object name to our "Edit Object Role Assignment" interface
-			$rs_edit_url = SCOPER_ADMIN_URL . "/object_role_edit.php&amp;src_name=$src_or_tx_name&amp;object_type={$otype_or_tx->name}&amp;object_id=$id&amp;object_name=" . urlencode($name);
+			$rs_edit_url = "admin.php?page=rs-object_role_edit&amp;src_name=$src_or_tx_name&amp;object_type={$otype_or_tx->name}&amp;object_id=$id&amp;object_name=" . urlencode($name);
 			$name_text = "$link_span_open<a title='$title_roles' href='$rs_edit_url'>$name</a>$link_span_close";
 			
 			// link from object ID to the object type's default editor, if defined
@@ -826,8 +898,8 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 			echo "<a name='item-$id'></a>"
 			. "<span id='jump-$id' class='rs-termjump alignright'>{$prevlink}{$nextlink}"
 			. $top_link . '</span>'
-			. "<b><a class='rs-link_plain_rev term-tgl' id='tgl-$id' href='javascript:void(0);' onclick=\"$js_call\" title=\"{$otype_or_tx->display_name} $id: $name\">"
-			. "-</a></b> " . $item_path . '<b>' . $name_text . '</b>' . $id_text . ': ';
+			. "<strong><a class='rs-link_plain_rev term-tgl' id='tgl-$id' href='javascript:void(0);' onclick=\"$js_call\" title=\"{$otype_or_tx->display_name} $id: $name\">"
+			. "-</a></strong> " . $item_path . '<strong>' . $name_text . '</strong>' . $id_text . ': ';
 		}
 		
 		echo "</li><li id='roles-$id' class='role-li{$role_class}'>";
@@ -860,7 +932,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 				}
 			}
 			
-			foreach ( $role_defs as $role_handle => $role ) {
+			foreach ( array_keys($role_defs) as $role_handle ) {
 				// Does current user have this role?
 				if ( ( ! $single_item && ( $is_administrator || ! is_array($editable_roles) || ! empty($editable_roles[0][$role_handle]) || ! empty($editable_roles[$id][$role_handle]) ) ) ) {
 					$form_id = ( $id || (ROLE_ASSIGNMENT_RS == $mode) ) ? 'roles' : 'default_restrictions';
@@ -879,7 +951,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 					$label = "<label for='{$ids[$role_handle]}'>" . str_replace(' ', '&nbsp;', $role_display_name[$role_handle]) . "</label>";
 				} else {
 					$checkbox = '';
-					$label = str_replace(' ', '&nbsp;', $role->display_name);
+					$label = str_replace(' ', '&nbsp;', $role_display_name[$role_handle]);
 				}
 
 				$classes = array();
@@ -1012,21 +1084,16 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 		global $scoper;
 		$style = ' class="rs-backwhite"';
 		foreach ( $role_defs_by_otype as $object_type => $roles ) {
-			foreach ( $roles as $role_handle => $role_def ) {
+			foreach ( array_keys($roles) as $role_handle ) {
 				$style = ( ' class="alternate"' == $style ) ? ' class="rs-backwhite"' : ' class="alternate"';
-				
-				if ( (OBJECT_SCOPE_RS == $scope) && isset($role_def->display_name_for_object_ui) )
-					$role_display = $role_def->display_name_for_object_ui;
-				else
-					$role_display = $role_def->display_name;
-				
+
 				// $check_shorcut was displayed in first <td>
 				$id = "rs-Z-{$role_codes[$role_handle]}";
 				$caption = ' <span class="rs-subtext">' . sprintf( __('(all %s)', 'scoper'), strtolower($otype_or_tx->display_name_plural) ) . '</span>'; 
 				$js_call = "scoper_checkroles('$id', '$all_items_ser', '{$role_codes[$role_handle]}');";
 				echo "\n\t<tr $style>"
 					. "<td><input type='checkbox' id='$id' onclick=\"$js_call\" /></td>"
-					. "<td><label for='$id'>$role_display{$caption}</label></td>"
+					. "<td><label for='$id'>" . $scoper->role_defs->get_display_name( $role_handle, $scope . '_ui' ) . "{$caption}</label></td>"
 					. "</tr>";
 			} // end foreach role
 		} // end foreach roledef

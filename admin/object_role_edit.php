@@ -47,7 +47,7 @@ $display_name = $scoper->data_sources->member_property($src_name, 'object_types'
 ?>
 <ul class='rs-list_horiz'>
 <li style='float:right;margin: 1em 0.25em 0.25em 0.25em;'><span class="submit" style="border:none;">
-<input type="submit" name="rs_submit" value="<?php _e('Update &raquo;', 'scoper');?>" />
+<input type="submit" name="rs_submit" class="button-primary" value="<?php _e('Update &raquo;', 'scoper');?>" />
 </span></li>
 </ul>
 
@@ -68,7 +68,7 @@ if ( isset($args['html_inserts']->close->container) )
 ?>
 
 <p class="submit alignright" style="clear: both;border:none">
-<input type="submit" name="rs_submit" value="<?php _e('Update &raquo;', 'scoper');?>" />
+<input type="submit" name="rs_submit" class="button-primary" value="<?php _e('Update &raquo;', 'scoper');?>" />
 </p>
 <p style='clear:both'>
 </p>

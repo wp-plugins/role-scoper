@@ -3,284 +3,372 @@
  */
 /* marker class used to trigger element hiding by javascript */
 .agp_js_hide {
-	padding: default;
+padding: default;
 }
 
 .agp_js_show {
-	padding: default;
+padding: default;
 }
 
 .agp-width97 {
-	margin-left: 1%;
-	margin-right: 1%;
-	padding-right: 1.5%;
-	padding-left: 1.5%;
-	width: 95%;	
+margin-left: 1%;
+margin-right: 1%;
+padding-right: 1.5%;
+padding-left: 1.5%;
+width: 95%;	
 }
 
 .rs-newgroup {
-	border:1px solid #aaa;
-	background-color: #FFFEEB;
-	margin-top: 0.5em;
-	padding: 0 0.5em 0.5em 0.5em;
+border:1px solid #aaa;
+background-color: #FFFEEB;
+margin-top: 0.5em;
+padding: 0 0.5em 0.5em 0.5em;
 }
 
 .agp-vspaced_input {
-	margin-top: 0.2em;
-	margin-bottom: 0.6em;
+margin-top: 0.2em;
+margin-bottom: 0.6em;
 }
 
 .rs-bold {
-	font-weight: bold;	
+font-weight: bold;	
 }
 
 .rs-nobold {
-	font-weight: normal;	
+font-weight: normal;	
+}
+
+.rs-has_start {
+border-left: 1px dotted black;
+}
+
+.rs-has_end {
+border-right: 1px dotted black;
+}
+
+.rs-has_cmin {
+border-bottom: 1px dotted black;
+}
+
+.rs-has_cmax {
+border-top: 1px dotted black;
+}
+
+.rs-date-limit-inputs {
+background-color:#dfd;
+padding-top: 1em;
+border: 1px solid #ccc;
 }
 
 .rs-list_horiz {
-	width: 100%;
-	clear: both;
-	float: left;
-	margin: 0;
-	padding: 0;
+width: 100%;
+clear: both;
+float: left;
+margin: 0;
+padding: 0;
 }
 
 .rs-list_horiz li {
-	list-style: none;
-	float: left;
-  	margin: 0;
+list-style: none;
+float: left;
+margin: 0;
 }
 
+.rs-role_date_entry {
+margin-bottom: 2em;	
+}
+
+.rs-role_date_entry li {
+width: 28em;
+}	
+
+#rs-admin-info {
+width: 90%;	
+margin: 2em 2em 2em 0; 
+}
+
+#rs-admin-info tr {
+margin: 1px;
+}
+
+#rs-admin-info td {
+background-color: white;
+font-size: 1.0em;
+}
+
+#rs-admin-info th {
+font-weight: normal;
+font-size: 1.1em;
+color: white;
+background-color: black;
+}
 
 .rs-widefat {
-	width: 100%;
+width: 100%;
 }
 
 .rs-widefat td, .rs-widefat th {
-	padding: 0.3em 0.3em;
-	background-color: white;
+padding: 0.3em 0.3em;
+background-color: white;
 }
 
 .rs-widefat tr {
-	background-color: white;
+background-color: white;
 }
 
 .rs-widefat th {
-	text-align: left;
-	background-color: black;
-	color: white;
+text-align: left;
+background-color: black;
+color: white;
 }
 
 .rs-form-table input {
-	vertical-align: text-bottom;
+vertical-align: text-bottom;
 }
 
 .rs-brown, .rs-brown a, .rs-brown a:link, .rs-brown a:visited {
-	color: #840;	
+color: #840;	
 }
 
 .rs-gray, .rs-gray a, .rs-gray a:link, .rs-gray a:visited {
-	color: #888;	
+color: #888;	
 }
 
 .rs-lgray, .rs-lgray a {
-	color: #bbb;	
+color: #bbb;	
 }
 
 .rs-blue, .rs-blue a, .rs-blue a:link, .rs-blue a:visited {
-	color: blue;	
+color: blue;	
 }
 
 .rs-green, .rs-green a, .rs-green a:link, .rs-green a:visited {
-	color: #0a0;	
+color: #0a0;	
 }
 
 .rs-role-tbl th a {
-	color: #bbb;	
-	text-decoration: none;
+color: #bbb;	
+text-decoration: none;
 }
 
 .rs-role-tbl th a:hover {
-	color: yellow;
+color: yellow;
 }
 
 a.rs-link_plain {
-	text-decoration: none;
-	border-bottom: none;
-	padding: 0.1em 0.1em;
-	white-space:nowrap;
+text-decoration: none;
+border-bottom: none;
+padding: 0.1em 0.1em;
+white-space:nowrap;
 }
 
 a.rs-link_plain:hover {
-	text-decoration: underline;
-	border-bottom: none;
-	padding: 0.1em 0.1em;
-	color: #00aa00;
+text-decoration: underline;
+border-bottom: none;
+padding: 0.1em 0.1em;
+color: #00aa00;
 }
 
 a.rs-link_plain_rev {
-	text-decoration: none;
-	border-bottom: none;
-	padding: 0.1em 0.1em;
-	color: white;
-	white-space:nowrap;
+text-decoration: none;
+border-bottom: none;
+padding: 0.1em 0.1em;
+color: white;
+white-space:nowrap;
 }
 
 a.rs-link_plain_rev:hover {
-	text-decoration: underline;
-	border-bottom: none;
-	padding: 0.1em 0.1em;
-	color: yellow;
+text-decoration: underline;
+border-bottom: none;
+padding: 0.1em 0.1em;
+color: yellow;
+}
+
+.rs-custom_link {
+text-decoration: none;	
 }
 
 .rs-termjump a {
-	color: white;
-	margin: 0.2em;
+color: white;
+margin: 0.2em;
 }
 
 a.rs-dlink_rev {
-	text-decoration: none;
-	border-bottom: 1px solid white;
-	color: white;
-	margin: 0.2em;
-	white-space:nowrap;
+text-decoration: none;
+border-bottom: 1px solid white;
+color: white;
+margin: 0.2em;
+white-space:nowrap;
 }
 
 a.rs-dlink_rev:hover {
-	text-decoration: none;
-	border-bottom: 1px solid white;
-	color: #00ee00;
-	margin: 0.2em;
+text-decoration: none;
+border-bottom: 1px solid white;
+color: #00ee00;
+margin: 0.2em;
 }
 
 .rs-dbx_headline_populated {
-	font-weight: bold;
+font-weight: bold;
 }
 
 /* defines background highlighting for post UI if scoped roles assigned */
 .rs-scoped_post {
-	background-color: #FFFEEB;
-	border-top: 2px solid #2583AD;
+background-color: #FFFEEB;
+border-top: 2px solid #2583AD;
 }
 
 .rs-check {
-	vertical-align: text-bottom;
-	margin-right: 0.2em;
+vertical-align: text-bottom;
+margin-right: 0.2em;
+}
+
+.rs-backtan {
+background-color: #FFFEEB;
+}
+
+.rs-backgray {
+background-color: #E8E8E8;
+}
+
+.rs-backgreen {
+background-color: #E8FFE8;
 }
 
 .rs-options {
-	background-color: #FFFEEB;
-	padding: 0 0.5em 1em 0.5em;
-	border: 1px solid #ccc;
-	margin-top:0;
+padding: 0 0.5em 1em 0.5em;
+border: 1px solid #ccc;
+margin-top:0;
+}
+
+.rs-agents-spacer-ie {
+margin: 0.5em 0 0.5em 0;
+padding: 0;
+}
+
+.rs-agents-ul {
+margin: 0.1em 0 0 0;
+padding-top: 0.2em;	
+}
+
+.rs-agents-ul li {
+margin: 0;
+padding: 0;
 }
 
 .rs-agents {
-	background-color: #FFFEEB;
-	padding: 0 0 0.2em 0.3em;
-	border: 1px solid #ccc;
-	margin-top:0;
+background-color: #FFFEEB;
+padding: 0 0 0.2em 0.3em;
+border: 1px solid #ccc;
+margin-top:0;
 }
 
 .rs-agents input {
-	vertical-align: text-bottom;
+vertical-align: text-bottom;
 }
 
 .agp-agent {
-	padding: 0.2em 0.5em 0.2em 0.5em;
+padding: 0.2em 0.5em 0.2em 0.5em;
 }
 
+.agp-unselected_agent {
+border: none;	
+}
+
+.agp-selected_agent {
+border-left: 1px solid #ccc;
+border-right: 1px solid #ccc;
+border-top: 1px solid #ccc;
+}
+	
 .agp-selected_agent a{
-	color: black;
-	text-decoration: none;
-	font-weight: bold;
+color: black;
+text-decoration: none;
+font-weight: bold;
 }
 
 .agp-unselected_agent a{
-	color: #00019b;
-	text-decoration: default;
-	font-weight: normal;
+color: #00019b;
+text-decoration: default;
+font-weight: normal;
 }
 
 .agp-selected_agent_colorized {
-	background-color: #FFFEEB;
-	border: 1px solid #ccc;
-	border-bottom: 1px solid #FFFEEB;
+background-color: #FFFEEB;
+border-bottom: 1px solid #FFFEEB;
 }
 
 .agp-unselected_agent_colorized {
-	background: none;
-	border: none;
+background: none;
 }
 
 .rs-agents_caption {
-	margin: 0 0 0 0.75em;
-	clear:both;
+margin: 0 0 0 0.75em;
+clear:both;
 }
 
 .rs-agents_checkbox {
-	margin-left: 0;
+margin-left: 0;
 }
 
 .rs-agents_filter {
-	margin: 0 0 0.5em 0;
+margin: 0 0 0.5em 0;
 }
 
 .rs-via-b {
-	color: blue;	
+color: blue;	
 }
 
 .rs-via-r {
-	color: #666;	
+color: #a0a;	
 }
 
 .rs-via-s {
-	color: green;	
+color: green;	
 }
 
 .rs-agents_list_auto {
-	margin: 0.5em 0 1em 0;
-	padding: 0;
-	clear: both;
-	float: left;
-	width: 100%;
+margin: 0.5em 0 1em 0;
+padding: 0;
+clear: both;
+float: left;
+width: 100%;
 }
 .rs-agents_list_auto li { 
-	list-style: none;
-  	float: left;
-	margin: 0.3em 1.5em 0.3em 0;
+list-style: none;
+  float: left;
+margin: 0.3em 1.5em 0.3em 0;
 }
 
 .rs-agents_list_auto input {
-	margin: 0;
-	font-size: auto;
-	padding: 0;
+margin: 0;
+font-size: auto;
+padding: 0;
 }
  
 .rs-agents_emsized {
-	clear: both;
-	width: 100%;
+clear: both;
+width: 100%;
 }
  
 .rs-agents_emsized ul {
-	margin: 0 0 1em 0;
-	padding: 0;
-	clear: both;
-	float: left;
-	width: 100%;
+margin: 0 0 1em 0;
+padding: 0;
+clear: both;
+float: left;
+width: 100%;
 }
 
 .rs-agents_emsized ul li {
-	margin: 0.3em 0 0.3em 0;
-	list-style: none;
-  	float: left;
+margin: 0.3em 0 0.3em 0;
+list-style: none;
+  float: left;
 }
 
 .rs-agents_emsized ul input {
-	margin: 0;
-	font-size: auto;
-	padding: 0;
+margin: 0;
+font-size: auto;
+padding: 0;
 }
 
 .rs-agents_list_7 li { width: 7em; }
@@ -335,293 +423,315 @@ a.rs-dlink_rev:hover {
 
 
 #userprofile_groupsdiv_rs fieldset {
-	width: 90%;
+width: 90%;
 }
 
 #userprofile_groupsdiv_rs fieldset input{
-	width: auto;
+width: auto;
 }
 
 
 .rs-subtext {
-	color: #393;
+color: #393;
 }
 
 .rs-warning {
-	color: #b00;
+color: #b00;
 }
 
 .rs-agents_key li {
-	margin-bottom: 0.5em;
+margin-bottom: 0.5em;
 }
 
 .rs-keytext {
-	margin-left: 0.2em;
-	margin-right: 0.75em;
+margin-left: 0.2em;
+margin-right: 0.75em;
 }
 
 .rs-optiontable {
-	width: 100%;
+width: 100%;
 }
 
 #rs-admin_table tr, #rs-realm_table tr, #realm_adjustments tr, #rs-advanced_table tr {
-	background-color: #CFEBF7;
-	border-bottom: 4px solid #FFFEEB;
+border-bottom: 4px solid #FFFEEB;
 }
 
 #rs-admin_table tr td, #rs-realm_table tr td, #realm_adjustments tr td, #rs-advanced_table tr td {
-	padding: 1em 0 1em 0;
+padding: 1em 0 1em 0;
 }
 
 #rs-admin_table th, #rs-realm_table th, #realm_adjustments th, #rs-advanced_table th {
-	font-weight: bold;
+font-weight: bold;
 }
 
 .rs-optiontable td, .rs-optiontable th {
-	padding: .5em;
+padding: .5em;
 }
 
 .rs-optiontable th {
-	text-align: right;
-	font-size: 1.3em;
-	font-weight: normal;
+text-align: right;
+font-size: 1.3em;
+font-weight: normal;
+}
+
+.rs-form-table tr th span a {
+color: #333;
+background-color: #CFEBF7;
+}
+
+.rs-form-table tr th, .rs-form-table tr td {
+background-color: #CFEBF7;
+border-bottom: 4px solid #FFFEEB;
+}
+
+.rs-role-tbl tr th {
+font-size: 1.1em;
+}
+
+.rs-role-tbl tr th a {
+background-color: black;
 }
 
 
 /* used for object_type / section disable in realm.php */
 .rs-adminlist {
-	margin: 0.2em 0 0 0;
-	padding: 0.2em;
-	float:left;
+margin: 0.2em 0 0 0;
+padding: 0.2em;
+float:left;
 }
 
 .rs-adminlist li {
-	list-style: none;
-	padding-left: 0.4em;
-	margin-bottom: 0.8em;
-	border: 1px solid #ccc;
-	background-color: #eee;
+list-style: none;
+padding-left: 0.4em;
+margin-bottom: 0.8em;
+border: 1px solid #ccc;
+background-color: #eee;
 }
 
 .rs-adminlist ul {
-	margin-top: 0.15em;
-	padding-left: 0.4em;
-	padding-right: 0.6em;
+margin-top: 0.15em;
+padding-left: 0.4em;
+padding-right: 0.6em;
 }
 
 .rs-adminlist ul li {
-	list-style: none;
-	padding-left: 0.4em;
-	border: none;
-	background-color: white;
+list-style: none;
+padding-left: 0.4em;
+border: none;
+background-color: white;
 }
 
 
 .rs-textentries {
-	margin-top: 0.15em;
-	padding-left: 1.2em;
+margin-top: 0.15em;
+padding-left: 1.2em;
 }
 
 .rs-textentries li {
-	list-style: none;
-	padding-left: 0.4em;
-	border: 1px solid #ccc;
-	background-color: #f8f8f8;
+list-style: none;
+padding-left: 0.4em;
+border: 1px solid #ccc;
+background-color: #f8f8f8;
 }
 
 .rs-textentries input {
-	margin-top: 0.15em;
-	background-color: white;
-	width: 100%;
+margin-top: 0.15em;
+background-color: white;
+width: 100%;
 }
 
 .rs-textentries ul {
-	margin-top: 0;
-	padding-left: 1.2em;
+margin-top: 0;
+padding-left: 1.2em;
 }
 
 .rs-textentries ul li {
-	list-style: none;
-	border: none;
-	background-color: #f8f8f8;
+list-style: none;
+border: none;
+background-color: #f8f8f8;
 }
 
 .rs-vtight input {
-	margin-top: 0.15em;
+margin-top: 0.15em;
 }
 
 .rs-cap_list {
-	padding-left: 0.4em;
+padding-left: 0.4em;
 }
 
 .rs-cap_list li {
-	list-style: none;
-	float: left;
-	width: 20em;
-	height: 2.5em;
-	margin-left: 0.2em;
+list-style: none;
+float: left;
+width: 20em;
+height: 2.5em;
+margin-left: 0.2em;
 }
 
 .rs-backwhite {
-	background-color: white;	
+background-color: white;	
 }
 
 .rs-backylw, .rs-backylw td {
-	background-color: #FFFBCF;
+background-color: #FFFBCF;
 }
 
 .rs-white, .rs-white a, .rs-white a:link {
-	color: white;
+color: white;
 }
 
 .rs-termlist {
-	margin: 0;
-	padding: 0 0 0.4em 0.4em;
-	clear: both;
+margin: 0;
+padding: 0 0 0.4em 0.4em;
+clear: both;
 }
 
 .rs-termlist li {
-	list-style: none;
-	padding: 0 0 0.5em 0.3em;
-	margin: 0;
-	clear: both;
-	background-color: #14568A;
-	color: white;
-	border-left: 1px dotted white;
+list-style: none;
+padding: 0 0 0.5em 0.3em;
+margin: 0;
+clear: both;
+background-color: #14568A;
+color: white;
+border-left: 1px dotted white;
 }
 
 .rs-termlist_linkspacer {
-	color: #14568A;
-	padding: 0.2em;
+color: #14568A;
+padding: 0.2em;
 }
 
 .rs-termlist li table {
-	color: black;
-	padding: 0.3em;
-	border-bottom: none; /*1px dotted white;*/
+color: black;
+padding: 0.3em;
+border-bottom: none; /*1px dotted white;*/
 }
 
 .rs-termlist li table td, .rs-termlist li table th {
-	padding-left: 0.5em;
-	padding-right: 0.5em;
+padding-left: 0.5em;
+padding-right: 0.5em;
 }
 
 .rs-objlist {
-	margin: 0;
-	padding: 0 0 0.4em 0.4em;
-	clear: both;
+margin: 0;
+padding: 0 0 0.4em 0.4em;
+clear: both;
 }
 
 .rs-objlist li {
-	list-style: none;
-	padding: 0 0 0.5em 0.3em;
-	margin: 0;
-	clear: both;
-	background-color: #CFEBF7;
-	border-left: 1px dotted #aaa;
+list-style: none;
+padding: 0 0 0.5em 0.3em;
+margin: 0;
+clear: both;
+background-color: #CFEBF7;
+border-left: 1px dotted #aaa;
 }
 
 .rs-objlist_linkspacer {
-	color: #CFEBF7;
-	padding: 0.2em;
+color: #CFEBF7;
+padding: 0.2em;
 }
 
 .rs-objlist li table {
-	padding: 0.3em;
-	border-bottom: none; /*1px dotted white;*/
+padding: 0.3em;
+border-bottom: none; /*1px dotted white;*/
 }
 
 .rs-objlist li table td, .rs-objlist li table th {
-	padding-left: 0.5em;
-	padding-right: 0.5em;
+padding-left: 0.5em;
+padding-right: 0.5em;
 }
 
 .rs-objlist li table td a {
-	color: normal;
+color: normal;
 }
 
 .rs-objlist a {
-	color: #00A;
+color: #00A;
 }
 
 .rs-objlistkey a {
-	color: #00A;
+color: #00A;
 }
 
 .rs-tightcol {
-	width: 2%;
+width: 2%;
 }
 
 .rs-hint {
-	margin-top: 0.2em;
-	/*color: #393*/
+margin-top: 0.2em;
+/*color: #393*/
 }
 
 .rs-optionhint {
-	margin-top: 0.5em;
+margin-top: 0.5em;
 }
 
 .rs-small {
-	font-size: 0.9em;
+font-size: 0.9em;
 }
 
 .no-rol-hide {
-	display: none;
+display: none;
 }
 
 .no-rol-li-hide {
-	display: none;
+display: none;
 }
 
 .rs-member_table {
-	background-color: white;
+background-color: white;
 }
 
 .rs-member_table tr td{
-	padding: 0.5em 0 0.5em 0;
+padding: 0.5em 0 0.5em 0;
 }
 
 .rs-notes {
-	margin-top: 0.2em;
-	list-style-type: circle;
+margin-top: 0.2em;
+list-style-type: circle;
 }
 
 .rs-notes li {
-	margin-bottom: 1em;
-	margin-left: 1.5em;
+margin-bottom: 1em;
+margin-left: 1.5em;
 }
 .rs-instructions ol {
-	list-style-type: decimal;
+list-style-type: decimal;
 }
 .rs-instructions ol li{
-	margin: 1em 0 1em 2em;
+margin: 1em 0 1em 2em;
 }
 
 label.rs-objrole-label {
-	color: black;
+color: black;
 }
 
 .rs-ver_msg {
-	font-size: 0.7em;
+font-size: 0.7em;
 }
 
 .rs-group_members {
-	background-color: #eee;
-	margin: 2em 0 2em 0;
-	padding: 0 0.5em 0.5em 0.5em;
-	border: 1px solid black;
+background-color: #eee;
+margin: 2em 0 2em 0;
+padding: 0 0.5em 0.5em 0.5em;
+border: 1px solid black;
 }
 
 .rs-group_admins {
-	background-color: #fee;
-	margin: 2em 0 2em 0;
-	padding: 0 0.5em 0.5em 0.5em;
-	border: 1px solid black;
+background-color: #fee;
+margin: 2em 0 2em 0;
+padding: 0 0.5em 0.5em 0.5em;
+border: 1px solid black;
 }
 
 .rs-scoped_role_profile {
-	background-color: #fff;
-	margin: 2em 0 2em 0;
-	padding: 0 0.5em 0 0.5em;
-	border: 1px solid black;
+background-color: #fff;
+margin: 2em 0 2em 0;
+padding: 0 0.5em 0 0.5em;
+border: 1px solid black;
+}
+
+.rs-h3text {
+font-size: 1.5em;
+font-weight: bold;
 }

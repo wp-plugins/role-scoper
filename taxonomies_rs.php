@@ -10,9 +10,26 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 	function WP_Scoped_Taxonomies( &$data_sources, $arr_use_wp_taxonomies ) {
 		$this->data_sources =& $data_sources;
 		
+		if ( ! is_array( $arr_use_wp_taxonomies ) )
+			$arr_use_wp_taxonomies = array();
+			
+		// don't allow category or link category to be disabled via enable_wp_taxonomies option
+		$arr_use_wp_taxonomies = array_merge( $arr_use_wp_taxonomies, array( 'category' => 1, 'link_category' => 1 ) );
+
 		// Detect and support additional WP taxonomies (just require activation via Role Scoper options panel)
 		if ( ! empty($arr_use_wp_taxonomies) ) {
 			global $wp_taxonomies;
+			
+			if ( defined( 'CUSTAX_DB_VERSION' ) ) {	// Extra support for Custom Taxonomies plugin
+				global $wpdb;
+				if ( ! empty($wpdb->custom_taxonomies) ) {
+					$custom_taxonomies = array();
+					$results = $wpdb->get_results( "SELECT * FROM $wpdb->custom_taxonomies" );  // * to support possible future columns
+					foreach ( $results as $row )
+						$custom_taxonomies[$row->slug] = $row;
+				}
+			} else
+				$custom_taxonomies = array();
 			
 			foreach ( $wp_taxonomies as $taxonomy => $wp_tax ) {
 				// taxonomy must be approved for scoping and have a Scoper-defined object type
@@ -25,14 +42,24 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 					// create taxonomies definition if necessary (additional properties will be set later)
 					$this->members[$taxonomy] = (object) array(
 						'name' => $taxonomy,								
-						'uses_standard_schema' => 1,	'requires_term' => 0,		'autodetected_wp_taxonomy' => 1,
-						'display_name' => ucwords( __( str_replace('_', ' ', $taxonomy) ) ),	
+						'uses_standard_schema' => 1,	'autodetected_wp_taxonomy' => 1,
 						'hierarchical' => $wp_tax->hierarchical,
-						'object_source' => $src_name,
-						
-						//TODO: need wp_taxonomies to provide a plural display name
-						'display_name_plural' => ucwords( __( str_replace('_', ' ', $taxonomy) ) )				
+						'object_source' => $src_name
 					);
+					
+					$this->members[$taxonomy]->requires_term = $wp_tax->hierarchical;	// default all hierarchical taxonomies to strict, non-hierarchical to non-strict
+
+					if ( isset( $custom_taxonomies[$taxonomy] ) && ! empty( $custom_taxonomies[$taxonomy]->plural ) ) {
+						$this->members[$taxonomy]->display_name = $custom_taxonomies[$taxonomy]->name;
+						$this->members[$taxonomy]->display_name_plural = $custom_taxonomies[$taxonomy]->plural;
+						
+						// possible future extension to Custom Taxonomies plugin: ability to specify "required" property apart from hierarchical property (and enforce it in Edit Forms)
+						if ( isset( $custom_taxonomies[$taxonomy]->required ) )
+							$this->members[$taxonomy]->requires_term = $custom_taxonomies[$taxonomy]->required;
+					} else {
+						$this->members[$taxonomy]->display_name = ucwords( __( preg_replace('/[_-]/', ' ', $taxonomy) ) );
+						$this->members[$taxonomy]->display_name_plural = $this->members[$taxonomy]->display_name;			
+					}
 					
 					if ( ! in_array($taxonomy, $data_sources->member_property($src_name, 'uses_taxonomies') ) ) {
 						$obj_src =& $data_sources->get_ref($src_name);
@@ -104,7 +131,13 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 			$tx->cols->term2obj_oid = 'object_id';
 			$tx->cols->term2obj_tid = 'term_taxonomy_id';
 			
-			$tx->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
+			if ( 'category' == $tx->name )
+				$tx->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
+			else {
+				$tx->edit_url = "edit-tags.php?action=edit&taxonomy={$tx->name}&tag_ID=%d";
+				$tx->uri_vars = (object) array( 'id' => $tx->name );
+				$tx->http_post_vars = (object) array( 'id' => 'term_ID', 'parent' => 'parent' );	
+			}
 		}
 
 		// term2obj table: add prefix
@@ -181,7 +214,6 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 	function standard_query( $taxonomy, $cols, $object_id, $terms_only ) {
 		global $wpdb;
 		
-		$where = "AND tt.taxonomy = '$taxonomy'";
 		$join = $orderby = '';
 		
 		if ( $object_id || ! $terms_only ) {
@@ -207,7 +239,9 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 				$join .= " INNER JOIN $wpdb->terms AS t ON t.term_id = tt.term_id";
 		}
 
-		return "SELECT DISTINCT $qcols FROM $wpdb->term_taxonomy AS tt $join WHERE 1=1 $where $orderby";
+		$distinct = ( $join ) ? 'DISTINCT ' : '';
+
+		return "SELECT {$distinct}$qcols FROM $wpdb->term_taxonomy AS tt $join WHERE 1=1 AND tt.taxonomy = '$taxonomy' $orderby";
 	}
 	
 	// taxonomy query variables for use with objects filtering or term id filtering

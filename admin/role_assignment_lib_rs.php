@@ -20,14 +20,15 @@ class ScoperRoleAssignments {
 				break;
 		}
 		
-		$qry = "SELECT $col_ug_id, role_name FROM $wpdb->user2role2object_rs"
+		$qry = "SELECT assignment_id, $col_ug_id, role_name, date_limited, start_date_gmt, end_date_gmt, content_date_limited, content_min_date_gmt, content_max_date_gmt FROM $wpdb->user2role2object_rs"
 			. " WHERE role_type = '$role_type' AND scope = 'blog' $ug_clause";
-						
+
 		$results = scoper_get_results($qry);
 		
 		foreach($results as $blogrole) {
 			$role_handle = $role_type . '_' . $blogrole->role_name;
-			$blog_roles[$role_handle] [$blogrole->$col_ug_id] = 1;
+			$blog_roles[$role_handle] [$blogrole->$col_ug_id] = (array) $blogrole;
+			$blog_roles[$role_handle] [$blogrole->$col_ug_id]['assign_for'] = ASSIGN_FOR_ENTITY_RS;
 		}
 		
 		return $blog_roles;
@@ -69,14 +70,14 @@ class ScoperRoleAssignments {
 		} else
 			$role_clause = '';
 		
-		$qry = "SELECT $col_ug_id, obj_or_term_id, role_name, assign_for, assignment_id, inherited_from FROM $wpdb->user2role2object_rs AS uro "
+		$qry = "SELECT $col_ug_id, obj_or_term_id, role_name, assign_for, assignment_id, inherited_from, date_limited, start_date_gmt, end_date_gmt, content_date_limited, content_min_date_gmt, content_max_date_gmt FROM $wpdb->user2role2object_rs AS uro "
 			. "$join WHERE role_type = '$SCOPER_ROLE_TYPE' $role_clause AND scope = '$scope' AND src_or_tx_name = '$src_or_tx_name' $id_clause $ug_clause";
 
 		$results = scoper_get_results($qry);
 		
 		foreach($results as $role) {
 			$role_handle = SCOPER_ROLE_TYPE . '_' . $role->role_name;
-			$roles [$role->obj_or_term_id] [$role_handle] [$role->$col_ug_id] = array( 'assign_for' => $role->assign_for, 'inherited_from' => $role->inherited_from, 'assignment_id' => $role->assignment_id );
+			$roles [$role->obj_or_term_id] [$role_handle] [$role->$col_ug_id] = (array) $role;	
 		}
 		
 		return $roles;
@@ -94,6 +95,9 @@ class ScoperRoleAssignments {
 		
 		$roles = ScoperRoleAssignments::get_assigned_roles($scope, $role_basis, $src_or_tx_name, $args);
 		
+		$role_duration_enabled = scoper_get_option( 'role_duration_limits' );
+		$content_date_limits_enabled = scoper_get_option ( 'content_date_limits' );
+		
 		if ( ! isset($roles[$obj_or_term_id]) )
 			return array();
 			
@@ -107,6 +111,18 @@ class ScoperRoleAssignments {
 				$assignments[$role_handle] ['assigned'] [$ug_id] ['assign_for'] = $assign_for;
 				$assignments[$role_handle] ['assigned'] [$ug_id] ['assignment_id'] = $ass_id;
 
+				if ( $role_duration_enabled && $ass['date_limited'] ) {
+					$assignments[$role_handle] ['assigned'] [$ug_id] ['date_limited'] = $ass['date_limited'];
+					$assignments[$role_handle] ['assigned'] [$ug_id] ['start_date_gmt'] = $ass['start_date_gmt'];
+					$assignments[$role_handle] ['assigned'] [$ug_id] ['end_date_gmt'] = $ass['end_date_gmt'];			
+				}
+				
+				if ( $content_date_limits_enabled && $ass['content_date_limited'] ) {
+					$assignments[$role_handle] ['assigned'] [$ug_id] ['content_date_limited'] = $ass['content_date_limited'];
+					$assignments[$role_handle] ['assigned'] [$ug_id] ['content_min_date_gmt'] = $ass['content_min_date_gmt'];
+					$assignments[$role_handle] ['assigned'] [$ug_id] ['content_max_date_gmt'] = $ass['content_max_date_gmt'];			
+				}
+					
 				// also save the calling function some work by returning each flavor of assignment as an array keyed by user/group id
 				if ( ('children' == $assign_for) || ('both' == $assign_for) )
 					$assignments[$role_handle] ['children'] [$ug_id] = $ass_id;

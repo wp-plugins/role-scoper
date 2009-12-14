@@ -32,9 +32,9 @@ class ScoperAdminUsers {
 				
 			// query for group membership without cache because otherwise we'll clutter groups col with WP Role Metagroup display  
 			if ( $group_ids = WP_Scoped_User::get_groups_for_user($id, array('no_cache' => true) ) ) {
-
+				
 				$group_names = array();
-				foreach ( array_keys($group_ids) as $group_id ) {
+				foreach ( $group_ids as $group_id ) {
 					foreach ( $all_groups as $group ) {
 						if ( $group_id == $group->ID ) {
 							$group_names [$group->display_name] = $group_id;
@@ -47,8 +47,8 @@ class ScoperAdminUsers {
 					uksort($group_names, "strnatcasecmp");
 
 					foreach( $group_names as $name => $id )
-						$group_names[$name] = "<a href='" . SCOPER_ADMIN_URL . "/groups.php&mode=edit&id=$id'>$name</a>";
-
+						$group_names[$name] = "<a href='" . "admin.php?page=rs-groups&amp;mode=edit&amp;id=$id'>$name</a>";
+						
 					return implode(", ", $group_names);
 				}
 			}

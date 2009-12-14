@@ -4,18 +4,20 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
+require_once( SCOPER_ABSPATH . '/lib/agapetry_wp_admin_lib.php' ); // function awp_remote_fopen()
+	
 // this version update function derived from cforms by Oliver Seidel
 function scoper_new_version_notice() {
 	$rechecked = false;
 	$check_minutes = scoper_get_option('version_check_minutes');
 	$last_check = scoper_get_option('last_version_update_check');
-	if ( ( (time() - $last_check) > ( $check_minutes * 60 ) ) || ( ! $vcheck = get_option('scoper_version_info') ) ) {
+	if ( ( (time() - $last_check) > ( $check_minutes * 60 ) ) || ( ! $vcheck = get_site_option('scoper_version_info') ) ) {
 		$vcheck = wp_remote_fopen( 'http://agapetry.net/downloads/role-scoper_version.chk' );
 		$rechecked = true;
 		update_option( 'scoper_version_info', $vcheck );
 	}
 
-	if ( ( (time() - $last_check) > ( $check_minutes * 60 ) ) || ( ! $vcheck_ext = get_option('scoper_extension_info') ) ) {
+	if ( ( (time() - $last_check) > ( $check_minutes * 60 ) ) || ( ! $vcheck_ext = get_site_option('scoper_extension_info') ) ) {
 		$vcheck_ext = awp_remote_fopen( 'http://agapetry.net/downloads/role-scoper-extensions.chk', 5 );
 		$rechecked = true;
 		update_option( 'scoper_extension_info', $vcheck_ext );
@@ -31,11 +33,11 @@ function scoper_new_version_notice() {
 			
 		if( ( version_compare( strval($theVersion), strval(SCOPER_VERSION), '>' ) == 1 ) )
 		{
-			$msg = '<b>' . sprintf(__( "A new version of Role Scoper is available (%s)", "scoper" ), $theVersion);
+			$msg = '<strong>' . sprintf(__( "A new version of Role Scoper is available (%s)", "scoper" ), $theVersion);
 
-			if ( $rechecked || ( ! $vcheck = get_option('scoper_version_message') ) ) {
+			if ( $rechecked || ( ! $vcheck = get_site_option('scoper_version_message') ) ) {
 				$vcheck = awp_remote_fopen( 'http://agapetry.net/downloads/role-scoper.chk', 5 );
-				update_option( 'scoper_version_message', $vcheck );
+				add_site_option( 'scoper_version_message', $vcheck );
 			}
 			
 			if ( $vcheck ) {
@@ -48,7 +50,7 @@ function scoper_new_version_notice() {
 				$theMessage = str_replace( "'", '&#39;', $theMessage );	// Despite this precaution, don't include apostrophes in .chk file because older RS versions (< 1.0.0-rc9) will choke on it.
 				$theMessage = str_replace( '"', '&quot;', $theMessage );
 				
-				$msg .= '</b><small>' . $theMessage . '</small>';
+				$msg .= '</strong><small>' . $theMessage . '</small>';
 			}
 
 			if ( strpos( $msg, '<!--more-->' ) ) {
@@ -63,7 +65,7 @@ function scoper_new_version_notice() {
 
 			if ( version_compare( strval($theVersion), '1.0.0', '>=' ) ) {
 				$url = awp_plugin_update_url( SCOPER_BASENAME );
-				$msg .= '&nbsp;&nbsp;&nbsp;<a href="' . $url . '">' . __('Upgrade Automatically', 'scoper') . '</a>';
+				$msg .= '&nbsp;&nbsp;&nbsp;<a href="' . $url . '">' . __awp('Upgrade Automatically') . '</a>';
 			} else
 				$msg .= '&nbsp;&nbsp;&nbsp;<a href="http://agapetry.net/downloads/role-scoper_current" target="_blank">' . __('Download for manual install', 'scoper') . '</a>';
 
@@ -110,7 +112,7 @@ function scoper_new_version_notice() {
 				foreach ( $plugin_titles as $name => $title )
 					$plugin_array []= "<a href=\"{$plugin_links[$name]}\">$title</a>";
 
-				$msg = '<b>' . sprintf(__( "Role Scoper Extensions are available for the following plugins: %s", "scoper" ), implode(', ', $plugin_array) ) . '</b><br />';
+				$msg = '<strong>' . sprintf(__( "Role Scoper Extensions are available for the following plugins: %s", "scoper" ), implode(', ', $plugin_array) ) . '</strong><br />';
 
 				// slick method copied from NextGEN Gallery plugin
 				add_action('admin_notices', create_function('', 'echo \'<div id="rs-ext_ver_msg" class="plugin-update rs-ver_msg fade"><p>' . $msg . '</p></div>\';'));

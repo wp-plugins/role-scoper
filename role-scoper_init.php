@@ -4,126 +4,122 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 require_once('hardway/cache-persistent.php');
 
+if ( is_admin() )
+	require_once( 'admin/admin-init_rs.php' );
 
+if ( IS_MU_RS )
+	require_once( 'mu-init_rs.php' );
+	
+// If an htaccess regeneration is triggered by somebody else, insert our rules (normal non-MU installations).
+add_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
+
+// some options can be overridden by constant definition
+add_filter( 'site_options_rs', 'scoper_apply_constants', 99 );
+add_filter( 'options_rs', 'scoper_apply_constants', 99 );
+	
+	
 // htaccess directive intercepts direct access to uploaded files, converts to WP call with custom args to be caught by subsequent parse_query filter
 // parse_query filter will return content only if user can read a containing post/page
-if ( ! defined('DISABLE_ATTACHMENT_FILTERING') )
-	add_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
-	
+function scoper_mod_rewrite_rules ( $rules ) {
+	if ( ! scoper_get_option( 'file_filtering' ) )
+		return $rules;
 
+	global $scoper;
+	if ( ! isset($scoper) || is_null($scoper) )
+		scoper_init();
+	
+	require_once( 'rewrite-rules_rs.php' );
+
+	if ( IS_MU_RS ) {
+		require_once( 'rewrite-mu_rs.php' );
+		$rules = ScoperRewriteMU::insert_site_rules( $rules );
+				
+	} else {
+		$rs_rules = ScoperRewrite::build_site_rules();
+		
+		if ( $pos_endif = strpos( $rules, '</IfModule>' ) )
+			$rules = substr( $rules, 0, $pos_endif ) . $rs_rules . substr($rules, $pos_endif);
+		else
+			$rules .= $rs_rules;
+	}
+
+	return $rules;
+}
+
+function scoper_flush_site_rules() {
+	require_once( 'rewrite-rules_rs.php' );
+	ScoperRewrite::update_site_rules( true );
+}
+
+function scoper_clear_site_rules() {
+	require_once( 'rewrite-rules_rs.php' );
+	remove_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
+	ScoperRewrite::update_site_rules( false );
+}
+
+function scoper_flush_file_rules() {
+	require_once( 'rewrite-rules_rs.php' );
+	ScoperRewrite::update_blog_file_rules();
+}
+
+
+function scoper_clear_all_file_rules() {
+	if ( IS_MU_RS ) {
+		require_once( 'rewrite-mu_rs.php' );
+		ScoperRewriteMU::clear_all_file_rules();
+	} else {
+		require_once( 'rewrite-rules_rs.php' );
+		ScoperRewrite::update_blog_file_rules( false );
+	} 
+}
+
+
+// forces content rules to be regenerated in every MU blog at next access
+function scoper_expire_file_rules() {
+	if ( IS_MU_RS )
+		scoper_update_option( 'file_htaccess_min_date', agp_time_gmt(), true );
+	else {
+		if ( did_action( 'scoper_init' ) )
+			scoper_flush_file_rules();  // for non-MU, just regenerate the file rules (for uploads folder) now
+		else
+			add_action( 'scoper_init', 'scoper_flush_file_rules' );
+	}
+}
+	
+	
 function scoper_version_check() {
 	$ver_change = false;
-	
+
 	$ver = get_option('scoper_version');
-	
-	if ( empty($ver['db_version']) || version_compare( SCOPER_DB_VERSION, $ver['db_version'], '>') ) {
+
+	if ( empty($ver['db_version']) || version_compare( SCOPER_DB_VERSION, $ver['db_version'], '!=') ) {
 		$ver_change = true;
 		
 		require_once('db-setup_rs.php');
 		scoper_db_setup($ver['db_version']);
 	}
 	
+	// temp debug
+	//if ( defined('RS_DEBUG') )
+	//	$ver['version'] = '1.0.8';
+	
 	// These maintenance operations only apply when a previous version of RS was installed 
 	if ( ! empty($ver['version']) ) {
 		
-		if ( version_compare( SCOPER_VERSION, $ver['version'], '>') ) {
+		if ( version_compare( SCOPER_VERSION, $ver['version'], '!=') ) {
 			$ver_change = true;
 			
-			if ( function_exists( 'wpp_cache_flush' ) )
-				wpp_cache_flush();
-				
-			// single-pass do loop to easily skip unnecessary version checks
-			do {
-				// stopped using rs_get_page_children() in 1.0.8
-				if ( version_compare( $ver['version'], '1.0.8', '<') ) {
-					delete_option('scoper_page_children');
-				} else break;
-	
-	
-				// htaccess rules modified in v1.0.0-rc9.9303
-				if ( version_compare( $ver['version'], '1.0.0-rc9.9303', '<') ) {
-					global $wp_rewrite;
-					if ( ! empty($wp_rewrite) ) // non-object error in scoper_version_check on some installations
-						$wp_rewrite->flush_rules();	
-				} else break;
-				
-				
-				if ( version_compare( $ver['version'], '1.0.0-rc6', '<') && version_compare( $ver['version'], '1.0.0-rc2', '>=') ) {
-					// In rc2 through rc4, we forced invalid img src attribute for image attachments on servers deemed non-apache
-					// note: false === stripos( php_sapi_name(), 'apache' ) was the criteria used by the offending code
-					// Need to update all affected post_content to convert attachment_id URL to file URL
-					if ( false === stripos( php_sapi_name(), 'apache' ) && ! get_option('scoper_fixed_img_urls') ) {
-						global $wpdb, $wp_rewrite;
-	
-						if ( ! empty($wp_rewrite) ) {
-							$blog_url = get_bloginfo('url');
-							if ( $results = $wpdb->get_results( "SELECT ID, guid, post_parent FROM $wpdb->posts WHERE post_type = 'attachment' && post_date > '2008-12-7'" ) ) {
-								foreach ( $results as $row ) {
-									$data = array();
-									$data['post_content'] = $wpdb->get_var( "SELECT post_content FROM $wpdb->posts WHERE ID = '$row->post_parent'" );
-									
-									if ( $row->guid ) {
-										$attachment_link_raw = $blog_url . "/?attachment_id={$row->ID}";
-										$data['post_content'] = str_replace('src="' . $attachment_link_raw, 'src="' . $row->guid, $data['post_content']);
-										
-										$attachment_link = get_attachment_link($row->ID);
-										$data['post_content'] = str_replace('src="' . $attachment_link, 'src="' . $row->guid, $data['post_content']);
-									}
+			require_once('admin/update_rs.php');
+			scoper_version_updated( $ver['version'] );
 			
-									if ( ! empty($data['post_content']) ) {
-										$wpdb->update($wpdb->posts, $data, array("ID" => $row->post_parent) );
-									}
-								}
-							}
-						
-							update_option('scoper_fixed_img_urls', true);
-						}
-					}
-				} else break;
-	
-				
-				// fixed failure to properly maintain scoper_page_ancestors options in 1.0.0-rc5
-				if ( version_compare( $ver['version'], '1.0.0-rc5', '<') ) {
-					delete_option('scoper_page_ancestors');
-				} else break;
+			scoper_check_revision_settings();
+		}
 		
-				
-				// changed default teaser_hide_private otype option to separate entries for posts, pages in v1.0.0-rc4 / 1.0.0
-				if ( version_compare( $ver['version'], '1.0.0-rc4', '<') ) {
-					$teaser_hide_private = get_option('scoper_teaser_hide_private');
-		
-					if ( isset($teaser_hide_private['post']) && ! is_array($teaser_hide_private['post']) ) {
-						if ( $teaser_hide_private['post'] )
-							// despite "for posts and pages" caption, previously this option caused pages to be hidden but posts still teased
-							update_option( 'scoper_teaser_hide_private', array( 'post:post' => 0, 'post:page' => 1 ) );
-						else
-							update_option( 'scoper_teaser_hide_private', array( 'post:post' => 0, 'post:page' => 0 ) );
-					}
-				} else break;
-				
-				// 0.9.15 eliminated ability to set recursive page parents
-				if ( version_compare( $ver['version'], '0.9.15', '<') ) { 
-					require_once('admin/update_rs.php');
-					scoper_fix_page_parent_recursion();
-				} else break;
-				
-				
-				// added WP role metagroups in v0.9.9
-				if ( ( ! empty($ver['version']) && version_compare( $ver['version'], '0.9.9', '<') ) ) {
-					global $wp_roles;
-					
-					if ( ! empty($wp_roles) ) {
-						require_once('admin/admin_lib_rs.php');
-						ScoperAdminLib::sync_wproles();
-					}
-				} else break;
-			
-			} while ( 0 ); // end single-pass version check loop
-			
-		} // endif RS version has increased since last execution (or the maintenance operations are being forced)
-		
-	} // endif we have a record of some previous RS version (or the maintenance operations are being forced)
-	
+	} else {
+		// first-time install (or previous install was totally wiped)
+		require_once( 'admin/update_rs.php');
+		scoper_set_default_rs_roledefs();
+	}
 
 	if ( $ver_change ) {
 		$ver = array(
@@ -133,22 +129,6 @@ function scoper_version_check() {
 		
 		update_option( 'scoper_version', $ver );
 	}
-}
-
-function scoper_activate() {
-	// set_current_user may have triggered DB setup already
-	global $scoper_db_setup_done;
-	if ( empty ($scoper_db_setup_done) ) {
-		require_once('db-setup_rs.php');
-		scoper_db_setup('');  // TODO: is it safe to call get_option here to pass in last DB version, avoiding unnecessary ALTER TABLE statement?
-	}
-	
-	require_once('admin/admin_lib_rs.php');
-	ScoperAdminLib::sync_wproles();
-	
-	global $wp_rewrite;
-	if ( ! empty($wp_rewrite) ) // non-object error in scoper_version_check on some installations
-		$wp_rewrite->flush_rules();	
 }
 
 function scoper_load_textdomain() {
@@ -162,6 +142,11 @@ function scoper_load_textdomain() {
 
 function scoper_log_init_action() {
 	define ('SCOPER_INIT_ACTION_DONE', true);
+
+	require_once('db-config_rs.php');
+	
+	$func = "require('db-config_rs.php');";
+	add_action( 'switch_blog', create_function( '', $func ) );
 	
 	if ( is_admin() )
 		scoper_load_textdomain();
@@ -179,92 +164,37 @@ function scoper_maybe_init() {
 }
 
 function scoper_init() {
-	global $scoper, $scoper_default_options, $scoper_default_otype_options;
+	global $scoper;
+
+	if ( IS_MU_RS ) {
+		global $scoper_sitewide_options;
+		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
+	}
 	
-	// these were set with pre-init hardcoded defaults in role-scoper.php startup code
-	$scoper_default_options = apply_filters( 'default_options_rs' , $scoper_default_options );
-	$scoper_default_otype_options = apply_filters( 'default_otype_options_rs' , $scoper_default_otype_options );
+	if ( is_admin() )
+		scoper_admin_init();	
 
-	// For 'options' and 'realm' admin panels, handle updated options right after current_user load (and before scoper init).
-	// By then, check_admin_referer is available, but Scoper config and WP admin menu has not been loaded yet.
-	if ( ! empty($_POST) 
-	&& ( isset($_POST['rs_submit']) || isset($_POST['rs_defaults']) || isset($_POST['rs_flush_cache']) ) )
-		scoper_handle_submission();
+	log_mem_usage_rs( 'scoper_admin_init done' );
+		
+	require_once('scoped-user.php');
+	require_once('role-scoper_main.php'); // ensure that is_administrator() functions are defined if $scoper is used prior to get_current_user()
 
-	require_once('role-scoper_main.php');
-
+	log_mem_usage_rs( 'require role-scoper_main' );
+	
 	if ( empty($scoper) )		// set_current_user may have already triggered scoper creation and role_cap load
 		$scoper = new Scoper();
 
+	log_mem_usage_rs( 'new Scoper done' );
+		
 	$scoper->init();
-}
-
-function scoper_deactivate() {
-	if ( function_exists( 'wpp_cache_flush' ) )
-		wpp_cache_flush();
 	
-	delete_option('scoper_page_ancestors');
-	
-	global $wp_taxonomies;
-	if ( ! empty($wp_taxonomies) ) {
-		foreach ( array_keys($wp_taxonomies) as $taxonomy ) {
-			delete_option("{$taxonomy}_children");
-			delete_option("{$taxonomy}_children_rs");
-			delete_option("{$taxonomy}_ancestors_rs");
-		}
-	}
-	
-	global $wp_rewrite;
-	remove_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
-	if ( ! empty($wp_rewrite) ) // non-object error in scoper_version_check on some installations
-		$wp_rewrite->flush_rules();	
+	log_mem_usage_rs( 'scoper->init() done' );
 }
 
 // called by Extension plugins if data_rs table is required
 function scoper_db_setup_data_table() {
 	require_once('db-setup_rs.php');
 	return scoper_update_supplemental_schema('data_rs');
-}
-
-function scoper_use_posted_init_options() {
-	if ( ! isset( $_POST['role_type'] ) || ! strpos( $_SERVER['REQUEST_URI'], SCOPER_FOLDER ) || defined('SCOPER_ROLE_TYPE') )
-		return;
-	
-	if ( isset( $_POST['rs_defaults'] ) ) {
-		$arr = scoper_default_options();
-		
-		// arr['role_type'] is numeric input index on update, string value on defaults.
-		$posted_role_type = $arr['role_type'];
-	} else {
-		$arr = $_POST;
-		
-		global $scoper_role_types;
-		$posted_role_type = $scoper_role_types[ $arr['role_type'] ];
-	}
-	
-	define ( 'SCOPER_ROLE_TYPE', $posted_role_type);
-	define ( 'SCOPER_CUSTOM_USER_BLOGCAPS', ! empty( $arr['custom_user_blogcaps'] ) );
-	
-	define ( 'DEFINE_GROUPS_RS', ! empty($arr['define_usergroups']) );
-	define ( 'GROUP_ROLES_RS', ! empty($arr['define_usergroups']) && ! empty($arr['enable_group_roles']) );
-	define ( 'USER_ROLES_RS', ! empty($arr['enable_user_roles']) );
-	
-	if ( empty ($arr['persistent_cache']) && ! defined('DISABLE_PERSISTENT_CACHE') )
-		define ( 'DISABLE_PERSISTENT_CACHE', true );
-
-	wpp_cache_init();
-}
-
-function scoper_handle_submission() {
-	require_once('submittee_rs.php');	
-	$handler = new Scoper_Submittee();
-	
-	if ( isset($_POST['rs_submit']) )
-		$handler->handle_submission('update');
-	elseif ( isset($_POST['rs_defaults']) )
-		$handler->handle_submission('default');
-	elseif ( isset($_POST['rs_flush_cache']) )
-		$handler->handle_submission('flush');
 }
 
 function scoper_get_init_options() {
@@ -279,49 +209,203 @@ function scoper_get_init_options() {
 	if ( ! defined('DISABLE_PERSISTENT_CACHE') && ! scoper_get_option('persistent_cache') )
 		define ( 'DISABLE_PERSISTENT_CACHE', true );
 	
-	wpp_cache_init();
+	wpp_cache_init( IS_MU_RS && scoper_establish_group_scope() );
 }
 
 function scoper_refresh_options() {
-	global $scoper_options;
-	$scoper_options = array();
+	if ( IS_MU_RS ) {
+		scoper_retrieve_options(true);
+		scoper_refresh_options_sitewide();
+	}
+		
+	scoper_retrieve_options(false);
+	
+	scoper_refresh_default_options();
 }
 
-function scoper_retrieve_options() {
-	global $wpdb, $scoper_options;
-	
-	$scoper_options = array();
-	
-	if ( $results = scoper_get_results("SELECT * FROM $wpdb->options WHERE option_name LIKE 'scoper_%'") )
-		foreach ( $results as $row )
-			$scoper_options[$row->option_name] = $row->option_value;
-
-	return apply_filters( 'options_rs', $scoper_options );
+function scoper_set_conditional_defaults() {
+	// if the WP installation has 100 or more users at initial Role Scoper installation, default to CSV input of username for role assignment	
+	global $wpdb;
+	$num_users = $wpdb->get_var( "SELECT COUNT(ID) FROM $wpdb->users" );
+	if ( $num_users > 99 )
+		update_option( 'scoper_user_role_assignment_csv', 1 );
 }
 
-function scoper_get_option($option_name) {
-	global $scoper_options;
+function scoper_refresh_default_options() {
+	global $scoper_default_options;
+
+	$scoper_default_options = apply_filters( 'default_options_rs', scoper_default_options() );
 	
-	if ( empty($scoper_options) )
-		$scoper_options = scoper_retrieve_options();
+	if ( IS_MU_RS )
+		scoper_apply_custom_default_options();
+}
 
-	if ( isset($scoper_options["scoper_$option_name"]) )
-		$optval = $scoper_options["scoper_$option_name"];
-	else {
-		global $scoper_default_options;
+function scoper_refresh_default_otype_options() {
+	global $scoper_default_otype_options;
+	
+	$scoper_default_otype_options = apply_filters( 'default_otype_options_rs', scoper_default_otype_options() );
+}
 
-		if ( isset($scoper_default_options[$option_name]) )
-			$optval = $scoper_default_options[$option_name];
-		else
-			$optval = '';
+function scoper_get_default_otype_options() {
+	if ( did_action( 'scoper_init') ) {
+		global $scoper_default_otype_options;
+		
+		if ( ! isset( $scoper_default_otype_options ) )
+			scoper_refresh_default_otype_options();
+			
+		return $scoper_default_otype_options;
+	} else
+		return scoper_default_otype_options();	
+}
+
+function scoper_delete_option( $option_basename, $sitewide = -1 ) {
+	
+	// allow explicit selection of sitewide / non-sitewide scope for better performance and update security
+	if ( -1 === $sitewide ) {
+		global $scoper_options_sitewide;
+		$sitewide = isset( $scoper_options_sitewide ) && ! empty( $scoper_options_sitewide[$option_basename] );
+	}
+
+	if ( $sitewide ) {
+		global $wpdb;
+		scoper_query( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = '$wpdb->siteid' AND meta_key = 'scoper_$option_basename'" );
+	} else 
+		delete_option( "scoper_$option_basename" );
+}
+
+function scoper_update_option( $option_basename, $option_val, $sitewide = -1 ) {
+	
+	// allow explicit selection of sitewide / non-sitewide scope for better performance and update security
+	if ( -1 === $sitewide ) {
+		global $scoper_options_sitewide;
+		$sitewide = isset( $scoper_options_sitewide ) && ! empty( $scoper_options_sitewide[$option_basename] );
 	}
 	
+	if ( $sitewide ) {
+		global $scoper_site_options;
+		$scoper_site_options[$option_basename] = $option_val;
+		
+		//d_echo("<br /><br />sitewide: $option_basename, value '$option_val'" );
+		update_site_option( "scoper_$option_basename", $option_val );
+	} else {
+		//d_echo("<br />blogwide: $option_basename" );
+		global $scoper_blog_options;
+		$scoper_blog_options[$option_basename] = $option_val;
+
+		update_option( "scoper_$option_basename", $option_val );
+	}
+}
+
+function scoper_apply_constants($stored_options) {
+	// If file filtering option is on but the DISABLE constant has been set, turn the option off and regenerate .htaccess
+	if ( defined( 'DISABLE_ATTACHMENT_FILTERING' ) && DISABLE_ATTACHMENT_FILTERING ) {
+		if ( ! empty( $stored_options['scoper_file_filtering'] ) ) {
+			// in this case, we need to both convert the option value to constant value AND trigger .htaccess regeneration
+			$stored_options['file_filtering'] = 0;
+			update_option( 'scoper_file_filtering', 0 );
+			scoper_flush_site_rules();
+			scoper_expire_file_rules();	
+		}
+	}
+
+	return $stored_options; 
+}
+
+function scoper_retrieve_options( $sitewide = false ) {
+	global $wpdb;
+	
+	if ( $sitewide ) {
+		global $scoper_site_options;
+		
+		$scoper_site_options = array();
+
+		if ( $results = scoper_get_results( "SELECT meta_key, meta_value FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key LIKE 'scoper_%'" ) )
+			foreach ( $results as $row )
+				$scoper_site_options[$row->meta_key] = $row->meta_value;
+				
+		$scoper_site_options = apply_filters( 'site_options_rs', $scoper_site_options );
+		return $scoper_site_options;
+
+	} else {
+		global $scoper_blog_options;
+		
+		$scoper_blog_options = array();
+		
+		if ( $results = scoper_get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'scoper_%'") )
+			foreach ( $results as $row )
+				$scoper_blog_options[$row->option_name] = $row->option_value;
+				
+		$scoper_blog_options = apply_filters( 'options_rs', $scoper_blog_options );
+		return $scoper_blog_options;
+	}
+}
+
+
+function scoper_get_site_option( $option_basename ) {
+	return scoper_get_option( $option_basename, true );
+}
+
+function scoper_get_option($option_basename, $sitewide = -1, $get_default = false) {
+	if ( ! $get_default ) {
+		// allow explicit selection of sitewide / non-sitewide scope for better performance and update security
+		if ( -1 === $sitewide ) {
+			global $scoper_options_sitewide;
+			$sitewide = isset( $scoper_options_sitewide ) && ! empty( $scoper_options_sitewide[$option_basename] );
+		}
+	
+		//dump($scoper_options_sitewide);
+		
+		if ( $sitewide ) {
+			// this option is set site-wide
+			global $scoper_site_options;
+			
+			if ( ! isset($scoper_site_options) || is_null($scoper_site_options) )
+				$scoper_site_options = scoper_retrieve_options( true );	
+				
+			if ( isset($scoper_site_options["scoper_{$option_basename}"]) )
+				$optval = $scoper_site_options["scoper_{$option_basename}"];
+			
+		} else {
+			//dump($option_basename);
+			global $scoper_blog_options;
+			
+			if ( ! isset($scoper_blog_options) || is_null($scoper_blog_options) )
+				$scoper_blog_options = scoper_retrieve_options( false );	
+				
+			if ( isset($scoper_blog_options["scoper_$option_basename"]) )
+				$optval = $scoper_blog_options["scoper_$option_basename"];
+		}
+	}
+
+	//dump($get_default);
+	//dump($scoper_blog_options);
+	
+	if ( ! isset( $optval ) ) {
+		global $scoper_default_options;
+	
+		if ( empty( $scoper_default_options ) ) {
+			if ( did_action( 'scoper_init' ) )	// Make sure other plugins have had a chance to apply any filters to default options
+				scoper_refresh_default_options();
+			else {
+				$hardcode_defaults = scoper_default_options();
+				if ( isset($hardcode_defaults[$option_basename]) )
+					$optval = $hardcode_defaults[$option_basename];	
+			}
+		}
+		
+		if ( ! empty($scoper_default_options) && ! empty( $scoper_default_options[$option_basename] ) )
+			$optval = $scoper_default_options[$option_basename];
+			
+		if ( ! isset($optval) )
+			return '';
+	}
+
 	return maybe_unserialize($optval);
 }
 
 function scoper_get_otype_option( $option_main_key, $src_name, $object_type = '', $access_name = '')  {
 	static $otype_options;
-
+	
 	$key = "$option_main_key,$src_name,$object_type,$access_name";
 
 	if ( empty($otype_options) )
@@ -329,12 +413,13 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 	elseif ( isset($otype_options[$key]) )
 		return $otype_options[$key];
 
-	global $scoper_default_otype_options;
-	
 	$stored_option = scoper_get_option($option_main_key);
 
-	$optval = awp_blend_option_array( 'scoper_', $option_main_key, $scoper_default_otype_options, 1, $stored_option );
-
+	$default_otype_options = scoper_get_default_otype_options();
+	
+	// RS stores all portions of the otype option array are always set together, but blending is needed because RS Extensions or other plugins can filter the default otype options array for specific taxonomies / object types
+	$optval = awp_blend_option_array( 'scoper_', $option_main_key, $default_otype_options, 1, $stored_option );
+	
 	// note: access_name-specific entries are not valid for most otype options (but possibly for teaser text front vs. rss)
 	if ( isset ( $optval[$src_name] ) )
 		$retval = $optval[$src_name];
@@ -407,46 +492,15 @@ function scoper_role_handles_to_names($role_handles) {
 }
 
 function rs_notice($message) {
+	require_once( 'error_rs.php' );
 	awp_notice( $message, 'Role Scoper' );
 }
 
-// htaccess directive intercepts direct access to uploaded files, converts to WP call with custom args to be caught by subsequent parse_query filter
-// parse_query filter will return content only if user can read a containing post/page
-function scoper_mod_rewrite_rules ( $rules ) {
-	$site_url = untrailingslashit( get_option('siteurl') );
-
-	// the WP .htaccess file can only run interference for files in the WP directory branch
-	if ( empty($site_url) || ! defined('WP_UPLOAD_URL_RS') || ! WP_UPLOAD_URL_RS || ( false === strpos(WP_UPLOAD_URL_RS, $site_url) ) )
-		return $rules;
-
-	$home_root = parse_url(get_option('home'));
-	$home_root = trailingslashit( $home_root['path'] );
-	
-	if ( $uploads_subdir = str_replace( "$site_url/", '', WP_UPLOAD_URL_RS ) ) {
-
-		$new_rule = "RewriteEngine on\n";
-		
-		// workaround for HTTP Authentication with PHP running as CGI
-		$new_rule .= "RewriteCond %{HTTP:Authorization} ^(.*)\n";
-		$new_rule .= "RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]\n";
-
-		// The main attachment rewrite rule:
-		//RewriteRule ^(.*)wp-content/uploads/(.*) /wp/index.php?attachment=$2&scoper_rewrite=1 [NC,L]
-		$new_rule .= "RewriteCond %{HTTP_REFERER} !^{$site_url}/wp-admin\n";
-		$new_rule .= "RewriteRule ^(.*)$uploads_subdir/(.*) {$home_root}index.php?attachment=$2&scoper_rewrite=1 [NC,L]\n";
-
-		if ( $pos_endif = strpos( $rules, '</IfModule>' ) )
-			$rules = substr( $rules, 0, $pos_endif ) . $new_rule . substr($rules, $pos_endif);
-		else
-			$rules .= $new_rule;
-	}
-	
-	return $rules;
-}
 
 // db wrapper methods allow us to easily avoid re-filtering our own query
 function scoper_db_method($method_name, $query) {
 	global $wpdb;
+	//static $buffer;
 	
 	if ( is_admin() ) { // Low-level query filtering is necessary due to WP API limitations pertaining to admin GUI.
 						// But make sure we don't chew our own cud (currently not an issue for front end)
@@ -454,10 +508,23 @@ function scoper_db_method($method_name, $query) {
 	
 		if ( empty($scoper_status) )
 			$scoper_status = (object) array();
+			
+		/*
+		$use_buffer = ('query' != $method_name ) && empty($_POST);
 		
+		if ( $use_buffer ) {
+			$key = md5($query);
+			if ( isset($buffer[$key]) )
+				return $buffer[$key];
+		}
+		*/
+
 		$scoper_status->querying_db = true;
 		$results = call_user_func( array(&$wpdb, $method_name), $query );
 		$scoper_status->querying_db = false;
+		
+		//if ( $use_buffer )
+		//	$buffer[$key] = $results;
 		
 		return $results;
 	} else
@@ -490,8 +557,89 @@ function scoper_querying_db() {
 		return ! empty($scoper_status->querying_db);
 }
 
+function scoper_any_role_limits() {
+	global $wpdb;
+	
+	$any_limits = (object) array( 'date_limited' => false, 'start_date_gmt' => false, 'end_date_gmt' => false, 'content_date_limited' => false, 'content_min_date_gmt' => false, 'content_max_date_gmt' => false );
+	
+	if ( $row = scoper_get_row( "SELECT MAX(date_limited) AS date_limited, MAX(start_date_gmt) AS start_date_gmt, MIN(end_date_gmt) AS end_date_gmt, MAX(content_date_limited) AS content_date_limited, MAX(content_min_date_gmt) AS content_min_date_gmt, MIN(content_max_date_gmt) AS content_max_date_gmt FROM $wpdb->user2role2object_rs" ) ) {
+		if ( $row->date_limited ) {
+			$any_limits->date_limited = true;
+			
+			if ( strtotime( $row->start_date_gmt ) )
+				$any_limits->start_date_gmt = true;
 
-function scoper_buffer_property( $arr, $id_prop, $buffer_prop ) {
+			if ( $row->end_date_gmt != SCOPER_MAX_DATE_STRING )
+				$any_limits->end_date_gmt = true;
+		}
+		
+		if ( $row->content_date_limited ) {
+			$any_limits->content_date_limited = true;
+			
+			if ( strtotime( $row->content_min_date_gmt ) )
+				$any_limits->content_min_date_gmt = true;
+				
+			if ( $row->content_max_date_gmt != SCOPER_MAX_DATE_STRING )
+				$any_limits->content_max_date_gmt = true;
+		}
+	}
+	
+	return $any_limits;
+	
+}
+
+function scoper_get_duration_clause( $content_date_comparison = '', $table_prefix = 'uro', $enforce_duration_limits = true ) {
+	static $any_role_limits;
+	
+	$clause = '';
+	
+	if ( $enforce_duration_limits && scoper_get_option( 'role_duration_limits' ) ) {
+		if ( ! isset($any_role_limits) )
+			$any_role_limits = scoper_any_role_limits();
+		
+		if ( $any_role_limits->date_limited ) {
+			$current_time = current_time( 'mysql', 1 );
+			
+			$subclauses = array();
+			
+			if ( $any_role_limits->start_date_gmt )
+				$subclauses []= "$table_prefix.start_date_gmt <= '$current_time'";
+			
+			if ( $any_role_limits->end_date_gmt )
+				$subclauses []= "$table_prefix.end_date_gmt >= '$current_time'";
+			
+			$role_duration_clause = implode( " AND ", $subclauses );
+
+			$clause = " AND ( $table_prefix.date_limited = '0' OR ( $role_duration_clause ) ) ";
+		}
+	}
+
+	if ( $content_date_comparison && scoper_get_option( 'role_content_date_limits' ) ) {
+		
+		if ( ! isset($any_role_limits) )
+			$any_role_limits = scoper_any_role_limits();
+		
+		if ( $any_role_limits->content_date_limited ) {
+			$current_time = current_time( 'mysql', 1 );
+			
+			$subclauses = array();
+			
+			if ( $any_role_limits->content_min_date_gmt )
+				$subclauses []= "$content_date_comparison >= $table_prefix.content_min_date_gmt";
+			
+			if ( $any_role_limits->content_max_date_gmt )
+				$subclauses []= "$content_date_comparison <= $table_prefix.content_max_date_gmt";
+			
+			$content_date_clause = implode( " AND ", $subclauses );
+
+			$clause .= " AND ( $table_prefix.content_date_limited = '0' OR ( $content_date_clause ) ) ";
+		}
+	}
+		
+	return $clause;
+}
+
+function scoper_get_property_array( &$arr, $id_prop, $buffer_prop ) {
 	if ( ! is_array($arr) )
 		return;
 
@@ -503,7 +651,7 @@ function scoper_buffer_property( $arr, $id_prop, $buffer_prop ) {
 	return $buffer;
 }
 
-function scoper_restore_property( &$target_arr, $buffer_arr, $id_prop, $buffer_prop ) {
+function scoper_restore_property_array( &$target_arr, $buffer_arr, $id_prop, $buffer_prop ) {
 	if ( ! is_array($target_arr) || ! is_array($buffer_arr) )
 		return;
 		
@@ -511,4 +659,11 @@ function scoper_restore_property( &$target_arr, $buffer_arr, $id_prop, $buffer_p
 		if ( isset( $buffer_arr[ $target_arr[$key]->$id_prop ] ) )
 			$target_arr[$key]->$buffer_prop = $buffer_arr[ $target_arr[$key]->$id_prop ];
 }
+
+if ( ! awp_ver( '2.8' ) && ! function_exists('_x') ) {
+	function _x( $text, $context, $domain ) {
+		return _c( "$text|$context", $domain );
+	}
+}
+
 ?>

@@ -3,7 +3,7 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
-Tested up to: 2.8.4
+Tested up to: 2.9
 Stable Tag: 1.0.8
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
@@ -20,27 +20,26 @@ Scoped role restrictions and assignments are reflected in every aspect of the Wo
 
 = Partial Feature List =
 * Customize access for specific Pages, Posts, Categories
-* Assign roles to User Groups (or directly to user)
 * Control Read and/or Edit access
-* Pages and Category listing match modified access
-* Category post counts and tag cloud match modified access
-* Page and category listings maintain tree structure even if some branches are hidden
-* File Attachment filter blocks direct URL requests if user can't read corresponding post/page
-* Customizable Hidden Content Teaser (or hide posts/pages completely) 
+* WP roles work as is but can be limited by content-specific restrictions
+* Assign additional content-specific roles to Users or User Groups
+* Assign additional blog-wide role for a specific object type
+* Can elevate Subscribers to edit desired content (ensures safe failure mode)
 * Control which categories users can post to
 * Control which pages users can associate sub-pages to
-* Assign additional blog-wide, type-specific role(s) for any user
-* Can elevate Subscribers to edit desired content (ensures safe failure mode)
+* Specify element(s) in Edit Form to withhold from non-Editors
+* Limit the duration of role assignments
+* Limit the content dates which a role assignment applies to
+* Front-end Page, Category and Tag listings match modified access
+* Customizable Hidden Content Teaser (or hide posts/pages completely) 
+* RSS Feed Filter with HTTP authentication option
+* File Attachment filter blocks direct URL requests if user can't read corresponding post/page
 * Inheritance of Restrictions and Roles to sub-categories / sub-pages
 * Default Restrictions and Roles for new content
-* Default Groups for new users
 * Un-editable posts/pages are excluded from the editing list
-* Specify element(s) in Edit Form to withhold from non-Editors
-* RSS Feed Filter with HTTP authentication option
 * Optimized to limit additional database queries
-* Inline descriptive captions for each of the extensive options and settings
-* Supports translation (contribute your own!)
-* Pending Revisions allow Contributors to suggest changes to a currently published post/page
+* XML-RPC support
+* Extensive WP-mu support
 
 = Plugin API =
 * Apply restrictions and roles for any custom taxonomy
@@ -66,8 +65,6 @@ Role Scoper can be installed automatically via the Plugins tab in your blog admi
 1. Upload `role-scoper&#95;?.zip` to the `/wp-content/plugins/` directory
 1. Extract `role-scoper&#95;?.zip` into the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
-
-Note: For WP 2.2 and 2.3, use <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 0.9</a>
 
 
 == Frequently Asked Questions ==
@@ -100,12 +97,185 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 1. Admin menus
 2. Role boxes in Edit Post Form
 3. Role boxes in Edit Page Form
-4. <a href="http://agapetry.net/demos/category_roles/index.html">View an html sample of the Category Roles bulk admin form</a>
-5. <a href="http://agapetry.net/demos/rs-options_demo.htm">View an html sample of Role Scoper Options</a>
-6. <a href="http://agapetry.net/news/introducing-role-scoper/">View more screenshots</a>
+4. Category Restrictions
+5. Category Roles
+6. <a href="http://agapetry.net/demos/category_roles/index.html">View an html sample of the Category Roles bulk admin form</a>
+7. <a href="http://agapetry.net/demos/rs-options_demo.htm">View an html sample of Role Scoper Options</a>
+8. <a href="http://agapetry.net/news/introducing-role-scoper/">View more screenshots</a>
 
 
 == Changelog ==
+
+**1.1.RC1 - 12 Dec 2009**
+
+=WP-mu:=
+* Feature : Option for site-wide groups when running on WP-mu
+* Feature : Most RS options can be applied either site-wide or blog-specific
+* Feature : Default settings for per-blog options can be customized via Site Admin > Role Defaults
+* BugFix : User RS Blog Roles were not added / removed appropriately with mu user addition / removal for specific blogs
+* BugFix : RS General Role assignments were not effective; attempt to add post/page caused redirect to profile page of main blog
+* BugFix : Internal cache returned categories from other blogs in some situations
+
+=Date Limits:=
+* Feature : Roles can be assigned with limited duration (grant and expire dates)
+* Feature : General Roles and Category Roles can be assigned with content date limits (role only applies for posts/pages dated within specified range)
+
+=File Filtering:=
+* Feature : New filtering scheme eliminates many quirks by using header redirect rather than opening and sending file contents directly
+* BugFix : Attachment filtering blocked some unattached files or public files.  New scheme uses per-file RewriteRules, does not filter unprotected files at all.
+* Feature : File filtering can be disabled / enabled via RS Option.
+* Feature : Definition / removal of DISABLE_ATTACHMENT_FILTERING constant definition now forces automatic .htaccess regeneration / restoration
+* BugFix : Fatal error due to failed flush_rules call on initialization, in some upgrade scenarios
+* BugFix : Auto-regenerate .htaccess if it gets out of sync with DB-stored file access key(s)
+* Perf : Reduce unnecessary script loading / execution when applying file filtering
+
+=Performance Enhacement Results:=
+* Default memory usage is lower than v 1.0.8 despite feature additions.
+* Further memory savings possible by disabling various features (see below).
+* Decreased database execution time in several areas.
+
+=Performance Enhancements Details:=
+* Perf : User role sync at activation (for WP role assignments) was executing a separate query for each user (leading to long delays on some installations) 
+* Perf : Do not resync all users on each user registration / profile update
+* Perf : Extensive optimization of code structure and inclusion logic to prevent unnecessary memory usage.
+* Change : Require MySQL >= 4.1 so LEFT JOINs can be replaced by subqueries
+* Perf : Converted LEFT JOIN in posts query to subselect
+* Perf : Eliminated unnecessary LEFT JOIN in terms query
+* Perf : Further wp-admin memory savings via option to disable filtering of Post Author dropdown (if "Indicate Blended Roles" and "Limit eligible users" also disabled)
+* Perf : Further front-end memory savings if you define SCOPER_GET_PAGES_LEAN (don't retrieve page content just to list page titles) 
+* Perf : Further wp-admin memory savings if you define SCOPER_EDIT_POSTS_LEAN, SCOPER_EDIT_PAGES_LEAN
+* Perf : Eliminated redundant filtering for page parent dropdown
+* Perf : Eliminated unnecessary RS queries in Media Library
+* Perf : Eliminated unnecessary RS-initiated post/page retrieval queries
+* Perf : No construction / translation of role names in wp-admin until they are needed
+* Perf : set RS option records to autoload = no, since RS does its own buffering
+* Perf : Eliminated lots of PHP warnings for unset variables / array keys
+* Change : Stop storing postmeta last_parent entry for pages / posts that have no Parent setting
+
+=User Editing / Role Assignment:=
+* Feature : support distinction between Content Administrator, User Administrator and Option Administrator.  Currently designate cap for each via define( 'SCOPER_CONTENT_ADMIN_CAP', 'cap_name' );
+* Feature : Option to allow role assignment only by Content Administrators / User Administrators
+* Feature : Don't allow the editing of users with a higher level than logged user (can disable via RS Option)
+* Feature : Don't allow the assignment of a WP role with a higher level than logged user's level (can disable via RS Option)
+
+=Role Definition:=
+* Feature : Synchronize RS Role Defs to WP Role Defs at installation (eliminates unexpected results when WP roles are customized)
+* Feature : On RS Role Defs tab, warn if WP Roles do not have normal RS role containment (WP Author contains RS Post Author, etc.) due to extra caps in RS Role def
+* Feature : On RS Role Defs tab, option to synchronize WP Contributor / Author / Editor role def with current RS Post Contributor / Post Author / Post Editor / Page Editor role def
+* BugFix : WP Role Definitions tab empty on reload after updating RS Options
+* Change : Post Editor / Page Editor role assignment also grants unfiltered_html capability for that content.  Can be disabled via Roles > RS Role Defs.
+
+=Group Roles:=
+* Feature : Metagroup for anonymous users - define SCOPER_ANON_METAGROUP.  Only to be used when some content should be seen by anon users but not all logged users.
+* BugFix : WordPress roles with name longer than 25 characters caused RS metagroup record to be perpetually regenerated with new group_id, leaving orphaned role assignments
+* BugFix : Group deletion did not always delete all associated roles
+* BugFix : Incorrect eligible groups count if orphaned Group Role assignments are stored
+* Change : Delete all orphaned group role assignments on plugin re-activation
+
+=Media Library:=
+* BugFix : non-administrators could not view unattached uploads via View link in Media Library
+* BugFix : non-administrators could not see unattached uploads in Library tab of uploader
+* BugFix : Authors were not allowed to edit or delete their unattached uploads in Media Library
+
+=Post / Page Edit Form:=
+* Feature : Option to default new posts and/or pages to Private visibility
+* Feature : Option to auto-select Private visibility when the Reader role is restricted in Page/Post Edit Form
+* BugFix : On post creation, default category was not applied in some situations when author had save / publish capability for it
+* BugFix : On post creation, first available category was not applied in some situations when author did not select any categories (and does not have save/publish capability for default cat)
+* BugFix : Authors could not edit their own private posts / pages in some configurations
+* BugFix : Non-editors were sometimes unable to save subpages of pages based on their Page Associate role; received a "cannot associate with the Main Page" error message
+* BugFix : WP Metagroup Category/General Role assignments were not indicated by color coding in Post/Page Edit Form role metaboxes
+* BugFix : "Attempt has failed" error when submitting post with some certain WP/RS Role Definitions and editing roles restricted in all categories
+* BugFix : Out of memory / timeout error on some servers when non-Administrator views Edit Posts listing
+* BugFix : In some configurations where user can edit a subpage based on propagated Page Editor role, that role assignment was lost when they saved a change to the page content.
+* Change : Implicit role ownership via Category/General Role assignment is indicated by slashes around user/group name.  Previous versions used square brackets.
+
+=Post / Page Edit Form - Limited Editing Elements:=
+* Feature : Option to require blog-wide Administrator / Editor / Author / Contributor role for specified Limited Editing Element IDs
+* BugFix : Comment and Trackbacks status turned off when a post was edited with Discussion metabox (commentstatusdiv) hidden via Limited Editing Elements
+* BugFix : Custom Post Excerpt cleared when a post was edited with Post Excerpt metabox hidden via Limited Editing Elements setting
+* Change : If a specified Limited Editing Element is not a metabox, hide it via CSS
+* Change : "Limited Editing Elements" includes customdiv, pagecustomdiv, revisionsdiv by default
+
+=Edit Posts / Pages Listing:=
+* Feature : Custom Role / Restriction indicator columns in Edit Posts and Edit Pages listing can be selectively disabled
+* Feature : Custom columns are suppressed if logged user does not satisfy RS Option requirement for "Roles and Restrictions can be set by"
+* BugFix : Custom Roles / Restriction indicator columns were sometimes displayed even if none of the listed posts used them
+* BugFix : Edit Posts column indicated some false positives for Category Restrictions
+* BugFix : Edit Posts listing included Term Roles column even if none of the listed posts had Term Roles
+
+=Page / Category Listing (Front End):=
+* Feature : When remapping a page to visible ancestor, Option for whether remap can bypass an explictly excluded ancestor
+* Feature : When remapping a term to visible ancestor, Option for whether remap can bypass an explictly excluded ancestor
+* Feature : Support remap_parents, enforce_actual_depth, remap_thru_excluded_parent args to override defaults in a get_pages() / get_terms() call
+* Compat : Never remap pages if get_pages called without hierarchical arg (unnecessary, caused conflict with Flexi Pages plugin)
+* Compat : Never remap terms if get_terms called without hierarchical arg
+* Change : RS Option "Remap Hiden Pages to Visible Ancestor" disabled by default, to avoid conflict with template code that relies on exclude+depth arguments being treated as exclude_tree
+* Change : RS Option "Remap Hiden Terms to Visible Ancestor" disabled by default, to avoid conflict with template code that relies on exclude+depth arguments being treated as exclude_tree
+
+=XML-RPC:=
+* BugFix : XML-RPC post submissions created without category selection for users without less than blog-wide Editor role
+* BugFix : With some XML-RPC clients, non-administrators can publish new posts but cannot edit them following publish 
+* BugFix : XML-RPC retrieval of recent posts only returned one post
+
+=Custom Taxonomies:=
+* Feature : Support Restrictions on custom taxonomies
+* BugFix : When custom taxonomies are enabled for use with RS, "Category Restrictions and Roles for Posts" checkbox caption was not modified accordingly 
+* BugFix : Invalid edit URL from bulk role administration form for Post Tags, Custom Taxonomies
+* Workaround : WP core forces display of published posts only in Edit Posts listing when filtering by a custom taxonomy term
+
+=Front-End Misc:=
+* BugFix : get_comments() function did not include comments on attachments to private posts
+* BugFix : In some installations with a language defined and "suppress private caption" option enabled, fatal error from translate call in template-interceptor 
+* BugFix : template function is_restricted_rs() indicated some false positives for category restrictions
+* BugFix : Tags filter defaulted to limiting number of displayed tags to 45
+* BugFix : tag__not_in argument was not supported for manual calls to WP_Query
+
+=Admin Misc:=
+* Feature : Add pending posts and pages total to Dashboard Right Now list
+* BugFix : Cannot approve / unapprove comments when capability is granted via Category Role or Page/Post Role
+* BugFix : Roles, Restrictions menu icons were not displayed if custom WP_CONTENT_DIR set
+* BugFix : PHP Warning on installation / version update due to DB key name conflicting with an existing WP key name
+* BugFix : In User Profile, link to edit individual Object Role yielded "insufficient permissions" message
+* BugFix : RS roles were hidden from User Profile for users who cannot assign roles due to blogwide role requirement set in RS Options
+* Change : Prevent activation (with helpful error message) if another copy of RS is already active
+* Change : If RS_DEBUG is defined and the script is plugins.php or edit-plugins.php, don't initialize the plugin (prevents hung server on bad edits via Plugin Editor)
+* Change : On RS Options form, rearranged and recaptioned "Realm" options for clarity
+* Change : Popup confirmation box before reverting RS Options to defaults
+* Change : Update button in all RS forms styled the same as WordPress Update buttons
+
+=Misc:=
+* BugFix : Warning messages on servers with open_basedir restriction
+* BugFix : RS Internal Cache did not work if custom WP_CONTENT_DIR set
+
+=API:=
+* API : ScoperAdminLib::create_group($name, $desript), returns group_id
+* API : ScoperAdminLib::get_group_by_name($name), returns group object
+* API : ScoperAdminLib::get_group($group_id), returns group object
+
+=Plugin Compatibility:=
+* Compat : Formatting of table header in Role / Restriction bulk admin forms was thrown off by BuddyPress
+* Compat : Pages listing was broken when Theme My Login active with option to exclude login page from listing
+* Compat : Automatically switch Roles, Restrictions tabs to default(bottom) positioning if some other plugin has moved the Users tab
+* Compat : Support nonstandard usage of wp_dropdown_pages filter by Simple Section Nav plugin
+* Compat : PHP Warning after AMember creates a role with no capabilities
+* Compat : Apply RS restrictions and roles to Snazzy Archives plugin listing
+* Compat : PHP Warning "Missing argument 2" with WMPL plugin
+* Compat : Suppress RS filtering when another plugin has initiated a scheduled operation via WP Cron (conflict with WP Robot, Twitter News Feeds)
+* Compat : Tiny MCE Advanced (conflict was present in RS 1.1 beta versions)
+* Compat : Flutter (may require Flutter code patch, see Notes)
+* Compat : Use display names and plural display names defined by Custom Taxonomies plugin
+
+=Browser Compat (wp-admin):=
+* BugFix : Background color not applied to RS Options form in some versions of IE
+* BugFix : IE8 tab, checkbox positioning in Post/Page Edit Form role metaboxes
+
+=Translation:=
+* Lang : Added Italian translation (Alberto Ramacciotti - http://obertfsp.com)
+* Feature : Default teaser strings included in .po file for translation.  Must add this to wp-config.php: define( 'SCOPER_TRANSLATE_TEASER', true );
+
+
+
 = 1.0.8 - 18 Aug 2009 =
 * Feature : Option to prevent non-Administrators from assigning or viewing content-specific roles
 * Feature : For front-end Page and Category listings, parent remapping behavior is now adjustable via RS Options
@@ -260,27 +430,43 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = Specific Plugin Compatibility Issues =
 * WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
 * QTranslate : use Role Scoper 1.0.7 or later, which disables caching of pages, terms listing.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
-* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget instead.
+* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget or Snazzy Archives instead.
 * Maintenance Mode : not compatible due to forced early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Comment out the following line in maintenance-mode.php: `&& !mw&#95;current&#95;user&#95;can&#95;access&#95;on&#95;maintenance()`
+* Flutter : As of Nov 2009, RS filtering of Flutter categories requires that the Flutter function GetCustomWritePanels (in the RCCWP_CustomWritePanel class, file plugins/fresh-page/RCCWP_CustomWritePanel.php) be modified to the following:
+
+    function GetCustomWritePanels() 
+    { 
+        global $wpdb; 
+
+        $sql = "SELECT id, name, description, display_order, capability_name, 
+type, single  FROM " . RC_CWP_TABLE_PANELS; 
+
+        $join = apply_filters( 'panels_join_fp', '' ); 
+        $where = apply_filters( 'panels_where_fp', '' ); 
+
+        $sql .= " $join WHERE 1=1 $where ORDER BY display_order ASC"; 
+        $results = $wpdb->get_results($sql); 
+        if (!isset($results)) 
+                $results = array(); 
+
+        return $results; 
+    }
 
 
 **Attachment Filtering**
 
 Read access to uploaded file attachments is normally filtered to match post/page access.
 
-To disable this attachment filtering, copy the following line to wp-config.php:
-    `define('DISABLE&#95;ATTACHMENT&#95;FILTERING', true);`
+To disable this attachment filtering, disable the option in Roles > Options or copy the following line to wp-config.php:
+    define('DISABLE&#95;ATTACHMENT&#95;FILTERING', true);
 
-If manually disabling attachment filtering on an Apache server, remove the following line from the .htaccess file in your WP folder: 
-    `RewriteRule ^(.*)wp-content/uploads/(.*) /YOUR&#95;WP&#95;FOLDER/index.php?attachment=$2&scoper&#95;rewrite=1 [NC,L]`
+To reinstate attachment filtering, remove the definition from wp-config.php and re-enable File Filtering via Roles > Options.
 
-To reinstate attachment filtering, remove the definition from wp-config.php and deactivate/reactivate Role Scoper.
-
-To fail with a null response (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php: 
-    `define ('SCOPER&#95;QUIET&#95;FILE&#95;404', true);`
+To fail with a null response when file access is denied (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php: 
+    define ('SCOPER&#95;QUIET&#95;FILE&#95;404', true);
 
 Normally, files which are in the uploads directory but have no post/page attachment will not be blocked.  To block such files, copy the following line to wp-config.php: 
-    `define('SCOPER&#95;BLOCK&#95;UNATTACHED&#95;UPLOADS', true);`
+    define('SCOPER&#95;BLOCK&#95;UNATTACHED&#95;UPLOADS', true);
 
 
 **Hidden Content Teaser**
@@ -288,4 +474,4 @@ Normally, files which are in the uploads directory but have no post/page attachm
 The Hidden Content Teaser may be configured to display the first X characters of a post/page if no excerpt or more tag is available.
 
 To specify the number of characters (default is 50), copy the following line to wp-config.php: 
-    `define('SCOPER&#95;TEASER&#95;NUM&#95;CHARS', 100); // set to any number of your choice`
+    define('SCOPER&#95;TEASER&#95;NUM&#95;CHARS', 100); // set to any number of your choice

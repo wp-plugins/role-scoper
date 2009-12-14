@@ -2,8 +2,8 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-add_filter( 'get_previous_post_join', array('QueryInterceptorFront_RS', 'flt_adjacent_post_join') );
-add_filter( 'get_next_post_join', array('QueryInterceptorFront_RS', 'flt_adjacent_post_join') );
+//add_filter( 'get_previous_post_join', array('QueryInterceptorFront_RS', 'flt_adjacent_post_join') );
+//add_filter( 'get_next_post_join', array('QueryInterceptorFront_RS', 'flt_adjacent_post_join') );
 add_filter( 'get_previous_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 add_filter( 'get_next_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 
@@ -24,6 +24,8 @@ class QueryInterceptorFront_RS {
 		return $where;
 	}
 	
+	// As of RS 1.1, using subselects in where clause instead
+	/*
 	// custom wrapper to clean up after get_previous_post_join, get_next_post_join nonstandard arg syntax 
 	// (uses alias p for post table)
 	function flt_adjacent_post_join( $join ) {
@@ -32,6 +34,7 @@ class QueryInterceptorFront_RS {
 		$join = $scoper->query_interceptor->flt_objects_join( $join, 'post', 'post', $args );
 		return $join;
 	}
+	*/
 
 }
 ?>

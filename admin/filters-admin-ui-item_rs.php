@@ -14,15 +14,58 @@ class ScoperAdminFiltersItemUI {
 		add_action('admin_menu', array(&$this, 'add_meta_boxes'));
 		add_action('do_meta_boxes', array(&$this, 'act_tweak_metaboxes') );
 		
-		$setargs = array( 'is_global' => true );
-		$setvars = array ('object_edit_ui_rs',	'term_edit_ui_rs');
-		awp_force_set('wp_filter', array(), $setargs, $setvars, 10);
-		
 		// On the WP post/page edit form, object_edit_ui_rs will only fire with WP < 2.5, since we are using add_meta_boxes instead
 		add_action('object_edit_ui_rs', array(&$this, 'ui_object_roles'), 10, 2);
 		
 		add_action('term_edit_ui_rs', array(&$this, 'ui_single_term_roles'), 10, 3);
+		
+		if ( ( strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) && scoper_get_otype_option( 'default_private', 'post', 'post' ) )
+		|| ( strpos( $_SERVER['REQUEST_URI'], 'page-new.php' ) && scoper_get_otype_option( 'default_private', 'post', 'page' ) ) )
+			add_action('admin_footer', array(&$this, 'default_private_js') );
+		
+		if ( ( ( strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) || strpos( $_SERVER['REQUEST_URI'], 'post.php' ) )  && scoper_get_otype_option( 'sync_private', 'post', 'post' ) )
+		|| ( ( strpos( $_SERVER['REQUEST_URI'], 'page.php' ) || strpos( $_SERVER['REQUEST_URI'], 'page-new.php' ) ) && scoper_get_otype_option( 'sync_private', 'post', 'page' ) ) )
+			add_action('admin_head', array(&$this, 'sync_private_js') );
 	}
+	
+	
+	function default_private_js() {
+?>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(document).ready( function($) {
+	$('#visibility-radio-private').click();
+	
+	$('#post-visibility-display').html(
+		postL10n[$('#post-visibility-select input:radio:checked').val()]
+	);
+});
+/* ]]> */
+</script>
+<?php
+	}
+	
+	
+	function sync_private_js() {
+?>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(document).ready( function($) {
+	$("#objscope_r1").click(function() {
+		if ( this.checked ) {
+			$('#visibility-radio-private').click();
+			
+			$('#post-visibility-display').html(
+				postL10n[$('#post-visibility-select input:radio:checked').val()]
+			);
+		}
+	});
+});
+/* ]]> */
+</script>
+<?php
+	}
+	
 	
 	function init_item_roles_ui() {
 		if ( empty($this->item_roles_ui) ) {
@@ -47,9 +90,12 @@ class ScoperAdminFiltersItemUI {
 
 		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 
-		if ( ( 'admin' == $require_blogwide_editor ) && ! is_administrator_rs() )
+		if ( ( 'admin' == $require_blogwide_editor ) && ! is_user_administrator_rs() )
 			return;
 
+		if ( ( 'admin_content' == $require_blogwide_editor ) && ! is_content_administrator_rs() )
+			return;
+			
 		foreach ( $box_object_types as $object_type ) {
 			if ( ! scoper_get_otype_option('use_object_roles', $src_name, $object_type) )
 				continue;
@@ -68,10 +114,8 @@ class ScoperAdminFiltersItemUI {
 				if ( ! isset($role_def->valid_scopes[OBJECT_SCOPE_RS]) )
 					continue;
 
-				$title = ( empty($role_def->abbrev_for_object_ui) ) ? $role_def->abbrev : $role_def->abbrev_for_object_ui;
-				//$box_id = "{$src_name}:{$object_type}:{$role_handle}";
 				$box_id = $role_handle;
-				add_meta_box( $box_id, $title, array(&$this, 'draw_object_roles_content'), $object_type );
+				add_meta_box( $box_id, $this->scoper->role_defs->get_abbrev( $role_handle, OBJECT_UI_RS ), array(&$this, 'draw_object_roles_content'), $object_type );
 				$this->meta_box_ids[$role_handle] = $box_id;
 			}
 		}
@@ -98,7 +142,7 @@ class ScoperAdminFiltersItemUI {
 		
 		$object_id = $this->scoper->data_sources->detect('id', $src_name, '', $object_type);
 		
-		$is_administrator = is_administrator_rs();
+		$is_administrator = is_user_administrator_rs();
 		$can_admin_object = $is_administrator || $this->scoper->admin->user_can_admin_object($src_name, $object_type, $object_id);
 		
 		if ( $can_admin_object ) { 
@@ -107,7 +151,7 @@ class ScoperAdminFiltersItemUI {
 		}
 
 		foreach ( $wp_meta_boxes[$object_type] as $context => $priorities ) {
-			foreach ( $priorities as $priority => $boxes )
+			foreach ( $priorities as $priority => $boxes ) {
 				foreach ( array_keys($boxes) as $box_id ) {
 			
 					if ( $role_handle = array_search( $box_id, $this->meta_box_ids ) ) {
@@ -123,7 +167,9 @@ class ScoperAdminFiltersItemUI {
 									$wp_meta_boxes[$object_type][$context][$priority][$box_id]['title'] .= $title_suffix;
 					}
 				}
+			}
 		}
+				
 	}
 	
 	// wrapper function so we don't have to load item_roles_ui class just to register the metabox

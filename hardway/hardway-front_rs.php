@@ -3,13 +3,14 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
 add_filter('query', array('ScoperHardwayFront', 'flt_recent_comments') );
-add_filter('getarchives_where', array('ScoperHardwayFront', 'flt_log_getarchives') ); // work around WP bug in wp_get_archives
+//add_filter('getarchives_where', array('ScoperHardwayFront', 'flt_log_getarchives') ); // work around WP bug in wp_get_archives
 add_filter('get_terms', array('ScoperHardwayFront', 'flt_get_tags'), 50, 3);
 
 add_filter('get_the_category_for_list', array('ScoperHardwayFront', 'flt_get_the_category') );		// TODO: eliminate this - published in RS forum as a WP hack for use with a dev version
-add_filter('get_the_category', array('ScoperHardwayFront', 'flt_get_the_category'), 10, 2);
+add_filter('get_the_category', array('ScoperHardwayFront', 'flt_get_the_category'), 10, 2);			// Todo: get this hook added to WP source
 
-// Todo: need get_the_category hook added to WP source
+if ( awp_is_plugin_active('snazzy-archives') )
+	add_filter( 'query', array('ScoperHardwayFront', 'flt_snazzy_archives') );
 
 class ScoperHardwayFront
 {	
@@ -34,7 +35,7 @@ class ScoperHardwayFront
 		//&& ( preg_match("/WHERE\s*comment_approved\s*=\s*'1'/", $query) || preg_match("/AND\s*comment_approved\s*=\s*'1'/", $query) )
 		&& strpos($query, "ELECT") && ! strpos($query, 'JOIN') && ! strpos($query, "COUNT") && strpos($query, "comment_approved") )
 		{
-			if ( ! is_attachment() && ! is_administrator_rs() ) {
+			if ( ! is_attachment() && ! is_content_administrator_rs() ) {
 				global $wpdb;
 
 				if ( awp_is_plugin_active( 'wp-wall') ) {
@@ -58,7 +59,7 @@ class ScoperHardwayFront
 						$query = apply_filters('objects_request_rs', $query, 'post', '', array('skip_teaser' => true) );
 					} else {
 						$join = "LEFT JOIN $wpdb->posts as parent ON parent.ID = {$wpdb->posts}.post_parent AND parent.post_type IN ('post', 'page') AND $wpdb->posts.post_type = 'attachment'";
-						$join = apply_filters('objects_join_rs', $join, 'post', '', array('skip_teaser' => true) );
+						//$join = apply_filters('objects_join_rs', $join, 'post', '', array('skip_teaser' => true) );
 
 						$where_post = apply_filters('objects_where_rs', '', 'post', 'post', array('skip_teaser' => true) );
 						$where_page = apply_filters('objects_where_rs', '', 'post', 'page', array('skip_teaser' => true) );
@@ -80,8 +81,34 @@ class ScoperHardwayFront
 		return $query;
 	}
 	
+	function flt_snazzy_archives( $query ) {
+		if ( strpos( $query, "posts WHERE post_status = 'publish' AND post_password = '' AND post_type IN (" ) ) {
+			
+			// query parsing currently does not deal with IN syntax for post_type
+			if ( strpos( $query, "('post','page')" ) ) {
+				$object_type = array( 'post', 'page' );
+				$query = str_replace( "post_type IN ('post','page')", "( post_type = 'post' OR post_type = 'page')", $query );
+			
+			} elseif ( strpos( $query, "('post')" ) ) {
+				$object_type = 'post';
+				$query = str_replace( "post_type IN ('post')", "post_type = 'post'", $query );
+				
+			} elseif ( strpos( $query, "('page')" ) ) {
+				$object_type = 'page';
+				$query = str_replace( "post_type IN ('page')", "post_type = 'page'", $query );
+			}
+			
+			$query = str_replace( "post_status = 'publish' AND ", '', $query );
+			
+			$query = apply_filters( 'objects_request_rs', $query, 'post', $object_type );
+		}
+		
+		return $query;
+	}
+	
+	/* RS 1.1 no longer adds any join clauses, so this WP shortcoming is moot for us
+	
 	// wp_get_archives uses unfilterable SELECT * for postbypost archive type
-	// TODO: make these WP version-dependant if WP fixes the bug
 	function flt_log_getarchives( $query ) {
 		add_filter( 'query', array('ScoperHardwayFront', 'flt_archives_bugstomper') );
 
@@ -99,19 +126,20 @@ class ScoperHardwayFront
 
 		return $query;
 	}
+	*/
 
 	function flt_get_tags( $results, $taxonomies, $args ) {
 		if ( ! is_array($taxonomies) )
 			$taxonomies = (array) $taxonomies;
-	
+
 		if ( ('post_tag' != $taxonomies[0]) || (count($taxonomies) > 1) )
 			return $results;
-
+			
 		global $wpdb;
 
 		$defaults = array(
 		'exclude' => '', 'include' => '',
-		'number' => '45', 'offset' => '', 'slug' => '', 
+		'number' => '', 'offset' => '', 'slug' => '', 
 		'name__like' => '', 'search' => '');
 		$args = wp_parse_args( $args, $defaults );
 		extract($args, EXTR_SKIP);
@@ -125,8 +153,7 @@ class ScoperHardwayFront
 		if ( $cache = $current_user->cache_get( $cache_flag ) )
 			if ( isset( $cache[ $ckey ] ) )
 				return apply_filters('get_tags_rs', $cache[ $ckey ], 'post_tag', $args);
-		
-
+				
 		//------------ WP argument application code from get_terms(), with hierarchy-related portions removed -----------------
 		//
 		// NOTE: must change 'tt.count' to 'count' in orderby and hide_empty settings
@@ -198,20 +225,20 @@ class ScoperHardwayFront
 		// embedded select statement for posts ID IN clause
 		$posts_qry = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1";
 		$posts_qry = apply_filters('objects_request_rs', $posts_qry, 'post', 'post', array('skip_teaser' => true));
-
+		
 		$qry = "SELECT DISTINCT t.*, tt.*, COUNT(p.ID) AS count FROM $wpdb->terms AS t"
 			. " INNER JOIN $wpdb->term_taxonomy AS tt ON tt.term_id = t.term_id AND tt.taxonomy = 'post_tag'"
 			. " INNER JOIN $wpdb->term_relationships AS tagr ON tagr.term_taxonomy_id = tt.term_taxonomy_id"
 			. " INNER JOIN $wpdb->posts AS p ON p.ID = tagr.object_id WHERE p.ID IN ($posts_qry)"
 			. " $where GROUP BY t.term_id ORDER BY count DESC $limit";  // must hardcode orderby clause to always query top tags
-
+			
 		$results = scoper_get_results( $qry );
 
 		$cache[ $ckey ] = $results;
 		$current_user->cache_set( $cache, $cache_flag );
 		
 		$results = apply_filters('get_tags_rs', $results, 'post_tag', $args);
-		
+
 		return $results;
 	}
 

@@ -13,29 +13,32 @@ require_once('role_assignment_lib_rs.php');
 $role_bases = array();
 $agents = array();
 
-$is_administrator = is_administrator_rs();
+$is_administrator = is_user_administrator_rs();
 
-if ( USER_ROLES_RS && ( $is_administrator || current_user_can('edit_users') ) ) {
+if ( USER_ROLES_RS && ( $is_administrator ) ) {
 	$role_bases []= ROLE_BASIS_USER;
 	$agents[ROLE_BASIS_USER] = $scoper->users_who_can('', COLS_ID_DISPLAYNAME_RS);
 	
 	$agent_list_prefix[ROLE_BASIS_USER] = '';
 }
 
-if ( GROUP_ROLES_RS && ( $is_administrator || current_user_can('edit_users') ) ) {
-	$groups_url = SCOPER_ADMIN_URL . '/groups.php';
+if ( GROUP_ROLES_RS && ( $is_administrator ) ) {
+	$groups_url = 'admin.php?page=rs-groups';
 
 	if ( $agents[ROLE_BASIS_GROUPS] = ScoperAdminLib::get_all_groups(UNFILTERED_RS) ) {
 		$role_bases []= ROLE_BASIS_GROUPS;
 		$agent_list_prefix[ROLE_BASIS_GROUPS] = __('Groups') . ': ';
-		$edit_groups_link = sprintf(_c('%1$s define user groups%2$s|Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+		$edit_groups_link = sprintf(_x('%1$s define user groups%2$s', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
 	} else
-		$edit_groups_link = sprintf(_c('<b>Note:</b> To assign roles to user groups, first %1$s define the group(s)%2$s.|Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+		$edit_groups_link = sprintf(_x('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
 }
 
 if ( empty($role_bases) )
-	wp_die(__('Cheatin&#8217; uh?'));
+	wp_die(__awp('Cheatin&#8217; uh?'));
 
+$duration_limits_enabled = scoper_get_option('role_duration_limits');
+$content_date_limits_enabled = scoper_get_option('role_content_date_limits');
+	
 $agent_names = array();
 foreach ( $role_bases as $role_basis )
 	foreach( $agents[$role_basis] as $agent )
@@ -46,7 +49,7 @@ if ( count($role_bases) > 1 ) {
 	$agent_caption_plural = __('Users or Groups', 'scoper');
 } elseif ( isset($agents[ROLE_BASIS_USER]) ) {
 	$agent_caption =  __('User', 'scoper');
-	$agent_caption_plural = __('Users', 'scoper');
+	$agent_caption_plural = __awp('Users');
 } elseif ( isset($agents[ROLE_BASIS_GROUPS]) ) {
 	$agent_caption =  __('Group', 'scoper');
 	$agent_caption_plural = __('Groups', 'scoper');
@@ -60,6 +63,8 @@ $role_codes = array(); //generate temporary numeric id for each defined role, to
 $i = 0;
 
 $role_defs = array();
+
+$date_key = '';	// temp
 
 if ( 'rs' == SCOPER_ROLE_TYPE )
 
@@ -101,17 +106,17 @@ if ( isset($_POST['rs_submit']) ) :	?>
 		$agents_msg = array();
 	
 		if ( ! $selected_agents ) :?>
-			<div id="message" class="error"><p><b>
+			<div id="message" class="error"><p><strong>
 			<?php 
 			$_POST['scoper_error'] = 1;
 			printf( __('Error: no %s were selected!', 'scoper'), $agent_caption_plural);
 			echo $msg;
 			?>
-			</b></p></div>
+			</strong></p></div>
 			<?php $err = 1;?>
 		<?php elseif ( ! $selected_roles ) :?>
 			<?php $_POST['scoper_error'] = 1; ?>
-			<div id="message" class="error"><p><b><?php _e('Error: no roles were selected!', 'scoper'); ?></b></p></div>
+			<div id="message" class="error"><p><strong><?php _e('Error: no roles were selected!', 'scoper'); ?></strong></p></div>
 			<?php $err = 2;?>
 		<?php else : ?>
 		
@@ -123,20 +128,36 @@ if ( isset($_POST['rs_submit']) ) :	?>
 							$blog_roles[ $role_basis ][ $role_handle ][ $agent_id ] = $assign_for;
 				
 				if ( ROLE_BASIS_USER == $role_basis )
-					$agents_msg []= sprintf(__ngettext("%d user", "%d users", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
+					$agents_msg []= sprintf(_n("%d user", "%d users", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
 				else
-					$agents_msg []= sprintf(__ngettext("%d group", "%d groups", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
+					$agents_msg []= sprintf(_n("%d group", "%d groups", count($selected_agents[$role_basis]), 'scoper'), count($selected_agents[$role_basis]) );
 
-				$role_assigner->assign_blog_roles($blog_roles[$role_basis], $role_basis);
+				
+				$args = array();
+				
+				if ( ! empty($_POST['set_role_duration']) || ! empty($_POST['set_content_date_limits']) )
+					$date_entries_gmt = ScoperAdminBulkLib::process_role_date_entries();
+					
+				if ( $duration_limits_enabled && ! empty($_POST['set_role_duration']) ) {
+					$is_limited = ( $date_entries_gmt->start_date_gmt || ( $date_entries_gmt->end_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['start_date_gmt_keep-timestamp'] ) || ! empty( $_POST['end_date_gmt_keep-timestamp'] ) );
+					$args[ 'set_role_duration' ] = (object) array( 'date_limited' => $is_limited, 'start_date_gmt' => $date_entries_gmt->start_date_gmt, 'end_date_gmt' => $date_entries_gmt->end_date_gmt );
+				}
+				
+				if( $content_date_limits_enabled && ! empty($_POST['set_content_date_limits']) ) {
+					$is_limited = ( $date_entries_gmt->content_min_date_gmt || ( $date_entries_gmt->content_max_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['content_min_date_gmt_keep-timestamp'] ) || ! empty( $_POST['content_max_date_gmt_keep-timestamp'] ) );
+					$args[ 'set_content_date_limits' ] = (object) array( 'content_date_limited' => $is_limited, 'content_min_date_gmt' => $date_entries_gmt->content_min_date_gmt, 'content_max_date_gmt' => $date_entries_gmt->content_max_date_gmt );	
+				}
+				
+				$role_assigner->assign_roles( BLOG_SCOPE_RS, '', 0, $blog_roles[$role_basis], $role_basis, $args );
 			} // end foreach role basis
 			?>
 			
 			<div id="message" class="updated fade"><p>
 			<?php
 			$agents_msg = implode( ", ", $agents_msg );
-			$roles_msg = sprintf(__ngettext("%d role selection", "%d role selections", count($selected_roles), 'scoper'), count($selected_roles) );
+			$roles_msg = sprintf(_n("%d role selection", "%d role selections", count($selected_roles), 'scoper'), count($selected_roles) );
 			
-			printf(_c('Role Assignments Updated: %1$s for %2$s|%d selections for %d', 'scoper'), $roles_msg, $agents_msg );
+			printf(_x('Role Assignments Updated: %1$s for %2$s', '%d selections for %d', 'scoper'), $roles_msg, $agents_msg );
 			?>
 			</p></div>
 		<?php endif; ?> 
@@ -149,7 +170,7 @@ if ( isset($_POST['rs_submit']) ) :	?>
 $blog_roles = array();
 foreach ( $role_bases as $role_basis )
 	$blog_roles[$role_basis] = ScoperRoleAssignments::get_assigned_blog_roles($role_basis);
-
+	
 $assignment_modes = array( ASSIGN_FOR_ENTITY_RS => __('Assign', 'scoper'), REMOVE_ASSIGNMENT_RS =>__('Remove', 'scoper') );	   
 ?>
 <div class="wrap agp-width97">
@@ -171,15 +192,18 @@ wp_nonce_field( "scoper-assign-blogrole" );
 //echo '<hr />';
 
 // ============ Users / Groups Selection Display ================
-echo "<h3><a name='scoper_submit'></a><b>";
+echo "<h3><a name='scoper_submit'></a><strong>";
 ?>
-</b></h3>
+</strong></h3>
 
 <?php
 echo '<ul class="rs-list_horiz"><li style="float:left;"><h3>1.&nbsp;';
 _e('Select Assignment Mode', 'scoper');
 echo '</h3></li>';
-echo '<li style="float:right;"><h3>4.&nbsp;';
+
+$number = ( $duration_limits_enabled || $content_date_limits_enabled ) ? 5 : 4;
+
+echo '<li style="float:right;"><h3>' . $number . '.&nbsp;';
 _e('Confirm and Submit', 'scoper');
 echo '</h3></li>';
 echo '</ul>';
@@ -199,13 +223,13 @@ echo '</ul>';
 
 </li>
 <li style='float:right;margin: 0 0.25em 0.25em 0.25em;'><span class="submit" style="border:none;">
-<input type="submit" name="rs_submit" value="<?php _e('Update &raquo;', 'scoper');?>" />
+<input type="submit" name="rs_submit" class="button-primary" value="<?php _e('Update &raquo;', 'scoper');?>" />
 </span></li>
 </ul>
 <p style="clear:both"></p>
 <?php
 echo '<br /><h3>2.&nbsp;';
-printf( _c('Select %s to Modify|Users or Groups', 'scoper'), $agent_caption_plural );
+printf( _x('Select %s to Modify', 'Users or Groups', 'scoper'), $agent_caption_plural );
 echo '</h3>';
 
 $args = array( 'suppress_extra_prefix' => true, 'filter_threshold' => 20, 'default_hide_threshold' => 20, 'check_for_incomplete_submission' => true );
@@ -217,7 +241,18 @@ echo '<p style="clear:both"></p>';
 
 echo '<hr /><br />';
 
-echo '<br /><h3>3.&nbsp;';
+if ( $duration_limits_enabled || $content_date_limits_enabled ) {
+	echo '<h3 style="margin-bottom: 0">3.&nbsp;';
+	_e('Set Role Duration and/or Content Date Limits', 'scoper');
+	echo '</h3>';
+	
+	include_once( 'admin_lib-bulk_rs.php' );
+	ScoperAdminBulkLib::display_date_limit_inputs( $duration_limits_enabled, $content_date_limits_enabled );
+
+	echo '<br /><h3>4.&nbsp;';
+} else
+	echo '<br /><h3>3.&nbsp;';
+
 _e('Select Roles to Assign / Remove', 'scoper');
 echo '</h3>';
 
@@ -290,9 +325,9 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 		if ( ! $otype_roles )
 			continue;
 
-		echo "<br /><h4><a name='$object_type'></a><b>";
+		echo "<br /><h4><a name='$object_type'></a><strong>";
 		printf( __('Modify role assignments for %s', 'scoper'), strtolower($otype->display_name_plural) );
-		echo '</b></h4>';
+		echo '</strong></h4>';
 
 		//display each role eligible for group/user assignment
 		$row_class = 'rs-backwhite';
@@ -303,7 +338,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 <thead>
 <tr class="thead">
 	<th class="rs-tightcol"></th>
-	<th class="rs-tightcol"><?php _e('Role', 'scoper') ?></th>
+	<th class="rs-tightcol"><?php echo __awp('Role') ?></th>
 	<th><?php echo($agent_caption_plural) ?></th>
 </tr>
 </thead>
@@ -335,15 +370,15 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 
 				// Does current user have this role blog-wide?
 				$is_admin_module = isset($otype_source[$object_type]) ? $otype_source[$object_type] : '';
-				if ( is_administrator_rs($is_admin_module) || array_intersect_key( array($role_handle=>1), $current_user->blog_roles) ) {
+				if ( is_administrator_rs($is_admin_module, 'user') || array_intersect_key( array($role_handle=>1), $current_user->blog_roles[$date_key]) ) {
 					$checked = ( $err && isset($_POST['roles']) && in_array($vals[$role_handle], $_POST['roles']) ) ? 'checked="checked"' : '';
 					$skip_if_val = REMOVE_ASSIGNMENT_RS;
 					$js_call = "agp_uncheck('" . implode(',', array_keys($roles)) . "',this.id,'assign_for','$skip_if_val');";
 					$checkbox = "<input type='checkbox' name='roles[]' id='$id' value='$val' $checked onclick=\"$js_call\" />";
-					$label = "<label for='$id'>" . str_replace(' ', '&nbsp;', $role->display_name) . "</label>";
+					$label = "<label for='$id'>" . str_replace(' ', '&nbsp;', $scoper->role_defs->get_display_name($role_handle) ) . "</label>";
 				} else {
 					$checkbox = '';
-					$label = str_replace(' ', '&nbsp;', $role->display_name);
+					$label = str_replace(' ', '&nbsp;', $scoper->role_defs->get_display_name($role_handle) );
 				}
 				
 				if ( ! isset($blog_roles[ROLE_BASIS_USER][$role_handle]) && ! isset($blog_roles[ROLE_BASIS_GROUPS][$role_handle]) )

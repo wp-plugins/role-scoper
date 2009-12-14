@@ -1,7 +1,7 @@
 <?php
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
 /**
  * UsersInterceptor_RS PHP class for the WordPress plugin Role Scoper
  * users-interceptor_rs.php
@@ -24,12 +24,6 @@ class UsersInterceptor_RS
 		// args: ($where, $reqd_caps='', $object_src_name, $object_id='') 
 		// Note: If any of the optional args are missing or nullstring, an attempt is made
 		// to determine them from URI based on Scoped_DataSource properties
-
-		// WP 2.5 throws a notice on plugin-defined hooks otherwise
-		$setargs = array( 'is_global' => true );
-		$setkeys = array('users_request_rs');
-		awp_force_set('wp_filter', array(), $setargs, $setkeys, 50);
-
 		add_filter('users_request_rs', array(&$this, 'flt_users_request'), 50, 5);
 	}
 	
@@ -169,7 +163,7 @@ class UsersInterceptor_RS
 		
 		$defaults = array('use_term_roles' => 1, 'use_blog_roles' => 1, 'skip_object_roles' => 0, 'querying_groups' => 0, 
 						  'ignore_group_roles' => false, 'ignore_user_roles' => false, 'object_type' => '',
-						  'objscope_roles' => '', 'preserve_or_clause' => '' );
+						  'objscope_roles' => '', 'preserve_or_clause' => '', 'enforce_duration_limits' => true, 'enforce_content_date_limits' => true );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 		
@@ -188,6 +182,21 @@ class UsersInterceptor_RS
 
 		if ( $object_id && ! $object_src_name )
 			$object_id = 0;
+		
+		if ( $object_id ) {
+			foreach ( $reqd_caps as $cap_name ) {
+				if ( $meta_caps = map_meta_cap_rs($cap_name, -1, $object_id) ) {
+					$reqd_caps = array_diff( $reqd_caps, array($cap_name) );
+					$reqd_caps = array_unique( array_merge( $reqd_caps, $meta_caps ) );
+				}		
+			}
+			
+			if ( 'post' == $object_src_name && ( $use_term_roles || $use_blog_roles ) ) {
+				if ( $post = get_post( $object_id ) )
+					$object_date_gmt = $post->post_date_gmt;
+			} else
+				$object_date_gmt = '';
+		}
 		
 		$owner_has_all_caps = true; // IMPORTANT: set this false downstream as appropriate
 		$rs_where = array();
@@ -236,8 +245,8 @@ class UsersInterceptor_RS
 				
 					// 'blog' argument forces inclusion of qualifying WP roles even if scoping with RS roles 
 					// (will later strip out non-scopable roles for term role / object role clauses)
-					$args['roles'] = $this->scoper->role_defs->qualify_roles($reqd_caps_arg, array('rs', 'wp'));
-					
+					$args['roles'] = $this->scoper->role_defs->qualify_roles($reqd_caps_arg, array('rs', 'wp'), '', array( 'all_wp_caps' => true ) );
+
 					if ( $args['roles'] || ! $src_name ) {
 						if ( USER_ROLES_RS && ! $ignore_user_roles )
 							$qry_roles[$cap_name]['general'][ROLE_BASIS_USER] = $this->users_queryroles($reqd_caps_arg, $src_name, $this_src_object_id, $args );
@@ -306,8 +315,12 @@ class UsersInterceptor_RS
 					
 					foreach ( $user_types as $user_type => $role_bases ) {
 						foreach ( $role_bases as $role_basis => $scopes ) {
-							$alias = $table_aliases[$role_basis];
 							
+							$alias = $table_aliases[$role_basis];
+
+							$content_date_comparison = ( $enforce_content_date_limits && ! empty($object_date_gmt) ) ? "'$object_date_gmt'" : '';
+							$duration_clause = scoper_get_duration_clause( $content_date_comparison, $alias, $enforce_duration_limits );	// arg: skip duration clause
+
 							foreach ( $scopes as $scope => $keys ) {
 								foreach ( $keys as $key => $role_names ) {
 									if ( empty($role_names) )
@@ -317,14 +330,15 @@ class UsersInterceptor_RS
 										
 									switch ( $scope ) {
 										case OBJECT_SCOPE_RS:
-											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'object' AND $alias.assign_for IN ('entity', 'both') AND $alias.src_or_tx_name = '$src_name' AND $alias.role_type = '$SCOPER_ROLE_TYPE' AND $alias.role_name IN ($role_in) AND $alias.obj_or_term_id = '$object_id'";
+											$id_clause = ( $object_id ) ? "AND $alias.obj_or_term_id = '$object_id'" : '';
+											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'object' AND $alias.assign_for IN ('entity', 'both') AND $alias.src_or_tx_name = '$src_name' AND $alias.role_type = '$SCOPER_ROLE_TYPE' AND $alias.role_name IN ($role_in) $duration_clause $id_clause";
 											break;
 										case TERM_SCOPE_RS:
 											$terms_clause = ( $object_id && $args['object_terms'][$key] ) ? "AND $alias.obj_or_term_id IN ('" . implode( "', '", $args['object_terms'][$taxonomy] ) . "')" : '';
-											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'term' AND $alias.assign_for IN ('entity', 'both') AND $alias.src_or_tx_name = '$key' $terms_clause AND $alias.role_type = '$SCOPER_ROLE_TYPE' AND $alias.role_name IN ($role_in) ";
+											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'term' AND $alias.assign_for IN ('entity', 'both') AND $alias.src_or_tx_name = '$key' $terms_clause AND $alias.role_type = '$SCOPER_ROLE_TYPE' AND $alias.role_name IN ($role_in) $duration_clause";
 											break;
 										case BLOG_SCOPE_RS:
-											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'blog' AND $alias.role_type = '$key' AND $alias.role_name IN ($role_in)";
+											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'blog' AND $alias.role_type = '$key' AND $alias.role_name IN ($role_in) $duration_clause";
 											break;
 									} // end scope switch
 								} // end foreach key
@@ -351,7 +365,7 @@ class UsersInterceptor_RS
 						if ( ! empty($ot_where[$user_type]) )   // [group role clauses] [OR] [user role clauses]
 							$ot_where[$user_type] = agp_implode(' ) OR ( ', $ot_where[$user_type], ' ( ', ' ) ');	
 					} // end foreach user type (general or owner)
-					
+
 					if ( ! empty($ot_where) )  // [general user clauses] [OR] [owner clauses]
 						$rs_where[$src_name][$object_type][$cap_name] = agp_implode(' ) OR ( ', $ot_where, ' ( ', ' ) ');
 					
@@ -389,7 +403,7 @@ class UsersInterceptor_RS
 			// if no valid role clauses were constructed, required caps are invalid; no users can do it
 			$where =  ' AND 1=2';
 		}
-		
+
 		return $where;
 	} // end function flt_users_where
 	
@@ -398,7 +412,7 @@ class UsersInterceptor_RS
 		$defaults = array('roles' => '', 'user' => '', 'querying_groups' => 0,
 						'use_term_roles' => 1, 'use_blog_roles' => 1, 'skip_object_roles' => false, 
 						'ignore_strict_terms' => 0, 'object_terms' => array(), 'object_type' => '',
-						'objscope_roles' => '' );
+						'objscope_roles' => '',	'any_object' => false );
 		
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -463,7 +477,7 @@ class UsersInterceptor_RS
 		
 		// --------- ACCOUNT FOR OBJECT ROLES -----------
 		// If this set of reqd_caps can be satisfied by a scopable role, check for object role assignements
-		if ( ! $skip_object_roles && $object_id ) {
+		if ( ! $skip_object_roles && ( $object_id || $any_object ) ) {
 		
 			// exclude roles which have never been assigned to any object
 			if ( $object_roles = $this->scoper->role_defs->qualify_object_roles($reqd_caps, $object_type) )
@@ -544,7 +558,7 @@ class UsersInterceptor_RS
 				$roles_current = $this->scoper->role_defs->filter_roles_by_type($roles, SCOPER_ROLE_TYPE);
 				foreach ( array_keys($roles_current) as $role_handle )
 					if ( ! isset($term_roles[$role_handle]) )
-						unset ($roles[$role_handle]);
+						unset ($roles[$role_handle]);			// Since this term role is restricted for all terms, prevent corresponding blog role from being added to qualifying_roles array by subsequent code
 			}
 		}
 		
@@ -556,25 +570,14 @@ class UsersInterceptor_RS
 		// Note that WP blogrole assignments (if not taxonomy or object-scoped) are honored 
 		// regardless of Role Scoper role_type setting.
 		if ( $use_blog_roles ) {
-			// WP roles containing the 'activate plugins' capability are always honored regardless of object or term restritions
-			global $wp_roles;
-			$admin_roles = array();
-			if ( isset($wp_roles->roles) )
-				foreach (array_keys($wp_roles->roles) as $wp_role_name)
-					if ( ! empty($wp_roles->roles[$wp_role_name]['capabilities']) )
-						if ( array_intersect_key($wp_roles->roles[$wp_role_name]['capabilities'], array('activate_plugins' => 1) ) )
-							$admin_roles = array_merge($admin_roles, array($wp_role_name => 1) );
-			
-			if ( $admin_roles ) {
-				$admin_roles = scoper_role_names_to_handles(array_keys($admin_roles), 'wp', true);  //arg: return as array keys
+			if ( $admin_roles = awp_administrator_roles() )
 				$roles = ( $roles ) ? array_merge($roles, $admin_roles) : $admin_roles;
-			}
 			
 			if ( $roles ) {
 				$role_types = array('rs', 'wp');
 				foreach ( $role_types as $role_type ) {
-					if ( ('rs' == $role_type) && ! RS_BLOG_ROLES )
-							continue;
+					//if ( ('rs' == $role_type) && ! RS_BLOG_ROLES )  // rs_blog_roles option has never been active in any RS release; leave commented here in case need arises
+					//		continue;
 				
 					$this_type_roles = $this->scoper->role_defs->filter_roles_by_type($roles, $role_type);
 					$qualifying_roles[BLOG_SCOPE_RS] [$role_type] = scoper_role_handles_to_names(array_keys($this_type_roles));
@@ -614,32 +617,19 @@ class UsersInterceptor_RS
 	function users_who_can($reqd_caps, $cols = COLS_ALL_RS, $object_src_name = '', $object_id = 0, $args = '' ) {
 		global $wpdb;
 		
-		$defaults = array( 'where' => '', 'orderby' => '', 'disable_memcache' => false, 'group_ids' => '', 'force_refresh' => false );
+		$defaults = array( 'where' => '', 'orderby' => '', 'disable_memcache' => false, 'group_ids' => '', 'force_refresh' => false, 'force_all_users' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
-
-		$role_type = SCOPER_ROLE_TYPE;
-		$cache_flag = "{$role_type}_users_who_can";
-		$cache_id = md5(serialize($reqd_caps) . $cols . 'src' . $object_src_name . 'id' . $object_id . serialize($args) );
-
-		if ( ! $force_refresh ) {
-			$users = wpp_cache_get($cache_id, $cache_flag);
-
-			if ( is_array($users) ) {
-				// rs_errlog('cached');
-				// echo "cached";
-				// dump($users);
-
-				return $users;
-			}
-		}
 		
 		if ( ! $orderby && ( ( COLS_ALL_RS == $cols ) || ( COLS_ID_DISPLAYNAME_RS == $cols ) ) )
 			$orderby = " ORDER BY display_name";
 		
-		if ( COL_ID_RS == $cols )
-			$qry = "SELECT DISTINCT uro.user_id AS ID FROM $wpdb->user2role2object_rs AS uro";
-		else {
+		if ( COL_ID_RS == $cols ) {
+			if ( $force_all_users )
+				$qry = "SELECT ID FROM $wpdb->users";
+			else
+				$qry = "SELECT DISTINCT uro.user_id AS ID FROM $wpdb->user2role2object_rs AS uro";
+		} else {
 			if ( COLS_ID_DISPLAYNAME_RS == $cols )
 				$qcols = "$wpdb->users.ID, $wpdb->users.display_name";
 			elseif ( COLS_ALL_RS == $cols )
@@ -647,25 +637,39 @@ class UsersInterceptor_RS
 			else
 				$qcols = $cols;
 			
-			$qry = "SELECT DISTINCT $qcols FROM $wpdb->users"
-				. " INNER JOIN $wpdb->user2role2object_rs AS uro ON uro.user_id = $wpdb->users.ID";
+			$qry = "SELECT DISTINCT $qcols FROM $wpdb->users";
+			$where = '';
+		}
+
+		if ( $reqd_caps || ! $force_all_users ) {
+			if ( COL_ID_RS != $cols )
+				$qry .= " INNER JOIN $wpdb->user2role2object_rs AS uro ON uro.user_id = $wpdb->users.ID";
+
+			if ( ! is_array($args) )
+				$args = array();
+				
+			if ( isset($args['ignore_user_roles']) )
+				unset($args['ignore_user_roles']);
+			
+			$do_groups = empty($args['ignore_group_roles']);
+			
+			$args['ignore_group_roles'] = 1;
+			
+			$args['enforce_duration_limits'] = scoper_get_option( 'role_duration_limits' );
+			$args['enforce_content_date_limits'] = scoper_get_option( 'role_content_date_limits' );
+			
+			//log_mem_usage_rs( 'before flt_users_where' );
+			
+			$where = $this->flt_users_where($where, $reqd_caps, $object_src_name, $object_id, $args);
+			
+			//log_mem_usage_rs( 'flt_users_where' );
 		}
 		
-		if ( ! is_array($args) )
-			$args = array();
+		$id_clause = ( $force_all_users ) ? '' : 'AND uro.user_id > 0';
+		
+		$qry = "$qry WHERE 1=1 $id_clause $where $orderby";
 			
-		if ( isset($args['ignore_user_roles']) )
-			unset($args['ignore_user_roles']);
-		
-		$do_groups = empty($args['ignore_group_roles']);
-		
-		$args['ignore_group_roles'] = 1;
-		
-		$where = $this->flt_users_where($where, $reqd_caps, $object_src_name, $object_id, $args);
-		
-		$qry = "$qry WHERE 1=1 AND uro.user_id > 0 $where $orderby";
-
-		$qry_key = $qry . serialize($args);;
+		$qry_key = $qry . serialize($args);
 		
 		// if we've already run this query before, return the result
 		if ( empty($disable_memcache) && isset($this->scoper->user_cache[$qry_key]) )
@@ -675,8 +679,10 @@ class UsersInterceptor_RS
 			$users = scoper_get_col($qry);
 		else
 			$users = scoper_get_results($qry);
-		
-		if ( $do_groups ) {
+			
+		//log_mem_usage_rs( 'users query' );
+			
+		if ( ! empty($do_groups) ) {
 			if ( ! empty($args['preserve_or_clause']) && strpos($args['preserve_or_clause'], 'uro.') )
 				unset($args['preserve_or_clause']);
 			
@@ -708,7 +714,7 @@ class UsersInterceptor_RS
 		
 		$this->scoper->user_cache[$qry_key] = $users;
 		
-		wpp_cache_set($cache_id, $users, $cache_flag);
+		//log_mem_usage_rs( 'end UsersInt::users_who_can' );
 		
 		return $users;
 	}
@@ -716,7 +722,7 @@ class UsersInterceptor_RS
 	function groups_who_can($reqd_caps, $cols = COLS_ALL_RS, $object_src_name = '', $object_id = 0, $args = '' ) {
 		global $wpdb;
 		
-		$defaults = array( 'orderby' => '', 'disable_memcache' => false );
+		$defaults = array( 'orderby' => '', 'disable_memcache' => false, 'force_refresh' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 		
@@ -727,13 +733,8 @@ class UsersInterceptor_RS
 		if ( ! $force_refresh ) {
 			$groups = wpp_cache_get($cache_id, $cache_flag);
 
-			if ( is_array($groups) ) {
-				//rs_errlog('cached');
-				//echo "cached";
-				//dump($groups);
-
+			if ( is_array($groups) )
 				return $groups;
-			}
 		}
 		
 		if ( ! is_array($reqd_caps) )
@@ -754,8 +755,7 @@ class UsersInterceptor_RS
 		$where = $this->flt_users_where('', $reqd_caps, $object_src_name, $object_id, $args);
 		
 		if ( COL_ID_RS == $cols ) {
-			$qry = "SELECT DISTINCT u2g.{$wpdb->user2group_gid_col} as ID FROM $wpdb->user2group_rs as u2g"
-				. " INNER JOIN $wpdb->user2role2object_rs AS gro ON u2g.{$wpdb->user2group_gid_col} = gro.group_id WHERE 1=1 $where $orderby";
+			$qry = "SELECT DISTINCT group_id as ID FROM $wpdb->user2role2object_rs AS gro WHERE 1=1 $where AND gro.group_id > 0 $orderby";
 
 			$groups = scoper_get_col($qry);
 		} else {
@@ -773,4 +773,211 @@ class UsersInterceptor_RS
 	}
 	
 }
+
+
+
+/**
+ * Map meta capabilities to primitive capabilities (with option to disregard to current user if user_id === -1)
+ *
+ * This does not actually compare whether the user ID has the actual capability,
+ * just what the capability or capabilities are. Meta capability list value can
+ * be 'delete_user', 'edit_user', 'delete_post', 'delete_page', 'edit_post',
+ * 'edit_page', 'read_post', or 'read_page'.
+ *
+ * @since 2.0.0
+ *
+ * @param string $cap Capability name.
+ * @param int $user_id User ID.
+ * @return array Actual capabilities for meta capability.
+ */
+function map_meta_cap_rs( $cap, $user_id ) {
+	$args = array_slice( func_get_args(), 2 );
+	$caps = array();
+
+	// support usage by RS users_who_can function, which needs to remap meta caps to simple equivalent but builds owner cap adjustment into DB query
+	$adjust_for_user = ( -1 !== $user_id );
+
+	switch ( $cap ) {
+	case 'delete_user':
+		$caps[] = 'delete_users';
+		break;
+	case 'edit_user':
+		if ( !isset( $args[0] ) || $user_id != $args[0] ) {
+			$caps[] = 'edit_users';
+		}
+		break;
+	case 'delete_post':
+		if ( $adjust_for_user )
+			$author_data = get_userdata( $user_id );
+		
+		//echo "post ID: {$args[0]}<br />";
+		$post = get_post( $args[0] );
+		if ( 'page' == $post->post_type ) {
+			$args = array_merge( array( 'delete_page', $user_id ), $args );
+			return call_user_func_array( 'map_meta_cap_rs', $args );
+		}
+		
+		if ( $adjust_for_user )
+			$post_author_data = get_userdata( $post->post_author );
+		
+		//echo "current user id : $user_id, post author id: " . $post_author_data->ID . "<br />";
+		// If the user is the author...
+		if ( $adjust_for_user && ( $user_id == $post_author_data->ID ) ) {
+			// If the post is published...
+			if ( 'publish' == $post->post_status )
+				$caps[] = 'delete_published_posts';
+			else
+				// If the post is draft...
+				$caps[] = 'delete_posts';
+		} else {
+			// The user is trying to edit someone else's post.
+			$caps[] = 'delete_others_posts';
+			// The post is published, extra cap required.
+			if ( 'publish' == $post->post_status )
+				$caps[] = 'delete_published_posts';
+			elseif ( 'private' == $post->post_status )
+				$caps[] = 'delete_private_posts';
+		}
+		break;
+	case 'delete_page':
+		if ( $adjust_for_user )
+			$author_data = get_userdata( $user_id );
+		
+		//echo "post ID: {$args[0]}<br />";
+		$page = get_page( $args[0] );
+		
+		if ( $adjust_for_user )
+			$page_author_data = get_userdata( $page->post_author );
+
+		//echo "current user id : $user_id, page author id: " . $page_author_data->ID . "<br />";
+		// If the user is the author...
+		if ( $adjust_for_user && ( $user_id == $page_author_data->ID ) ) {
+			// If the page is published...
+			if ( $page->post_status == 'publish' )
+				$caps[] = 'delete_published_pages';
+			else
+				// If the page is draft...
+				$caps[] = 'delete_pages';
+		} else {
+			// The user is trying to edit someone else's page.
+			$caps[] = 'delete_others_pages';
+			// The page is published, extra cap required.
+			if ( $page->post_status == 'publish' )
+				$caps[] = 'delete_published_pages';
+			elseif ( $page->post_status == 'private' )
+				$caps[] = 'delete_private_pages';
+		}
+		break;
+		// edit_post breaks down to edit_posts, edit_published_posts, or
+		// edit_others_posts
+	case 'edit_post':
+		if ( $adjust_for_user )
+			$author_data = get_userdata( $user_id );
+		
+		//echo "post ID: {$args[0]}<br />";
+		$post = get_post( $args[0] );
+		if ( 'page' == $post->post_type ) {
+			$args = array_merge( array( 'edit_page', $user_id ), $args );
+			return call_user_func_array( 'map_meta_cap_rs', $args );
+		}
+		
+		if ( $adjust_for_user )
+			$post_author_data = get_userdata( $post->post_author );
+		
+		//echo "current user id : $user_id, post author id: " . $post_author_data->ID . "<br />";
+		// If the user is the author...
+		if ( $adjust_for_user && ( $user_id == $post_author_data->ID ) ) {
+			// If the post is published...
+			if ( 'publish' == $post->post_status )
+				$caps[] = 'edit_published_posts';
+			else
+				// If the post is draft...
+				$caps[] = 'edit_posts';
+		} else {
+			// The user is trying to edit someone else's post.
+			$caps[] = 'edit_others_posts';
+			// The post is published, extra cap required.
+			if ( 'publish' == $post->post_status )
+				$caps[] = 'edit_published_posts';
+			elseif ( 'private' == $post->post_status )
+				$caps[] = 'edit_private_posts';
+		}
+		break;
+	case 'edit_page':
+		if ( $adjust_for_user )
+			$author_data = get_userdata( $user_id );
+		
+		//echo "post ID: {$args[0]}<br />";
+		$page = get_page( $args[0] );
+		
+		if ( $adjust_for_user )
+			$page_author_data = get_userdata( $page->post_author );
+		
+		//echo "current user id : $user_id, page author id: " . $page_author_data->ID . "<br />";
+		// If the user is the author...
+		if ( $adjust_for_user && ( $user_id == $page_author_data->ID ) ) {
+			// If the page is published...
+			if ( 'publish' == $page->post_status )
+				$caps[] = 'edit_published_pages';
+			else
+				// If the page is draft...
+				$caps[] = 'edit_pages';
+		} else {
+			// The user is trying to edit someone else's page.
+			$caps[] = 'edit_others_pages';
+			// The page is published, extra cap required.
+			if ( 'publish' == $page->post_status )
+				$caps[] = 'edit_published_pages';
+			elseif ( 'private' == $page->post_status )
+				$caps[] = 'edit_private_pages';
+		}
+		break;
+	case 'read_post':
+		$post = get_post( $args[0] );
+		if ( 'page' == $post->post_type ) {
+			$args = array_merge( array( 'read_page', $user_id ), $args );
+			return call_user_func_array( 'map_meta_cap_rs', $args );
+		}
+
+		if ( 'private' != $post->post_status ) {
+			$caps[] = 'read';
+			break;
+		}
+
+		if ( $adjust_for_user ) {
+			$author_data = get_userdata( $user_id );
+			$post_author_data = get_userdata( $post->post_author );
+		}
+			
+		if ( $adjust_for_user && ( $user_id == $post_author_data->ID ) )
+			$caps[] = 'read';
+		else
+			$caps[] = 'read_private_posts';
+		break;
+	case 'read_page':
+		$page = get_page( $args[0] );
+
+		if ( 'private' != $page->post_status ) {
+			$caps[] = 'read';
+			break;
+		}
+
+		if ( $adjust_for_user ) {
+			$author_data = get_userdata( $user_id );
+			$page_author_data = get_userdata( $page->post_author );
+		}
+		
+		if ( $adjust_for_user && ( $user_id == $page_author_data->ID ) )
+			$caps[] = 'read';
+		else
+			$caps[] = 'read_private_pages';
+		break;
+	default:
+		// If no meta caps match, return the original cap.
+		$caps[] = $cap;
+	}
+
+	return apply_filters('map_meta_cap_rs', $caps, $cap, $user_id, $args);
+}
+
 ?>

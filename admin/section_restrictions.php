@@ -2,9 +2,6 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
-// todo: update notes or hint with this
-//$assignment_modes = array( 1 =>__('ignored - equivalent section/object role required', 'scoper'), 0 =>__('honored - supplements section/object roles', 'scoper') );
-
 function scoper_admin_section_restrictions($taxonomy) {
 global $scoper;
 
@@ -12,10 +9,10 @@ $tx = $scoper->taxonomies->get($taxonomy);
 if ( empty($tx) || empty($tx->requires_term) )
 	wp_die(__('Invalid taxonomy', 'scoper'));
 
-$is_administrator = is_administrator_rs($tx);
+$is_administrator = is_administrator_rs($tx, 'user');
 
 if ( ! $scoper->admin->user_can_admin_terms($taxonomy) )
-	wp_die(__('Cheatin&#8217; uh?'));
+	wp_die(__awp('Cheatin&#8217; uh?'));
 
 require_once('admin_ui_lib_rs.php');
 require_once( 'admin-bulk_rs.php' );
@@ -34,9 +31,12 @@ $args = array( 'order_by' => $val );
 $all_terms = $scoper->get_terms($taxonomy, UNFILTERED_RS, COLS_ALL_RS, 0, $args);
 
 // =========================== Submission Handling =========================
-if ( isset($_POST['rs_submit']) )
+if ( isset($_POST['rs_submit']) ) {
 	$err = ScoperAdminBulk::role_submission(TERM_SCOPE_RS, ROLE_RESTRICTION_RS, '', $taxonomy, $role_codes, '', $nonce_id);
-else
+	
+	if ( scoper_get_option( 'file_filtering' ) )
+		scoper_flush_file_rules();
+} else
 	$err = 0;
 
 
@@ -60,9 +60,9 @@ echo '&nbsp;&nbsp;<span style="font-size: 0.6em; font-style: normal">(<a href="#
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
 	if ( 'category' == $taxonomy && scoper_get_otype_option('use_object_roles', 'post', 'post') )
-		printf(__('Reduce access by requiring some role(s) to be %1$s%2$s-assigned%3$s (or %4$s-assigned). Corresponding General Roles (whether assigned by WordPress or Role Scoper) are ignored.', 'scoper'), "<a href='" . SCOPER_ADMIN_URL . "/roles/$taxonomy'>", $tx->display_name, '</a>', $tx->object_source->display_name);
+		printf(__('Reduce access by requiring some role(s) to be %1$s%2$s-assigned%3$s (or %4$s-assigned). Corresponding General Roles (whether assigned by WordPress or Role Scoper) are ignored.', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-roles'>", $tx->display_name, '</a>', $tx->object_source->display_name);
 	else
-		printf(__('Reduce access by requiring some role(s) to be %1$s%2$s-assigned%3$s. Corresponding General Role assignments are ignored.', 'scoper'), "<a href='" . SCOPER_ADMIN_URL . "/roles/$taxonomy'>", $tx->display_name, '</a>');
+		printf(__('Reduce access by requiring some role(s) to be %1$s%2$s-assigned%3$s. Corresponding General Role assignments are ignored.', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-roles'>", $tx->display_name, '</a>');
 	echo '</div>';
 }
 
@@ -103,8 +103,8 @@ else
 		ASSIGN_FOR_BOTH_RS => sprintf(__('for selected and sub-%s', 'scoper'), $display_name_plural)
 	);
 
-$max_scopes = array( 'term' => __('Restrict selected roles', 'scoper'), 'blog' => __('Unrestrict selected roles', 'scoper') );
-$args = array( 'max_scopes' => $max_scopes );
+$max_scopes = array( 'term' => __('Restrict selected roles', 'scoper'), 'blog' => __('Unrestrict selected roles', 'scoper')  );
+$args = array( 'max_scopes' => $max_scopes, 'scope' => TERM_SCOPE_RS );
 ScoperAdminBulk::display_inputs(ROLE_RESTRICTION_RS, $assignment_modes, $args);
 
 ScoperAdminBulk::item_tree_jslinks(ROLE_RESTRICTION_RS);

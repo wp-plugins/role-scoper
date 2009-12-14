@@ -91,21 +91,21 @@ function scoper_flush_roles_cache( $scope, $role_bases = '', $user_ids = '', $ta
 				foreach ($scoper_role_types as $role_type)
 					foreach ( $user_ids as $user_id )
 						foreach ($taxonomies as $taxonomy)
-							wpp_cache_delete($user_id, "{$role_type}_term_roles_{$taxonomy}_for_{$role_basis}");
+							wpp_cache_delete($user_id, "{$role_type}_term-roles_{$taxonomy}_for_{$role_basis}");
 			} else {
 				foreach ($scoper_role_types as $role_type)
 					foreach ($taxonomies as $taxonomy)
-						wpp_cache_flush_group("{$role_type}_term_roles_{$taxonomy}_for_{$role_basis}");
+						wpp_cache_flush_group("{$role_type}_term-roles_{$taxonomy}_for_{$role_basis}");
 			}
 		
 		} else {
 			if ( $user_ids ) {
 				foreach ($scoper_role_types as $role_type)
 					foreach ( $user_ids as $user_id )
-						wpp_cache_delete($user_id, "{$role_type}_{$scope}_roles_for_{$role_basis}");
+						wpp_cache_delete($user_id, "{$role_type}_{$scope}-roles_for_{$role_basis}");
 			} else
 				foreach ($scoper_role_types as $role_type)
-					wpp_cache_flush_group("{$role_type}_{$scope}_roles_for_{$role_basis}");
+					wpp_cache_flush_group("{$role_type}_{$scope}-roles_for_{$role_basis}");
 		}
 	}
 }	

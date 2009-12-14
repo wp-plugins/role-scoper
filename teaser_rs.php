@@ -95,7 +95,8 @@ class ScoperTeaser {
 		if ( ! $pos = strpos(strtoupper($request), " FROM") )
 			return array();
 		
-		$request = "SELECT DISTINCT {$src->table}.$col_id " . substr($request, $pos);
+		$distinct = ( stripos( $request, " DISTINCT " ) ) ? 'DISTINCT' : ''; // RS does not add any joins, but if DISTINCT clause exists in query, retain it
+		$request = "SELECT $distinct {$src->table}.$col_id " . substr($request, $pos);
 
 		if ( $limitpos = strpos($request, ' LIMIT ') )
 			$request = substr($request, 0, $limitpos);
@@ -255,7 +256,7 @@ class ScoperTeaser {
 		} elseif ( ! empty($x_chars_teaser[$object_type]) && ! empty($object->$col_content) && ( strlen( strip_tags($object->$col_content) ) > $num_chars ) ) {
 			scoper_load_textdomain(); // otherwise this is only loaded for wp-admin
 
-			$object->$col_content = sprintf(_c('%s...|suffix for teaser displaying first specified number of chars', 'scoper'), substr( strip_tags($object->$col_content), 0, $num_chars ) );
+			$object->$col_content = sprintf(_x('%s...', 'teaser suffix', 'scoper'), substr( strip_tags($object->$col_content), 0, $num_chars ) );
 			$object->$col_excerpt = $object->$col_content;
 			
 			if ( is_single() || is_page() )

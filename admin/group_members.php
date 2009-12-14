@@ -18,8 +18,8 @@ require_once('groups-support.php');
 $mode = $_REQUEST['mode'];
 
 if($mode == "update"){
-	$group_temp = UserGroups_tp::getGroup($_REQUEST['id']);
-	UserGroups_tp::write( sprintf( __('<b>%s</b> group membership updated.', 'scoper'), $group_temp->display_name) );
+	$group_temp = ScoperAdminLib::get_group($_REQUEST['id']);
+	UserGroups_tp::write( sprintf( __('<strong>%s</strong> group membership updated.', 'scoper'), $group_temp->display_name) );
 }
 
 
@@ -58,7 +58,7 @@ function printGroupMembers() {
 			echo "<tr " . $style . "><td>" . $result->display_name . "</td><td>";
 			
 			if( $members = ScoperAdminLib::get_group_members($result->ID) ) {
-				printf(__ngettext( '%d user', '%d users', count($members), 'scoper' ), count($members) );
+				printf(_n( '%d user', '%d users', count($members), 'scoper' ), count($members) );
 				echo '<br />';
 			
 				foreach ($members as $member)
@@ -73,9 +73,7 @@ function printGroupMembers() {
 			echo "</td><td ".$style.">";
 			
 			if ( ! $result->meta_id )
-				echo "<a class=\"edit\"  href='" . SCOPER_ADMIN_URL .
-	        		"/group_members.php&amp;mode=edit&amp;id="
-	       			. $result->ID . "'>" . __('Edit') . "</a>";
+				echo "<a class='edit' href='admin.php?page=rs-group_members&amp;mode=edit&amp;id=$result->ID'>" . __awp('Edit') . "</a>";
 	        
 	        echo "</td></tr>";
 		}
@@ -89,16 +87,16 @@ switch($mode){
 		if(isset($_REQUEST['id'])){
 			$groupID = $_REQUEST['id'];
 			
-			$group = UserGroups_tp::getGroup($groupID);
+			$group = ScoperAdminLib::get_group($groupID);
 			
-			if ( $group->meta_id )
+			if ( $group->meta_id && ! strpos($group->meta_id, '_ed_') )
 				die( __('This meta group is automatically populated. You cannot manually add members to it.', 'scoper') );
 			
 			echo "<h2>";
 			printf( __('Edit members of %s group', 'scoper'), $group->display_name);
 			echo "</h2>";
 
-			echo '<form id="readWrite" name="readWrite" action="' . SCOPER_ADMIN_URL . '/group_members.php&amp;mode=update&amp;id='.$groupID.'" method="post">';
+			echo '<form id="readWrite" name="readWrite" action="' . 'admin.php?page=rs-group_members&amp;mode=update&amp;id='.$groupID.'" method="post">';
 			wp_nonce_field( 'scoper-edit-group-members_' . $groupID );
 			echo '<script type="text/javascript"><!--
 			      function select_all(name, value) {
@@ -119,7 +117,7 @@ switch($mode){
 	<div class="submit">
 		<input type="submit" value="Update" />
 		<input type="button"
-			onclick="javascript:location.href = '<?php echo(SCOPER_ADMIN_URL);?>/group_members.php&amp;cancel=1'"
+			onclick="javascript:location.href = 'admin.php?page=rs-group_members&amp;cancel=1'"
 			value="Cancel" class="button" />
 	</div>
 </form>
@@ -147,7 +145,7 @@ switch($mode){
 	default:
 		echo( '<h2>' . __('Group Members', 'scoper') . '</h2>');
 
-		$groups_url = SCOPER_ADMIN_URL . '/groups.php';
+		$groups_url = 'admin.php?page=rs-groups';
 		echo "<a href='$groups_url'>Back to Groups</a>";
 		
 	printGroupMembers();

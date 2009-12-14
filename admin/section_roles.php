@@ -9,18 +9,18 @@ global $scoper, $wpdb;
 if ( ! $tx = $scoper->taxonomies->get($taxonomy) )
 	wp_die(__('Invalid taxonomy', 'scoper'));
 
-$is_administrator = is_administrator_rs($tx);
+$is_administrator = is_administrator_rs($tx, 'user');
 	
 $role_bases = array();
 
-if ( USER_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_terms($taxonomy) || current_user_can('edit_users') ) )
+if ( USER_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_terms($taxonomy) ) )
 	$role_bases []= ROLE_BASIS_USER;
 	
-if ( GROUP_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_terms($taxonomy) || current_user_can('edit_users') || current_user_can('manage_groups') ) )
+if ( GROUP_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_terms($taxonomy) || current_user_can('manage_groups') ) )
 	$role_bases []= ROLE_BASIS_GROUPS;
 
 if ( empty($role_bases) )
-	wp_die(__('Cheatin&#8217; uh?'));
+	wp_die(__awp('Cheatin&#8217; uh?'));
 
 require_once('admin_ui_lib_rs.php');
 require_once( 'admin-bulk_rs.php' );
@@ -78,7 +78,7 @@ echo '<h2>' . sprintf(__('%s Roles', 'scoper'), $tx->display_name)
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
 	if ( ! empty($tx->requires_term) )
-		printf(_c('Grant capabilities within a specific %2$s, potentially more than a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.|arguments are link open, taxonomy name, link close', 'scoper'), "<a href='" . SCOPER_ADMIN_URL . "/restrictions/$taxonomy'>", $tx->display_name, '</a>');
+		printf(_x('Grant capabilities within a specific %2$s, potentially more than a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'arguments are link open, taxonomy name, link close', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-roles'>", $tx->display_name, '</a>');
 	else
 		printf(__('Grant capabilities within a specific %s, potentially more than a user\'s WP role would allow.', 'scoper'), $tx->display_name);
 		
@@ -121,7 +121,7 @@ else
 		ASSIGN_FOR_BOTH_RS => sprintf(__('Assign for selected and sub-%s', 'scoper'), $display_name_plural),
 		REMOVE_ASSIGNMENT_RS =>__('Remove', 'scoper')
 	);
-$args = array( 'role_bases' => $role_bases, 'agents' => $agents, 'agent_caption_plural' => $agent_caption_plural );
+$args = array( 'role_bases' => $role_bases, 'agents' => $agents, 'agent_caption_plural' => $agent_caption_plural, 'scope' => TERM_SCOPE_RS, 'src_or_tx_name' => $taxonomy   );
 ScoperAdminBulk::display_inputs(ROLE_ASSIGNMENT_RS, $assignment_modes, $args);
 
 $args = array( 'role_bases' => $role_bases );
@@ -173,14 +173,14 @@ _e('A Role is a collection of capabilities.', 'scoper');
 echo '</li>';
 
 echo '<li>';
-_e("Capabilities in a user's Wordpress Role (and, optionally, RS-assigned General Roles) enable blog-wide operations (read/edit/delete) on some object type (post/page/link), perhaps of a certain status (private/published/draft).", 'scoper');
+_e("Capabilities in a user's WordPress Role (and, optionally, RS-assigned General Roles) enable blog-wide operations (read/edit/delete) on some object type (post/page/link), perhaps of a certain status (private/published/draft).", 'scoper');
 echo '</li>';
 
 echo '<li>';
 if ( empty($tx->object_source->no_object_roles) )
-	printf(__('Scoped Roles can grant users these same Wordpress capabilities on a per-%1$s or per-%2$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->display_name, $tx->object_source->display_name);
+	printf(__('Scoped Roles can grant users these same WordPress capabilities on a per-%1$s or per-%2$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->display_name, $tx->object_source->display_name);
 else
-	printf(__('Scoped Roles can grant users these same Wordpress capabilities on a per-%1$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->display_name, $tx->object_source->display_name);
+	printf(__('Scoped Roles can grant users these same WordPress capabilities on a per-%1$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->display_name, $tx->object_source->display_name);
 echo '</li>';
 
 echo '<li>';

@@ -2,6 +2,7 @@
 // This file can be called manually or by cron to clear the Role Scoper cache, even if WP is non-functional.
 $id = '';	// Set any $id value to prevent anonymous public flushing of your cache (depending on your sensibilities).
 
+// NOTE:  If you are using a custom WP_CONTENT_DIR, you must also change the following line to correspond
 $dir = dirname(__FILE__) . '/wp-content' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR; // your cache location
 
 if ( $id ) {
@@ -25,7 +26,7 @@ while ($index < count($stack)) {
 
 	$dh = @ opendir($dir);
 	if (!$dh) {
-		echo "Error opening cache directory ($dir)";
+		echo "Error opening cache directory ($dir).<br /><br />Do you need to edit rs_cache_flush.php for a custom WP_CONTENT_DIR?";
 		return;
 	}
 	

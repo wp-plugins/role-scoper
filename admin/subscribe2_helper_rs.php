@@ -31,12 +31,15 @@ function scoper_limit_subscribe2_autosub( $query ) {
 		// WP roles containing the 'activate plugins' capability are always honored regardless of object or term restritions
 		$admin_roles_wp = array();
 		global $wp_roles;
-		if ( isset($wp_roles->roles) )
+		if ( isset($wp_roles->roles) ) {
+			$admin_cap_name = ( defined( 'SCOPER_CONTENT_ADMIN_CAP' ) ) ? constant( 'SCOPER_CONTENT_ADMIN_CAP' ) : 'activate_plugins';
+			
 			foreach (array_keys($wp_roles->roles) as $wp_role_name)
 				if ( ! empty($wp_roles->roles[$wp_role_name]['capabilities']) )
-					if ( array_intersect_key($wp_roles->roles[$wp_role_name]['capabilities'], array('activate_plugins' => 1) ) )
+					if ( array_intersect_key($wp_roles->roles[$wp_role_name]['capabilities'], array($admin_cap_name => 1) ) )
 						$admin_roles_wp = array_merge($admin_roles_wp, array($wp_role_name => 1) );
-		
+		}
+						
 		if ( $admin_roles_wp )
 			$admin_roles_wp = scoper_role_names_to_handles(array_keys($admin_roles_wp), 'wp', true);  //arg: return as array keys
 

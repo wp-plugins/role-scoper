@@ -20,7 +20,7 @@ class ScoperAdminFilters_Legacy {
 						// Don't allow WP to default the Write link to page-new.php if page creation is disabled for this user
 						if ( isset($menu_array[2]) && ( 'page-new.php' == $menu_array[2] ) && ( 'page-new.php' == $menu_array[2] ) ) {
 							if ( isset($menu[5][2]) && ( $menu[5][2] == 'page-new.php' ) )
-								$menu[5] = array(__('Write'), 'edit_posts', 'post-new.php');
+								$menu[5] = array(__awp('Write'), 'edit_posts', 'post-new.php');
 						}
 					}
 					

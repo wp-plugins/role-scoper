@@ -13,11 +13,11 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 class TemplateInterceptor_RS
 {	
-	var $scoper;
+	//var $scoper;
 
 	function TemplateInterceptor_RS() {
-		global $scoper;
-		$this->scoper =& $scoper;	
+		//global $scoper;
+		//$this->scoper =& $scoper;	
 		
 		if ( scoper_get_option( 'strip_private_caption' ) ) {
 			add_filter('the_title', array(&$this, 'flt_title'), 10, 3);
@@ -31,6 +31,9 @@ class TemplateInterceptor_RS
 	
 		if ( awp_is_plugin_active('events-calendar') )
 			add_filter( 'query', array(&$this, 'ec_getDaysEvents') );
+			
+		if ( awp_is_plugin_active('eventcalendar3') )
+			add_filter( 'query', array(&$this, 'ec3_query') );
 	}
 	
 	function ec_getDaysEvents( $query ) {
@@ -73,6 +76,28 @@ class TemplateInterceptor_RS
 		return $query;
 	}
 	
+	function ec3_query( $query ) {
+		if ( strpos( $query, 'ec3_schedule') ) {
+			global $wpdb;
+			
+			// filter calendar item query from ec3_util_calendar_days()
+			if ( strpos( $query, "FROM $wpdb->posts,{$wpdb->prefix}ec3_schedule") ) {
+				$where = apply_filters( 'objects_where_rs', '', 'post', 'post', array('skip_teaser' => true) );
+
+				$query = str_replace( "AND post_type='post'", '', $query );
+				$query = str_replace( "WHERE post_status='publish'", "WHERE 1=1 $where", $query );
+			}
+			
+			// filter event listing query from ec3_get_events()
+			if ( strpos( $query, "FROM {$wpdb->prefix}ec3_schedule s" ) && strpos( $query, "LEFT JOIN $wpdb->posts p") ) {
+				$where = apply_filters( 'objects_where_rs', '', 'post', 'post', array( 'source_alias' => 'p', 'skip_teaser' => true) );	
+				$query = str_replace( "WHERE p.post_status='publish'", "WHERE 1=1 $where", $query );
+			}
+		}
+		
+		return $query;
+	}
+	
 	function flt_title($title) {
 		if ( 0 === strpos( $title, 'Private: ' ) || 0 === strpos( $title, 'Protected: ' ) )
 			$title = substr( $title, strpos( $title, ':' ) + 2 ); 
@@ -81,11 +106,9 @@ class TemplateInterceptor_RS
 	}
 	
 	function flt_gettext($translated_text, $orig_text) {
-		if ( 0 === strpos( $orig_text, 'Private: ' ) || 0 === strpos( $orig_text, 'Protected: ' ) ) {
-			global $l10n;
-			$translated_text = $l10n['default']->translate( substr( $orig_text, strpos( $orig_text, ':' ) + 2 ) ); 
-		}
-		
+		if ( ( 'Private: %s' == $orig_text ) || ( 'Protected: %s' == $orig_text ) )
+			$translated_text = '%s';
+
 		return $translated_text;
 	} 
 

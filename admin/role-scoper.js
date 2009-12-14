@@ -1,18 +1,8 @@
 addLoadEvent(function() {
 	//on page load, highlight the UI if scoped roles affect to the item being edited
-	scoper_in_the_house('rs-scoping_alert');
+	//scoper_in_the_house('rs-scoping_alert');
 	maybe_hide_quickedit('rs_hide_quickedit');
 });
-
-function scoper_in_the_house(flag_id) {
-	var got_flag = document.getElementById(flag_id);
-	if ( got_flag ) {
-		var elem = document.getElementById('title');
-		if ( elem ) {
-			elem.className = 'rs-scoped_post';
-		}
-	}
-}
 
 function maybe_hide_quickedit(flag_id) {
 	var got_flag = document.getElementById(flag_id);
