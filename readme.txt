@@ -39,6 +39,7 @@ Scoped role restrictions and assignments are reflected in every aspect of the Wo
 * Un-editable posts/pages are excluded from the editing list
 * Optimized to limit additional database queries
 * XML-RPC support
+* Integrates with the <a href="http://wordpress.org/extend/plugins/revisionary/">Revisionary plugin</a> for moderated editing of specified content.
 * Extensive WP-mu support
 
 = Plugin API =
