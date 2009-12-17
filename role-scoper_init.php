@@ -2,6 +2,8 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
+require_once('defaults_rs.php');
+	
 require_once('hardway/cache-persistent.php');
 
 if ( is_admin() )

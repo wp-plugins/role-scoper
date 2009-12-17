@@ -100,15 +100,15 @@ class QueryInterceptor_RS
 			}
 		}
 		
-		//add_filter( 'query', array( &$this, 'flt_debug_query'), 999 );
+		//add_filter( 'posts_request', array( &$this, 'flt_debug_query'), 999 );
 	}
 	
-	/*
-	function flt_debug_query( $query ) {
-		d_echo( $query . '<br /><br />' );
-		return $query;
-	}
-	*/
+	
+	//function flt_debug_query( $query ) {
+	//	d_echo( $query . '<br /><br />' );
+	//	return $query;
+	//}
+	
 	
 	
 	// Append any limiting clauses to WHERE clause for taxonomy query
@@ -190,6 +190,7 @@ class QueryInterceptor_RS
 
 		$args['skip_owner_clause'] = true;
 		$args['terms_reqd_caps'] = $reqd_caps_by_otype;
+		$args['taxonomies'] = $taxonomies;
 
 		// As of RS 1.1, using subselects in where clause instead
 		//$rs_join = $this->flt_objects_join('', $src_name, '', $args);
@@ -1144,7 +1145,7 @@ class QueryInterceptor_RS
 					}
 				} // end foreach taxonomy
 			}
-			
+
 			foreach ( array_keys($user_blog_roles) as $date_key ) {
 				if ( ! empty($all_taxonomies_qualified[$date_key]) || ( ! $use_term_roles && ! empty($user_blog_roles[$date_key][$role_handle]) ) ) {
 					if ( $date_key || $objscope_clause || ! empty($require_blog_and_obj_role) )
@@ -1244,7 +1245,8 @@ class QueryInterceptor_RS
 									$this_tx_clause = "{$qvars->term->alias}.{$qvars->term->col_id} IN ('" . implode("', '", $terms) . "')";
 
 									// If the request already has a corresponding join on the object2term (term_relationships) table, use it.  Otherwise, use a subselect rather than adding our own LEFT JOIN.
-									if( $this->is_term_table_joined( $join, $taxonomy ) )
+									// (But if this taxonomy is strict and uses the WP term_relationships table, we cannot add an AND clause referencing the same INNER JOIN as aliases as those used for categories.)  
+									if( $this->is_term_table_joined( $join, $taxonomy ) && ( ! $is_strict || ( 'category' == $taxonomy ) || ! $scoper->taxonomies->member_property( $taxonomy, 'uses_standard_schema' ) ) )
 										$taxonomy_clauses[$is_strict] []= "$this_tx_clause $objscope_clause";
 									else {
 										$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause";

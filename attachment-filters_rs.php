@@ -164,8 +164,6 @@ class AttachmentFilters_RS {
 
 		$file = $query->query_vars['attachment'];
 
-		//rs_errlog( "direct access attempt for $file" );
-		
 		require_once( 'uploads_rs.php' );
 		$uploads = scoper_get_upload_info();
 	

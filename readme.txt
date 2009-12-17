@@ -107,6 +107,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.1.RC2 =
+* BugFix : Custom Taxonomy Restrictions were not applied correctly
+* BugFix : Activation Error
+
+
 **1.1.RC1 - 12 Dec 2009**
 
 =WP-mu:=
