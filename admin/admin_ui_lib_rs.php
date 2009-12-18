@@ -451,6 +451,11 @@ class ScoperAdminUI {
 		// If the select tag was not passed in, don't pass it out
 		if ( ! empty($mat[1]) )
 			return "<select{$mat[1]}>\n" . $option_main . $options_html . '</select>';
+		
+		// (but if core dropdown_pages passes in a nullstring, we need to insert the missing select tag).  TODO: core patch to handle this more cleanly
+		elseif ( ! $orig_options_html )
+			return "<select name=\"page_id\" id=\"page_id\">\n" . $option_main . $options_html . '</select>';
+		
 		else
 			return $option_main . $options_html;
 	}

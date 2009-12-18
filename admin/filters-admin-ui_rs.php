@@ -120,7 +120,6 @@ class ScoperAdminFiltersUI
 
 		$object_id = $this->scoper->data_sources->detect('id', $src_name, '', $object_type);
 
-
 		$can_edit_blogwide = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type);
 		
 		$blogwide_requirement = scoper_get_option('hide_non_editor_admin_divs');

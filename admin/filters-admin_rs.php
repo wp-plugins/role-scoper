@@ -217,7 +217,7 @@ class ScoperAdminFilters
 	function flt_page_parent ($parent_id) {
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) )
 			return $parent_id;
-		
+	
 		require_once('filters-admin-save_rs.php');
 		return scoper_flt_page_parent($parent_id);
 	}

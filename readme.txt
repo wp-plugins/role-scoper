@@ -107,7 +107,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.1.RC2 =
+= 1.1.RC3 - 17 Dec 2009 =
+* BugFix : Categories listing filter was inactive for first-time installations and following RS Options re-save
+* BugFix : Invalid HTML formatting of Page Parent dropdown if no published pages exist
+
+
+= 1.1.RC2 - 17 Dec 2009 =
 * BugFix : Custom Taxonomy Restrictions were not applied correctly
 * BugFix : Activation Error
 

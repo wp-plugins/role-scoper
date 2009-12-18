@@ -72,17 +72,21 @@ class ScoperHardway
 			}
 		}
 		
-		
 		// === BEGIN Role Scoper ADDITION: global var; various special case exemption checks ===
 		//
 		global $scoper;
+		
+		if ( ! $scoper->taxonomies->is_member( $taxonomies[0] ) )
+			return $results;
 		
 		// no backend filter for administrators
 		$parent_or = '';
 		if ( ( is_admin() || defined('XMLRPC_REQUEST') ) ) {
 			if ( is_content_administrator_rs() ) {
 				return $results;
-			} elseif ( $tx = $scoper->taxonomies->get($taxonomies[0]) ) {
+			} else {
+				$tx = $scoper->taxonomies->get($taxonomies[0]);
+				
 				// is a Category Edit form being displayed?
 				if ( ! empty( $tx->uri_vars ) )
 					$term_id = $scoper->data_sources->detect('id', $tx);
@@ -94,22 +98,21 @@ class ScoperHardway
 					$parent_or = " OR t.term_id = (SELECT parent FROM $wpdb->term_taxonomy WHERE term_id = '$term_id') ";
 			}
 		}
-
+		
 		// need to skip cache retrieval if QTranslate is filtering get_terms with a priority of 1 or less
 		static $no_cache;
 		if ( ! isset($no_cache) )
 			$no_cache = defined( 'SCOPER_NO_TERMS_CACHE' ) || ( ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate') );
 
+		// this filter currently only supports a single taxonomy for each get_terms call
+		// (although the terms_where filter does support multiple taxonomies and this function could be made to do so)
+		if ( ! $single_taxonomy )
+				return $results;
+
 		// link category roles / restrictions are only scoped for management (TODO: abstract this)
 		if ( $single_taxonomy && ( 'link_category' == $taxonomies[0] ) && $scoper->is_front() )
 			return $results;
 
-		// this filter currently only supports a single taxonomy for each get_terms call
-		// (although the terms_where filter does support multiple taxonomies and this function could be made to do so)
-		$scoped_taxonomies = scoper_get_option('enable_wp_taxonomies');
-		if ( ! $single_taxonomy || ! isset($scoped_taxonomies[ $taxonomies[0] ]) )
-				return $results;
-				
 		// depth is not really a get_terms arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
 		if ( ! empty($args['exclude']) && empty($args['exclude_tree']) && ! empty($args['depth']) && ( 1 == $args['depth'] ) )
 			$args['exclude_tree'] = $args['exclude'];
@@ -355,6 +358,7 @@ class ScoperHardway
 			
 		$query = apply_filters('terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser));
 
+		
 		// if no filering was applied because the teaser is enabled, prevent a redundant query
 		if ( ! empty($exclude_tree) || ($query_base != $query) || $parent || ( 'all' != $fields ) ) {
 			$terms = scoper_get_results($query);
@@ -501,6 +505,9 @@ class ScoperHardway
 			return $results;
 		}
 
+		if ( ! is_array($results) )
+			$results = (array) $results;
+		
 		global $wpdb;
 
 		// === BEGIN Role Scoper ADDITION: global var; various special case exemption checks ===
