@@ -222,7 +222,7 @@ $ui->option_captions = array(
 	'rs_post_author_role_objscope' => $scoper->role_defs->get_display_name('rs_post_author'),
 	'rs_page_revisor_role_objscope' => $scoper->role_defs->get_display_name('rs_page_revisor'),
 	'rs_post_revisor_role_objscope' => $scoper->role_defs->get_display_name('rs_post_revisor'),
-	'lock_top_pages' => __('Lock Top Level Page Structure', 'scoper'),
+	'lock_top_pages' => __('Pages can be set or removed from Top Level by:', 'scoper'),
 	'display_user_profile_groups' => __('Display User Groups', 'scoper'),
 	'display_user_profile_roles' => __('Display User Roles', 'scoper'),
 	'user_role_assignment_csv' => __('Users CSV Entry', 'scoper'),
@@ -1235,10 +1235,29 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 	<tr valign="top">
 	<th scope="row"><?php echo $ui->section_captions[$tab][$section];		// --- PAGE STRUCTURE SECTION ---
 	?></th><td>
-	
+
 	<?php
-	$hint = __('<strong>If selected</strong>, only Administrators can create new top-level pages.  <strong>Otherwise,</strong> top level pages can be created by any user with the <strong>edit_pages</strong> and <strong>edit_others_pages</strong> capability in their WordPress Role or RS General Role(s).', 'scoper');
-	$ui->option_checkbox( 'lock_top_pages', $tab, $section, $hint, '' );
+	$id = 'lock_top_pages';
+	$ui->all_options []= $id;
+	$current_setting = strval( scoper_get_option($id, $sitewide, $customize_defaults) );  // force setting and corresponding keys to string, to avoid quirks with integer keys
+
+	echo $ui->option_captions['lock_top_pages'];
+
+	$captions = array( 'author' => __('Page Authors, Editors and Administrators', 'scoper'), '' => __('Page Editors and Administrators', 'scoper'), '1' => __('Administrators', 'scoper') );
+	
+	foreach ( $captions as $key => $value) {
+		$key = strval($key);
+		echo "<div style='margin: 0 0 0.5em 2em;'><label for='{$id}_{$key}'>";
+		$checked = ( $current_setting === $key ) ? "checked='checked'" : '';
+	
+		echo "<input name='$id' type='radio' id='{$id}_{$key}' value='$key' $checked />";
+		echo $value;
+		echo '</label></div>';
+	}
+	
+	echo '<span class="rs-subtext">';
+	if ( $ui->display_hints ) _e('Users who do not meet this blog-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of "Main Page".  Nor will they be able to move a currently published page from "Main Page" to a different Page Parent.', 'scoper');
+	echo '</span>';
 	?>
 
 	</td></tr>

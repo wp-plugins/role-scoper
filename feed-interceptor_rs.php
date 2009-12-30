@@ -72,9 +72,14 @@ class FeedInterceptor_RS {
 			$http_auth_if = ! empty($current_user->ID);
 		}
 
-		if ( $http_auth_if )
+		if ( $http_auth_if ) {
 			add_filter('feed_link', array(&$this, 'filter_feed_link'));
-
+			add_filter('category_feed_link', array(&$this, 'filter_feed_link'));
+			add_filter('tag_feed_link', array(&$this, 'filter_feed_link'));
+			add_filter('author_feed_link', array(&$this, 'filter_feed_link'));
+			add_filter('post_comments_feed_link', array(&$this, 'filter_feed_link'));
+		}
+			
 		add_filter('the_content_rss', array(&$this, 'filter_the_content_rss'));
 		add_filter('the_excerpt_rss', array(&$this, 'filter_the_excerpt_rss'));
 		

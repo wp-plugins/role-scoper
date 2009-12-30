@@ -84,32 +84,34 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 					if ( $strict_terms = $scoper->get_restrictions(TERM_SCOPE_RS, $taxonomy ) )
 						$scoper->any_restricted_terms = true;
 
+					$all_terms = $scoper->get_terms($taxonomy, UNFILTERED_RS, COL_ID_RS);
+
 					foreach ( array_keys($roles) as $op_type ) {
 						$status_where = array();
 						
 						foreach ( $tx_object_types as $object_type) {
 							$term_clauses = array();
-							
-							foreach ( $roles[$op_type][$object_type] as $status => $check_role ) {
-								$all_terms = $scoper->get_terms($taxonomy, UNFILTERED_RS, COL_ID_RS);
 
+							foreach ( $roles[$op_type][$object_type] as $status => $check_role ) {
 								if ( isset($strict_terms['restrictions'][$check_role]) && is_array($strict_terms['restrictions'][$check_role]) )
-									$loose_terms = array_diff($all_terms, array_keys($strict_terms['restrictions'][$check_role]) );
+									$this_strict_terms = array_keys( $strict_terms['restrictions'][$check_role] );
 
 								elseif ( isset($strict_terms['unrestrictions'][$check_role]) && is_array($strict_terms['unrestrictions'][$check_role]) )
-									$loose_terms = array_intersect($all_terms, array_keys( $strict_terms['unrestrictions'][$check_role] ) );
+									$this_strict_terms = array_diff($all_terms, array_keys( $strict_terms['unrestrictions'][$check_role] ) );	
 								else
-									$loose_terms = $all_terms;
-
-								if ( ! $loose_terms ) {  // no terms in this taxonomy honor blog-wide assignment of the pertinent role
+									$this_strict_terms = array();
+									
+								if ( ! $this_strict_terms ) {  // no terms in this taxonomy have restricted roles
+									$term_clauses[$status] = '1=2';
+	
+								} elseif ( count($this_strict_terms) < count($all_terms) ) {  // some (but not all) terms in this taxonomy honor blog-wide assignment of the pertinent role
+									$term_clauses[$status] = " {$qvars->term->alias}.{$qvars->term->col_id} IN ('" . implode("', '", $this_strict_terms) . "')";
+								} else
 									$term_clauses[$status] = '1=1';
-
-								} elseif ( count($loose_terms) < count($all_terms) ) {  // some (but not all) terms in this taxonomy honor blog-wide assignment of the pertinent role
-									$term_clauses[$status] = " {$qvars->term->alias}.{$qvars->term->col_id} IN ('" . implode("', '", $loose_terms) . "')";
-								}
 									
 								if ( isset($term_clauses[$status]) )
 									$status_where[$object_type][$status] = " {$src->cols->status} = '$status' AND ( $term_clauses[$status] ) ";
+											
 							} // end foreach statuses
 	
 							if ( isset($status_where[$object_type]) ) // object_type='type_val' AND ( (status 1 clause) OR (status 2 clause) ...
@@ -123,8 +125,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 							$where .= " AND {$src->table}.$col_id IN ('" . implode( "', '", array_keys($listed_ids) ) . "')";
 							
 							$query = "SELECT DISTINCT $col_id FROM $src->table $term_join WHERE 1=1 $where";
-							
+
 							if ( $restricted_ids = scoper_get_col($query) ) {
+
 								foreach ( $restricted_ids as $id ) {
 									$scoper->termscoped_ids[$src_name][$id][$op_type] = true;
 									$scoper->restricted_ids[$src_name][$id][$op_type] = true;

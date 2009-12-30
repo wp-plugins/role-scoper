@@ -8,7 +8,7 @@ if ( ! is_option_administrator_rs() )
 function scoper_attach_linked_uploads( $echo = false ) {
 	global $wpdb;
 
-	require_once( 'uploads_rs.php' );
+	require_once( SCOPER_ABSPATH . '/uploads_rs.php' );
 	$uploads = scoper_get_upload_info();
 	
 	$site_url = untrailingslashit( get_option('siteurl') );
@@ -192,7 +192,7 @@ else
 require_once( SCOPER_ABSPATH . '/uploads_rs.php' );
 $uploads = scoper_get_upload_info();
 	
-printf(__('Files linked from WP Posts and Pages must be in %1$s (or a subdirectory of it) to be filtered. After moving files, you may use %2$s a search and replace plugin%3$s to conveniently update the URLs stored in your Post / Page content. %4$s', 'scoper'), '<strong>' . $uploads['baseurl'] . '</strong>', "<a href='{$uploads['baseurl']}'>", '</a>', $www_msg);
+printf(__('Files linked from WP Posts and Pages must be in %1$s (or a subdirectory of it) to be filtered. After moving files, you may use %2$s a search and replace plugin%3$s to conveniently update the URLs stored in your Post / Page content. %4$s', 'scoper'), '<strong>' . $uploads['baseurl'] . '</strong>', "<a href='$search_replace_url'>", '</a>', $www_msg);
 echo '</li><li>';
 _e( 'Files which are <strong>already appropriately located and linked</strong> must also have their post-file attachment relationship stored to the WP database.  This is normally accomplished by clicking the "Insert into Post" button in the WP file uploader / Media Library.  Files which were instead uploaded manually via FTP or CPanel <strong>can receive their attachment record via this utility</strong>.', 'scoper');
 echo '</li></ol></div>';

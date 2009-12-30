@@ -3,8 +3,8 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
-Tested up to: 2.9
-Stable Tag: 1.0.8
+Tested up to: 2.9.1
+Stable Tag: 1.1
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -39,7 +39,7 @@ Scoped role restrictions and assignments are reflected in every aspect of the Wo
 * Un-editable posts/pages are excluded from the editing list
 * Optimized to limit additional database queries
 * XML-RPC support
-* Integrates with the <a href="http://wordpress.org/extend/plugins/revisionary/">Revisionary plugin</a> for moderated editing of specified content.
+* Integrates with the <a href="http://wordpress.org/extend/plugins/revisionary/">Revisionary plugin</a> for moderated revisioning of published content.
 * Extensive WP-mu support
 
 = Plugin API =
@@ -107,14 +107,27 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.1.RC3 - 17 Dec 2009 =
-* BugFix : Categories listing filter was inactive for first-time installations and following RS Options re-save
+= 1.1 - 30 Dec 2009 =
+* Feature : Additional "Lock Top Pages" option to allow any Page Author to set or remove top-level pages
+* Feature : If HTTP authentication is enabled, append the http_auth argument to Category, Tag, Author and Comment feed links also 
+* BugFix : Changes to restrictions, roles did not clear internal cache for anonymous user (since 1.1.RC1)
+* BugFix : Contributors could not upload an image before a category is set, if editing rights are based on category
+* BugFix : Edit Posts listing for Published status included non-published posts (since 1.1.RC1)
+* BugFix : Edit Pages listing for Published status included non-published pages (since 1.1.RC1)
+* BugFix : Category Restrictions were not correctly noted in Edit Posts listing or front-end template functions (since 1.1.RC1)
+* BugFix : In WP-mu dashboard, PHP warnings on first execution (since 1.1.RC1)
+* BugFix : Attachments Utility did not load (since 1.1.RC1)
+* Compat : Simple Section Nav: page selection list in Widget setup was broken with latest SSN version
+
+
+= 1.1.RC3 - 18 Dec 2009 =
+* BugFix : Categories listing filter was inactive for new installations and following RS Options re-save (since 1.1.RC1)
 * BugFix : Invalid HTML formatting of Page Parent dropdown if no published pages exist
 
 
 = 1.1.RC2 - 17 Dec 2009 =
-* BugFix : Custom Taxonomy Restrictions were not applied correctly
-* BugFix : Activation Error
+* BugFix : Custom Taxonomy Restrictions were not applied correctly (since 1.1.RC1)
+* BugFix : Activation Error (since 1.1.RC1)
 
 
 **1.1.RC1 - 12 Dec 2009**

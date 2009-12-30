@@ -134,16 +134,16 @@ function scoper_version_check() {
 }
 
 function scoper_load_textdomain() {
-	if ( defined('SCOPER_TEXTDOMAIN_LOADED') )
+	if ( defined( 'SCOPER_TEXTDOMAIN_LOADED' ) )
 		return;
 
-	load_plugin_textdomain('scoper', PLUGINDIR . '/' . SCOPER_FOLDER . '/languages');
+	load_plugin_textdomain( 'scoper', '', SCOPER_FOLDER . '/languages' );
 
 	define('SCOPER_TEXTDOMAIN_LOADED', true);
 }
 
 function scoper_log_init_action() {
-	define ('SCOPER_INIT_ACTION_DONE', true);
+	define ( 'SCOPER_INIT_ACTION_DONE', true );
 
 	require_once('db-config_rs.php');
 	

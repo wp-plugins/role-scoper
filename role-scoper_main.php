@@ -348,7 +348,6 @@ class Scoper
 			}
 		}
 
-		
 		if ( ! $disable_queryfilters ) {
 			if ( ! $is_administrator ) {
 				if ( $direct_file_access ) {
@@ -375,16 +374,15 @@ class Scoper
 				$this->query_interceptor = new QueryInterceptor_RS();
 			
 				//log_mem_usage_rs( 'new QueryInterceptor_RS' );
-				
-				if ( ! $direct_file_access ) {
-					// port or low-level query filters to work around limitations in WP core API
-					require_once('hardway/hardway_rs.php');
-					
-					//log_mem_usage_rs( 'required hardway_rs' );
-				}
 			}
 			
+			
 			if ( ! $direct_file_access ) {
+				// port or low-level query filters to work around limitations in WP core API
+				require_once('hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
+				
+				//log_mem_usage_rs( 'required hardway_rs' );
+				
 				// buffering of taxonomy children is disabled with non-admin user logged in
 				// But that non-admin user may add cats.  Don't allow unfiltered admin to rely on an old copy of children
 				global $wp_taxonomies;
@@ -424,13 +422,6 @@ class Scoper
 
 		do_action( 'scoper_init' );
 		
-
-// temp debug
-//if ( defined( 'RS_DEBUG' ) ) {
-//	require_once( 'rewrite-mu_rs.php' );
-//	$test = ScoperRewriteMU::build_blog_file_redirects();
-//}
-		
 		// ===== end Content Filters
 		
 	} // end function init
@@ -444,9 +435,6 @@ class Scoper
 	// - optionally get terms for a specific object
 	// - option to order by term hierarchy (but structure as flat array)
 	function get_terms($taxonomy, $filtering = true, $cols = COLS_ALL_RS, $object_id = 0, $args = array()) {
-		if ( empty($this->taxonomies) )
-			agp_bt_die();
-		
 		if ( ! $tx = $this->taxonomies->get($taxonomy) )
 			return array();
 		
@@ -735,7 +723,7 @@ class Scoper
 	function qualify_terms_daterange($reqd_caps, $taxonomy = 'category', $qualifying_roles = '', $args = '') {
 		$defaults = array( 'src_name' => '', 'object_type' => '',  'user' => '', 
 						   'return_id_type' => COL_ID_RS, 'use_blog_roles' => true, 
-							'alternate_roles' => '', 'override_roles' => '', 'object_type' => '' );
+							'alternate_roles' => '', 'override_roles' => '', 'object_type' => '', 'ignore_restrictions' => false );
 
 		if ( isset($args['qualifying_roles']) )
 			unset($args['qualifying_roles']);
@@ -837,9 +825,11 @@ class Scoper
 				}
 				
 				if ( $user_blog_roles ) {
-					// array of term_ids that require the specified role to be assigned via taxonomy or blog role (user blog caps ignored)
-					$strict_terms = $this->get_restrictions(TERM_SCOPE_RS, $taxonomy);
-	
+					if ( empty($ignore_restrictions) ) {
+						// array of term_ids that require the specified role to be assigned via taxonomy or blog role (user blog caps ignored)
+						$strict_terms = $this->get_restrictions(TERM_SCOPE_RS, $taxonomy);
+					} else
+						$strict_terms = array();
 					
 					foreach ( array_keys($user_blog_roles) as $role_handle ) {
 						if ( isset($strict_terms['restrictions'][$role_handle]) && is_array($strict_terms['restrictions'][$role_handle]) )

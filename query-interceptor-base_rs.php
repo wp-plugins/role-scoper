@@ -35,6 +35,10 @@ class QueryInterceptorBase_RS {
 		if ( ! is_content_administrator_rs() || defined('SCOPER_RETAIN_PUBLISH_FILTER') || defined('DISABLE_QUERYFILTERS_RS') )
 			return $where;
 		
+		global $wp_query;
+		if ( ! empty( $wp_query->query['post_status'] ) )
+			return $where;
+			
 		// don't alter the where clause if in wp-admin and not filtering by taxonomy
 		if ( is_admin() ) {
 			global $wp_query;

@@ -491,8 +491,9 @@ class CapInterceptor_RS
 				$use_object_roles = ( empty($src->no_object_roles) ) ? scoper_get_otype_option( 'use_object_roles', $src_name, $object_type ) : false;
 				
 				$this_args = array('object_type' => $object_type, 'user' => $user, 'use_term_roles' => $use_term_roles, 'use_object_roles' => $use_object_roles, 'skip_teaser' => true );
+
+				//dump($rs_reqd_caps);
 				
-					
 				$where = $scoper->query_interceptor->objects_where_role_clauses($src_name, $rs_reqd_caps, $this_args );
 			
 				if ( $use_object_roles && $scoper->query_interceptor->require_full_object_role )

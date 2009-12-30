@@ -12,7 +12,7 @@ function wpp_suffix_flag( $flag ) {
 	if ( IS_MU_RS ) {
 		global $wpp_object_cache;
 		
-		if ( ! in_array( $flag, $wpp_object_cache->global_groups ) ) {
+		if ( is_array( $wpp_object_cache->global_groups ) && ! in_array( $flag, $wpp_object_cache->global_groups ) ) {
 			global $blog_id;
 			$flag .= "_$blog_id";
 		}

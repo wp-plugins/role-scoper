@@ -394,9 +394,7 @@ class ScoperAdminUI {
 		global $scoper, $post_ID;
 				
 		//log_mem_usage_rs( 'start flt_dropdown_pages()' );
-		
-		//dump($orig_options_html);
-		
+
 		if ( strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/options-' ) )
 			return $orig_options_html;
 
@@ -431,10 +429,11 @@ class ScoperAdminUI {
 		} else {
 			$options_html = '';
 		}
-		
+
 		// User can't associate or de-associate a page with Main page unless they have edit_pages blog-wide.
 		// Prepend the Main Page option if appropriate (or, to avoid submission errors, if we generated no other options)
-		if ( $can_associate_main || ( $object_id && ! $stored_parent_id ) || empty($options_html) ) {
+		if ( ( strpos( $options_html, __('Main Page (no parent)') ) || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page-new.php') ) 
+		&& ( $can_associate_main || ( $object_id && ! $stored_parent_id ) || empty($options_html) ) ) {
 			$current = ( $stored_parent_id ) ? '' : ' selected="selected"';
 			$option_main = "\t" . '<option value=""' . $current . '> ' . __('Main Page (no parent)') . "</option>";
 		} else
@@ -444,14 +443,15 @@ class ScoperAdminUI {
 		
 		//log_mem_usage_rs( 'end flt_dropdown_pages()' );
 		
+		
 		// can't assume name/id for this dropdown (Quick Edit uses "post_parent")
 		$mat = array();
 		preg_match("/<select([^>]*)>/", $orig_options_html, $mat);
-
+		
 		// If the select tag was not passed in, don't pass it out
 		if ( ! empty($mat[1]) )
 			return "<select{$mat[1]}>\n" . $option_main . $options_html . '</select>';
-		
+			
 		// (but if core dropdown_pages passes in a nullstring, we need to insert the missing select tag).  TODO: core patch to handle this more cleanly
 		elseif ( ! $orig_options_html )
 			return "<select name=\"page_id\" id=\"page_id\">\n" . $option_main . $options_html . '</select>';
@@ -499,7 +499,13 @@ class ScoperAdminUI {
 			foreach ( $results as $row )
 				$all_pages_by_id[$row->ID] = $row;
 
-		$qry_parents = "SELECT ID, post_parent, post_title FROM $wpdb->posts WHERE post_type = 'page' ORDER BY menu_order";
+		// Editable / associable draft and pending pages will be included in Page Parent dropdown in Edit Forms, but not elsewhere
+		if ( is_admin() && ( false === strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page.php') ) && ( false === strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page-new.php') ) )
+			$status_clause = "AND $wpdb->posts.post_status IN ('publish', 'private')";
+		else
+			$status_clause = '';
+
+		$qry_parents = "SELECT ID, post_parent, post_title FROM $wpdb->posts WHERE post_type = 'page' $status_clause ORDER BY menu_order";
 		
 		$qry_parents = apply_filters('objects_request_rs', $qry_parents, 'post', 'page', $args);
 		
@@ -507,13 +513,12 @@ class ScoperAdminUI {
 		if ( $results = scoper_get_results($qry_parents) )
 			foreach ( $results as $row )
 				$filtered_pages_by_id [$row->ID] = $row;
-				
+			
 		$hidden_pages_by_id = array_diff_key( $all_pages_by_id, $filtered_pages_by_id );
 
 		// temporarily add in the hidden parents so we can order the visible pages by hierarchy
 		$pages = ScoperAdminUI::add_missing_parents($filtered_pages_by_id, $hidden_pages_by_id, 'post_parent');
 
-		
 		// convert keys from post ID to title+ID so we can alpha sort them
 		$args['pages'] = array();
 		foreach ( array_keys($pages) as $id )
@@ -534,10 +539,12 @@ class ScoperAdminUI {
 		// restore buffered titles in case they were filtered on get_pages hook
 		scoper_restore_property_array( $args['pages'], $titles, 'ID', 'post_title' );
 		
-		$args['object_id'] = $object_id;
-		$args['retain_page_ids'] = true; // retain static log to avoid redundant entries by subsequent call with use_parent_clause=false
-		ScoperAdminUI::walk_parent_dropdown($output, $args, true, $stored_parent_id);
-
+		if ( $object_id ) {
+			$args['object_id'] = $object_id;
+			$args['retain_page_ids'] = true; // retain static log to avoid redundant entries by subsequent call with use_parent_clause=false
+			ScoperAdminUI::walk_parent_dropdown($output, $args, true, $stored_parent_id);
+		}
+	
 		// next we'll add disjointed branches, but don't allow this page's descendants to be offered as a parent
 		$arr_parent = array();
 		$arr_children = array();

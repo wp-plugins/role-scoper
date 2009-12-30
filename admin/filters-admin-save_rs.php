@@ -355,15 +355,18 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				$already_published = false;
 			
 			
+			$top_pages_locked = scoper_get_option( 'lock_top_pages' );
+				
 			if ( is_content_administrator_rs() )
 				$can_associate_main = true;
 	
-			elseif ( ! scoper_get_option( 'lock_top_pages' ) ) {
-				$reqd_caps = array('edit_others_pages');
+			elseif ( '1' !== $top_pages_locked ) {
+				$reqd_caps = ( 'author' == $top_pages_locked ) ? array('publish_pages') : array('edit_others_pages');
 				$roles = $scoper->role_defs->qualify_roles($reqd_caps, '');
 
 				$can_associate_main = array_intersect_key($roles, $current_user->blog_roles[ANY_CONTENT_DATE_RS]);
-			} else
+
+			} else	// only administrators can change top level structure
 				$can_associate_main = false;
 
 
@@ -433,6 +436,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			$qry_parents = "SELECT ID FROM $wpdb->posts WHERE post_type = 'page'";
 			$qry_parents = apply_filters('objects_request_rs', $qry_parents, 'post', 'page', $args);
 			$valid_parents = scoper_get_col($qry_parents);
+			
 			if ( ! in_array($parent_id, $valid_parents) ) {
 				$post = $scoper->data_sources->get_object( 'post', $_POST['post_ID'] );
 				$parent_id = $post->post_parent;

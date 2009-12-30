@@ -389,10 +389,11 @@ class ScoperAdmin
 			add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, '', SCOPER_URLPATH . '/admin/images/menu/restrictions.png' );
 			add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, '', SCOPER_URLPATH . '/admin/images/menu/roles.png');
 		
-			$roles_hook_page_base = 'roles_page_';
-			$restrictions_hook_page_base = 'restrictions_page_';
+			$roles_hook_page_base = sanitize_title( __('Roles', 'scoper') ) . '_page_';	// the page hook names use translated menu title
+			$roles_hook_page = $roles_hook_page_base;
+			$restrictions_hook_page_base = sanitize_title( __('Restrictions', 'scoper') ) . '_page_';
 		}
-
+		
 		
 		if ( $is_option_administrator ) {
 			$func = "include_once('$path' . '/admin/options.php');scoper_options( false );";
@@ -405,7 +406,7 @@ class ScoperAdmin
 			add_submenu_page($roles_menu, __('General Roles', 'scoper'), __('General', 'scoper'), 'read', 'rs-general_roles');
 			
 			$func = "include_once('$path' . '/admin/general_roles.php');";
-			add_action( 'admin_page_rs-general_roles' , create_function( '', $func ) );
+			add_action($roles_hook_page . 'rs-general_roles', create_function( '', $func ) );
 		}
 			
 		$first_pass = true;
@@ -499,7 +500,7 @@ class ScoperAdmin
 									$roles_hook_page = $roles_hook_page_base;
 									$restrictions_hook_page = $restrictions_hook_page_base;
 								}
-								
+							
 								$first_pass = false;
 							}
 						
@@ -536,12 +537,12 @@ class ScoperAdmin
 				} // endif can admin objects
 			} // endif drawing object scope submenus
 		} // end foreach submenu scope
-		
+
 		if ( $is_user_administrator ) {
 			add_submenu_page($roles_menu, __('About Role Scoper', 'scoper'), __('About', 'scoper'), 'read', 'rs-about');
 
 			$func = "include_once('$path' . '/admin/about.php');";
-			add_action( 'admin_page_rs-about' , create_function( '', $func ) );
+			add_action( $roles_hook_page . 'rs-about' , create_function( '', $func ) );
 		}
 			
 
@@ -552,8 +553,8 @@ class ScoperAdmin
 			if ( isset($submenu[$roles_menu][0][2]) && ( $roles_menu == $submenu[$roles_menu][0][2] ) )
 				$submenu[$roles_menu][0][0] = __awp('Options');
 
-			 // satisfy WordPress' demand that all admin links be properly defined in menu
-			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'attachments_utility.php' ) ) {
+			// satisfy WordPress' demand that all admin links be properly defined in menu
+			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'rs-attachments_utility' ) ) {
 				add_submenu_page($roles_menu, __('Attachment Utility', 'scoper'), __('Attachment Utility', 'scoper'), 'read', 'rs-attachments_utility');
 				
 				$func = "include_once('$path' . '/admin/attachments_utility.php');";

@@ -1,7 +1,7 @@
 <?php
 
 // This is a modified copy of blogs.php, to provide compatibility with Role Scoper file filtering.
-// Role Scoper file filtering can still be used without this modification, by default bypasses this script.
+// Role Scoper file filtering can still be used without this modification, but by default bypasses this script.
 // As a result, the header manipulations done here for caching optimization are not applied. 
 //
 // To reinstate this functionality:

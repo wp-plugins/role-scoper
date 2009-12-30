@@ -54,14 +54,14 @@ class WP_Scoped_User extends WP_User { // Special skeleton class for ANONYMOUS U
 	
 	function cache_get($cache_flag) {
 		$cache_id = -1;
-		$cache_flag = $cache_flag . '_' . ROLE_BASIS_USER;
+		$cache_flag = $cache_flag . '_for_' . ROLE_BASIS_USER;
 
 		return wpp_cache_get($cache_id, $cache_flag);
 	}
 	
 	function cache_set($entry, $cache_flag) {
 		$cache_id = -1;
-		$cache_flag = $cache_flag . '_' . ROLE_BASIS_USER;
+		$cache_flag = $cache_flag . '_for_' . ROLE_BASIS_USER;
 		
 		return wpp_cache_set($cache_id, $entry, $cache_flag);
 	}

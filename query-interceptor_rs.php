@@ -887,11 +887,14 @@ class QueryInterceptor_RS
 				}
 			}
 			
+			// this is needed mainly for the chicken-egg situation of uploading a file prior into a post before a category is stored, when editing rights are based on category
+			$ignore_restrictions = ( 1 == count($reqd_caps_arg) ) && $scoper->cap_defs->member_property( reset($reqd_caps_arg), 'ignore_restrictions' );
+			
 			if ( $qualifying_roles ) {  
 				$args = array_merge($args, array( 'qualifying_roles' => $qualifying_roles) );
 				
 				if ( $use_object_roles )
-					$args = array_merge($args, array ('qualifying_object_roles' => $qualifying_object_roles, 'objscope_objects' => $objscope_objects, 'applied_object_roles' => $applied_object_roles ) );
+					$args = array_merge($args, array ('qualifying_object_roles' => $qualifying_object_roles, 'objscope_objects' => $objscope_objects, 'applied_object_roles' => $applied_object_roles, 'ignore_restrictions' => $ignore_restrictions ) );
 				
 				$where[$cap_name]['user'] = $this->objects_where_scope_clauses($src_name, $reqd_caps_arg, $args );
 			}
@@ -911,7 +914,8 @@ class QueryInterceptor_RS
 						$owner_roles = $scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
 	
 						if ( $owner_roles ) {
-							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles, 'applied_object_roles' => $applied_object_roles ) );   //TODO: test whether we should just pass existing $objscope_objects, $applied_object_roles here
+							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles, 'applied_object_roles' => $applied_object_roles, 'ignore_restrictions' => $ignore_restrictions ) );   //TODO: test whether we should just pass existing $objscope_objects, $applied_object_roles here
+							
 							$scope_temp = $this->objects_where_scope_clauses($src_name, $owner_reqd_caps, $args );
 
 							if ( ( $scope_temp != $where[$cap_name]['user'] ) && ! is_null($scope_temp) ) // TODO: why is null ever returned?
@@ -941,7 +945,8 @@ class QueryInterceptor_RS
 		$defaults = array( 'user' => '', 'qualifying_roles' => array(), 'qualifying_object_roles' => array(), 'taxonomies' => '', 
 		'use_blog_roles' => true, 'use_term_roles' => true, 'use_object_roles' => true, 'terms_query' => false, 
 		'objscope_objects' => '', 'skip_objscope_check' => false, 'applied_object_roles' => '', 'object_type' => '',
-		'require_full_object_role' => false, 'objrole_revisions_clause' => false, 'join' => '' );
+		'require_full_object_role' => false, 'objrole_revisions_clause' => false, 'join' => '',
+		'ignore_restrictions' => false );
 		
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
