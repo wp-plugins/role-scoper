@@ -10,6 +10,15 @@ function scoper_version_updated( $prev_version ) {
 		
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		if ( version_compare( $prev_version, '1.1.2', '<') ) {
+			// due to problems with file filtering on some mu installations, turn it off by default
+			if ( awp_is_mu() ) {
+				update_site_option( 'scoper_file_filtering', false );
+				scoper_clear_site_rules();
+				scoper_expire_file_rules();
+			}
+		}
+
 		if ( version_compare( $prev_version, '1.1', '<') ) {
 			// htaccess rules modified in v1.1
 			scoper_flush_site_rules();
@@ -23,7 +32,6 @@ function scoper_version_updated( $prev_version ) {
 			global $wpdb;
 			$wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_value = '0' AND meta_key = '_scoper_last_parent'" );
 		} else break;
-		
 		
 		// stopped using rs_get_page_children() in 1.0.8
 		if ( version_compare( $prev_version, '1.0.8', '<') ) {

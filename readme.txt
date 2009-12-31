@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
 Tested up to: 2.9.1
-Stable Tag: 1.1.1
+Stable Tag: 1.1.2
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,6 +106,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+
+= 1.1.2 - 31 Dec 2009 =
+* Change : Disable File Filtering by default, due to undiagnosed errors on some installations
 
 
 = 1.1.1 - 30 Dec 2009 =

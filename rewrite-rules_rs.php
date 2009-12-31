@@ -94,7 +94,7 @@ class ScoperRewrite {
 	function update_blog_file_rules( $include_rs_rules = true ) {
 		global $blog_id;
 		
-		scoper_update_option( 'file_htaccess_date', agp_time_gmt() );
+		//scoper_update_option( 'file_htaccess_date', agp_time_gmt() );
 		
 		$include_rs_rules = $include_rs_rules && scoper_get_option( 'file_filtering' );
 		

@@ -64,7 +64,7 @@ function scoper_default_options() {
 		'enforce_actual_term_depth' => 1,
 		'remap_thru_excluded_term_parent' => 0,
 		'limit_user_edit_by_level' => 1,
-		'file_filtering' => 1,
+		'file_filtering' => 0,
 		'mu_sitewide_groups' => 1,  // version check code will set this to 0 for first-time execution of this version on mu installations that ran a previous RS version
 		'role_duration_limits' => 1,
 		'role_content_date_limits' => 1,
