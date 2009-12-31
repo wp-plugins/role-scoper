@@ -505,10 +505,10 @@ class Scoper
 			// TODO: why is this still causing an extra (and costly) scoped query?
 			/*
 			// for COLS_ALL query, need to call core get_terms call in case another plugin is translating term names
-			if ( has_filter( 'get_terms', array('ScoperHardway', 'flt_get_terms') ) ) {
-				remove_filter( 'get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3 );
+			if ( has_filter( 'get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms') ) ) {
+				remove_filter( 'get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3 );
 				$all_terms = get_terms('category');
-				add_filter( 'get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3 );
+				add_filter( 'get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3 );
 
 				$term_names = scoper_get_property_array( $all_terms, 'term_id', 'name' );
 			}

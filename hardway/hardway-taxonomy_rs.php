@@ -195,10 +195,10 @@ class ScoperHardwayTaxonomy
 			
 			if ( ! $no_cache && isset( $cache[ $ckey ] ) ) {
 				// RS Modification: alternate filter name (get_terms filter is already applied by WP)
-				remove_filter('get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3);
+				remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
 				$terms = apply_filters('get_terms', $cache[ $ckey ], $taxonomies, $args);
 				$terms = apply_filters('get_terms_rs', $terms, $taxonomies, $args);
-				add_filter('get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3);
+				add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
 				return $terms;
 			}
 		}
@@ -252,7 +252,7 @@ class ScoperHardwayTaxonomy
 		
 		if ( ! empty( $exclude_tree ) ) {
 			// === BEGIN Role Scoper MODIFICATION: temporarily unhook this filter for unfiltered get_terms calls ===
-			remove_filter('get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3);
+			remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
 			// === END Role Scoper MODIFICATION ===
 			
 			$excluded_trunks = preg_split('/[\s,]+/',$exclude_tree);
@@ -269,7 +269,7 @@ class ScoperHardwayTaxonomy
 			}
 			
 			// === BEGIN Role Scoper MODIFICATION: re-hook this filter
-			add_filter('get_terms', array('ScoperHardway', 'flt_get_terms'), 1, 3);
+			add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
 			// === END Role Scoper MODIFICATION ===
 		}
 
