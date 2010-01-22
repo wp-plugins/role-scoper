@@ -62,11 +62,7 @@ echo '<h2>' . sprintf(__('%s Roles', 'scoper'), $display_name)
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
 	
-	if ( ( $src_name != $object_type ) && ( 'post' != $object_type ) ) {
-		$restrictions_page = "rs-restrictions-{$object_type}_{$src_name}";
-	} else {
-		$restrictions_page = "rs-restrictions-$object_type";
-	}
+	$restrictions_page = "rs-{$object_type}-restrictions";
 	
 	printf(_x('Expand access to a %2$s, potentially beyond what a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'arguments are link open, object type name, link close', 'scoper'), "<a href='admin.php?page=$restrictions_page'>", $display_name, '</a>');
 	echo '</div>';

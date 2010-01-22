@@ -2,7 +2,8 @@
 
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
+	
 	// called by ScoperAdminFilters::mnt_save_object
 	// This handler is meant to fire whenever an object is inserted or updated.
 	// If the client does use such a hook, we will force it by calling internally from mnt_create and mnt_edit
@@ -34,18 +35,28 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( $col_parent = $scoper->data_sources->member_property($src_name, 'cols', 'parent') )
 			if ( isset($_POST[$col_parent]) ) 
 				$set_parent = $_POST[$col_parent];
-		
+	
 		// Determine whether this object is new (first time this RS filter has run for it, though the object may already be inserted into db)
 		if ( 'post' == $src_name ) {
-			if ( ! empty( $set_parent ) ) {
-				$last_parent = get_post_meta($object_id, '_scoper_last_parent', true);
-			
-				$is_new_object = ( '' === $last_parent );
+			$last_parent = ( $object_id > 0 ) ? get_post_meta($object_id, '_scoper_last_parent', true) : '';
 				
-				// update last_parent meta to indicate non-new object, even if posts aren't configured to define parent
-				if ( $is_new_object || ($set_parent != $last_parent) )
-					update_post_meta($object_id, '_scoper_last_parent', (int) $set_parent);
+			$is_new_object = ! is_numeric($last_parent);
+				
+			if ( isset($set_parent) && ($set_parent != $last_parent) && ($set_parent || $last_parent) )
+				update_post_meta($obj_or_term_id, '_scoper_last_parent', (int) $set_parent);
+			
+			/* // This ugly workaround should not be necessary now
+			$time = agp_time_gmt();
+	
+			if ( $is_new_object ) {
+				update_post_meta($obj_or_term_id, '_scoper_creation_date', $time);
+			} else {
+				if ( $creation_date = get_post_meta($object_id, '_scoper_creation_date', true) )
+					if ( $time - $creation_date < 1 )
+						$is_new_object = true;
 			}
+			*/
+			
 		} else {
 			// for other data sources, we have to assume object is new unless it has a role or restriction stored already.
 			$is_new_object = true;
@@ -75,7 +86,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				}
 			}
 		}
-		
+	
 		// used here and in UI display to enumerate role definitions
 		$role_defs = $scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_name, $object_type);
 		$role_handles = array_keys($role_defs);
@@ -163,15 +174,14 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				}
 			}
 		} // endif user-modified roles/restrictions weren't already saved
-		
-		
+
 		// Inherit parent roles / restrictions, but only for new objects, 
 		// or if a new parent is set and roles haven't been manually edited for this object
 		if ( ! $roles_customized && ! $new_role_settings && ( $is_new_object || ( isset($set_parent) && ($set_parent != $last_parent) ) ) ) {
 			// apply default roles for new object
-			if ( $is_new_object )
+			if ( $is_new_object ) {
 				scoper_inherit_parent_roles($object_id, OBJECT_SCOPE_RS, $src_name, 0, $object_type);
-			else {
+			} else {
 				$args = array( 'inherited_only' => true, 'clear_propagated' => true );
 				ScoperAdminLib::clear_restrictions(OBJECT_SCOPE_RS, $src_name, $object_id, $args);
 				ScoperAdminLib::clear_roles(OBJECT_SCOPE_RS, $src_name, $object_id, $args);
@@ -179,12 +189,12 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			
 			// apply propagating roles,restrictions from specific parent
 			if ( ! empty($set_parent) ) {
+				//d_echo( 'inherit parent roles' );
 				scoper_inherit_parent_roles($object_id, OBJECT_SCOPE_RS, $src_name, $set_parent, $object_type);
 				scoper_inherit_parent_restrictions($object_id, OBJECT_SCOPE_RS, $src_name, $set_parent, $object_type);
 			}
 		} // endif new parent selection (or new object)
 
-		
 		// Roles/Restrictions were just edited manually, so store role settings (which may contain default roles even if no manual settings were made)
 		if ( $new_role_settings && ! empty($_POST['rs_object_roles']) && ( empty($_POST['action']) || ( 'autosave' != $_POST['action'] ) ) && ! defined('XMLRPC_REQUEST') ) {
 			$role_assigner = init_role_assigner();
@@ -298,13 +308,15 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( $new_restriction_settings )
 			scoper_flush_file_rules();
 		else { 
-			if ( $stored_post = get_post( $object_id ) ) {
+			if ( isset( $scoper->filters_admin->last_post_status[$object_id] ) ) {
 				$new_status = ( isset($_POST['post_status']) ) ? $_POST['post_status'] : ''; // assume for now that XML-RPC will not modify post status
 
-				if ( $stored_post->post_status != $new_status )
-					if ( ( 'private' == $new_status ) || ( 'private' == $stored_post->post_status ) )
+				if ( $scoper->filters_admin->last_post_status[$object_id] != $new_status )
+					if ( ( 'private' == $new_status ) || ( 'private' == $scoper->filters_admin->last_post_status[$object_id] ) )
 						scoper_flush_file_rules();
-			}
+
+			} elseif ( isset($_POST['post_status']) && ( 'private' == $_POST['post_status'] ) )
+				scoper_flush_file_rules();
 		}
 		
 		if ( 'page' == $object_type ) {
@@ -407,8 +419,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				}
 			}
 		}
-		
-		//rs_errlog("flt_post_status output: " . $status);
+
 		return $status;
 	}
 	
@@ -493,10 +504,14 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		$selected_terms = scoper_filter_terms_for_status($taxonomy, $selected_terms, $user_terms);
 
 		if ( $object_id = $scoper->data_sources->detect('id', $src) ) {
+			$selected_terms = scoper_reinstate_hidden_terms($taxonomy, $selected_terms);
+			
+			/*
 			if ( ! $selected_terms = scoper_reinstate_hidden_terms($taxonomy, $selected_terms) ) {
 				if ( $orig_selected_terms )
 					return $orig_selected_terms;
 			}
+			*/
 		}
 
 		if ( empty($selected_terms) || empty($selected_terms[0]) ) {
@@ -551,6 +566,11 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( ! empty($src->cols->owner) ) {
 			$col_owner = $src->cols->owner;
 			if ( $object = $scoper->data_sources->get_object($src->name, $object_id) ) {
+
+				// don't reinstate terms which were only inserted by autosave
+				if ( empty( $object->post_modified_gmt ) )
+					return $object_terms;
+				
 				global $current_user;
 				if ( ! empty($object->$col_owner) && ( $object->$col_owner == $current_user->ID) )
 					$base_caps_only = true;
@@ -630,6 +650,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( ! $object_type = $scoper->data_sources->detect('type', $src, $object_id) )
 			return $selected_terms;
 
+	
 		// make sure _others caps are required only for objects current user doesn't own
 		$base_caps_only = true;
 		if ( ! empty($src->cols->owner) ) {
@@ -642,6 +663,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				}
 			}
 		}
+				
 		
 		if( ! isset( $src->reqd_caps[OP_EDIT_RS][$object_type][$status] ) )
 			return $selected_terms;
@@ -651,14 +673,19 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( $base_caps_only ) {
 			foreach( $reqd_caps as $key => $cap_name ) {
 				if ( $cap_def = $scoper->cap_defs->get( $cap_name ) )
-					if ( ! empty($cap_def->base_cap) || ( ! empty($cap_def->owner_privilege) && ! empty($cap_def->status) ) )  // don't remove edit_posts / edit_pages
+					if ( ! empty($cap_def->base_cap ) ) {
 						unset( $reqd_caps[$key] );
+
+						if ( ! in_array($cap_def->base_cap, $reqd_caps) )
+							$reqd_caps[] = $cap_def->base_cap;
+						
+					} elseif ( ! empty($cap_def->owner_privilege) && ! empty($cap_def->status) )  // don't remove edit_posts / edit_pages
+						unset( $reqd_caps[$key] );			
 			}
 			
 			if ( empty( $reqd_caps ) )
 				return $selected_terms;
 		}
-				
 		
 		// now using $src->reqd_caps array instead
 		//if ( $reqd_caps = $scoper->cap_defs->get_matching($src->name, $object_type, OP_EDIT_RS, $status, $base_caps_only) ) {
@@ -819,8 +846,9 @@ function scoper_inherit_parent_restrictions($obj_or_term_id, $scope, $src_or_tx_
 				$inherited_from = ( $row->obj_or_term_id ) ? $row->requirement_id : 0;
 			
 				$args = array ( 'is_auto_insertion' => true, 'inherited_from' => $inherited_from );
+				
 				$role_assigner->insert_role_restrictions ($scope, $row->max_scope, $role_handle, $src_or_tx_name, $obj_or_term_id, 'both', $row->requirement_id, $args);
-				$did_insert = true;
+				$did_insert = true;	
 			}
 		}
 		

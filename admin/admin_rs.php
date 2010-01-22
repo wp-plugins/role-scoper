@@ -2,7 +2,7 @@
 // menu icons by Jonas Rask: http://www.jonasraskdesign.com/
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
 define ('SCOPER_URLPATH', WP_CONTENT_URL . '/plugins/' . SCOPER_FOLDER);
 
 define ('ROLE_ASSIGNMENT_RS', 'role_assignment');
@@ -226,10 +226,11 @@ class ScoperAdmin
 		// which taxonomies does this user have any administration over?
 		foreach ( $scoper->taxonomies->get_all() as $taxonomy => $tx ) {
 			if ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) )
-				if ( scoper_get_otype_option('use_term_roles', $tx->object_source->name) )
+				if ( scoper_get_otype_option('use_term_roles', $tx->object_source->name) ) {
 					$can_admin_terms[$taxonomy] = true;
+				}
 		}
-	
+
 		/*
 		global $_wp_menu_nopriv;
 		if ( ! empty($can_admin_objects['post']['post']) || ! empty($can_admin_terms['category']) )
@@ -269,6 +270,13 @@ class ScoperAdmin
 				$func = "include_once('$path' . '/admin/default_groups.php');";
 				add_action( 'users_page_rs-default_groups' , create_function( '', $func ) );
 			}
+			
+			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-group_members' ) ) {
+				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Group Members', 'scoper'), $cap_req, 'rs-group_members');
+
+				$func = "include_once('$path' . '/admin/group_members.php');";
+				add_action( 'users_page_rs-group_members' , create_function( '', $func ) );
+			}
 		}
 
 		// the rest of this function pertains to Roles and Restrictions menus
@@ -277,56 +285,59 @@ class ScoperAdmin
 	
 		$general_roles = ('rs' == SCOPER_ROLE_TYPE) && $is_user_administrator; // && scoper_get_option('rs_blog_roles');  // rs_blog_roles option has never been active in any RS release; leave commented here in case need arises
 		
-		
 		// determine the official WP-registered URL for roles and restrictions menus
 		$object_submenus_first = false;
-		if ( $is_user_administrator ) {
-			$roles_menu = 'rs-options';
-			$restrictions_menu =  'rs-category-restrictions_t';
-		
-		} else {
-			if ( ! empty($can_admin_terms['category']) ) {
-				$roles_menu = 'rs-category-roles_t';
-				$restrictions_menu = 'rs-category-restrictions_t';
 
-			} elseif ( ! empty($can_admin_objects['post']['post']) ) {
-				$roles_menu = 'rs-post-roles';
-				$restrictions_menu = 'rs-post-restrictions';
-				$object_submenus_first = true;
-				
-			} elseif ( ! empty($can_admin_objects['post']['page']) ) {
-				$roles_menu = 'rs-page-roles';
-				$restrictions_menu = 'rs-page-restrictions';
-				$object_submenus_first = true;
+		if ( ! empty($can_admin_terms['category']) ) {
+			$roles_menu = 'rs-category-roles_t';
+			$restrictions_menu = 'rs-category-restrictions_t';
 
-			} elseif ( $can_admin_terms ) {
-				$taxonomy = key($can_admin_terms);
-				$roles_menu = "rs-$taxonomy-roles_t";
-				$restrictions_menu = "rs-$taxonomy-restrictions_t";
+		} elseif ( ! empty($can_admin_objects['post']['post']) ) {
+			$roles_menu = 'rs-post-roles';
+			$restrictions_menu = 'rs-post-restrictions';
+			$object_submenus_first = true;
+			
+		} elseif ( ! empty($can_admin_objects['post']['page']) ) {
+			$roles_menu = 'rs-page-roles';
+			$restrictions_menu = 'rs-page-restrictions';
+			$object_submenus_first = true;
 
-			} elseif ( $can_admin_objects ) {
-				$src_name = key($can_admin_objects);
-				$object_type = key($can_admin_objects[$src_name]);
-				
-				if ( ( $src_name != $object_type ) && ( 'post' != $src_name ) ) {
-					$roles_menu = "rs-{$object_type}-roles_{$src_name}";
-					$restrictions_menu = "rs-{$object_type}-restrictions_{$src_name}";
-				} else {
-					$roles_menu = "rs-$object_type-roles";
-					$restrictions_menu = "rs-$object_type-restrictions";
-				}
-	
-				$object_submenus_first = true;
+		} elseif ( $can_admin_terms ) {
+			$taxonomy = key($can_admin_terms);
+			$roles_menu = "rs-$taxonomy-roles_t";
+			$restrictions_menu = "rs-$taxonomy-restrictions_t";
+
+		} elseif ( $can_admin_objects ) {
+			$src_name = key($can_admin_objects);
+			$object_type = key($can_admin_objects[$src_name]);
+			
+			if ( ( $src_name != $object_type ) && ( 'post' != $src_name ) ) {
+				$roles_menu = "rs-{$object_type}-roles_{$src_name}";
+				$restrictions_menu = "rs-{$object_type}-restrictions_{$src_name}";
 			} else {
-				// shouldn't ever need this
-				$roles_menu = 'rs-roles-post';
-				$restrictions_menu = 'rs-restrictions-post';
-				$object_submenus_first = true;
+				$roles_menu = "rs-$object_type-roles";
+				$restrictions_menu = "rs-$object_type-restrictions";
 			}
 
-			if ( $general_roles )
-				$roles_menu = 'rs-general_roles';
+			$object_submenus_first = true;
+		} else {
+			// shouldn't ever need this
+			$roles_menu = 'rs-roles-post';
+			$restrictions_menu = 'rs-restrictions-post';
+			$object_submenus_first = true;
 		}
+
+		if ( $general_roles )
+			$roles_menu = 'rs-general_roles';
+
+
+		if ( $is_user_administrator ) { 
+			$roles_menu = 'rs-options';  // user administrators always have RS Options as top level roles submenu
+			
+			if ( empty( $restrictions_menu ) )
+				$restrictions_menu =  'rs-category-restrictions_t';  // If RS Realms are customized, the can_admin_terms / can_admin_objects result can override this default, even for user administrators
+		}
+		
 			
 		// For convenience in WP 2.5 - 2.6, set the primary menu link (i.e. default submenu) based on current URI
 		// When viewing Category Roles, make Restriction menu default-link to Category Restrictions submenu (and likewise for other terms/objects)
@@ -344,7 +355,7 @@ class ScoperAdmin
 		//  but not if Flutter (a.k.a. Fresh Page) plugin is active.  It re-indexes menu items 
 		if ( ! defined( 'SCOPER_DISABLE_MENU_TWEAK' ) ) {
 			if ( awp_ver('2.8-dev') ) {
-				if ( ! awp_ver('2.9') ) { // review and increment this with each WP version until there's a clean way to force menu proximity to 'Users'
+				if ( ! awp_ver('3.0') ) { // review and increment this with each WP version until there's a clean way to force menu proximity to 'Users'
 					if ( isset( $menu[70] ) && $menu[70][2] == 'users.php' ) {
 						$tweak_menu = true;
 						$restrictions_menu_key = 71;
@@ -680,7 +691,7 @@ class ScoperAdmin
 			return true;
 
 		require_once( 'permission_lib_rs.php' );
-		return user_can_edit_blogwide_rs($taxonomy, $term_id, $user);
+		return user_can_edit_blogwide_rs($src_name, $object_type, $args);
 	}
 	
 	// primary use is to account for different contexts of users query

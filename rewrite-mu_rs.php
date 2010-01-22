@@ -13,14 +13,20 @@ require_once( 'rewrite-rules_rs.php' );
 class ScoperRewriteMU {
 
 	// directly inserts essential RS rules into the main wp-mu .htaccess file
-	function update_mu_htaccess( $include_rs_roles = true ) {
-		$htaccess_path = trailingslashit(ABSPATH) . '.htaccess';
+	function update_mu_htaccess( $include_rs_rules = true ) {
+		$include_rs_rules = $include_rs_rules && scoper_get_option( 'file_filtering' );
 		
+		if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
+			include_once( ABSPATH . '/wp-admin/includes/file.php' );
+		
+		$home_path = get_home_path();
+		$htaccess_path = $home_path .'.htaccess';
+
 		if ( ! file_exists($htaccess_path) )
 			return;
 		
 		$contents = file_get_contents( $htaccess_path );
-		
+
 		$pos_rs_start = strpos( $contents, "\n# BEGIN Role Scoper" );
 
 		$default_rule = 'RewriteRule ^(.*/)?files/$ index.php [L]';
@@ -33,7 +39,7 @@ class ScoperRewriteMU {
 			else
 				fwrite($fp, substr( $contents, 0, $pos_def ) );
 				
-			if ( $include_rs_roles )
+			if ( $include_rs_rules )
 				fwrite($fp, ScoperRewrite::build_site_rules() );
 
 			fwrite($fp, substr( $contents, $pos_def ) );

@@ -19,7 +19,23 @@ add_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
 add_filter( 'site_options_rs', 'scoper_apply_constants', 99 );
 add_filter( 'options_rs', 'scoper_apply_constants', 99 );
 	
+add_action( 'delete_option', 'scoper_maybe_rewrite_inclusions' );
+add_action( 'delete_transient_rewrite_rules', 'scoper_rewrite_inclusions' );
+
+function scoper_maybe_rewrite_inclusions ( $option_name = '' ) {
+	if ( $option_name == 'rewrite_rules' )
+		scoper_rewrite_inclusions();
+}
+
+function scoper_rewrite_inclusions ( $option_name = '' ) {
+	// force inclusion of required files in case flush_rules() is called from outside wp-admin, to prevent error when calling get_home_path() function
+	if ( file_exists( ABSPATH . '/wp-admin/includes/misc.php' ) )
+		include_once( ABSPATH . '/wp-admin/includes/misc.php' );
 	
+	if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
+		include_once( ABSPATH . '/wp-admin/includes/file.php' );	
+}
+
 // htaccess directive intercepts direct access to uploaded files, converts to WP call with custom args to be caught by subsequent parse_query filter
 // parse_query filter will return content only if user can read a containing post/page
 function scoper_mod_rewrite_rules ( $rules ) {

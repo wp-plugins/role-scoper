@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
 Tested up to: 2.9.1
-Stable Tag: 1.1.2
+Stable Tag: 1.1.3
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,6 +106,52 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+
+**1.1.3 - 22 Jan 2010**
+
+= WP-mu Fatal Error =
+* BugFix : Fatal error on wp-MU version upgrade, due to failed get_home_path() call (since 1.1.RC1)
+
+= File Filtering =
+* BugFix : .htaccess file was not regenerated when File Filtering is re-enabled following a disable (since 1.1.RC1)
+* BugFix : File Filtering was not imposed for new attachments to private / restricted posts (since 1.1 RC1)
+
+= WP 2.9 Trash Function =
+* WP Compat : Trashed posts / pages were included in edit listing when status filter set to default "All"
+* WP Compat : Trashed pages were included in Page Parent dropdown
+
+= Significant, Prevalent Bugs (new in 1.1 code base) =
+* BugFix : Main Page was not selectable when Quick Editing a Page
+* BugFix : Posts were included in get_pages listing if "Include private pages in listing" option was disabled and Hidden Content Teaser turned off
+* BugFix : When Contributor / Author category selection is limited, valid default category was not automatically selected
+* BugFix : Some Category Roles were inappropriately auto-deleted on blogs which originated with WP < 2.3 (and have cats with term_taxonomy_id != term_id)
+* BugFix : With Limited Editing Elements option enabled, some Post/Page Edit Form elements were inappropriately hidden from Editors / Authors / Contributors
+
+= Significant but Obscure 1.1 Bugs (only affect nonstandard config) =
+* BugFix : "Not valid" error message when a non-administrator saves a post/page with Role Type option set to "WP"
+* BugFix : If RS Realm was customized for Page Roles only, the Restrictions menu included an invalid link to Category Restrictions
+* BugFix : Some custom taxonomy queries were not filtered correctly
+* BugFix : If "Remap terms" option was disabled, Category Edit Form did not list editable categories whose parent is uneditable
+
+= Significant but Rare 1.1 Bugs (only affect some installations) =
+* BugFix : New Pages / Posts did not inherit parent restrictions, in some installations
+* BugFix : New Role assignments fail if MySQL does not convert nullstring to zero value for datetime storage
+* BugFix : If Additional Object Roles option was enabled for some role, Page/Post assignments of that role could not be removed
+* BugFix : PHP Warning on Group creation, in some installations
+
+= Hidden Content Teaser =
+* BugFix : Template function is_teaser_rs() did not work unless post ID was explicitly passed in (should default to ID of global $post)
+* BugFix : Hidden Content Teaser, when applying "first x chars" teaser, stripped out img tag but not image caption
+* Feature : Support SCOPER_NO_FEED_TEASER constant definition to prevent teasing of feed items even if teaser is enabled for main posts/pages listing
+
+= Nuisance Bugs =
+* BugFix : Convenience links to Category / Page Restrictions and Roles (within caption text) were invalid
+* BugFix : "Browse Members" link on User Groups management page was broken
+* BugFix : On General Roles assignment attempt, role selections were not preserved if user/group selection is missing
+
+= Plugin Compatibility =
+* Compat : PHP Warnings with WP Facebook Connect plugin
 
 
 = 1.1.2 - 31 Dec 2009 =

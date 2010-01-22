@@ -432,7 +432,7 @@ class ScoperAdminUI {
 
 		// User can't associate or de-associate a page with Main page unless they have edit_pages blog-wide.
 		// Prepend the Main Page option if appropriate (or, to avoid submission errors, if we generated no other options)
-		if ( ( strpos( $options_html, __('Main Page (no parent)') ) || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page-new.php') ) 
+		if ( ( strpos( $orig_options_html, __('Main Page (no parent)') ) || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page-new.php') ) 
 		&& ( $can_associate_main || ( $object_id && ! $stored_parent_id ) || empty($options_html) ) ) {
 			$current = ( $stored_parent_id ) ? '' : ' selected="selected"';
 			$option_main = "\t" . '<option value=""' . $current . '> ' . __('Main Page (no parent)') . "</option>";
@@ -503,7 +503,7 @@ class ScoperAdminUI {
 		if ( is_admin() && ( false === strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page.php') ) && ( false === strpos($_SERVER['SCRIPT_NAME'], 'p-admin/page-new.php') ) )
 			$status_clause = "AND $wpdb->posts.post_status IN ('publish', 'private')";
 		else
-			$status_clause = '';
+			$status_clause = "AND $wpdb->posts.post_status IN ('publish', 'private', 'pending', 'draft')";
 
 		$qry_parents = "SELECT ID, post_parent, post_title FROM $wpdb->posts WHERE post_type = 'page' $status_clause ORDER BY menu_order";
 		
@@ -549,7 +549,7 @@ class ScoperAdminUI {
 		$arr_parent = array();
 		$arr_children = array();
 		
-		if ( $results = scoper_get_results("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type = 'page'") ) {
+		if ( $results = scoper_get_results("SELECT ID, post_parent FROM $wpdb->posts WHERE post_type = 'page' $status_clause") ) {
 			foreach ( $results as $row ) {
 				$arr_parent[$row->ID] = $row->post_parent;
 				

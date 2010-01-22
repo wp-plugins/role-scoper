@@ -134,16 +134,15 @@ class ScoperAdminFiltersUI
 			$blogwide_requirement_met = is_content_administrator_rs();
 			
 		elseif ( 'editor' == $blogwide_requirement )
-			$blogwide_requirement_met = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'publish', 'require_others_cap' => true ) );
+			$blogwide_requirement_met = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'published', 'require_others_cap' => true ) );
 		
 		elseif ( 'author' == $blogwide_requirement )
-			$blogwide_requirement_met = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'publish' ) );
+			$blogwide_requirement_met = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'published' ) );
 		
 		elseif ( $blogwide_requirement )
 			$blogwide_requirement_met = $can_edit_blogwide;
 		else
 			$blogwide_requirement_met = true;
-
 			
 		if ( $can_edit_blogwide && $blogwide_requirement_met ) {
 			// don't hide anything if a user with sufficient blog-wide role is creating a new object

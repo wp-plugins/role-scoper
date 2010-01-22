@@ -37,11 +37,12 @@ echo '<a name="scoper_top"></a>';
 
 // ==== Process Submission =====
 $err = 0;
-if ( isset($_POST['rs_submit'] ) )
+if ( isset($_POST['rs_submit'] ) ) {
 	$err = ScoperAdminBulk::role_submission(OBJECT_SCOPE_RS, ROLE_RESTRICTION_RS, '', $src_name, $role_codes, '', $nonce_id);
 	
 	if ( scoper_get_option( 'file_filtering' ) )
 		scoper_flush_file_rules();
+}
 ?>
 
 <div class="wrap agp-width97">
@@ -57,9 +58,7 @@ echo '<h2>' . sprintf(__('%s Restrictions', 'scoper'), $display_name)
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
 	
-	
-	
-	$link_open = "<a href='admin.php?page=rs-/roles/$src_name/$object_type'>";
+	$link_open = "<a href='admin.php?page=rs-$object_type-roles'>";
 	
 	$tx_names = $scoper->data_sources->member_property($src_name, 'uses_taxonomies');
 	if ( $tx_names && (1 == count($tx_names) ) && scoper_get_otype_option('use_term_roles', $src_name, $object_type) ) {

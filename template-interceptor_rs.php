@@ -142,12 +142,13 @@ class TemplateInterceptor_RS
 function is_teaser_rs( $id = '' , $src_name = 'post' ) {
 	global $scoper;
 	
-	if ( empty($scoper) || ( ! $id && is_home() && ! is_single() ) )
+	if ( empty($scoper) || ( is_home() && is_single() ) )
 		return false;
-		
+
 	if ( ! $id && ( 'post' == $src_name ) ) {
 		global $post;
-		if ( ! isset($post->ID) )
+		
+		if ( empty($post->ID) )
 			return false;
 			
 		$id = $post->ID;

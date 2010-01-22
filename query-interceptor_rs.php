@@ -340,6 +340,9 @@ class QueryInterceptor_RS
 
 		if ( ! empty($args['skip_teaser']) || is_admin() || is_content_administrator_rs() || is_attachment_rs() || defined('XMLRPC_REQUEST') || ! empty($this->skip_teaser) )
 			return array();
+
+		if ( is_feed() && defined( 'SCOPER_NO_FEED_TEASER' ) )
+			return array();
 			
 		if ( empty($object_types) )
 			$object_types = $this->_get_object_types($src_name);
@@ -388,6 +391,14 @@ class QueryInterceptor_RS
 			$args['user'] = $user;
 		}
 
+		// TODO: why is this necessary with Facebook Connect plugin?  blog_roles property is somehow cleared.
+		if ( empty($user->blog_roles) ) {
+			foreach ($scoper->role_defs->get_anon_role_handles() as $role_handle) {
+				$user->assigned_blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
+				$user->blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
+			}
+		}
+		
 		if ( ! $src = $scoper->data_sources->get($src_name) )
 			return $where;	// the specified data source is not know to Role Scoper
 			
@@ -412,6 +423,7 @@ class QueryInterceptor_RS
 		if ( $terms_query && $terms_reqd_caps ) {
 			foreach ( array_keys($terms_reqd_caps) as $object_type )
 				$otype_status_reqd_caps[$object_type][''] = $terms_reqd_caps[$object_type];  // terms request does not support multiple statuses
+				
 		} else {
 			if ( $force_reqd_caps && is_array($force_reqd_caps) )
 				$otype_status_reqd_caps = $force_reqd_caps;
@@ -447,7 +459,7 @@ class QueryInterceptor_RS
 		//  * all statuses are listed apart from owner inclusion clause (and each of these status clauses is subsequently replaced with a scoped equivalent which imposes any necessary access limits)
 		//  * a new scoped owner clause is constructed where appropriate (see $where[$cap_name]['owner'] in function objects_where_role_clauses()
 		//
-		if ( ! $src->cols->owner && $user->ID ) {
+		if ( $src->cols->owner && $user->ID ) {
 			// force standard query padding
 			$where = preg_replace("/{$src->cols->owner}\s*=\s*/", "{$src->cols->owner} = ", $where);
 			
@@ -506,15 +518,20 @@ class QueryInterceptor_RS
 				//	$basic_status_clause[$status_name] = "$col_status = '$status_val'";
 				//}
 			}
-
+			
 			//$search = ( $status_col_with_table ) ? "{$src_table}.$col_status = '" : "$col_status = '";
 			$search = "{$src_table}.$col_status = '";
 			
 			// If the passed request contains a single status criteria, maintain that status exclusively (otherwise include status-specific conditions for each available status)
 			// (But not if user is anon and hidden content teaser is enabled.  In that case, we need to replace the default "status=published" clause)
-
+			
 			$status_clause_pos = strpos($where, $search);   // TODO: slim down this parsing code with preg_match
 			if ( false !== $status_clause_pos ) {
+				// wrap first existing status clause in parenthesis so additional clauses can be ORed to it if necessary
+				$endpos = strpos( $where, "'", $status_clause_pos + strlen($search) );
+				$where = substr( $where, 0, $status_clause_pos ) . ' ( ' . substr( $where, $status_clause_pos, $endpos - $status_clause_pos + 1 ) . ' ) ' . substr( $where, $endpos + 1 );
+				$status_clause_pos = $status_clause_pos + 3;
+
 				$startpos = $status_clause_pos + strlen($search);
 				$endpos = strpos($where, "'", $startpos + 1 );
 				if ( $endpos > $startpos )
@@ -525,7 +542,7 @@ class QueryInterceptor_RS
 				if ( ! $pos_second ) {
 					// Eliminate a primary plugin incompatibility by skipping this preservation of existing single status requirements if we're on the front end and the requirement is 'publish'.  
 					// (i.e. include private posts/pages that this user has access to via RS role assignment).  
-					if ( ! $scoper->is_front() || ( 'publish' != $first_status_val ) || empty( $args['user']->ID ) || defined('SCOPER_RETAIN_PUBLISH_FILTER') ) {  
+					if ( ! $scoper->is_front() || ( 'publish' != $first_status_val ) || empty( $args['user']->ID ) || defined('SCOPER_RETAIN_PUBLISH_FILTER') ) { 
 						$force_single_status = true;
 
 						$startpos = $status_clause_pos + strlen($search);
@@ -635,13 +652,22 @@ class QueryInterceptor_RS
 			//now step through all statuses and corresponding cap requirements for this otype and access type
 			// (will replace "col_status = status_name" with "col_status = status_name AND ( [scoper requirements] )
 			foreach ($status_reqd_caps as $status_name => $reqd_caps) {
+				if ( 'trash' == $status_name )	// in wp-admin, we need to include trash posts for the count query, but not for the listing query unless trash status is requested
+					if ( ! strpos($scoper->last_request[$src_name], 'COUNT') && ( empty( $_POST['post_status'] ) || ( 'trash' != $_POST['post_status'] ) ) )
+						continue;
+
 				if ( $is_administrator )
 					$status_where[$status_name][$object_type] = '1=1';
 				elseif ( empty($skip_teaser) && in_array($object_type, $tease_otypes) )
-					$status_where[$status_name][$object_type] = "{$src_table}.{$src->cols->type} = '$otype_val'"; // this object type will be teaser-filtered
+					if ( $terms_query && ! $use_object_roles )
+						$status_where[$status_name][$object_type] = '1=1';
+					else
+						$status_where[$status_name][$object_type] = "{$src_table}.{$src->cols->type} = '$otype_val'"; // this object type will be teaser-filtered
 				else {
 					// filter defs for otypes which don't define a status will still have a single status element with value ''
 					$clause = $this->objects_where_role_clauses($src_name, $reqd_caps, $args);
+					
+					//dump($clause);
 					
 					if ( empty($clause) || ( '1=2' == $clause ) )	// this means no qualifying roles are available
 						$status_where[$status_name][$object_type] = '1=2';
@@ -1214,6 +1240,10 @@ class QueryInterceptor_RS
 		// since object roles are not pre-loaded prior to this call, role date limits are handled via subselect, within the date_key = '' iteration
 		$object_roles_duration_clause = scoper_get_duration_clause();
 		
+		// support mirroring of inconveniently stored 3rd party plugin data into data_rs table (by RS Extension plugins)
+		$rs_data_clause = ( ! empty($src->uses_rs_data_table) ) ? "AND $src_table.topic = 'object' AND $src_table.src_or_tx_name = '$src_name' AND $src_table.object_type IN ('" . implode("', '", $object_types) . "')" : '';
+							
+		
 		// implode the array of where criteria into a query as concisely as possible 
 		foreach ( $where as $date_key => $objscope_clauses ) {
 	
@@ -1251,12 +1281,12 @@ class QueryInterceptor_RS
 
 									// If the request already has a corresponding join on the object2term (term_relationships) table, use it.  Otherwise, use a subselect rather than adding our own LEFT JOIN.
 									// (But if this taxonomy is strict and uses the WP term_relationships table, we cannot add an AND clause referencing the same INNER JOIN as aliases as those used for categories.)  
-									if( $this->is_term_table_joined( $join, $taxonomy ) && ( ! $is_strict || ( 'category' == $taxonomy ) || ! $scoper->taxonomies->member_property( $taxonomy, 'uses_standard_schema' ) ) )
-										$taxonomy_clauses[$is_strict] []= "$this_tx_clause $objscope_clause";
-									else {
-										$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause";
+									//if( $this->is_term_table_joined( $join, $taxonomy ) && ( ! $is_strict || ( 'category' == $taxonomy ) || ! $scoper->taxonomies->member_property( $taxonomy, 'uses_standard_schema' ) ) )
+									//	$taxonomy_clauses[$is_strict] []= "$this_tx_clause $objscope_clause";
+									//else {
+										$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause $rs_data_clause";
 										$taxonomy_clauses[$is_strict] []= "$src_table.{$src->cols->id} IN ( $terms_subselect ) $objscope_clause";
-									}
+									//}
 								}
 						}
 
@@ -1283,15 +1313,12 @@ class QueryInterceptor_RS
 							global $wpdb;
 							$u_g_clause = $user->get_user_clause('uro');
 							
-							// support mirroring of inconveniently stored 3rd party plugin data into data_rs table (by RS Extension plugins)
-							$rs_data_clause = ( ! empty($src->uses_rs_data_table) ) ? "AND $src_table.topic = 'object' AND $src_table.src_or_tx_name = '$src_name' AND $src_table.object_type IN ('" . implode("', '", $object_types) . "')" : '';
-							
 							foreach ( array_keys($scope_criteria[OBJECT_SCOPE_RS]) as $role_type ) { //should be only one
 								// Combine all qualifying (and applied) object roles into a single OR clause						
 								$role_in = "'" . implode("', '", array_keys($scope_criteria[OBJECT_SCOPE_RS][$role_type])) . "'";
 								//$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "uro.role_type = '$role_spec->role_type' AND uro.role_name IN ($role_in) ";
 								
-								$objrole_subselect = "SELECT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause";
+								$objrole_subselect = "SELECT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause $rs_data_clause";
 								$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "$src_table.{$src->cols->id} IN ( $objrole_subselect )";
 								
 								if ( $objrole_revisions_clause ) 

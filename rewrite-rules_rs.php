@@ -24,26 +24,22 @@ class ScoperRewrite {
 	
 	
 	function update_site_rules( $include_rs_rules = true ) {
-		$include_rs_rules = $include_rs_rules && scoper_get_option( 'file_filtering' );
-			
 		$const_name = ( $include_rs_rules ) ? 'FLUSHING_RULES_RS' : 'CLEARING_RULES_RS';
 			
 		if ( defined( $const_name ) )
 			return;
 	
 		define( $const_name, true );
-	
+
 		if ( IS_MU_RS ) {
 			add_action( 'shutdown', create_function( '', "require_once( 'rewrite-mu_rs.php' ); ScoperRewriteMU::update_mu_htaccess( '$include_rs_rules' );" ) );
 		} else {
-			if ( ! function_exists( 'save_mod_rewrite_rules' ) ) {
-				if ( file_exists( ABSPATH . '/wp-admin/includes/misc.php' ) )
-					include_once( ABSPATH . '/wp-admin/includes/misc.php' );
-				
-				if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
-					include_once( ABSPATH . '/wp-admin/includes/file.php' );
-			}
-	
+			if ( file_exists( ABSPATH . '/wp-admin/includes/misc.php' ) )
+				include_once( ABSPATH . '/wp-admin/includes/misc.php' );
+			
+			if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
+				include_once( ABSPATH . '/wp-admin/includes/file.php' );
+
 			add_action( 'shutdown', create_function( '', 'global $wp_rewrite; if ( ! empty($wp_rewrite) ) { $wp_rewrite->flush_rules(true); }' ) );
 		}
 	}

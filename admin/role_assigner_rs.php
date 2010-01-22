@@ -98,7 +98,9 @@ class ScoperRoleAssigner
 				}
 				
 				$reqd_caps = $this->scoper->role_defs->role_caps[$role_handle];
-				$user_has_role[$role_handle] = awp_user_can(array_keys($reqd_caps), $item_id);
+				
+				if ( is_array($reqd_caps) && count($reqd_caps) ) // TODO: why would this ever be non-array? (as reported by one user)
+					$user_has_role[$role_handle] = awp_user_can(array_keys($reqd_caps), $item_id);
 			}
 		}
 		
@@ -179,7 +181,7 @@ class ScoperRoleAssigner
 		extract($args);
 		
 		global $wpdb;
-		
+
 		$SCOPER_ROLE_TYPE = SCOPER_ROLE_TYPE;
 		$col_ug_id = ( ROLE_BASIS_GROUPS == $role_basis ) ? 'group_id' : 'user_id';
 		
@@ -203,7 +205,7 @@ class ScoperRoleAssigner
 			. " AND role_type = '$SCOPER_ROLE_TYPE' AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$item_id'";
 			
 		$results = scoper_get_results($qry);
-		
+
 		$stored_assignments = array();
 		$assignment_ids = array();
 
@@ -531,7 +533,7 @@ class ScoperRoleAssigner
 					// before inserting the role, delete any other matching or conflicting assignments this user/group has for the same object
 					scoper_query( $qry_delete_base . "$date_clause AND $col_ug_id = '$ug_id' AND obj_or_term_id = '$obj_or_term_id';" );
 				}
-					
+
 				// insert role for specified object and group(s)
 				scoper_query( $qry_insert_base . " $duration_vals $content_date_vals '$obj_or_term_id', '$assign_for', '$this_inherited_from', '$ug_id')" );
 				$assignment_id = (int) $wpdb->insert_id;

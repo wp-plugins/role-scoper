@@ -170,7 +170,7 @@ function display_inputs($mode, $assignment_modes, $args = '') {
 	
 	if ( $duration_limits_enabled || $content_date_limits_enabled ) {
 		echo '<br /><h3 style="margin-bottom: 0">3.&nbsp;';
-		_e('Set Role Duration and/or Content Date Limits', 'scoper');
+		_e('Set Role Duration and/or Content Date Limits (optional)', 'scoper');
 		echo '</h3>';
 
 		include_once( 'admin_lib-bulk_rs.php' );
@@ -260,14 +260,18 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 		echo '</strong></p></div>';
 		$err = 2;
 	} else {
-		if ( $duration_limits_enabled )
-			$set_role_duration = (object) array( 'date_limited' => $_POST['date_limited'], 'start_date_gmt' => $_POST['start_date_gmt'], 'end_date_gmt' => $_POST['end_date_gmt'] );
-		else
+		if ( $duration_limits_enabled ) {
+			$start_date_gmt = ( $_POST['start_date_gmt'] ) ? $_POST['start_date_gmt'] : 0;
+			$end_date_gmt = ( $_POST['end_date_gmt'] ) ? $_POST['end_date_gmt'] : 0;
+			$set_role_duration = (object) array( 'date_limited' => $_POST['date_limited'], 'start_date_gmt' => $start_date_gmt, 'end_date_gmt' => $end_date_gmt );
+		} else
 			$set_role_duration = '';
 
-		if ( $content_date_limits_enabled )
-			$set_content_date_limits = (object) array( 'content_date_limited' => $_POST['content_date_limited'], 'content_min_date_gmt' => $_POST['content_min_date_gmt'], 'content_max_date_gmt' => $_POST['content_max_date_gmt'] );
-		else
+		if ( $content_date_limits_enabled ) {
+			$content_min_date_gmt = ( $_POST['content_min_date_gmt'] ) ? $_POST['content_min_date_gmt'] : 0;
+			$content_max_date_gmt = ( $_POST['content_max_date_gmt'] ) ? $_POST['content_max_date_gmt'] : 0;
+			$set_content_date_limits = (object) array( 'content_date_limited' => $_POST['content_date_limited'], 'content_min_date_gmt' => $content_min_date_gmt, 'content_max_date_gmt' => $content_max_date_gmt );
+		} else
 			$set_content_date_limits = '';
 
 		foreach ( $role_bases as $role_basis ) {

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Role Scoper 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-11 22:36-0500\n"
+"POT-Creation-Date: 2010-01-22 12:45-0500\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Kevin Behrens\n"
 "Language-Team: agapetry <kevin@agapetry.net>\n"
@@ -242,7 +242,7 @@ msgstr "Gestore"
 msgid "Anonymous Reader"
 msgstr "Lettore anonimo"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/teaser_rs.php:259
+#: E:\www\wp29c\wp-content\plugins\role-scoper/teaser_rs.php:263
 #, php-format
 msgid "%s..."
 msgstr ""
@@ -341,7 +341,7 @@ msgid "Select %s to Modify"
 msgstr "Selezionare i Ruoli da Moficare"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin-bulk_rs.php:173
-msgid "Set Role Duration and/or Content Date Limits"
+msgid "Set Role Duration and/or Content Date Limits (optional)"
 msgstr ""
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin-bulk_rs.php:183
@@ -585,7 +585,7 @@ msgid "keep current setting"
 msgstr "Scorri fino all'impostazione attuale"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_lib-mu_rs.php:7
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:382
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:393
 msgid "Role Scoper Options"
 msgstr "Opzioni Role Scoper"
 
@@ -639,71 +639,78 @@ msgstr "%1$s Documentazione di Role Scoper%2$s"
 msgid "%1$s Role Scoper Support Forum%2$s"
 msgstr "%1$s Forum di supporto per Role Scoper%2$s"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:253
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:258
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:254
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:259
 #, fuzzy
 msgid "Role Groups"
 msgstr "Gruppi utente"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:267
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:268
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:275
 msgid "User Groups"
 msgstr "Gruppi utente"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:267
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:268
 msgid "Default Groups"
 msgstr "Gruppi di default"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:371
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:389
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:275
+msgid "Group Members"
+msgstr "Membri del gruppo"
+
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:382
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:400
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:405
 msgid "Restrictions"
 msgstr "Limitazioni"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:372
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:390
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:383
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:401
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:403
 msgid "Roles"
 msgstr "Ruoli"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:379
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:390
 msgid "Role Restrictions"
 msgstr "Limitazioni ruolo"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:405
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:417
 msgid "General Roles"
 msgstr "Ruoli generali"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:405
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:417
 msgid "General"
 msgstr "Generale"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:446
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:518
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:458
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:530
 #, php-format
 msgid "%s Roles"
 msgstr "%s Ruoli"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:458
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:470
 #, php-format
 msgid "%s restrictions"
 msgstr "%s limitazioni"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:527
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:539
 #, php-format
 msgid "%s Restrictions"
 msgstr "%s limitazioni"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:541
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:553
 msgid "About Role Scoper"
 msgstr "Riguardo Role Scoper"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:541
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:553
 msgid "About"
 msgstr "Riguardo"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:557
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:569
 msgid "Attachment Utility"
 msgstr "Strumento allegato"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:625
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_rs.php:637
 msgid "Object Role Edit"
 msgstr "Modifica Ruolo oggetto"
 
@@ -843,7 +850,8 @@ msgstr "I ruoli per le categorie delle pagine di Wordpress sono <a %s>disabilita
 msgid "Another option is to categorise pages via the <a %s>Page&nbsp;Category&nbsp;Plus</a>&nbsp;plugin."
 msgstr "Un'altra opzione è quella di categorizzare le pagine con l'uso del plugin <a %s>Pagina&nbsp;Categoria&nbsp;Addizionale</a>&nbsp;."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_ui_lib_rs.php:439
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_ui_lib_rs.php:435
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/admin_ui_lib_rs.php:438
 msgid "Main Page (no parent)"
 msgstr "Pagina principale (nessun genitore)"
 
@@ -1061,53 +1069,46 @@ msgid "Register File Attachments &raquo;"
 msgstr "Registrare gli allegati ai file &raquo;"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/default_groups.php:8
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/email_recipients.php:8
 msgid "see notes"
 msgstr "vedi note"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/default_groups.php:30
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/email_recipients.php:30
 #, php-format
 msgid "Default Groups Updated: %s groups"
 msgstr "Gruppi predefiniti aggiornati: gruppi %s"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/default_groups.php:44
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/email_recipients.php:44
 msgid "No default groups defined."
 msgstr "Nessun gruppo predefinito è stato definito"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/default_groups.php:66
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/email_recipients.php:66
 msgid "No groups defined."
 msgstr "Nessun gruppo è definito."
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/default_groups.php:72
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/email_recipients.php:72
 #, fuzzy
 msgid "Notes"
 msgstr "voci"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/default_groups.php:74
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/email_recipients.php:74
 msgid "Each new user will be added to the default groups. Existing users are not affected."
 msgstr "Ogni nuovo utente sarà aggiunto al gruppo predefinito. Gli utenti già esistenti non ne saranno affetti."
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/default_groups.php:77
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/email_recipients.php:77
 msgid "Use default groups only if you need the ability to manually remove a user from one of the groups later. To affect all users (or all users of a certain WP role), assign roles to the corresponding [WP role] group instead."
 msgstr "Utilizzare i gruppi predefiniti soltanto se necessitate della possibilità di rimuovere manualmente, in seguito, un utente da uno dei gruppi. Per comprendere tutti gli utenti (o tutti gli utenti di un certo ruolo WP), assegnare invece i ruoli al corrispondente [ruolo WP] gruppo."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-save_rs.php:385
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-save_rs.php:391
 #, php-format
 msgid "The page %s was saved, but the new Page Parent setting was discarded. You do not have permission to disassociate it from the Main Page."
 msgstr "La pagina %s è stata salvata, ma l'impostazione della nuova Pagina Parente è stata scartata. Non hai i permessi per separarla dalla Pagina Principale."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-save_rs.php:387
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-save_rs.php:393
 #, php-format
 msgid "The Page Parent setting for %s was reverted to the previously stored value. You do not have permission to associate it with the Main Page."
 msgstr "L'impostazione della Pagina Parente per %s è ritornata al valore precedentemente immagazzinato. Non hai i permessi per associarla con la Pagina Principale."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-save_rs.php:401
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-save_rs.php:407
 #, php-format
 msgid "The page %s cannot be published because you do not have permission to associate it with the Main Page. Please select a different Page Parent and try again."
 msgstr "La pagina %s non può essere pubblicata perchè non si dispone dei permessi necessari per associarla alla Pagina Principale. Si prega di selezionare una Pagina Parente differente e riprovare."
@@ -1126,19 +1127,19 @@ msgstr "Ruoli generali"
 msgid "Read"
 msgstr "Leggi"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:172
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:170
 msgid "Role Scoper Plugin CSS:"
 msgstr "CSS del Plugin Role Scoper:"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:195
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:193
 msgid "Role Scoper"
 msgstr "Role Scoper"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:195
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:193
 msgid "Support Forum"
 msgstr "Forum di supporto"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:229
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/filters-admin-ui_rs.php:227
 msgid "<strong>Note:</strong> Role Manager settings determine each user's default blog-wide capabilities. Since the Role Scoper plugin is also enabled, <strong>Term-specific or Object-specific Role Assignments</strong> may increase or decrease a user's actual capabilities."
 msgstr "<strong>Nota:</strong> le impostazioni del Role Manager determina che ogni utente abbia capacità di blog-wide predefinito. Dal momento che anche il plugin Role Scoper è attivato, <strong>l'assegnazione di Ruolo Specifico-per-Termine o Specifico-per-Oggetto</strong> potrebbe incrementare o ridurre le capacità attuali di un utente."
 
@@ -1248,29 +1249,26 @@ msgstr ""
 msgid "You are about to delete the group %s. Do you wish to continue?"
 msgstr "State per cancellare il gruppo %s. Si desidera continuare?"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:270
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:274
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/group_members.php:82
 msgid "No groups available."
 msgstr "Nessun gruppo disponibile"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:290
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:294
 msgid "Create New Group"
 msgstr "Creare un nuovo gruppo"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:306
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:310
 #, php-format
 msgid "Edit Group: %s"
 msgstr "Modifica gruppo: %s"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:337
-msgid "Group Members"
-msgstr "Membri del gruppo"
-
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:367
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:371
 #, php-format
 msgid "Group Administrators %1$s(via login to %2$s)%3$s"
 msgstr ""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:369
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/groups.php:373
 msgid "Group Administrators"
 msgstr "Amministratori del gruppo"
 
@@ -1341,87 +1339,87 @@ msgstr "Ruoli della categoria"
 msgid "Invalid data source"
 msgstr "Sorgente dei dati invalida"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:67
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:66
 #, php-format
 msgid "Reduce access to a specific %1$s by requiring some role(s) to be %2$s%3$s-assigned%4$s. Corresponding WP-assigned Roles and RS-assigned General and %5$s Role assignments are ignored."
 msgstr "Riduce l'accesso allo specifico %1$s richiedendo che alcuni ruoli siano %2$s%3$s-assegnati %4$s. I Ruoli corrispondenti assegnati da WP, quelli Generali assegnati da RS e le assegnazioni di Ruolo %5$s sono ignorate."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:69
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:68
 #, php-format
 msgid "Reduce access to a specific %1$s by requiring some role(s) to be %2$s%3$s-assigned%4$s. Corresponding WP-assigned Roles and RS-assigned General and Section Role assignments are ignored."
 msgstr "Ridurre l'accesso ad uno specifico %1$s richiedendo che alcuni ruoli siano assegnati %2$s%3$s %4$s. I Ruoli corrispondenti assegnati da WP ed il Generale assegnato da RS e l'assegnazione dei Ruoli per Sezione vengono ignorati."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:71
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:70
 #, php-format
 msgid "Reduce access to a specific %1$s by requiring some role(s) to be %2$s%3$s-assigned%4$s. Corresponding WP-assigned Roles and RS-assigned General Role assignments are ignored."
 msgstr "Ridurre l'accesso ad uno specifico %1$s richiedendo che alcuni ruoli siano assegnati-%2$s%3$s %4$s. I Ruoli assegnati da WP e le assegnazioni del Ruolo Generale assegnato da RS saranno ignorati."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:86
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:90
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:85
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:89
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_restrictions.php:97
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_restrictions.php:101
 #, php-format
 msgid "for selected %s"
 msgstr "per il selezionato %s"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:91
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:90
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_restrictions.php:102
 #, php-format
 msgid "for sub-%s of selected"
 msgstr "per le sotto-%s della selezionata"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:92
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:91
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_restrictions.php:103
 #, php-format
 msgid "for selected and sub-%s"
 msgstr "per la selezionata e le sotto-%s"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:95
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:94
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_restrictions.php:106
 msgid "Restrict selected roles"
 msgstr "Limita i ruoli selezionati"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:95
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:94
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_restrictions.php:106
 msgid "Unrestrict selected roles"
 msgstr "Illimita i ruoli selezionati"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:201
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:212
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:200
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:208
 #, php-format
 msgid "To edit all roles for any %1$s, click on the %1$s name."
 msgstr "Per modificare tutti i ruoli per qualsiasi %1$s, cliccare sul nome %1$s."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:205
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:216
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:204
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:212
 #, php-format
 msgid "To edit the %s via its default editor, click on the ID link."
 msgstr "Per modificare il %s attraverso l'editor predefinito, cliccare sul collegamento ID."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:210
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:221
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_restrictions.php:209
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:217
 #, php-format
 msgid "To enhance performance, the role editing checkboxes here may not include some roles which you can only edit due to your own %1$s-specific role. In such cases, click on the editing link to edit roles for the individual %1$s."
 msgstr "Per migliorare le prestazioni, le caselle di modifica del ruolo qui non possono includere alcuni ruoli che si possono modificare solo grazie al vostro proprio ruolo specifico %1$s. In tali casi, cliccare sul collegamento per la modifica, per modificare i ruoli per i singoli %1$s."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:71
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:67
 #, fuzzy, php-format
 msgid "Expand access to a %2$s, potentially beyond what a user's WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s."
 msgstr "Aumenta l'accesso ad un %2$s, potenzialmente più di quanto il ruolo di un utente WP permetterebbe. Per ridurre l'accesso, definire le %1$s%2$s&nbsp;Limitazioni%3$s.|gli argomenti sono collegamenti aperti, il nome del tipo di oggetto, collegamenti chiusi."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:91
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:87
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_roles.php:119
 #, php-format
 msgid "Assign for selected %s"
 msgstr "Assegna al selezionato %s"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:92
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:88
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_roles.php:120
 #, php-format
 msgid "Assign for sub-%s of selected"
 msgstr "Assegna ai sotto-%s del selezionato"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:93
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/object_roles.php:89
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/section_roles.php:121
 #, php-format
 msgid "Assign for selected and sub-%s"
@@ -1637,7 +1635,7 @@ msgid "Display Administrative Hints"
 msgstr "Mostra le note amministrative"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:213
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1402
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1421
 msgid "Specified element IDs also require the following blog-wide Role:"
 msgstr "Gli ID degli elementi specificati richiedono anche i seguenti Ruoli di blog-wide:"
 
@@ -1663,8 +1661,8 @@ msgid "Feed Replacement Text (use %permalink% for post URL)"
 msgstr "Testo sostitutivo del Feed (usa il %permalink% come URL dell'articolo)"
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:225
-msgid "Lock Top Level Page Structure"
-msgstr "Blocca la struttura della pagina di massimo livello"
+msgid "Pages can be set or removed from Top Level by:"
+msgstr ""
 
 #: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:226
 msgid "Display User Groups"
@@ -2133,216 +2131,231 @@ msgstr "Entrambi i tipi di ruolo sono possibili (assegnati per termini specifici
 msgid "Some users created under older WP versions may have direct-assigned capabilities in addition to their blog-wide role assignment.  This setting does not enable or block that feature, but determines whether Role Scoper must account for it.  Disable when possible (capabilities unrelated to RS Role Definitions are irrelevant)."
 msgstr ""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1240
-msgid "<strong>If selected</strong>, only Administrators can create new top-level pages.  <strong>Otherwise,</strong> top level pages can be created by any user with the <strong>edit_pages</strong> and <strong>edit_others_pages</strong> capability in their WordPress Role or RS General Role(s)."
-msgstr "<strong>se selezionato</strong>, solo gli Amministratori possono creare nuovi massimi livelli di Pagine. <strong>Altrimenti,</strong> le pagine di massimo livello possono essere create da qualsiasi utente con i permessi di <strong>edit_pages</strong> e <strong>edit_others_pages</strong> impostati nei loro Ruoli di WordPress o nei Ruoli Generali di RS."
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1246
+#, fuzzy
+msgid "Page Authors, Editors and Administrators"
+msgstr "Dagli Editori con ampi permessi e gli Amministratori"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1273
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1246
+#, fuzzy
+msgid "Page Editors and Administrators"
+msgstr "Dagli Editori con ampi permessi e gli Amministratori"
+
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1246
+#, fuzzy
+msgid "Administrators"
+msgstr "Amministratori del gruppo"
+
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1259
+msgid "Users who do not meet this blog-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of \"Main Page\".  Nor will they be able to move a currently published page from \"Main Page\" to a different Page Parent."
+msgstr ""
+
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1292
 msgid "If enabled, prevents those with edit_users capability from editing a user with a higher level or assigning a role higher than their own."
 msgstr "Se attivato, impedisce a quelli con capacità di edit_users di modificare un utente con un più alto livello o l'assegnazione di un ruolo superiore al proprio."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1289
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1404
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1406
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1308
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1423
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1425
 msgid "Content Administrator"
 msgstr "Amministratore del contenuto"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1290
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1406
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1309
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1425
 msgid "User Administrator"
 msgstr "Amministratore utente"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1291
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1406
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1310
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1425
 msgid "Option Administrator"
 msgstr "Opzioni Amministratore"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1293
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1312
 msgid "RS never applies restricting or enabling content filters"
 msgstr "RS non applica mai restrizioni o consente filtri di contenuto"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1294
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1313
 msgid "RS allows full editing of all user groups and scoped roles / restrictions"
 msgstr "RS permette una piena modifica di tutti i gruppi di utenti e i Ruoli possibili / limitazioni"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1295
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1314
 msgid "Can edit Role Scoper options"
 msgstr "E' possibile modificare le opzioni di Role Scoper"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1297
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1316
 msgid "Role Scoper internally checks the following capabilities for content and role administration.  By default, these capabilities are all contained in the Administrator role only.  You can use the Capability Manager plugin to split/overlap them among different roles as desired."
 msgstr "Internamente il Role Scoper controlla le seguenti capacità per i contenuti ed i ruoli di amministrazione. Per predefinito, queste capacità sono tutte comprese soltanto nel Ruolo Amministratore. Potete utilizzare il plugin Capability Manager per dividerle / sovrapporle ai differenti ruoli desiderati."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1301
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1320
 msgid "Administrator Type"
 msgstr "Tipo di Amministratore"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1302
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1321
 msgid "Required Capability"
 msgstr "Capacità richiesta"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1321
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1340
 msgid "Each administrator type's <strong>capability can be modified</strong> by adding any of the following define statements to your wp-config.php:"
 msgstr "Ogni capacità del tipo di amministratore <strong>può essere modificata</strong> con l'aggiunta di qualsiasi delle seguenti dichiarazioni al vostro wp-config.php:"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1329
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1348
 #, fuzzy
 msgid "For example, by using Capability Manager to add a custom capability such as <strong>administer_all_content</strong> to certain WordPress roles, you could mirror that setting in the SCOPER_CONTENT_ADMIN_CAP definition to ensure that those users are never content-restricted by Role Scoper."
 msgstr "Per esempio, utilizzando Capability Manager per aggiungere capacità personalizzate come <strong>administer_all_content</strong> ad un determinato ruolo di WordPress, si potrebbe volere l'impostazione nella definizione SCOPER_CONTENT_ADMIN_CAP per garantire che gli utenti non abbiano mai contenuti limitati dal Role Scoper, e poter moderare le Revisioni."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1347
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1366
 msgid "Remove Edit Form elements with these html IDs from users who do not have full editing capabilities for the post/page. Separate with&nbsp;;"
 msgstr "Rimuovere gli elementi del modulo per la Modifica con questi ID html dagli utenti che non hanno pieni permessi di modifica per gli articoli/pagine. Separare con &nbsp;;"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1372
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1391
 #, php-format
 msgid "%s Edit Form HTML IDs:"
 msgstr "%s Modifica il modulo HTML per gli ID:"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1382
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1401
 #, php-format
 msgid "%1$s sample IDs:%2$s %3$s"
 msgstr "%1$s modello ID:%2$s %3$s"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1406
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1425
 msgid "no requirement"
 msgstr "nessun requisito"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1406
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1425
 msgid "Contributor / Author / Editor"
 msgstr "Contribuente  / Autore / Editore"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1406
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1425
 msgid "Author / Editor"
 msgstr "Autore / Editore"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1420
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1439
 msgid "Note: The above roles are type-specific RS roles (for the object type involved) which must be contained in a user's blog-wide WordPress role."
 msgstr "Nota: I ruoli di cui sopra sono Ruoli RS di tipo specifico (per coinvolgere il tipo di oggetto) che deve contenere al suo interno un ruolo utente di WordPress ad ampio-blog."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1439
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1458
 #, php-format
 msgid "Limit eligible users for %s-specific editing roles"
 msgstr "Limite degli utenti eleggibili per ruoli di modifica %s-specifici"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1440
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1459
 msgid "Role Scoper can enable any user to edit a post or page you specify, regardless of their blog-wide WordPress role.  If that's not a good thing, check above options to require basic editing capability blog-wide or category-wide."
 msgstr "Role Scoper può attivare qualsiasi utente a modificare un articolo o pagina da voi specificata, indipendentemente dai loro ruoli di WordPress settati. Se questa non è una buona cosa, controllare le opzioni di cui sopra, che richiedono una capacità basilare di modifica di blog-ampio o ampia-categoria."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1443
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1462
 msgid "In the Edit Post/Edit Page roles tabs, decorate user/group name with colors and symbols if they have the role implicitly via group, general role, category role, or a superior post/page role."
 msgstr "Nelle schede dei ruoli Modifica Articolo / Modifica Pagina, decorare l' utente / nome del gruppo con colori e simboli, se hanno implicitamente il ruolo attraverso il gruppo, ruolo generale, ruolo di categoria, od un ruolo superiore di Articolo/ Pagina."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1446
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1465
 msgid "Display introductory descriptions at the top of various role assignment / definition screens."
 msgstr "Mostrare descrizioni introduttive all'inizio delle varie assegnazioni di ruolo / definizione degli schermi."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1449
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1468
 msgid "Accept entry of user names or IDs via comma-separated text instead of individual checkboxes."
 msgstr "Accetta l'inserimento dei nomi utente o ID attraverso testo separato con una virgola piuttosto che selezionare individualmente ogni opzione."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1467
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1486
 #, fuzzy, php-format
 msgid "Restrictions column in Edit %s listing"
 msgstr "Limitazioni ruoli aggiornate: %d impostazioni"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1470
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1489
 #, php-format
 msgid "Term Roles column in Edit %s listing"
 msgstr ""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1473
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1492
 #, php-format
 msgid "Object Roles column in Edit %s listing"
 msgstr ""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1516
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1535
 #, php-format
 msgid "%1$s (normally equivalent to %2$s)"
 msgstr "%1$s (solitamente uguale a %2$s)"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1523
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1542
 msgid "By default, the above roles are not available for object-specific assignment because another role is usually equivalent. However, the distinctions may be useful if you propagate roles to sub-Pages, set Default Roles or customize RS Role Definitions."
 msgstr "Per impostazione predefinita, i ruoli di cui sopra non sono disponibili per un'assegnazione specifica dell'oggetto, perché gli altri ruoli (Lettore Privato, Editore) solitamente sono equivalenti. Tuttavia, la distinzione può essere utile se si propagano i ruoli delle sotto-pagine, impostate a Ruoli predefiniti o personalizzate per definizione dei ruoli di RS."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1525
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1544
 msgid "Note: Under the default configuration, the tabs labeled \"Reader\" in the Post/Page Edit Form actually assign the corresponding Private Reader role."
 msgstr "Nota: nella configurazione predefinita, le voci targate \"Lettore\" nel modulo di modifica degli Articoli/Pagine sono assegnati attualmente al Ruolo di Lettore Privato corrispondente."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1558
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1577
 msgid "These <strong>optional</strong> settings allow advanced users to adjust Role Scoper's sphere of influence. For most installations, the default settings are fine."
 msgstr "Queste impostazioni <strong>facoltative</strong> permettono agli utenti avanzati di regolare l'ambiente o l'influenza di Role Scoper. Per la maggior parte delle installazioni, le impostazioni predefinite sono sufficienti."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1581
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1600
 msgid "Specify which WordPress taxonomies can have Restrictions and Roles:"
 msgstr "Specificare quale tassonomia di WordPress può avere Limitazioni e Ruoli:"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1598
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1617
 msgid "Specify whether Restrictions and Roles can be set for individual Objects:"
 msgstr ""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1626
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1645
 msgid "Section"
 msgstr "Sezione"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1629
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1681
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1648
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1700
 #, fuzzy, php-format
 msgid "%1$s (for %2$s)"
 msgstr "Assegna ruoli per %1$s \"%2$s\""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1695
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1714
 msgid "* = Role Assignment only (no Restrictions)"
 msgstr ""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1715
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1734
 msgid "Apply Roles and Restrictions for:"
 msgstr "Applica Ruoli e Limitazioni per:"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1732
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1751
 msgid "Viewing content (front-end)"
 msgstr "Visualizzando il contenuto (front-end)"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1734
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1753
 msgid "Editing and administering content (admin)"
 msgstr "Modificando e amministrando il contenuto (amministratore)"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1756
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1775
 msgid "The &quot;Post Tag&quot; taxonomy cannot be used to define restrictions because tags are not mandatory. For most installations, categories are a better mechanism to define roles. Note that <strong>Role Scoper does not filter tag storage</strong> based on the editing user's access.  As with any other custom-defined taxonomy, use this option at your own discretion."
 msgstr "La tassonomia del &quot;Tag di un articolo&quot; non può essere utilizzata per definire le limitazioni perchè i tags non sono obbligatori. Per la maggior parte delle installazioni, le categorie sono un meccanismo migliore per definire i ruoli. Si noti che <strong> Role Scoper non filtra l'immagazzinamento dei tags </ strong> basati sull' accesso dell'utente che può modificare. Come con qualsiasi altra tassonomia personalizzata, utilizzare questa opzione a propria discrezione."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1760
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1779
 msgid "By default, WordPress does not support page categories.  The corresponding &quot;Role Scopes&quot; option is only meaningful if the WP core or another plugin has added this support."
 msgstr "Da impostazione predefinita, Wordpress non supporta le categorie di pagina. L'opzione corrispondente in &quot;Role Scopes&quot; è solo sensato se il WP o un suo plugin ha aggiunto questo supporto."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1796
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1815
 msgid "Specify which Role Scoper Options should be applied site-wide."
 msgstr "Specificare quali Opzioni di Role Scoper dovrebbero essere applicate al livello di site-wide."
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1803
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1822
 #, php-format
 msgid "sitewide control of \"%s\""
 msgstr ""
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1808
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1827
 msgid "Selected options will be controlled site-wide via <strong>Site Admin > Role Options</strong>; unselected options can be set per-blog via <strong>Roles > Options</strong>"
 msgstr "Le opzioni selezionate saranno controllate a livello di sito tramite <strong> Amministrazione del Sito > Opzioni del Ruolo </ strong>, le opzioni non selezionate possono essere impostate singolarmente per ogni blog tramite <strong> Ruoli> Opzioni </ strong>"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1817
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1836
 #, fuzzy, php-format
 msgid "<span class=\"rs-h3text rs-blue\">%1$s</span> (%2$s)"
 msgstr "<span class=\"rs-h3text rs-blue\">%1$s</span> (%2$s)|option_tabname (explanatory note)"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1887
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1906
 #, fuzzy
 msgid "All settings in this form (including those on undisplayed tabs) will be reset to DEFAULTS.  Are you sure?"
 msgstr "Tutte le impostazioni in questo modulo (incluse quelle nelle schede non selezionate) saranno azzerate alle impostazioni predefinite. Siete sicuri?"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1892
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1911
 msgid "Revert to Defaults"
 msgstr "Ritorna al predefinito"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1918
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/options.php:1937
 #, php-format
 msgid "%s data source"
 msgstr "%s sorgente dei dati"
@@ -2537,7 +2550,7 @@ msgstr "Se un ruolo ha dei limiti a qualche richiesta %1$s, l'assegnazione %2$s 
 msgid "Administrators are exempted from Role Restrictions."
 msgstr "Gli amministratori sono esentati dalle limitazioni di ruolo"
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/update_rs.php:485
+#: E:\www\wp29c\wp-content\plugins\role-scoper/admin/update_rs.php:503
 #, php-format
 msgid "Pending Revisions were enabled in your previous Role Scoper version.  To retain that feature, you need to install %1$s Revisionary%2$s, another %3$s Agapetry Creations%4$s plugin."
 msgstr ""
@@ -2595,7 +2608,7 @@ msgstr "La cache del file non può operare perchè i tentativi di creazione del 
 msgid "The file cache cannot operate because file storage attempts fail in %s"
 msgstr "La cache del file non può operare perchè i tentativi di immagazzinamento del file falliscono in %s "
 
-#: E:\www\wp29c\wp-content\plugins\role-scoper/hardway/hardway-admin-legacy_rs.php:106
+#: E:\www\wp29c\wp-content\plugins\role-scoper/hardway/hardway-admin-legacy_rs.php:105
 #, php-format
 msgid "You have %1$s, contained within %2$s and %3$s. %4$s %5$s"
 msgstr ""
@@ -2619,6 +2632,20 @@ msgstr "La funzione richiamata probabilmente necessita di essere registrata con 
 msgid "%1$s queries in %2$s seconds. %3$s MB used."
 msgstr "%1$s richieste al database effettuate in %2$s. %3$s MB usati."
 
+#~ msgid "Lock Top Level Page Structure"
+#~ msgstr "Blocca la struttura della pagina di massimo livello"
+#~ msgid ""
+#~ "<strong>If selected</strong>, only Administrators can create new top-"
+#~ "level pages.  <strong>Otherwise,</strong> top level pages can be created "
+#~ "by any user with the <strong>edit_pages</strong> and "
+#~ "<strong>edit_others_pages</strong> capability in their WordPress Role or "
+#~ "RS General Role(s)."
+#~ msgstr ""
+#~ "<strong>se selezionato</strong>, solo gli Amministratori possono creare "
+#~ "nuovi massimi livelli di Pagine. <strong>Altrimenti,</strong> le pagine "
+#~ "di massimo livello possono essere create da qualsiasi utente con i "
+#~ "permessi di <strong>edit_pages</strong> e <strong>edit_others_pages</"
+#~ "strong> impostati nei loro Ruoli di WordPress o nei Ruoli Generali di RS."
 #~ msgid "Email Recipients"
 #~ msgstr "Destinatari E-mail:"
 #~ msgid ""

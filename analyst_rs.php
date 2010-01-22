@@ -155,10 +155,12 @@ class ScoperAnalyst {
 				}											
 			}
 			
-			$restricted_objects['post'] = agp_array_flatten( $restricted_roles['post'] );
+			if ( ! empty( $restricted_objects ) ) {
+				$restricted_objects['post'] = agp_array_flatten( $restricted_roles['post'] );
 			
-			if ( $restricted_objects['post'] )
-				$object_restriction_clause = "OR post_parent IN ( SELECT ID FROM $wpdb->posts WHERE ID IN ('" . implode( "','", $restricted_objects['post'] ) . "') )";
+				if ( $restricted_objects['post'] )
+					$object_restriction_clause = "OR post_parent IN ( SELECT ID FROM $wpdb->posts WHERE ID IN ('" . implode( "','", $restricted_objects['post'] ) . "') )";
+			}
 		}	
 		
 					

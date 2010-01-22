@@ -256,6 +256,10 @@ class ScoperTeaser {
 		} elseif ( ! empty($x_chars_teaser[$object_type]) && ! empty($object->$col_content) && ( strlen( strip_tags($object->$col_content) ) > $num_chars ) ) {
 			scoper_load_textdomain(); // otherwise this is only loaded for wp-admin
 
+			// since we are stripping out img tag, also strip out image caption applied by WP
+			$object->$col_content = preg_replace( "/\[caption.*\]/", '', $object->$col_content );
+			$object->$col_content = str_replace( "[/caption]", '', $object->$col_content );
+			
 			$object->$col_content = sprintf(_x('%s...', 'teaser suffix', 'scoper'), substr( strip_tags($object->$col_content), 0, $num_chars ) );
 			$object->$col_excerpt = $object->$col_content;
 			

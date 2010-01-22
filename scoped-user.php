@@ -27,6 +27,10 @@ class WP_Scoped_User extends WP_User {
 		
 		$this->WP_User($id, $name);
 		
+		// initialize blog_roles arrays
+		$this->assigned_blog_roles[ANY_CONTENT_DATE_RS] = array();
+		$this->blog_roles[ANY_CONTENT_DATE_RS] = array();
+
 		//dump($id);
 		//dump($this);
 		

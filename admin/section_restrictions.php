@@ -60,7 +60,7 @@ echo '&nbsp;&nbsp;<span style="font-size: 0.6em; font-style: normal">(<a href="#
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
 	if ( 'category' == $taxonomy && scoper_get_otype_option('use_object_roles', 'post', 'post') )
-		printf(__('Reduce access by requiring some role(s) to be %1$s%2$s-assigned%3$s (or %4$s-assigned). Corresponding General Roles (whether assigned by WordPress or Role Scoper) are ignored.', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-roles'>", $tx->display_name, '</a>', $tx->object_source->display_name);
+		printf(__('Reduce access by requiring some role(s) to be %1$s%2$s-assigned%3$s (or %4$s-assigned). Corresponding General Roles (whether assigned by WordPress or Role Scoper) are ignored.', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-roles_t'>", $tx->display_name, '</a>', $tx->object_source->display_name);
 	else
 		printf(__('Reduce access by requiring some role(s) to be %1$s%2$s-assigned%3$s. Corresponding General Role assignments are ignored.', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-roles'>", $tx->display_name, '</a>');
 	echo '</div>';

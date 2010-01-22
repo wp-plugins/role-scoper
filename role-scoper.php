@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.1.2
+Version: 1.1.3
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 2.5
@@ -43,13 +43,13 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 }
 
 
-define ('SCOPER_VERSION', '1.1.2');
+define ('SCOPER_VERSION', '1.1.3');
 define ('SCOPER_DB_VERSION', '1.1.1');
 
 define( 'ENABLE_PERSISTENT_CACHE', true );
 
 /* --- ATTACHMENT FILTERING NOTE ---
-Read access to uploaded file attachments is normally filtered to match post/page access.
+Read access to uploaded file attachments is normally filtered (via .htaccess RewriteRules) to match post/page access.
 To disable this attachment filtering, copy the following line to wp-config.php:
 	define('DISABLE_ATTACHMENT_FILTERING', true);
 
@@ -64,6 +64,9 @@ The Hidden Content Teaser may be configured to display the first X characters of
 To specify the number of characters (default is 50), copy the following line to wp-config.php:
 	define('SCOPER_TEASER_NUM_CHARS', 100); // set to any number of your choice
 	
+To prevent teasing of feed items even if teaser is enabled for main posts/pages listing, copy the following line to wp-config.php:
+	define( 'SCOPER_NO_FEED_TEASER', true );
+
 To disable caching of the pages / categories listing, add the following lines to wp-config.php:
 	define( 'SCOPER_NO_PAGES_CACHE', true );
 	define( 'SCOPER_NO_TERMS_CACHE', true );

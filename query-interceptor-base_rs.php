@@ -53,15 +53,16 @@ class QueryInterceptorBase_RS {
 		if ( empty( $current_user->ID ) )
 			return $where;
 
-		if ( is_admin() && is_content_administrator_rs() ) {  // for non-administrators in wp-admin, this is handled by posts_request / posts_where filter
-			$where = preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($wpdb->posts.post_status = 'publish' OR $wpdb->posts.post_status = 'private' OR $wpdb->posts.post_status = 'draft' OR $wpdb->posts.post_status = 'pending' OR $wpdb->posts.post_status = 'future' OR $wpdb->posts.post_status = 'trash')", $where);
-			$where = preg_replace( "/p2.post_status\s*=\s*'publish'/", "(p2.post_status = 'publish' OR p2.post_status = 'private' OR p2.post_status = 'draft' OR p2.post_status = 'pending' OR p2.post_status = 'future' OR p2.post_status = 'trash')", $where);
-			$where = preg_replace( "/p.post_status\s*=\s*'publish'/", "(p.post_status = 'publish' OR p.post_status = 'private' OR p.post_status = 'draft' OR p.post_status = 'pending' OR p.post_status = 'future' OR p.post_status = 'trash')", $where);
-		} else {
+		//if ( is_admin() && is_content_administrator_rs() ) {  // for non-administrators in wp-admin, this is handled by posts_request / posts_where filter
+		//	TODO: is this necessary when filtering Edit Posts / Pages listing by custom taxonomy?
+		//	$where = preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($wpdb->posts.post_status = 'publish' OR $wpdb->posts.post_status = 'private' OR $wpdb->posts.post_status = 'draft' OR $wpdb->posts.post_status = 'pending' OR $wpdb->posts.post_status = 'future')", $where);
+		//	$where = preg_replace( "/p2.post_status\s*=\s*'publish'/", "(p2.post_status = 'publish' OR p2.post_status = 'private' OR p2.post_status = 'draft' OR p2.post_status = 'pending' OR p2.post_status = 'future')", $where);
+		//	$where = preg_replace( "/p.post_status\s*=\s*'publish'/", "(p.post_status = 'publish' OR p.post_status = 'private' OR p.post_status = 'draft' OR p.post_status = 'pending' OR p.post_status = 'future')", $where);
+		//} else {
 			$where = preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($wpdb->posts.post_status = 'publish' OR $wpdb->posts.post_status = 'private')", $where);
 			$where = preg_replace( "/p2.post_status\s*=\s*'publish'/", "(p2.post_status = 'publish' OR p2.post_status = 'private')", $where);
 			$where = preg_replace( "/p.post_status\s*=\s*'publish'/", "(p.post_status = 'publish' OR p.post_status = 'private')", $where);
-		}
+		//}
 	
 		return $where;
 	}

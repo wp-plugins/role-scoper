@@ -311,9 +311,14 @@ class CapInterceptor_RS
 
 		// If an object id was provided, all required caps must share a common data source (object_types array is indexed by src_name)
 		if ( count($object_types) > 1 || ! count($object_types) ) {
-			rs_notice ( 'Error: user has_cap call is not valid for specified object_id because required capabilities pertain to more than one data source.' . ' ' . implode(', ', $orig_reqd_caps) );
-			$in_process = false;
-			return array();
+			
+			if ( $object_type = $scoper->data_sources->get_from_uri('type', 'post', $object_id) ) {
+				$object_types = array( 'post' => array( $object_type => true ) );
+			} else {
+				rs_notice ( 'Error: user has_cap call is not valid for specified object_id because required capabilities pertain to more than one data source.' . ' ' . implode(', ', $orig_reqd_caps) );
+				$in_process = false;
+				return array();
+			}
 		}
 		
 		$src_name = key($object_types);

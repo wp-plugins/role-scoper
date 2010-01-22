@@ -243,7 +243,7 @@ echo '<hr /><br />';
 
 if ( $duration_limits_enabled || $content_date_limits_enabled ) {
 	echo '<h3 style="margin-bottom: 0">3.&nbsp;';
-	_e('Set Role Duration and/or Content Date Limits', 'scoper');
+	_e('Set Role Duration and/or Content Date Limits (optional)', 'scoper');
 	echo '</h3>';
 	
 	include_once( 'admin_lib-bulk_rs.php' );
@@ -365,13 +365,13 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 				$val = $role_codes[$role_handle];
 				$id = "$role_handle";
 				$checked = ( $err && isset( $_POST['roles'] ) && in_array( $val, $_POST['roles'] ) ) ? 'checked="checked"' : '';
-	
+
 				$skip_if_val = REMOVE_ASSIGNMENT_RS;
 
 				// Does current user have this role blog-wide?
 				$is_admin_module = isset($otype_source[$object_type]) ? $otype_source[$object_type] : '';
 				if ( is_administrator_rs($is_admin_module, 'user') || array_intersect_key( array($role_handle=>1), $current_user->blog_roles[$date_key]) ) {
-					$checked = ( $err && isset($_POST['roles']) && in_array($vals[$role_handle], $_POST['roles']) ) ? 'checked="checked"' : '';
+					$checked = ( $err && isset($_POST['roles']) && in_array($val, $_POST['roles']) ) ? 'checked="checked"' : '';
 					$skip_if_val = REMOVE_ASSIGNMENT_RS;
 					$js_call = "agp_uncheck('" . implode(',', array_keys($roles)) . "',this.id,'assign_for','$skip_if_val');";
 					$checkbox = "<input type='checkbox' name='roles[]' id='$id' value='$val' $checked onclick=\"$js_call\" />";

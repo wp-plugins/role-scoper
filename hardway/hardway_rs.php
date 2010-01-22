@@ -218,11 +218,13 @@ class ScoperHardway
 	
 		$request = "SELECT $fields FROM $wpdb->posts $join_base WHERE 1=1 $where_base ORDER BY $sort_column $sort_order ";
 
+		$list_private_pages = scoper_get_otype_option('private_items_listable', 'post', 'page');
 
-		if ( ! is_admin() && ! $list_private_pages = scoper_get_otype_option('private_items_listable', 'post', 'page') ) {
+		$def_caps = $scoper->data_sources->members['post']->reqd_caps['read']['page']['private'];
+		
+		if ( ! is_admin() && ! $list_private_pages ) {
 			// As an extra precaution to make sure we can PREVENT private page listing even if private status is included in query,
 			// temporarily set the required cap for reading private pages to a nonstandard cap name (which is probably not owned by any user)
-			$def_caps = $scoper->data_sources->members['post']->reqd_caps['read']['page']['private'];
 			$scoper->data_sources->members['post']->reqd_caps['read']['page']['private'] = array('list_private_pages');
 		} else {
 			// WP core does not include private pages in query.  Include private status clause in anticipation of user-specific filtering

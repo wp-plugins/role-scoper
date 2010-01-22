@@ -17,6 +17,7 @@ class ScoperAdminFilters
 {
 	var $role_levels; 	// NOTE: user/role levels are used only for optional limiting of user edit, not for content filtering
 	var $user_levels;	// this is only populated for performance as a buffer for currently queried / listed users
+	var $last_post_status = array();
 	
 	function ScoperAdminFilters() {
 		global $scoper;
@@ -128,7 +129,10 @@ class ScoperAdminFilters
 		
 		if ( GROUP_ROLES_RS )
 			add_action('profile_update',  array(&$this, 'act_update_user_groups'));
-			
+				
+		// log previous post status (or other properties) prior to update
+		add_action( 'pre_post_update', array(&$this, 'act_log_post_status') );
+
 		// Filtering of Page Parent selection:
 		add_filter('pre_post_status', array(&$this, 'flt_post_status'), 50, 1);
 		add_filter('pre_post_parent', array(&$this, 'flt_page_parent'), 50, 1);
@@ -159,6 +163,10 @@ class ScoperAdminFilters
 		}
 	}
 
+	function act_log_post_status( $post_id ) {
+		if ( $post = get_post( $post_id ) )
+			$this->last_post_status[$post->ID] = $post->post_status;
+	}
 	
 	// optional filter for WP role edit based on user level
 	function flt_editable_roles( $roles ) {
@@ -247,6 +255,8 @@ class ScoperAdminFilters
 	// This handler is meant to fire whenever an object is inserted or updated.
 	// If the client does use such a hook, we will force it by calling internally from mnt_create and mnt_edit
 	function mnt_save_object($src_name, $args, $object_id, $object = '') {
+		rs_errlog( 'mnt_save_object' );
+		
 		if ( defined( 'RVY_VERSION' ) ) {
 			global $revisionary;
 		
@@ -418,7 +428,10 @@ class ScoperAdminFilters
 	
 	function act_update_user_groups($user_id) {
 		//check_admin_referer('scoper-edit_usergroups');	
-	
+
+		if ( empty( $_POST['rs_editing_user_groups'] ) ) // otherwise we'd delete group assignments if another plugin calls do_action('profile_update') unexpectedly
+			return;
+
 		global $current_user;
 		
 		if ( $user_id == $current_user->ID )

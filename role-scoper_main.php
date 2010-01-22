@@ -76,27 +76,23 @@ class Scoper
 			$this->role_defs->add_member_objects( scoper_core_role_defs() );
 			
 			//log_mem_usage_rs( 'role_defs->add_member_objects' );
-			
-			// allow advanced options to force object-assignment of a normally equiv-substituted RS role
-			$objscope_equiv_roles = array( 'rs_post_reader' => 'rs_private_post_reader', 'rs_post_author' => 'rs_post_editor', 'rs_page_reader' => 'rs_private_page_reader', 'rs_page_author' => 'rs_page_editor' );
-			
-			if ( defined('RVY_VERSION' ) )
-				$objscope_equiv_roles = array_merge( $objscope_equiv_roles, array( 'rs_post_revisor' => 'rs_post_contributor', 'rs_page_revisor' => 'rs_page_contributor' ) );
-			
-			$unset_equiv_properties = array('objscope_equivalents', 'other_scopes_check_role' );
-			foreach ( $objscope_equiv_roles as $role_handle => $equiv_role_handle ) {
-				if ( scoper_get_option( "{$role_handle}_role_objscope" ) ) {
 
-					if ( isset($this->role_defs->members[$role_handle]->valid_scopes) )
-						$this->role_defs->members[$role_handle]->valid_scopes = array('blog' => 1, 'term' => 1, 'object' => 1);
-
-					foreach ($unset_equiv_properties as $prop_name) {
-						if ( isset($this->role_defs->members[$equiv_role_handle]->$prop_name) )
-							if ( ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) )
-								define( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle, true ); 	
-								//unset( $this->role_defs->members[$equiv_role_handle]->$prop_name );
+			foreach ( $this->role_defs->get_all_keys() as $role_handle ) {
+				if ( ! empty($this->role_defs->members[$role_handle]->objscope_equivalents) ) {
+					foreach( $this->role_defs->members[$role_handle]->objscope_equivalents as $equiv_key => $equiv_role_handle ) {
+						if ( scoper_get_option( "{$equiv_role_handle}_role_objscope" ) ) {	// If "Additional Object Role" option is set for this role, treat it as a regular direct-assigned Object Role
+						
+							if ( isset($this->role_defs->members[$equiv_role_handle]->valid_scopes) )
+								$this->role_defs->members[$equiv_role_handle]->valid_scopes = array('blog' => 1, 'term' => 1, 'object' => 1);
+	
+							unset( $this->role_defs->members[$role_handle]->objscope_equivalents[$equiv_key] );
+					
+							if ( ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $equiv_role_handle ) )
+								define( 'DISABLE_OBJSCOPE_EQUIV_' . $equiv_role_handle, true );	// prevent Role Caption / Abbrev from being substituted from equivalent role
+						}
 					}
 				}
+				
 			}
 
 			$this->role_defs = apply_filters('define_roles_rs', $this->role_defs);
@@ -467,14 +463,8 @@ class Scoper
 			global $current_user;
 			$cache_flag = SCOPER_ROLE_TYPE . '_scoper_get_terms';
 			$cache = $current_user->cache_get($cache_flag);
-		} else {
-			if ( IS_MU_RS ) {
-				global $blog_id;
-				$blog_suffix = "_$blog_id";
-			} else
-				$blog_suffix = ''; 
-			
-			$cache_flag = "all_terms{$blog_suffix}";
+		} else {			
+			$cache_flag = "all_terms";
 			$cache_id = 'all';
 			$cache = wpp_cache_get( $cache_id, $cache_flag );
 		}

@@ -203,58 +203,20 @@
 			return true;
 
 		global $scoper, $current_user;
-		
-		$defaults = array( 'qualifying_ops' => array( 'edit' ),  'require_others_cap' => false, 'status' => '' );
+
+		$defaults = array( 'require_others_cap' => false, 'status' => '' );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
-		
-		if ( ! is_array($qualifying_ops) )
-			$qualifying_ops = (array) $qualifying_ops;
-		
 
-		// if no admin/delete/publish caps are defined for this object type, accept blog-wide possession of an edit cap instead 
-		if ( ( array('edit') !== $qualifying_ops ) && ! array_intersect( array_keys($role_ops), $qualifying_ops ) ) {
-			foreach ( $qualifying_ops as $op_type ) {
-				if ( $cap_defs = $scoper->cap_defs->get_matching($src_name, $object_type, $op_type, $status) )
-					break;
-			}
-			
-			if ( ! $cap_defs )
-				$qualifying_ops = array( 'edit' );
-		}
-		
-		
-		$op_match = false;
-		$others_cap_defined = false;
+		$cap_defs = $scoper->cap_defs->get_matching( $src_name, $object_type, OP_EDIT_RS, '', ! $require_others_cap );
 
-		foreach ( $qualifying_ops as $op_type ) {
-			$cap_defs = $scoper->cap_defs->get_matching($src_name, $object_type, $op_type);
-			
-			foreach ( $cap_defs as $cap_name => $cap_def ) {
-				
-		    	if ( $require_others_cap ) {
-				   	$is_others_cap = ! empty($cap_def->attributes) && in_array('others', $cap_def->attributes);
-				   	$others_cap_defined = $others_cap_defined || $is_others_cap;
-				}
-				   
-				// is this capability in any of the current user's roles?
-				foreach ( array_keys( agp_array_flatten( $current_user->blog_roles, false ) ) as $role_handle ) {				// okay to include content_date-limited terms here since it's only used for secondary measures such as the enforcement of Limited Editing Elements
-					
-					if ( ! empty( $scoper->role_defs->role_caps[$role_handle][$cap_name] ) ) {
-						if ( ! $require_others_cap || $is_others_cap )
-							return true;
-						else
-							$op_match = true;
-		 			}
-				}
+		if ( $status )
+			$cap_defs = array_merge( $cap_defs, $scoper->cap_defs->get_matching( $src_name, $object_type, OP_EDIT_RS, $status, ! $require_others_cap ) );
 
-			}
-		}	
-			
-
-		// We matched the op type but not others requirement.  If no others caps are defined for this object type, call it good.
-		if ( $op_match  && ! $others_cap_defined )
-			return true;
+		foreach ( array_keys($current_user->blog_roles[ANY_CONTENT_DATE_RS]) as $role_handle )
+			if ( isset($scoper->role_defs->role_caps[$role_handle]) )
+				if ( ! array_diff_key( $cap_defs, $scoper->role_defs->role_caps[$role_handle] ) )
+					return true;
 	}
 
 

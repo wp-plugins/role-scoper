@@ -162,7 +162,6 @@ class ScoperHardwayTaxonomy
 		
 		extract($args, EXTR_SKIP);
 		
-		
 		// === BEGIN Role Scoper MODIFICATION: use the $children array we already have ===		
 		//
 		if ( $child_of && ! isset($children[$child_of]) )
@@ -375,19 +374,27 @@ class ScoperHardwayTaxonomy
 		if ( 'all' == $fields ) {
 			$ancestors = ScoperAncestry::get_term_ancestors( $taxonomy ); // array of all ancestor IDs for keyed term_id, with direct parent first
 
-			if ( ( $parent > 0 ) || ! $hierarchical )
+			if ( ( $parent > 0 ) || ! $hierarchical ) {
+				// in Category Edit form, need to list all editable cats even if parent is not editable
 				$remap_parents = false;
-			else {
+				$enforce_actual_depth = true;
+				$remap_thru_excluded_parent = false;
+			} else {
 				// if these settings were passed into this get_terms call, use them
-				if ( -1 === $remap_parents )
-					$remap_parents = scoper_get_option( 'remap_term_parents' );
+				if ( is_admin() ) {
+					$remap_parents = true;
 					
-				if ( $remap_parents ) {
-					if ( -1 === $enforce_actual_depth )
-						$enforce_actual_depth = scoper_get_option( 'enforce_actual_term_depth' );
-						
-					if ( -1 === $remap_thru_excluded_parent )
-						$remap_thru_excluded_parent = scoper_get_option( 'remap_thru_excluded_term_parent' );
+				} else {
+					if ( -1 === $remap_parents )
+						$remap_parents = scoper_get_option( 'remap_term_parents' );
+					
+					if ( $remap_parents ) {
+						if ( -1 === $enforce_actual_depth )
+							$enforce_actual_depth = scoper_get_option( 'enforce_actual_term_depth' );
+							
+						if ( -1 === $remap_thru_excluded_parent )
+							$remap_thru_excluded_parent = scoper_get_option( 'remap_thru_excluded_term_parent' );
+					}
 				}
 			}
 			

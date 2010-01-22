@@ -30,6 +30,10 @@ class WP_Scoped_User extends WP_User { // Special skeleton class for ANONYMOUS U
 	function WP_Scoped_User($id = 0, $name = '', $args = '') {
 		$this->WP_User($id, $name);
 		
+		// initialize blog_roles arrays
+		//$this->assigned_blog_roles[ANY_CONTENT_DATE_RS] = array();
+		$this->blog_roles[ANY_CONTENT_DATE_RS] = array();
+		
 		global $scoper;
 		if ( empty($scoper) || empty($scoper->role_defs) ) {
 			require_once('role-scoper_main.php');

@@ -197,6 +197,8 @@ class Scoper_Submittee {
 		global $scoper_role_types;
 
 		// changes to these options will trigger .htaccess regen
+		add_action( 'update_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
+		add_action( 'add_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
 		add_action( 'update_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
 		add_action( 'add_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
 

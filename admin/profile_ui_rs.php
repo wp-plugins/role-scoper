@@ -368,6 +368,8 @@ class ScoperProfileUI {
 		
 		echo '</fieldset>';
 		echo '</div>';
+		
+		echo "<input type='hidden' name='rs_editing_user_groups' value='1' />";
 	}
 	
 } // end class ScoperProfileUI

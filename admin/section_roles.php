@@ -78,7 +78,7 @@ echo '<h2>' . sprintf(__('%s Roles', 'scoper'), $tx->display_name)
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
 	if ( ! empty($tx->requires_term) )
-		printf(_x('Grant capabilities within a specific %2$s, potentially more than a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'arguments are link open, taxonomy name, link close', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-roles'>", $tx->display_name, '</a>');
+		printf(_x('Grant capabilities within a specific %2$s, potentially more than a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'arguments are link open, taxonomy name, link close', 'scoper'), "<a href='admin.php?page=rs-$taxonomy-restrictions_t'>", $tx->display_name, '</a>');
 	else
 		printf(__('Grant capabilities within a specific %s, potentially more than a user\'s WP role would allow.', 'scoper'), $tx->display_name);
 		

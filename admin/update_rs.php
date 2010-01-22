@@ -10,15 +10,6 @@ function scoper_version_updated( $prev_version ) {
 		
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
-		if ( version_compare( $prev_version, '1.1.2', '<') ) {
-			// due to problems with file filtering on some mu installations, turn it off by default
-			if ( awp_is_mu() ) {
-				update_site_option( 'scoper_file_filtering', false );
-				scoper_clear_site_rules();
-				scoper_expire_file_rules();
-			}
-		}
-
 		if ( version_compare( $prev_version, '1.1', '<') ) {
 			// htaccess rules modified in v1.1
 			scoper_flush_site_rules();
@@ -367,7 +358,7 @@ function delete_roles_orphaned_from_item( $scope, $src_or_tx_name ) {
 	if ( 'term' == $scope ) {
 		if ( 'category' == $src_or_tx_name ) {	// this is called early by sync_roles
 			$item_table = $wpdb->term_taxonomy;
-			$col_item_id = 'term_taxonomy_id';
+			$col_item_id = 'term_id';
 		} elseif ( ! empty($scoper) ) {
 			$qv = $scoper->taxonomies->get_terms_query_vars($src_or_tx_name, true);  // arg: terms only
 			$item_table = $qv->term->table;
@@ -399,12 +390,22 @@ function delete_restrictions_orphaned_from_item( $scope, $src_or_tx_name ) {
 	global $wpdb;
 
 	if ( 'term' == $scope ) {
-		$qv = $this->scoper->taxonomies->get_terms_query_vars($src_or_tx_name, true);  // arg: terms only
-		$item_table = $qv->term->table;
-		$col_item_id = $qv->term->col_id;
+		if ( 'category' == $src_or_tx_name ) {	// this is called early by sync_roles
+			$item_table = $wpdb->term_taxonomy;
+			$col_item_id = 'term_id';
+		} elseif ( ! empty($scoper) ) {
+			$qv = $scoper->taxonomies->get_terms_query_vars($src_or_tx_name, true);  // arg: terms only
+			$item_table = $qv->term->table;
+			$col_item_id = $qv->term->col_id;
+		}
 	} else {
-		$col_item_id = $this->scoper->data_sources->member_property($src_or_tx_name, 'cols', 'id');
-		$item_table = $this->scoper->data_sources->member_property($src_or_tx_name, 'table');
+		if ( 'post' == $src_or_tx_name ) { // this is called early by sync_roles
+			$col_item_id = 'ID';
+			$item_table = $wpdb->posts;
+		} elseif( ! empty($scoper) ) {
+			$col_item_id = $scoper->data_sources->member_property($src_or_tx_name, 'cols', 'id');
+			$item_table = $scoper->data_sources->member_property($src_or_tx_name, 'table');
+		}
 	}
 	
 	if ( $is_valid_items = scoper_get_var( "SELECT $col_item_id FROM $item_table LIMIT 1" ) ) {
