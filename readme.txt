@@ -107,6 +107,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.1.4 - 27 Jan 2010 =
+* BugFix : Fatal error on activation with wp-MU if File Filtering enabled
+* BugFix : File Filtering was ineffective with wp-MU under some configurations
+* BugFix : Updates to Role assignments fail if MySQL does not convert nullstring to zero value for datetime storage
+* Lang : Reverted _x() translation calls to __(), due to issues with poEdit support
+
 
 **1.1.3 - 22 Jan 2010**
 

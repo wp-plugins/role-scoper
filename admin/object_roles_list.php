@@ -202,9 +202,11 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 				}
 				
 				$url = "admin.php?page=$roles_page";
-				$html .= "<h4><a name='$object_type' href='$url'><strong>" . sprintf( _x('%1$s Roles%2$s:', 'Post/Page Roles', 'scoper'), $otype->display_name, '</strong></a><span style="font-weight:normal">' . $date_caption) . "</span></h4>";
+				//$html .= "<h4><a name='$object_type' href='$url'><strong>" . sprintf( _ x('%1$s Roles%2$s:', 'Post/Page Roles', 'scoper'), $otype->display_name, '</strong></a><span style="font-weight:normal">' . $date_caption) . "</span></h4>";
+				$html .= "<h4><a name='$object_type' href='$url'><strong>" . sprintf( __('%1$s Roles%2$s:', 'scoper'), $otype->display_name, '</strong></a><span style="font-weight:normal">' . $date_caption) . "</span></h4>";
 			} else
-				$html .= "<h4><strong>" . sprintf( _x('%1$s Roles%2$s:', 'Post/Page Roles', 'scoper'), $otype->display_name, $date_caption) . "</strong></h4>";
+				$html .= "<h4><strong>" . sprintf( __('%1$s Roles%2$s:', 'scoper'), $otype->display_name, $date_caption) . "</strong></h4>";
+				//$html .= "<h4><strong>" . sprintf( _ x('%1$s Roles%2$s:', 'Post/Page Roles', 'scoper'), $otype->display_name, $date_caption) . "</strong></h4>";
 			
 			$html .=
 			"<ul class='rs-termlist'><li>"
@@ -221,7 +223,8 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			
 			$style = ' class="rs-backwhite"';
 	
-			$title_item = sprintf(_x('edit %s', 'post/page/category/etc.', 'scoper'), strtolower($otype->display_name) );
+			//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), strtolower($otype->display_name) );
+			$title_item = sprintf( __('edit %s', 'scoper'), strtolower($otype->display_name) );
 			
 			foreach ( $object_roles[$duration_key] as $obj_id => $roles ) {
 				$object_name = attribute_escape($objnames[$obj_id]);

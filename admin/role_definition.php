@@ -161,11 +161,18 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 						$wp_defined_caps = array_intersect_key( $wp_roles->role_objects[ $wp_role_sync[$rs_role_handle] ]->capabilities, $otype_caps );
 						$wp_extra_caps = array_diff_key( $wp_defined_caps, $rs_role_defs->role_caps[$rs_role_handle] );
 							
+						/*
 						if ( $wp_extra_caps )
-							$sync_caption = sprintf( _x( 'sync WP %1$s <br />to these selections (currently includes %2$s)', 'role name', 'scoper' ), $wp_display_name, implode( ", ", array_keys($wp_extra_caps) ) );
+							$sync_caption = sprintf( _ x( 'sync WP %1$s <br />to these selections (currently includes %2$s)', 'role name', 'scoper' ), $wp_display_name, implode( ", ", array_keys($wp_extra_caps) ) );
 						else
-							$sync_caption = sprintf( _x( 'sync WP %s <br />to these selections', 'role name', 'scoper' ), $wp_display_name);
-							
+							$sync_caption = sprintf( _ x( 'sync WP %s <br />to these selections', 'role name', 'scoper' ), $wp_display_name);
+						*/
+						
+						if ( $wp_extra_caps )
+							$sync_caption = sprintf( __( 'sync WP %1$s <br />to these selections (currently includes %2$s)', 'scoper' ), $wp_display_name, implode( ", ", array_keys($wp_extra_caps) ) );
+						else
+							$sync_caption = sprintf( __( 'sync WP %s <br />to these selections', 'scoper' ), $wp_display_name);
+								
 						echo '<br /><br />' ;
 						$title = __( 'note: only the capabilities listed here will be affected', 'scoper' );
 						echo "<input type='checkbox' name='sync_wp_roles[]' id='sync_wp_role_{$rs_role_handle}' value='{$rs_role_handle}:{$wp_role_handle}' title='$title' />"

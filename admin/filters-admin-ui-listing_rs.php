@@ -50,7 +50,8 @@ class ScoperEditListingFilters {
 		if ( $use_object_roles && ! empty($scoper->have_objrole_ids['post']) )
 			if ( scoper_get_otype_option('object_roles_column', 'post', $object_type) ) {
 				$otype_display_name = $scoper->data_sources->member_property('post', 'object_types', $object_type, 'display_name');
-				$defaults['objroles'] = sprintf( _x('%s Roles', 'Post or Page', 'scoper'), $otype_display_name);
+				//$defaults['objroles'] = sprintf( _ x('%s Roles', 'Post or Page', 'scoper'), $otype_display_name);
+				$defaults['objroles'] = sprintf( __('%s Roles', 'scoper'), $otype_display_name);
 			}	
 				
 		return $defaults;

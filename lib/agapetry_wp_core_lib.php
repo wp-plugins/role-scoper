@@ -89,6 +89,9 @@ if ( ! function_exists('awp_user_can') ) {
 function awp_user_can($reqd_caps, $object_id = 0, $user_id = 0, $args = array() ) {
 	// $args supports 'skip_revision_allowance'.  For now, skip array_merge with defaults, for perf
 
+	if ( ( IS_MU_RS || IS_MU_RVY ) && is_site_admin() ) 
+		return true;
+	
 	if ( $user_id )
 		$user = new WP_User($user_id);  // don't need Scoped_User because only using allcaps property (which contain WP blogcaps).  flt_user_has_cap will instantiate new WP_Scoped_User based on the user_id we pass
 	else

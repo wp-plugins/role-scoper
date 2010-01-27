@@ -313,6 +313,9 @@ class ScoperAdminBulkLib {
 			$ss = ($ss > 59 ) ? $ss -60 : $ss;
 			
 			$return[$key] = get_gmt_from_date( sprintf( "%04d-%02d-%02d %02d:%02d:%02d", $aa, $mm, $jj, $hh, $mn, $ss ) );
+			
+			if ( ! $return[$key] )
+				$return[$key] = '0';
 		}
 		
 		return (object) $return;

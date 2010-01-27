@@ -64,7 +64,8 @@ if ( scoper_get_option('display_hints') ) {
 	
 	$restrictions_page = "rs-{$object_type}-restrictions";
 	
-	printf(_x('Expand access to a %2$s, potentially beyond what a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'arguments are link open, object type name, link close', 'scoper'), "<a href='admin.php?page=$restrictions_page'>", $display_name, '</a>');
+	//printf(_ x('Expand access to a %2$s, potentially beyond what a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'arguments are link open, object type name, link close', 'scoper'), "<a href='admin.php?page=$restrictions_page'>", $display_name, '</a>');
+	printf(__('Expand access to a %2$s, potentially beyond what a user\'s WP role would allow. To reduce access, define %1$s%2$s&nbsp;Restrictions%3$s.', 'scoper'), "<a href='admin.php?page=$restrictions_page'>", $display_name, '</a>');
 	echo '</div>';
 }
 
@@ -97,8 +98,10 @@ $args = array( 'role_bases' => $role_bases, 'default_hide_empty' => ! empty($oty
 ScoperAdminBulk::item_tree_jslinks(ROLE_ASSIGNMENT_RS, $args );
 
 // buffer prev/next caption for display with each obj type
-$prevtext = _x('prev', 'abbreviated link to previous item', 'scoper');
-$nexttext = _x('next', 'abbreviated link to next item', 'scoper');
+//$prevtext = _ x('prev', 'abbreviated link to previous item', 'scoper');
+//$nexttext = _ x('next', 'abbreviated link to next item', 'scoper');
+$prevtext = __('prev', 'scoper');
+$nexttext = __('next', 'scoper');
 
 $site_url = get_option('siteurl');
 

@@ -215,7 +215,8 @@ class ScoperAdminLib {
 			$role_name = substr($meta_id, strlen('wp_role_') );
 			$role_display_name = isset( $wp_roles->role_names[$role_name] ) ? __($wp_roles->role_names[$role_name]) : $role_name;
 	
-			return sprintf( _x('[WP %s]', 'Readers/Contributors/Editors, etc.', 'scoper'), $role_display_name );
+			//return sprintf( _ x('[WP %s]', 'Readers/Contributors/Editors, etc.', 'scoper'), $role_display_name );
+			return sprintf( __('[WP %s]', 'scoper'), $role_display_name );
 		
 		} elseif ( 'wp_anon' == $meta_id ) {
 			return	__('[Anonymous]', 'scoper');

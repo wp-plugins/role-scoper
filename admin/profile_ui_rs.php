@@ -208,9 +208,11 @@ class ScoperProfileUI {
 						
 					if ( $admin_terms ) {
 						$url = "admin.php?page=rs-$taxonomy-roles";
-						$html .= ("\n<h4><a href='$url'>" . sprintf(_x('%1$s Roles%2$s:', 'Category Roles, content date range', 'scoper'), $tx->display_name, '</a><span style="font-weight:normal">' . $date_caption) . '</span></h4>' );
+						//$html .= ("\n<h4><a href='$url'>" . sprintf(_ x('%1$s Roles%2$s:', 'Category Roles, content date range', 'scoper'), $tx->display_name, '</a><span style="font-weight:normal">' . $date_caption) . '</span></h4>' );
+						$html .= ("\n<h4><a href='$url'>" . sprintf(__('%1$s Roles%2$s:', 'scoper'), $tx->display_name, '</a><span style="font-weight:normal">' . $date_caption) . '</span></h4>' );
 					} else
-						$html .= ("\n<h4>" . sprintf(_x('%1$s Roles%2$s:', 'Category Roles, content date range', 'scoper'), $tx->display_name, $date_caption) . '</h4>' );
+						$html .= ("\n<h4>" . sprintf(__('%1$s Roles%2$s:', 'scoper'), $tx->display_name, $date_caption) . '</h4>' );
+						//$html .= ("\n<h4>" . sprintf(_ x('%1$s Roles%2$s:', 'Category Roles, content date range', 'scoper'), $tx->display_name, $date_caption) . '</h4>' );
 		
 					$html .= '<ul class="rs-termlist" style="padding-left:0.1em;">';
 					$html .= '<li>';

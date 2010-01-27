@@ -594,11 +594,13 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	</th><td>
 
 	<?php
-	$otype_caption = _x('Default new %s to Private visibility', 'Posts / Pages', 'scoper');
+	//$otype_caption = _ x('Default new %s to Private visibility', 'Posts / Pages', 'scoper');
+	$otype_caption = __('Default new %s to Private visibility', 'scoper');
 	$hint = __('Note: this does not apply to Quickposts or XML-RPC submissions.', 'scoper');
 	$ui->otype_option_checkboxes( 'default_private', $otype_caption, $tab, $section, $hint, '<br /><br />' );
 	
-	$otype_caption = _x('Auto-set %s to Private visibility if Reader role is restricted', 'Posts / Pages', 'scoper');
+	//$otype_caption = _ x('Auto-set %s to Private visibility if Reader role is restricted', 'Posts / Pages', 'scoper');
+	$otype_caption = __('Auto-set %s to Private visibility if Reader role is restricted', 'scoper');
 	$hint = __('Note: this is only done if the Reader role is restricted via Post/Page edit form.', 'scoper');
 	$ui->otype_option_checkboxes( 'sync_private', $otype_caption, $tab, $section, $hint, '<br /><br />' );
 
@@ -709,7 +711,9 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		?>
 		</div><br />
 		<?php
-		printf( _x('<strong>Note:</strong> FTP-uploaded files will not be filtered correctly until you run the %1$sAttachments Utility%2$s.', 'arguments are link open, link close', 'scoper'), "<a href='admin.php?page=rs-attachments_utility'>", '</a>');
+		//printf( _ x('<strong>Note:</strong> FTP-uploaded files will not be filtered correctly until you run the %1$sAttachments Utility%2$s.', 'arguments are link open, link close', 'scoper'), "<a href='admin.php?page=rs-attachments_utility'>", '</a>');
+		printf( __('<strong>Note:</strong> FTP-uploaded files will not be filtered correctly until you run the %1$sAttachments Utility%2$s.', 'scoper'), "<a href='admin.php?page=rs-attachments_utility'>", '</a>');
+		
 		echo '<br /><br />';
 		_e( 'If WordPress or any plugin output visible PHP warnings during filtering of a protected image request, the image will not be successfully returned.', 'scoper' );
 		?>
@@ -852,7 +856,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 	<?php if ( in_array( 'rss_private_feed_mode', $ui->form_options[$tab][$section] ) ) :
 		$ui->all_options []= 'rss_private_feed_mode'; 
 		
-		echo ( _x( 'Display', 'prefix to RSS content dropdown', 'scoper' ) );
+		//echo ( _ x( 'Display', 'prefix to RSS content dropdown', 'scoper' ) );
+		echo ( __( 'Display', 'scoper' ) );
 		echo '&nbsp;<select name="rss_private_feed_mode" id="rss_private_feed_mode">';
 		
 		$captions = array( 'full_content' => __("Full Content", 'scoper'), 'excerpt_only' => __("Excerpt Only", 'scoper'), 'title_only' => __("Title Only", 'scoper') );
@@ -861,13 +866,15 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 			echo "\n\t<option value='$key' " . $selected . ">$captions[$key]</option>";
 		}
 		echo '</select>&nbsp;';
-		echo ( _x( 'for readable private posts', 'suffix to RSS content dropdown', 'scoper' ) );
+		//echo ( _ x( 'for readable private posts', 'suffix to RSS content dropdown', 'scoper' ) );
+		echo ( __( 'for readable private posts', 'scoper' ) );
 		echo "<br />";
 	endif;?>
 	
 	<?php if ( in_array( 'rss_nonprivate_feed_mode', $ui->form_options[$tab][$section] ) ) :
 		$ui->all_options []= 'rss_nonprivate_feed_mode'; 
-		echo ( _x( 'Display', 'prefix to RSS content dropdown', 'scoper' ) );
+		//echo ( _ x( 'Display', 'prefix to RSS content dropdown', 'scoper' ) );
+		echo ( __( 'Display', 'scoper' ) );
 		echo '&nbsp;<select name="rss_nonprivate_feed_mode" id="rss_nonprivate_feed_mode">';
 		
 		$captions = array( 'full_content' => __("Full Content", 'scoper'), 'excerpt_only' => __("Excerpt Only", 'scoper'), 'title_only' => __("Title Only", 'scoper') );
@@ -876,7 +883,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 			echo "\n\t<option value='$key' " . $selected . ">$captions[$key]</option>";
 		}
 		echo '</select>&nbsp;';
-		echo ( _x( 'for readable non-private posts', 'suffix to RSS content dropdown', 'scoper' ) );
+		//echo ( _ x( 'for readable non-private posts', 'suffix to RSS content dropdown', 'scoper' ) );
+		echo ( __( 'for readable non-private posts', 'scoper' ) );
 		
 		echo "<br />";
 		?>
@@ -988,7 +996,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 					// Checkbox option to skip teaser for anonymous users
 					$id = str_replace(':', '_', $option_logged_only . '-' . $src_otype);
 					echo "<span style='margin-left: 6em'>";
-					echo( _x( 'for:', 'teaser: anonymous, logged or both', 'scoper') );
+					//echo( _ x( 'for:', 'teaser: anonymous, logged or both', 'scoper') );
+					echo( __( 'for:', 'scoper') );
 					echo "&nbsp;&nbsp;<label for='{$id}_logged'>";
 					$checked = ( ! empty($logged_only[$src_otype]) && 'anon' == $logged_only[$src_otype] ) ? ' checked="checked"' : '';
 					echo "<input name='$id' type='radio' id='{$id}_logged' value='anon' $checked />";
@@ -1645,7 +1654,8 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 								$tx_display = __('Section', 'scoper');
 							
 							$display_name_plural = $scoper->admin->interpret_src_otype($src_otype);
-							printf( _x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
+							//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
+							printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
 							
 							if ( ! $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
 								echo '* ';
@@ -1697,7 +1707,8 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 						$tx_display = __( ucwords(str_replace('_', ' ', $taxonomy)) );
 					
 					$display_name_plural = $scoper->admin->interpret_src_otype($wtx->object_type);
-					printf( _x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
+					//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
+					printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
 									
 					if ( ! $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
 						echo '* ';
@@ -1833,7 +1844,8 @@ foreach ( $available_form_options as $tab_name => $sections ) {
 
 	echo '<div style="margin:1em 0 1em 0">';
 	if ( $ui->display_hints )
-		printf( _x( '<span class="rs-h3text rs-blue">%1$s</span> (%2$s)', 'option_tabname (explanatory note)', 'scoper' ), $tab_caption, $explanatory_caption );
+		printf( __( '<span class="rs-h3text rs-blue">%1$s</span> (%2$s)', 'scoper' ), $tab_caption, $explanatory_caption );
+		//printf( _ x( '<span class="rs-h3text rs-blue">%1$s</span> (%2$s)', 'option_tabname (explanatory note)', 'scoper' ), $tab_caption, $explanatory_caption );
 	else
 		echo $tab_caption;
 	echo '</div>';

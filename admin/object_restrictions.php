@@ -108,8 +108,10 @@ $args = array( 'default_hide_empty' => ! empty($otype->admin_default_hide_empty)
 ScoperAdminBulk::item_tree_jslinks(ROLE_RESTRICTION_RS, $args );
 
 // buffer prev/next caption for display with each obj type
-$prevtext = _x('prev', 'abbreviated link to previous item', 'scoper');
-$nexttext = _x('next', 'abbreviated link to next item', 'scoper');
+//$prevtext = _ x('prev', 'abbreviated link to previous item', 'scoper');
+//$nexttext = _ x('next', 'abbreviated link to next item', 'scoper');
+$prevtext = __('prev', 'scoper');
+$nexttext = __('next', 'scoper');
 
 $site_url = get_option('siteurl');
 

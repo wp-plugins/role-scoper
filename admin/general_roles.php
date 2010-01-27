@@ -28,9 +28,11 @@ if ( GROUP_ROLES_RS && ( $is_administrator ) ) {
 	if ( $agents[ROLE_BASIS_GROUPS] = ScoperAdminLib::get_all_groups(UNFILTERED_RS) ) {
 		$role_bases []= ROLE_BASIS_GROUPS;
 		$agent_list_prefix[ROLE_BASIS_GROUPS] = __('Groups') . ': ';
-		$edit_groups_link = sprintf(_x('%1$s define user groups%2$s', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+		//$edit_groups_link = sprintf(_ x('%1$s define user groups%2$s', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+		$edit_groups_link = sprintf(__('%1$s define user groups%2$s', 'scoper'), "<a href='$groups_url'>", '</a>');
 	} else
-		$edit_groups_link = sprintf(_x('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+		$edit_groups_link = sprintf(__('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'scoper'), "<a href='$groups_url'>", '</a>');
+		//$edit_groups_link = sprintf(_ x('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
 }
 
 if ( empty($role_bases) )
@@ -157,7 +159,8 @@ if ( isset($_POST['rs_submit']) ) :	?>
 			$agents_msg = implode( ", ", $agents_msg );
 			$roles_msg = sprintf(_n("%d role selection", "%d role selections", count($selected_roles), 'scoper'), count($selected_roles) );
 			
-			printf(_x('Role Assignments Updated: %1$s for %2$s', '%d selections for %d', 'scoper'), $roles_msg, $agents_msg );
+			//printf(_ x('Role Assignments Updated: %1$s for %2$s', '%d selections for %d', 'scoper'), $roles_msg, $agents_msg );
+			printf(__('Role Assignments Updated: %1$s for %2$s', 'scoper'), $roles_msg, $agents_msg );
 			?>
 			</p></div>
 		<?php endif; ?> 
@@ -229,7 +232,8 @@ echo '</ul>';
 <p style="clear:both"></p>
 <?php
 echo '<br /><h3>2.&nbsp;';
-printf( _x('Select %s to Modify', 'Users or Groups', 'scoper'), $agent_caption_plural );
+//printf( _ x('Select %s to Modify', 'Users or Groups', 'scoper'), $agent_caption_plural );
+printf( __('Select %s to Modify', 'scoper'), $agent_caption_plural );
 echo '</h3>';
 
 $args = array( 'suppress_extra_prefix' => true, 'filter_threshold' => 20, 'default_hide_threshold' => 20, 'check_for_incomplete_submission' => true );

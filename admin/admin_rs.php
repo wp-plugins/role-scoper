@@ -23,7 +23,7 @@ require_once( 'admin_ui_lib_rs.php' );
 if ( IS_MU_RS )
 	require_once( 'admin_lib-mu_rs.php' );
 
-if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/index.php' ) )
+if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/index.php' ) && ! defined( 'USE_RVY_RIGHTNOW' )  )
 	include_once( 'admin-dashboard_rs.php' );
 
 	

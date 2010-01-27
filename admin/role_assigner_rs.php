@@ -305,7 +305,7 @@ class ScoperRoleAssigner
 
 			if ( $update_role_duration ) {
 				$id_in = "'" . implode("', '", $update_role_duration) . "'";
-				$qry = "UPDATE $wpdb->user2role2object_rs SET date_limited = '$set_role_duration->date_limited'";
+				$qry = "UPDATE $wpdb->user2role2object_rs SET date_limited = '" . (int) $set_role_duration->date_limited . "'";
 				
 				if ( -1 != $set_role_duration->start_date_gmt )
 					$qry .= ", start_date_gmt = '$set_role_duration->start_date_gmt'";
@@ -319,7 +319,7 @@ class ScoperRoleAssigner
 			
 			if ( $update_content_date_limits ) {
 				$id_in = "'" . implode("', '", $update_content_date_limits) . "'";
-				$qry = "UPDATE $wpdb->user2role2object_rs SET content_date_limited = '$set_content_date_limits->content_date_limited'";
+				$qry = "UPDATE $wpdb->user2role2object_rs SET content_date_limited = '" . (int) $set_content_date_limits->content_date_limited . "'";
 
 				if ( -1 != $set_content_date_limits->content_min_date_gmt )
 					$qry .= ", content_min_date_gmt = '$set_content_date_limits->content_min_date_gmt'";

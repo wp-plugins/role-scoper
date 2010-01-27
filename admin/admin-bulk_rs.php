@@ -156,7 +156,8 @@ function display_inputs($mode, $assignment_modes, $args = '') {
 	<?php
 	if ( ROLE_ASSIGNMENT_RS == $mode ) {
 		echo '<br /><h3>2.&nbsp;';
-		printf( _x('Select %s to Modify', 'Users or Groups', 'scoper'), $agent_caption_plural );
+		//printf( _ x('Select %s to Modify', 'Users or Groups', 'scoper'), $agent_caption_plural );
+		printf( __('Select %s to Modify', 'scoper'), $agent_caption_plural );
 		echo '</h3>';
 		
 		$args = array( 'suppress_extra_prefix' => true, 'filter_threshold' => 20, 'default_hide_threshold' => 20, 'check_for_incomplete_submission' => true );
@@ -260,19 +261,10 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 		echo '</strong></p></div>';
 		$err = 2;
 	} else {
-		if ( $duration_limits_enabled ) {
-			$start_date_gmt = ( $_POST['start_date_gmt'] ) ? $_POST['start_date_gmt'] : 0;
-			$end_date_gmt = ( $_POST['end_date_gmt'] ) ? $_POST['end_date_gmt'] : 0;
-			$set_role_duration = (object) array( 'date_limited' => $_POST['date_limited'], 'start_date_gmt' => $start_date_gmt, 'end_date_gmt' => $end_date_gmt );
-		} else
-			$set_role_duration = '';
-
-		if ( $content_date_limits_enabled ) {
-			$content_min_date_gmt = ( $_POST['content_min_date_gmt'] ) ? $_POST['content_min_date_gmt'] : 0;
-			$content_max_date_gmt = ( $_POST['content_max_date_gmt'] ) ? $_POST['content_max_date_gmt'] : 0;
-			$set_content_date_limits = (object) array( 'content_date_limited' => $_POST['content_date_limited'], 'content_min_date_gmt' => $content_min_date_gmt, 'content_max_date_gmt' => $content_max_date_gmt );
-		} else
-			$set_content_date_limits = '';
+		if ( ROLE_ASSIGNMENT_RS == $mode ) {
+			if ( ! empty($_POST['set_role_duration']) || ! empty($_POST['set_content_date_limits']) )
+				$date_entries_gmt = ScoperAdminBulkLib::process_role_date_entries();
+		}
 
 		foreach ( $role_bases as $role_basis ) {
 			foreach($selected_agents[$role_basis] as $agent_id) {
@@ -323,9 +315,6 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 				if ( ROLE_ASSIGNMENT_RS == $mode ) {
 					$args = array( 'force_flush' => true, 'set_role_duration' => $set_role_duration, 'set_content_date_limits' => $set_content_date_limits );
 					
-					if ( ! empty($_POST['set_role_duration']) || ! empty($_POST['set_content_date_limits']) )
-						$date_entries_gmt = ScoperAdminBulkLib::process_role_date_entries();
-		
 					if ( $duration_limits_enabled && ! empty($_POST['set_role_duration']) ) {
 						$is_limited = ( $date_entries_gmt->start_date_gmt || ( $date_entries_gmt->end_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['start_date_gmt_keep-timestamp'] ) || ! empty( $_POST['end_date_gmt_keep-timestamp'] ) );
 						$args[ 'set_role_duration' ] = (object) array( 'date_limited' => $is_limited, 'start_date_gmt' => $date_entries_gmt->start_date_gmt, 'end_date_gmt' => $date_entries_gmt->end_date_gmt );
@@ -359,7 +348,8 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 			case ROLE_ASSIGNMENT_RS:
 				$roles_msg = sprintf(_n("%d role selection", "%d role selections", count($selected_roles), 'scoper'), count($selected_roles) );
 				$agents_msg = implode( ", ", $agents_msg );
-				printf(_x('Role Assignments Updated: %1$s for %2$s', 'n role selections for x users, y groups', 'scoper'), $roles_msg, $agents_msg );
+				//printf( _ x('Role Assignments Updated: %1$s for %2$s', 'n role selections for x users, y groups', 'scoper'), $roles_msg, $agents_msg );
+				printf( __('Role Assignments Updated: %1$s for %2$s', 'scoper'), $roles_msg, $agents_msg );
 			break;
 			
 			case ROLE_RESTRICTION_RS:
@@ -685,16 +675,19 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	static $prevtext, $nexttext, $is_administrator, $role_header, $agents_header;
 	if ( empty($prevtext) ) {
 		// buffer prev/next caption for display with each term
-		$prevtext = _x('prev', '|abbreviated link to previous item', 'scoper');
-		$nexttext = _x('next', '|abbreviated link to next item', 'scoper');
-
+		//$prevtext = _ x('prev', '|abbreviated link to previous item', 'scoper');
+		//$nexttext = _ x('next', '|abbreviated link to next item', 'scoper');
+		$prevtext = __('prev', 'scoper');
+		$nexttext = __('next', 'scoper');
+		
 		$is_administrator = is_administrator_rs($src, 'user');
 	
 		$role_header = __awp('Role');
 		
 		switch ( $mode ) {
 			case ROLE_ASSIGNMENT_RS:
-				$agents_header = sprintf( _x('Current %s', 'users or groups', 'scoper'), $agent_caption_plural);
+				//$agents_header = sprintf( _ x('Current %s', 'users or groups', 'scoper'), $agent_caption_plural);
+				$agents_header = sprintf( __('Current %s', 'scoper'), $agent_caption_plural);
 			
 			break;
 			case ROLE_RESTRICTION_RS:
@@ -760,8 +753,9 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	}
 	
 	$title_roles = __('edit roles', 'scoper');
-	$title_item = sprintf(_x('edit %s', 'post/page/category/etc.', 'scoper'), strtolower($display_name) );
-	//$title_term = sprintf(_x('edit %s', 'category/link category/etc', 'scoper'), strtolower($display_name) );
+	//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), strtolower($display_name) );
+	$title_item = sprintf(__('edit %s', 'scoper'), strtolower($display_name) );
+	//$title_term = sprintf(_ x('edit %s', 'category/link category/etc', 'scoper'), strtolower($display_name) );
 
 	foreach($all_items as $key => $item) {
 		$id = $item->$col_id;

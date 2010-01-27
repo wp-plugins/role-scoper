@@ -83,7 +83,8 @@ function scoper_attach_linked_uploads( $echo = false ) {
 						// links can't be registered as attachments unless they're in the WP uploads path
 						if ( false === strpos($file_url, $upload_path) ) {
 							if ( $echo ) {
-								printf( _x( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+								//printf( _ x( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+								printf( __( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 								echo '<br /><br />';
 							}
 						
@@ -125,12 +126,14 @@ function scoper_attach_linked_uploads( $echo = false ) {
 						$num_inserted++;
 						
 						if ( $echo )
-							printf(_x( '<span class="rs-green"><strong>new attachment</strong> in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+							printf(__( '<span class="rs-green"><strong>new attachment</strong> in %1$s "%2$s":</span> %3$s', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+							//printf(_ x( '<span class="rs-green"><strong>new attachment</strong> in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 
 						wp_insert_attachment( $att );
 					} else {
 						if ( $echo )
-							printf(_x( '<span class="rs-blue">attachment OK in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+							printf(__( '<span class="rs-blue">attachment OK in %1$s "%2$s":</span> %3$s', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+							//printf(_ x( '<span class="rs-blue">attachment OK in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 					}
 					
 					if ( $echo )
@@ -164,7 +167,8 @@ function scoper_attach_linked_uploads( $echo = false ) {
 <td width = "90%">
 <h2><?php _e('Attachments Utility', 'scoper') ?></h2>
 <?php 
-printf( _x('Back to %1$sRole Scoper Options%2$s', 'arguments are link open, link close', 'scoper'), "<a href='admin.php?page=rs-options'>", '</a>');
+//printf( _ x('Back to %1$sRole Scoper Options%2$s', 'arguments are link open, link close', 'scoper'), "<a href='admin.php?page=rs-options'>", '</a>');
+printf( __('Back to %1$sRole Scoper Options%2$s', 'scoper'), "<a href='admin.php?page=rs-options'>", '</a>');
 ?>
 </td>
 <td>

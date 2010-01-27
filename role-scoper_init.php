@@ -11,7 +11,13 @@ if ( is_admin() )
 
 if ( IS_MU_RS )
 	require_once( 'mu-init_rs.php' );
-	
+
+if ( IS_MU_RS || SCOPER_FORCE_FILE_INCLUSIONS ) {
+	// workaround to avoid file error on get_home_path() call
+	if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
+		include_once( ABSPATH . '/wp-admin/includes/file.php' );	
+}
+
 // If an htaccess regeneration is triggered by somebody else, insert our rules (normal non-MU installations).
 add_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
 

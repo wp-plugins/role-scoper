@@ -24,16 +24,16 @@ class ScoperAnalyst {
 		
 		global $wpdb, $scoper;
 
-		/*
-		if ( ! isset($scoper) || is_null($scoper) )
+		if ( ! isset($scoper) || is_null($scoper) ) {
+			scoper_get_init_options();	
 			scoper_init();
+		}
 		
 		if ( empty($scoper->taxonomies) )
 			$scoper->load_config();
-		*/	
-			
+
 		$role_type = SCOPER_ROLE_TYPE;
-		
+
 		$restricted_roles = array();
 		$unrestricted_roles = array();				// TODO: also protect uploads based on restriction of other taxonomies
 		
@@ -88,7 +88,7 @@ class ScoperAnalyst {
 				}											
 			}
 			
-			$restricted_terms['category'] = agp_array_flatten( $restricted_roles['category'] );
+			$restricted_terms['category'] = isset($restricted_roles['category']) ? agp_array_flatten( $restricted_roles['category'] ) : array();
 			
 			if ( $restricted_terms['category'] ) {
 				$term_restriction_clause = "OR post_parent IN ( SELECT $wpdb->posts.ID FROM $wpdb->posts "

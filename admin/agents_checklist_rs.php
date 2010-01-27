@@ -19,11 +19,17 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 		$groups_url = 'admin.php?page=rs-groups';
 		$div_style = "class='$class' style='padding:0.5em 0 0.5em 0.5em'";
 		
-		if ( in_array(ROLE_BASIS_GROUPS, $role_bases) && $agents[ROLE_BASIS_GROUPS] )
-			$edit_groups_link = sprintf(_x('%1$s define user groups%2$s', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
-		else
-			$edit_groups_link = sprintf(_x('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+		//if ( in_array(ROLE_BASIS_GROUPS, $role_bases) && $agents[ROLE_BASIS_GROUPS] )
+		//	$edit_groups_link = sprintf(_ x('%1$s define user groups%2$s', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+		//else
+		//	$edit_groups_link = sprintf(_ x('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
 		
+		if ( in_array(ROLE_BASIS_GROUPS, $role_bases) && $agents[ROLE_BASIS_GROUPS] )
+			$edit_groups_link = sprintf(__('%1$s define user groups%2$s', 'scoper'), "<a href='$groups_url'>", '</a>');
+		else
+			$edit_groups_link = sprintf(__('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'scoper'), "<a href='$groups_url'>", '</a>');
+		
+			
 		foreach ( $role_bases as $role_basis ) {
 			echo "<div $div_style>";
 			ScoperAgentsChecklist::agents_checklist($role_basis, $agents[$role_basis], $role_basis, array(), $args);
@@ -71,7 +77,8 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 				$id_prefix .= "_{$role_basis}";
 
 			echo "<div class='rs-keytext' id='rs-rolekey_{$id_prefix}' style=' 1em 0 0 0'>";
-			echo( _x('Key:', 'explanation of user/group role symbolic prefix/suffix', 'scoper') );	
+			//echo( _ x('Key:', 'explanation of user/group role symbolic prefix/suffix', 'scoper') );
+			echo( __('Key:', 'scoper') );	
 			echo '<p style="margin-top: 0.2em">';
 			echo ( implode(' &nbsp; ', $key) );
 			echo '</p></div>';
@@ -441,26 +448,49 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 			echo '</div></div>';
 			
 		// display key
+		/*
 		if ( $any_inherited && $inherited_prefix )
 			$key ['inherited']= "$inherited_prefix $inherited_suffix"
-				 . '<span class="rs-keytext">' . sprintf(_x('inherited from parent %s', 'user/group role status key: this role is assigned via parent object', 'scoper'), strtolower($objtype_display_name)) . '</span>';
+				 . '<span class="rs-keytext">' . sprintf(_ x('inherited from parent %s', 'user/group role status key: this role is assigned via parent object', 'scoper'), strtolower($objtype_display_name)) . '</span>';
 		
 		if ( $any_other_role && $via_other_role_prefix )
 			$key ['other_role']= "<span class='rs-via-r'>{$via_other_role_prefix}&nbsp;{$via_other_role_suffix}"
-				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _x('has via other role', 'user/group role status key: all caps in this role are assigned via another role', 'scoper') ) . '</span></span>';
+				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _ x('has via other role', 'user/group role status key: all caps in this role are assigned via another role', 'scoper') ) . '</span></span>';
 		
 		if ( $any_other_basis && $via_other_basis_prefix )
 			$key ['other_basis']= "<span class='rs-via-b'>{$via_other_basis_prefix}&nbsp;{$via_other_basis_suffix}"
-				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _x('has via group', 'user role status key: this role is assigned to a group the user is in', 'scoper') ) . '</span></span>';
+				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _ x('has via group', 'user role status key: this role is assigned to a group the user is in', 'scoper') ) . '</span></span>';
 		
 		if ( $any_other_scope && $via_other_scope_prefix )
 			$key ['other_scope']= "<span class='rs-via-s'>{$via_other_scope_prefix}&nbsp;{$via_other_scope_suffix}"
-				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _x('has via other scope', 'user role status key: this role is assigned blog-wide or term-wide', 'scoper') ) . '</span></span>';
+				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _ x('has via other scope', 'user role status key: this role is assigned blog-wide or term-wide', 'scoper') ) . '</span></span>';
 		 
 		if ( $propagation )
 			$key ['propagation']= "{<input type='checkbox' disabled='disabled' name='rs-prop_key_{$agents_subset}_{$id_prefix}' id='rs-prop_key_{$agents_subset}_{$id_prefix}' $ie_checkbox_style />}"
-				 . '<span class="rs-keytext">' . sprintf(_x('propagate to sub-%s', 'user/group role status key: propagate this role to sub-objects', 'scoper'), strtolower($objtype_display_name_plural)) . '</span>';
+				 . '<span class="rs-keytext">' . sprintf(_ x('propagate to sub-%s', 'user/group role status key: propagate this role to sub-objects', 'scoper'), strtolower($objtype_display_name_plural)) . '</span>';
+		*/
+		
+		if ( $any_inherited && $inherited_prefix )
+			$key ['inherited']= "$inherited_prefix $inherited_suffix"
+				 . '<span class="rs-keytext">' . sprintf(__('inherited from parent %s', 'scoper'), strtolower($objtype_display_name)) . '</span>';
+		
+		if ( $any_other_role && $via_other_role_prefix )
+			$key ['other_role']= "<span class='rs-via-r'>{$via_other_role_prefix}&nbsp;{$via_other_role_suffix}"
+				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', __('has via other role', 'scoper') ) . '</span></span>';
+		
+		if ( $any_other_basis && $via_other_basis_prefix )
+			$key ['other_basis']= "<span class='rs-via-b'>{$via_other_basis_prefix}&nbsp;{$via_other_basis_suffix}"
+				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', __('has via group', 'scoper') ) . '</span></span>';
+		
+		if ( $any_other_scope && $via_other_scope_prefix )
+			$key ['other_scope']= "<span class='rs-via-s'>{$via_other_scope_prefix}&nbsp;{$via_other_scope_suffix}"
+				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', __('has via other scope', 'scoper') ) . '</span></span>';
+		 
+		if ( $propagation )
+			$key ['propagation']= "{<input type='checkbox' disabled='disabled' name='rs-prop_key_{$agents_subset}_{$id_prefix}' id='rs-prop_key_{$agents_subset}_{$id_prefix}' $ie_checkbox_style />}"
+				 . '<span class="rs-keytext">' . sprintf(__('propagate to sub-%s', 'scoper'), strtolower($objtype_display_name_plural)) . '</span>';
 	
+		
 		if ( $any_date_limits && $object_id )
 			$action_links ['limits']= sprintf( __('%1$sEdit date limits%2$s', 'scoper'), "<a href='admin.php?page=rs-$object_type-roles#item-$object_id'>", '</a>' );
 	}

@@ -163,8 +163,8 @@ function scoper_core_access_types() {
 	$arr = array( 'front' => (object) array(), 'admin' => (object) array() );
 	
 	if ( is_admin() ) {
-		$arr['front']->display_name = _x('front-end', 'front-end access', 'scoper');
-		$arr['admin']->display_name = _x('admin', 'wp-admin access', 'scoper');
+		$arr['front']->display_name = __('front-end', 'scoper');
+		$arr['admin']->display_name = __('admin', 'scoper');
 	}
 
 	return $arr;	
@@ -413,8 +413,8 @@ function scoper_core_data_sources() {
 		$arr['group']->reqd_caps['edit']['group'][''] = array( 'manage_groups' );
 		
 		if ( $is_admin ) {
-			$arr['group']->display_name = _x('Group', 'of users', 'scoper');
-			$arr['group']->display_name_plural = _x('Groups', 'of users', 'scoper');
+			$arr['group']->display_name = __('Group', 'scoper');
+			$arr['group']->display_name_plural = __('Groups', 'scoper');
 			$arr['group']->edit_url = 'admin.php?page=rs-groups&amp;mode=edit&amp;id=%d';
 		}
 	}

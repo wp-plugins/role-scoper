@@ -255,7 +255,7 @@ class ScoperAdminFilters
 	// This handler is meant to fire whenever an object is inserted or updated.
 	// If the client does use such a hook, we will force it by calling internally from mnt_create and mnt_edit
 	function mnt_save_object($src_name, $args, $object_id, $object = '') {
-		rs_errlog( 'mnt_save_object' );
+		//rs_errlog( 'mnt_save_object' );
 		
 		if ( defined( 'RVY_VERSION' ) ) {
 			global $revisionary;
