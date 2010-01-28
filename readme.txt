@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
 Tested up to: 2.9.1
-Stable Tag: 1.1.4
+Stable Tag: 1.1.5
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,6 +106,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.1.5 - 28 Jan 2010 =
+* BugFix : Fatal error under some configurations: Call to undefined function is_site_admin()
+* Change : Don't create a blank .htaccess file in uploads folder if there are no restricted attachments to filter
+* Feature : Observe SCOPER_DEFAULT_MONITOR_GROUPS definition to disable custom editing of Pending Revision Monitors, Scheduled Revision Monitors groups
+
 
 = 1.1.4 - 27 Jan 2010 =
 * BugFix : Fatal error on activation with wp-MU if File Filtering enabled

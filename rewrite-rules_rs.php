@@ -19,7 +19,8 @@ class ScoperRewrite {
 				return;
 		}
 
-		insert_with_markers( $file_path, $marker_text, explode( "\n", $insertion ) );
+		if ( $insertion || file_exists($file_path) )	
+			insert_with_markers( $file_path, $marker_text, explode( "\n", $insertion ) );
 	}
 	
 	

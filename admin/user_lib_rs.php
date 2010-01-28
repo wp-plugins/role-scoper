@@ -38,7 +38,7 @@ class ScoperUserEdit {
 		$return_array = is_array( $user_ids );  // if an array was passed in, return results as an array
 		
 		if ( ! is_array($user_ids) ) {
-			if ( IS_MU_RS && is_site_admin() )	// mu site administrator may not be a user for the current blog
+			if ( IS_MU_RS && function_exists('is_site_admin') && is_site_admin() )	// mu site administrator may not be a user for the current blog
 				return 10;
 			
 			$orig_user_id = $user_ids;	

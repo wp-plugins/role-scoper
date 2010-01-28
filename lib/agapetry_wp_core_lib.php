@@ -89,7 +89,7 @@ if ( ! function_exists('awp_user_can') ) {
 function awp_user_can($reqd_caps, $object_id = 0, $user_id = 0, $args = array() ) {
 	// $args supports 'skip_revision_allowance'.  For now, skip array_merge with defaults, for perf
 
-	if ( ( IS_MU_RS || IS_MU_RVY ) && is_site_admin() ) 
+	if ( ( IS_MU_RS || IS_MU_RVY ) && function_exists('is_site_admin') && is_site_admin() ) 
 		return true;
 	
 	if ( $user_id )

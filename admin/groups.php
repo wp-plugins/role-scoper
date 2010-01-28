@@ -224,7 +224,7 @@ if ( ! $errorMessage && ( ('editSubmit' == $mode) || ('add' == $mode) ) ) {
 		</tr>
 		<?php
 		foreach ($results as $result) {
-			if ( ! defined( 'RVY_VERSION' ) )
+			if ( ! defined( 'RVY_VERSION' ) || defined('SCOPER_DEFAULT_MONITOR_GROUPS') )
 				if ( ( $result->meta_id == 'rv_pending_rev_notice_ed_nr_' ) || ( $result->meta_id == 'rv_scheduled_rev_notice_ed_nr_' ) )
 					continue;
 

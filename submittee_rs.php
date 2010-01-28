@@ -13,7 +13,7 @@ class Scoper_Submittee {
 
 	function handle_submission($action, $sitewide = false, $customize_defaults = false) {
 		if ( ( $sitewide || $customize_defaults ) ) {
-			if ( ! is_site_admin() )
+			if ( function_exists('is_site_admin') && ! is_site_admin() )
 				wp_die(__awp('Cheatin&#8217; uh?'));
 		
 		} elseif ( ! is_option_administrator_rs() )

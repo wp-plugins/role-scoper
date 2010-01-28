@@ -104,7 +104,7 @@ class ScoperOptionUI {
 	
 function scoper_options( $sitewide = false, $customize_defaults = false ) {
 	
-if ( ! is_option_administrator_rs() || ( $sitewide && ! is_site_admin() ) )
+if ( ! is_option_administrator_rs() || ( $sitewide && function_exists('is_site_admin') && ! is_site_admin() ) )
 	wp_die(__awp('Cheatin&#8217; uh?'));
 
 if ( $sitewide )
@@ -456,7 +456,7 @@ if ( scoper_get_option('display_hints', $sitewide, $customize_defaults) ) {
 	echo '<div class="rs-optionhint">';
 	_e("This page enables <strong>optional</strong> adjustment of Role Scoper's features. For most installations, the default settings are fine.", 'scoper');
 	
-	if ( IS_MU_RS && is_site_admin() ) {
+	if ( IS_MU_RS && function_exists('is_site_admin') && is_site_admin() ) {
 		if ( $sitewide ) {
 			if ( ! $customize_defaults ) {
 				$link_open = "<a href='admin.php?page=rs-options'>";
