@@ -3,7 +3,8 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 	
-define ('SCOPER_URLPATH', WP_CONTENT_URL . '/plugins/' . SCOPER_FOLDER);
+$wp_content = ( is_ssl() || ( is_admin() && defined('FORCE_SSL_ADMIN') && FORCE_SSL_ADMIN ) ) ? str_replace( 'http:', 'https:', WP_CONTENT_URL ) : WP_CONTENT_URL;
+define ('SCOPER_URLPATH', $wp_content . '/plugins/' . SCOPER_FOLDER);
 
 define ('ROLE_ASSIGNMENT_RS', 'role_assignment');
 define ('ROLE_RESTRICTION_RS', 'role_restriction');

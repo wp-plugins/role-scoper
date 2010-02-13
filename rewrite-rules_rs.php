@@ -54,11 +54,13 @@ class ScoperRewrite {
 		
 		$new_rules .= "RewriteEngine On\n\n";
 
-		// workaround for HTTP Authentication with PHP running as CGI
-		$new_rules .= "RewriteCond %{HTTP:Authorization} ^(.*)\n";
-		$new_rules .= "RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]\n";
-
-		if ( IS_MU_RS )
+		if ( scoper_get_option( 'feed_link_http_auth' ) ) {
+			// workaround for HTTP Authentication with PHP running as CGI
+			$new_rules .= "RewriteCond %{HTTP:Authorization} ^(.*)\n";
+			$new_rules .= "RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]\n";
+		}
+	
+		if ( IS_MU_RS && scoper_get_option( 'file_filtering' ) )
 			$new_rules .= ScoperRewriteMU::build_blog_file_redirects();
 		
 		$new_rules .= "\n# END Role Scoper\n\n";
@@ -91,7 +93,7 @@ class ScoperRewrite {
 	function update_blog_file_rules( $include_rs_rules = true ) {
 		global $blog_id;
 		
-		//scoper_update_option( 'file_htaccess_date', agp_time_gmt() );
+		scoper_update_option( 'file_htaccess_date', agp_time_gmt() );
 		
 		$include_rs_rules = $include_rs_rules && scoper_get_option( 'file_filtering' );
 		
@@ -129,16 +131,10 @@ class ScoperRewrite {
 		
 		$uploads = scoper_get_upload_info();
 		
-		$basedir = trailingslashit( $uploads['basedir'] );
 		$baseurl = trailingslashit( $uploads['baseurl'] );
 		
-		// determine RewriteBase
-		$strip_path = str_replace( '\\', '/', untrailingslashit(ABSPATH) );
-		if ( $pos = strrpos( $strip_path, '/' ) )
-			$strip_path = substr( $strip_path, 0, $pos );
-		
-		$rewrite_base = str_replace( $strip_path, '', str_replace( '\\', '/', $basedir ) );
-		
+		$arr_url = parse_url( $baseurl );
+		$rewrite_base = $arr_url['path'];
 		
 		$file_keys = array();
 
@@ -147,8 +143,8 @@ class ScoperRewrite {
 				$file_keys[$row->post_id] = $row->meta_value;		
 		} 
 	
-	
-		$new_rules = "RewriteEngine On\n";
+		$new_rules = "<IfModule mod_rewrite.c>\n";
+		$new_rules .= "RewriteEngine On\n";
 		$new_rules .= "RewriteBase $rewrite_base\n\n";
 	
 		$main_rewrite_rule = "RewriteRule ^(.*) {$home_root}index.php?attachment=$1&rs_rewrite=1 [NC,L]\n";
@@ -162,8 +158,7 @@ class ScoperRewrite {
 			}
 
 			//dump($row->guid);
-			//dump($domain_path);
-			//
+
 			if ( false !== strpos( $row->guid, $baseurl ) ) {	// no need to include any attachments which are not in the uploads folder
 				$file_path =  str_replace( $baseurl, '', $row->guid );
 				$file_path =  str_replace('.', '\.', $file_path );
@@ -191,6 +186,8 @@ class ScoperRewrite {
 			$new_rules .= "\n# Default WordPress cache handling\n";
 			$new_rules .= "RewriteRule ^(.*) {$content_path}blogs.php?file=$1 [L]\n";
 		}
+		
+		$new_rules .= "</IfModule>\n";
 		
 		return $new_rules;
 	}

@@ -7,6 +7,8 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 add_filter( 'get_previous_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 add_filter( 'get_next_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 
+add_filter('getarchives_where', array('QueryInterceptorFront_RS', 'flt_getarchives_where') );
+	
 class QueryInterceptorFront_RS {
 	// custom wrapper to clean up after get_previous_post_where, get_next_post_where nonstandard arg syntax 
 	// (uses alias p for post table, passes "WHERE post_type=...)
@@ -24,17 +26,23 @@ class QueryInterceptorFront_RS {
 		return $where;
 	}
 	
-	// As of RS 1.1, using subselects in where clause instead
-	/*
-	// custom wrapper to clean up after get_previous_post_join, get_next_post_join nonstandard arg syntax 
-	// (uses alias p for post table)
-	function flt_adjacent_post_join( $join ) {
-		global $wpdb, $scoper;
-		$args = array( 'source_alias' => 'p', 'skip_teaser' => true );	// skip_teaser arg ensures unreadable posts will not be linked
-		$join = $scoper->query_interceptor->flt_objects_join( $join, 'post', 'post', $args );
-		return $join;
-	}
-	*/
+	// custom wrapper to clean up after get_archives() nonstandard arg syntax (passes "WHERE post_type=...)
+	function flt_getarchives_where ( $where ) {
+		global $current_user, $wpdb;
+		
+		$where = str_replace( "WHERE ", "WHERE $wpdb->posts.post_date > 0 AND ", $where );
+		
+		if ( ! empty($current_user->ID) )
+			$where = str_replace( "AND post_status = 'publish'", "AND post_status IN ('publish', 'private')", $where );
 
+		$where = str_replace( "WHERE ", "AND ", $where );
+	
+		// pass force arg to ignore teaser setting
+		$where = apply_filters('objects_where_rs', $where, 'post', '', array('skip_teaser' => true) );
+
+		$where = 'WHERE 1=1 ' . $where;
+			
+		return $where;
+	}
 }
 ?>

@@ -36,7 +36,8 @@ class QueryInterceptorBase_RS {
 			return $where;
 		
 		global $wp_query;
-		if ( ! empty( $wp_query->query['post_status'] ) )
+		//if ( ! empty( $wp_query->query['post_status'] ) )
+		if ( is_admin() && ! empty( $wp_query->query['post_status'] ) )
 			return $where;
 			
 		// don't alter the where clause if in wp-admin and not filtering by taxonomy
@@ -109,7 +110,8 @@ class QueryInterceptorBase_RS {
 			
 			if ( scoper_get_otype_option('restrictions_column', 'post') || scoper_get_otype_option('term_roles_column', 'post') || scoper_get_otype_option('object_roles_column', 'post') ) {
 				require_once( 'role_usage_rs.php' );
-				determine_role_usage_rs( 'post', $listed_ids );
+				$role_usage = new Role_Usage_RS();
+				$role_usage->determine_role_usage_rs( 'post', $listed_ids );
 			}
 		}
 		

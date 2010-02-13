@@ -12,7 +12,7 @@ if ( is_admin() )
 if ( IS_MU_RS )
 	require_once( 'mu-init_rs.php' );
 
-if ( IS_MU_RS || SCOPER_FORCE_FILE_INCLUSIONS ) {
+if ( IS_MU_RS || defined('SCOPER_FORCE_FILE_INCLUSIONS') ) {
 	// workaround to avoid file error on get_home_path() call
 	if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
 		include_once( ABSPATH . '/wp-admin/includes/file.php' );	
@@ -45,8 +45,7 @@ function scoper_rewrite_inclusions ( $option_name = '' ) {
 // htaccess directive intercepts direct access to uploaded files, converts to WP call with custom args to be caught by subsequent parse_query filter
 // parse_query filter will return content only if user can read a containing post/page
 function scoper_mod_rewrite_rules ( $rules ) {
-	if ( ! scoper_get_option( 'file_filtering' ) )
-		return $rules;
+	$file_filtering = scoper_get_option( 'file_filtering' );
 
 	global $scoper;
 	if ( ! isset($scoper) || is_null($scoper) )
@@ -55,9 +54,10 @@ function scoper_mod_rewrite_rules ( $rules ) {
 	require_once( 'rewrite-rules_rs.php' );
 
 	if ( IS_MU_RS ) {
-		require_once( 'rewrite-mu_rs.php' );
-		$rules = ScoperRewriteMU::insert_site_rules( $rules );
-				
+		if ( $file_filtering ) {
+			require_once( 'rewrite-mu_rs.php' );
+			$rules = ScoperRewriteMU::insert_site_rules( $rules );
+		}
 	} else {
 		$rs_rules = ScoperRewrite::build_site_rules();
 		
@@ -195,9 +195,11 @@ function scoper_init() {
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
 	}
 	
-	if ( is_admin() )
+	if ( is_admin() ) {
+		require_once( 'admin/admin-init_rs.php' );
 		scoper_admin_init();	
-
+	}
+		
 	log_mem_usage_rs( 'scoper_admin_init done' );
 		
 	require_once('scoped-user.php');

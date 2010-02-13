@@ -53,7 +53,7 @@ class CapInterceptor_RS
 		static $in_process;			// prevent recursion
 		if ( ! empty($in_process) )
 			return $wp_blogcaps;
-		
+			
 		$in_process = true;
 	
 		if ( empty($hascap_object_ids) ) {
@@ -67,6 +67,15 @@ class CapInterceptor_RS
 			if ( 'page' == $xmlrpc_post_type_rs ) {
 				$in_process = false;
 				return array('publish_posts' => true);
+			}
+		}
+		
+		if ( defined('UNSCOPED_CAPS_RS') ) {
+			$unscoped_caps = explode( ',', UNSCOPED_CAPS_RS );
+
+			if ( ( 1 == count($orig_reqd_caps[0]) ) && in_array( $orig_reqd_caps[0], $unscoped_caps ) ) {
+				$in_process = false;
+				return $wp_blogcaps;
 			}
 		}
 		
@@ -225,9 +234,10 @@ class CapInterceptor_RS
 
 			} else
 				$this->skip_id_generation = false; // too risky to leave this set
-		
+			
 				
 			if ( empty($args[2]) ) {
+				
 				if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {
 					// These checks are only relevant since no object_id was provided.  
 					// Otherwise (in the main body of this function), taxonomy and object caps will be credited via scoped query
@@ -239,14 +249,14 @@ class CapInterceptor_RS
 						if ( ! $this->skip_any_term_check )
 							if ( $tax_caps = $this->user_can_for_any_term($missing_caps) )
 								$wp_blogcaps = array_merge($wp_blogcaps, $tax_caps);
-					
+								
 					// If we are about to fail the blogcap requirement, credit a missing scoper-defined cap if 
 					// the user has it by object role for ANY object.
-					// (i.e. don't bar user from edit-pages.php if they have edit_cap for at least one page)
+					// (i.e. don't bar user from edit-pages.php if they have edit_pages cap for at least one page)
 					if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {
 						
 						$honor_objrole = awp_ver('2.7') || ! strpos($script_name, 'p-admin/index.php') || ! did_action('admin_notices') || ! empty($scoper->honor_any_objrole);
-		
+						
 						if ( ! $this->skip_any_object_check && $honor_objrole ) {  // credit object role assignment for menu visibility check and Dashboard Post/Page total, but not for Dashboard "Write Post" / "Write Page" links
 
 							// Complication due to the dual usage of 'edit_posts' / 'edit_pages' caps for creation AND editing permission:
@@ -496,7 +506,7 @@ class CapInterceptor_RS
 				$use_object_roles = ( empty($src->no_object_roles) ) ? scoper_get_otype_option( 'use_object_roles', $src_name, $object_type ) : false;
 				
 				$this_args = array('object_type' => $object_type, 'user' => $user, 'use_term_roles' => $use_term_roles, 'use_object_roles' => $use_object_roles, 'skip_teaser' => true );
-
+				
 				//dump($rs_reqd_caps);
 				
 				$where = $scoper->query_interceptor->objects_where_role_clauses($src_name, $rs_reqd_caps, $this_args );
@@ -506,11 +516,9 @@ class CapInterceptor_RS
 				
 				if ( $where )
 					$where = "AND ( $where )";
-				
-				// As of 1.1, using subselects in where clause instead
-				//$query = "SELECT DISTINCT $src->table.{$src->cols->id} FROM $src->table $join WHERE 1=1 $where $id_in";
+
 				$query = "SELECT $src->table.{$src->cols->id} FROM $src->table WHERE 1=1 $where $id_in";
-	
+
 				$okay_ids = scoper_get_col($query);
 				
 				// If set of listed ids is not known, each current_user_can call will generate a new query construction
@@ -724,18 +732,10 @@ class CapInterceptor_RS
 			$user = $current_user;
 		}
 		
-		//if ( 'NextGEN Manage others gallery' == $reqd_caps[0] )
-		//	dump($scoper->role_defs->role_caps);
-		
 		if ( $roles = $scoper->role_defs->qualify_object_roles($check_caps) ) {
-			//if ( 'NextGEN Manage others gallery' == $reqd_caps[0] )
-				//dump($roles);
 			
 			// a user might have the caps via object role even if not via blog role or term role
 			if ( $user_object_roles = $scoper->role_defs->get_applied_object_roles($user) ) {
-				
-				//if ( 'NextGEN Manage others gallery' == $reqd_caps[0] )
-					//dump($user_object_roles);
 				
 				if ( array_intersect_key($roles, $user_object_roles) )
 					return array_fill_keys($reqd_caps, true);

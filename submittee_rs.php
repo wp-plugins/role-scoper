@@ -9,16 +9,21 @@ function scoper_maybe_expire_file_rules( $new_option_value, $old_option_value ) 
 	return $new_option_value;
 }
 
+function scoper_maybe_flush_site_rules( $new_option_value, $old_option_value ) {
+	if ( $old_option_value !== $new_option_value )
+		scoper_flush_site_rules();
+	
+	return $new_option_value;
+}
+
 class Scoper_Submittee {
 
 	function handle_submission($action, $sitewide = false, $customize_defaults = false) {
 		if ( ( $sitewide || $customize_defaults ) ) {
 			if ( function_exists('is_site_admin') && ! is_site_admin() )
 				wp_die(__awp('Cheatin&#8217; uh?'));
-		
-		} elseif ( ! is_option_administrator_rs() )
-			 wp_die(__awp('Cheatin&#8217; uh?'));
-				
+		}
+	
 		if ( $customize_defaults )
 			$sitewide = true;		// default customization is only for per-blog options, but is sitewide in terms of DB storage in sitemeta table
 			
@@ -34,6 +39,9 @@ class Scoper_Submittee {
 			return;
 		
 		if ( 'options' == $_POST['rs_submission_topic'] ) {
+			if ( ! is_option_administrator_rs() )
+				wp_die(__awp('Cheatin&#8217; uh?'));
+
 			scoper_refresh_default_options();
 			scoper_refresh_default_otype_options();
 			
@@ -103,7 +111,7 @@ class Scoper_Submittee {
 		// changes to these options will trigger .htaccess regen
 		if ( $sitewide ) {
 			add_action( 'add_site_option_scoper_disabled_access_types', 'scoper_expire_file_rules' );
-			add_action( 'update_site_option_scoper_disabled_access_types', 'scoper_maybe_expire_file_rules', 10, 2 );
+			add_action( 'update_site_option_scoper_disabled_access_types', 'scoper_expire_file_rules' );
 		} else
 			add_action( 'update_option_scoper_disabled_access_types', 'scoper_maybe_expire_file_rules', 10, 2 );
 		
@@ -197,11 +205,16 @@ class Scoper_Submittee {
 		global $scoper_role_types;
 
 		// changes to these options will trigger .htaccess regen
-		add_action( 'update_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
-		add_action( 'add_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
-		add_action( 'update_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
-		add_action( 'add_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
-
+		if ( $sitewide ) {
+			add_action( 'update_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
+			add_action( 'add_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
+			add_action( 'update_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
+			add_action( 'add_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
+		} else {
+			add_action( 'update_option_scoper_file_filtering', 'scoper_maybe_expire_file_rules', 10, 2 );
+			add_action( 'update_option_scoper_feed_link_http_auth', 'scoper_maybe_flush_site_rules', 10, 2 );
+		}
+		
 		$default_prefix = ( $customize_defaults ) ? 'default_' : '';
 		
 		$reviewed_options = explode(',', $_POST['all_options']);
@@ -241,8 +254,8 @@ class Scoper_Submittee {
 		if ( $sitewide ) {
 			add_action( 'add_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
 			add_action( 'add_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
-			add_action( 'pre_update_site_option_scoper_use_term_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
-			add_action( 'pre_update_site_option_scoper_use_object_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
+			add_action( 'pre_update_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
+			add_action( 'pre_update_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
 		} else {
 			add_action( 'update_option_scoper_use_term_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
 			add_action( 'update_option_scoper_use_object_roles', 'scoper_maybe_expire_file_rules', 10, 2 );

@@ -1,16 +1,24 @@
 <?php
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
+class Role_Usage_RS {
+	var $checked_ids = array();
+	
+	function Role_Usage_RS() {
+		add_filter( 'posts_request', array( $this, 'clear_checked_ids' ) );	
+	}
+	
+	function clear_checked_ids($query) {
+		$this->checked_ids = array();
+		return $query;
+	}
+	
 	function determine_role_usage_rs( $src_name = 'post', $listed_ids = '' ) {
 		global $scoper, $wpdb;
-		static $checked_ids;
-		
+
 		if ( 'post' != $src_name )
 			return;
-		
-		if ( ! is_array($checked_ids) )
-			$checked_ids = array();
 		
 		if ( empty($listed_ids) ) {
 			if ( ! empty($scoper->listed_ids[$src_name]) )
@@ -19,14 +27,14 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				return;
 		}
 
-		if ( empty($checked_ids[$src_name]) )
-			$checked_ids[$src_name] = array();
+		if ( empty($this->checked_ids[$src_name]) )
+			$this->checked_ids[$src_name] = array();
 		else {
-			if ( ! array_diff( $checked_ids[$src_name], $listed_ids ) )
+			if ( ! array_diff_key( $this->checked_ids[$src_name], $listed_ids ) )
 				return;
 		}
 		
-		$checked_ids[$src_name] = array_merge($checked_ids[$src_name], $listed_ids);
+		$this->checked_ids[$src_name] = $this->checked_ids[$src_name] + $listed_ids;
 		
 		$src = $scoper->data_sources->get($src_name);
 		$col_id = $src->cols->id;
@@ -221,4 +229,5 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		}
 	}
 
+} // end class 
 ?>

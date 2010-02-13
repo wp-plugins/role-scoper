@@ -1,7 +1,7 @@
 <?php
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
 class ScoperTeaser {
 	// normally called by QueryInterceptor::flt_objects_teaser
 	function objects_teaser($results, $src_name, $object_types, $tease_otypes, $args = '') {
@@ -289,13 +289,11 @@ class ScoperTeaser {
 		foreach ( $teaser_append[$object_type] as $col => $entry )
 			if ( isset($object->$col) )
 				$object->$col .= $entry;
-
 			
 		// no need to display password form if we're blocking content anyway
 		if ( 'post' == $src_name )
 			if ( ! empty( $object->post_password ) )
 				$object->post_password = '';
 	}
-	
 } // end class
 ?>

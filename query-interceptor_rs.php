@@ -44,10 +44,10 @@ class QueryInterceptor_RS
 		
 		//add_filter('objects_distinct_rs', array($this, 'flt_objects_distinct'), 50);
 		//add_filter('objects_join_rs', array($this, 'flt_objects_join'), 2, 4);
-		add_filter('objects_where_rs', array($this, 'flt_objects_where'), 2, 4);
-		add_filter('objects_request_rs', array($this, 'flt_objects_request'), 2, 4);
-		add_filter('objects_results_rs', array($this, 'flt_objects_results'), 50, 4);
-		add_filter('objects_teaser_rs', array($this, 'flt_objects_teaser'), 50, 4);
+		add_filter('objects_where_rs', array(&$this, 'flt_objects_where'), 2, 4);
+		add_filter('objects_request_rs', array(&$this, 'flt_objects_request'), 2, 4);
+		add_filter('objects_results_rs', array(&$this, 'flt_objects_results'), 50, 4);
+		add_filter('objects_teaser_rs', array(&$this, 'flt_objects_teaser'), 50, 4);
 		
 		if ( ! $scoper->direct_file_access ) {
 			// Append any limiting clauses to WHERE clause for taxonomy query

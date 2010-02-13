@@ -176,7 +176,8 @@ function is_restricted_rs( $id = '', $src_name = 'post', $op_type = 'read', $sco
 	$listed_ids = ( is_single() || is_page() ) ? array( $id => true ) : array();
 
 	require_once('role_usage_rs.php');
-	determine_role_usage_rs($src_name, $listed_ids);
+	$role_usage = new Role_Usage_RS();
+	$role_usage->determine_role_usage_rs($src_name, $listed_ids);
 
 	if ( 'object' == $scope_criteria )
 		return ( isset( $scoper->objscoped_ids[$src_name][$id][$op_type] ) );

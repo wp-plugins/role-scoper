@@ -381,10 +381,8 @@ class ScoperAdminUI {
 			echo '<li>';
 			printf( $msg, 'href="admin.php?page=rs-options"');
 			
-			$msg = __('Another option is to categorise pages via the <a %s>Page&nbsp;Category&nbsp;Plus</a>&nbsp;plugin.', 'scoper');
-			$href = 'href="http://www.stuff.yellowswordfish.com/page-category-plus"';
-			
-			echo ' ' . sprintf( $msg, $href);
+			_e('Another option is to categorise pages via the <a>Page&nbsp;Category&nbsp;Plus</a>&nbsp;plugin.', 'scoper');
+
 			echo '</li>';
 		}
 	}

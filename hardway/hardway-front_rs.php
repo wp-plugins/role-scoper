@@ -3,7 +3,6 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
 add_filter('query', array('ScoperHardwayFront', 'flt_recent_comments') );
-//add_filter('getarchives_where', array('ScoperHardwayFront', 'flt_log_getarchives') ); // work around WP bug in wp_get_archives
 add_filter('get_terms', array('ScoperHardwayFront', 'flt_get_tags'), 50, 3);
 
 add_filter('get_the_category_for_list', array('ScoperHardwayFront', 'flt_get_the_category') );		// TODO: eliminate this - published in RS forum as a WP hack for use with a dev version

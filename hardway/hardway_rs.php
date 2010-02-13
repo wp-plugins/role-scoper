@@ -231,7 +231,7 @@ class ScoperHardway
 			$request = str_replace("AND post_status='publish'", "AND ( post_status IN ('publish','private') )", $request);
 		}
 		
-		if ( $scoper->is_front() && scoper_get_otype_option('do_teaser', 'post') && scoper_get_otype_option('use_teaser', 'post', 'page') ) {
+		if ( $scoper->is_front() && scoper_get_otype_option('do_teaser', 'post') && scoper_get_otype_option('use_teaser', 'post', 'page') && ! defined('SCOPER_TEASER_HIDE_PAGE_LISTING') ) {
 			// We are in the front end and the teaser is enabled for pages	
 
 			$pages = scoper_get_results($request);			// execute unfiltered query

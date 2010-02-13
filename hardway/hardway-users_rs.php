@@ -85,6 +85,8 @@ class ScoperHardwayUsers {
 
 		global $wpdb, $scoper;
 		
+		$last_query = $wpdb->last_query;
+		
 		// This uri-checking functions will be called by flt_users_where.
 		// If the current uri is not recognized, don't bother with the painful parsing. 
 		$context = $scoper->admin->get_context('');
@@ -108,10 +110,12 @@ class ScoperHardwayUsers {
 		 	//return $wp_output;
 		
 		$src_name = $context->source->name;
-			
-		$last_query = $wpdb->last_query;
+		
 		$orderpos = strpos($last_query, 'ORDER BY');
 		$orderby = ( $orderpos ) ? substr($last_query, $orderpos) : '';
+		if ( ! strpos( $orderby, 'display_name' ) )	// sanity check in case the last_query buffer gets messed up
+			$order_by = '';
+
 		$id_in = $id_not_in = $show_option_all = $show_option_none = '';
 		
 		$pos = strpos($last_query, 'AND ID IN(');

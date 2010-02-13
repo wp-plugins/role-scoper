@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
 Tested up to: 2.9.1
-Stable Tag: 1.1.5
+Stable Tag: 1.1.6
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,6 +106,25 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+**1.1.6 - 13 Feb 2010**
+
+= File Filtering Fixes =
+* BugFix : File Filtering failed on some installations, possibly causing an Internal Server Error
+* BugFix : In WP-MU with File Filtering enabled, .htaccess file in uploads folders was regenerated on each site access (since 1.1.2)
+* BugFix : In non-MU installations, .htaccess file was not immediately updated on activation / deactivation of File Filtering
+
+= Other Changes =
+* BugFix : Non-Administrators could not modify any Roles or Restrictions via bulk admin forms, even if some are delegated to them
+* Lang : Added Spanish translation
+* Change : Use https link for Role Scoper css and js files if ssl is being used / forced for the current uri
+* BugFix : Archives listing using postbypost listing type did not display private posts to logged Administrator
+* BugFix : Template function is_protected() / is_restricted() did not work with secondary queries
+* BugFix : Private posts / pages not sometimes hidden from logged Administrators in front-end custom query results
+* BugFix : PHP warnings on Edit Post / Page form (if WordPress debug mode enabled)
+* BugFix : PHP notice for undefined constant (SCOPER_FORCE_FILE_INCLUSIONS)
+* Feature : Support SCOPER_TEASER_HIDE_PAGE_LISTING definition, to suppress teased pages from front-end listing (while still applying teaser on direct access)
+
 
 = 1.1.5 - 28 Jan 2010 =
 * BugFix : Fatal error under some configurations: Call to undefined function is_site_admin()

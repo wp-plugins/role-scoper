@@ -212,17 +212,21 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 			
 			echo '</li></ul>';
 			
-		} elseif ( $agent_count[$agents_subset] ) {
-			echo "<ul class='rs-list_horiz rs-agents_filter $ul_class'><li>";
-			if ( ROLE_BASIS_GROUPS == $role_basis )
-				$caption = ( CURRENT_ITEMS_RS == $agents_subset ) ? __('current groups (%d):', 'scoper') : __('eligible groups (%d):', 'scoper');
-			else
-				$caption = ( CURRENT_ITEMS_RS == $agents_subset ) ? __('current users (%d):', 'scoper') : __('eligible users (%d):', 'scoper');
-
-			printf ("<div class='rs-agents_caption'><strong>$caption</strong></div>", $agent_count[$agents_subset]);
-			echo '</li></ul>';
-		}
+		} else {
+			$ul_class = '';
 			
+			if ( $agent_count[$agents_subset] ) {
+				echo "<ul class='rs-list_horiz rs-agents_filter $ul_class'><li>";
+				if ( ROLE_BASIS_GROUPS == $role_basis )
+					$caption = ( CURRENT_ITEMS_RS == $agents_subset ) ? __('current groups (%d):', 'scoper') : __('eligible groups (%d):', 'scoper');
+				else
+					$caption = ( CURRENT_ITEMS_RS == $agents_subset ) ? __('current users (%d):', 'scoper') : __('eligible users (%d):', 'scoper');
+	
+				printf ("<div class='rs-agents_caption'><strong>$caption</strong></div>", $agent_count[$agents_subset]);
+				echo '</li></ul>';
+			}
+		}
+	
 		$title = '';
 		if ( $propagation ) {
 			if ( ! $objtype_display_name )
@@ -351,7 +355,7 @@ define ('ELIGIBLE_ITEMS_RS', 'eligible');
 				
 			$disabled = ( $locked_ids && isset($locked_ids[$id]) ) ? " disabled='disabled'" : '';
 			
-			$li_title = "title=' " . strtolower($agent_display_name) . " '{$tool_tip}";
+			$li_title = "title=' " . strtolower($agent_display_name) . " '";
 			
 			if ( $check_for_incomplete_submission && isset($_POST['scoper_error']) && isset($_POST[$id_prefix]) )
 				$this_checked = ( in_array($id, $_POST[$id_prefix]) ) ? ' checked="checked"' : '';
