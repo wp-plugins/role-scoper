@@ -143,6 +143,10 @@ class ScoperAdmin
 	function flt_contextual_help_list ($help, $screen) {
 		$link_section = '';
 		
+		// WP < 3.0 passes ID as string
+		if ( is_object($screen) )
+			$screen = $screen->id;
+		
 		if ( strpos( $screen, 'rs-' ) ) {
 			$match = array();
 			if ( ! preg_match( "/admin_page_rs-[^@]*-*/", $screen, $match ) )

@@ -114,7 +114,7 @@ class ScoperHardwayUsers {
 		$orderpos = strpos($last_query, 'ORDER BY');
 		$orderby = ( $orderpos ) ? substr($last_query, $orderpos) : '';
 		if ( ! strpos( $orderby, 'display_name' ) )	// sanity check in case the last_query buffer gets messed up
-			$order_by = '';
+			$orderby = '';
 
 		$id_in = $id_not_in = $show_option_all = $show_option_none = '';
 		

@@ -34,40 +34,48 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 			foreach ( $wp_taxonomies as $taxonomy => $wp_tax ) {
 				// taxonomy must be approved for scoping and have a Scoper-defined object type
 				if ( isset($arr_use_wp_taxonomies[$taxonomy]) ) {
-					if ( $data_sources->is_member($wp_tax->object_type) )
-						$src_name = $wp_tax->object_type;
-					elseif ( ! $src_name = $data_sources->is_member_alias($wp_tax->object_type) ) // in case the 3rd party plugin uses a taxonomy->object_type property different from the src_name we use for RS data source definition
-						continue;
+					$tx_otypes = (array) $wp_tax->object_type;
 					
-					// create taxonomies definition if necessary (additional properties will be set later)
-					$this->members[$taxonomy] = (object) array(
-						'name' => $taxonomy,								
-						'uses_standard_schema' => 1,	'autodetected_wp_taxonomy' => 1,
-						'hierarchical' => $wp_tax->hierarchical,
-						'object_source' => $src_name
-					);
+					foreach ( $tx_otypes as $wp_tax_object_type ) {
 					
-					$this->members[$taxonomy]->requires_term = $wp_tax->hierarchical;	// default all hierarchical taxonomies to strict, non-hierarchical to non-strict
-
-					if ( isset( $custom_taxonomies[$taxonomy] ) && ! empty( $custom_taxonomies[$taxonomy]->plural ) ) {
-						$this->members[$taxonomy]->display_name = $custom_taxonomies[$taxonomy]->name;
-						$this->members[$taxonomy]->display_name_plural = $custom_taxonomies[$taxonomy]->plural;
+						if ( $data_sources->is_member($wp_tax_object_type) )
+							$src_name = $wp_tax_object_type;
+						elseif ( ! $src_name = $data_sources->is_member_alias($wp_tax_object_type) ) // in case the 3rd party plugin uses a taxonomy->object_type property different from the src_name we use for RS data source definition
+							continue;
 						
-						// possible future extension to Custom Taxonomies plugin: ability to specify "required" property apart from hierarchical property (and enforce it in Edit Forms)
-						if ( isset( $custom_taxonomies[$taxonomy]->required ) )
-							$this->members[$taxonomy]->requires_term = $custom_taxonomies[$taxonomy]->required;
-					} else {
-						$this->members[$taxonomy]->display_name = ucwords( __( preg_replace('/[_-]/', ' ', $taxonomy) ) );
-						$this->members[$taxonomy]->display_name_plural = $this->members[$taxonomy]->display_name;			
+						if ( ( 'post' != $wp_tax_object_type ) && ( 'link_category' != $taxonomy ) )
+							$taxonomy = $wp_tax_object_type . '_' . $taxonomy;
+
+						// create taxonomies definition if necessary (additional properties will be set later)
+						$this->members[$taxonomy] = (object) array(
+							'name' => $taxonomy,								
+							'uses_standard_schema' => 1,	'autodetected_wp_taxonomy' => 1,
+							'hierarchical' => $wp_tax->hierarchical,
+							'object_source' => $src_name
+						);
+						
+						$this->members[$taxonomy]->requires_term = $wp_tax->hierarchical;	// default all hierarchical taxonomies to strict, non-hierarchical to non-strict
+	
+						if ( isset( $custom_taxonomies[$taxonomy] ) && ! empty( $custom_taxonomies[$taxonomy]->plural ) ) {
+							$this->members[$taxonomy]->display_name = $custom_taxonomies[$taxonomy]->name;
+							$this->members[$taxonomy]->display_name_plural = $custom_taxonomies[$taxonomy]->plural;
+							
+							// possible future extension to Custom Taxonomies plugin: ability to specify "required" property apart from hierarchical property (and enforce it in Edit Forms)
+							if ( isset( $custom_taxonomies[$taxonomy]->required ) )
+								$this->members[$taxonomy]->requires_term = $custom_taxonomies[$taxonomy]->required;
+						} else {
+							$this->members[$taxonomy]->display_name = ucwords( __( preg_replace('/[_-]/', ' ', $taxonomy) ) );
+							$this->members[$taxonomy]->display_name_plural = $this->members[$taxonomy]->display_name;			
+						}
+						
+						if ( ! in_array($taxonomy, $data_sources->member_property($src_name, 'uses_taxonomies') ) ) {
+							$obj_src =& $data_sources->get_ref($src_name);
+							$obj_src->uses_taxonomies []= $taxonomy;
+						}
+						
+						$this->process( $this->members[$taxonomy], $this->data_sources );
 					}
-					
-					if ( ! in_array($taxonomy, $data_sources->member_property($src_name, 'uses_taxonomies') ) ) {
-						$obj_src =& $data_sources->get_ref($src_name);
-						$obj_src->uses_taxonomies []= $taxonomy;
-					}
-					
-					$this->process( $this->members[$taxonomy], $this->data_sources );
-					
+						
 				} // endif scoping is enabled for this taxonomy
 			} // end foreach taxonomy know to WP core
 		} // endif any taxonomies have scoping enabled

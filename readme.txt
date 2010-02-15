@@ -3,8 +3,8 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.5
-Tested up to: 2.9.1
-Stable Tag: 1.1.6
+Tested up to: 2.9.2
+Stable Tag: 1.1.7
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -107,6 +107,13 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.1.7 - 15 Feb 2010 =
+* BugFix : In Post/Page Edit Form, user checkboxes for role assignment were not sorted alphabetically (since 1.1.RC1)
+* Feature : Omit other users' trashed posts from Edit Posts / Edit Pages listing if not editable by logged user
+* Compat : Initial WP 3.0 compat (fixing errors related to custom post type and changes to contextual help API)
+* Change : Widen Page Parent dropdown on Edit Page Form to full width of Attributes box
+
+
 **1.1.6 - 13 Feb 2010**
 
 = File Filtering Fixes =
@@ -116,7 +123,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = Other Changes =
 * BugFix : Non-Administrators could not modify any Roles or Restrictions via bulk admin forms, even if some are delegated to them
-* Lang : Added Spanish translation
+* Lang : Added Spanish translation (Rafael P&eacute;rez Gana - http://www.rafo.cl/)
 * Change : Use https link for Role Scoper css and js files if ssl is being used / forced for the current uri
 * BugFix : Archives listing using postbypost listing type did not display private posts to logged Administrator
 * BugFix : Template function is_protected() / is_restricted() did not work with secondary queries
@@ -146,7 +153,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = File Filtering =
 * BugFix : .htaccess file was not regenerated when File Filtering is re-enabled following a disable (since 1.1.RC1)
-* BugFix : File Filtering was not imposed for new attachments to private / restricted posts (since 1.1 RC1)
+* BugFix : File Filtering was not imposed for new attachments to private / restricted posts (since 1.1.RC1)
 
 = WP 2.9 Trash Function =
 * WP Compat : Trashed posts / pages were included in edit listing when status filter set to default "All"

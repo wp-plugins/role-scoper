@@ -132,7 +132,7 @@ class ScoperAdminBulkLib {
 		if ( $role_duration || $content_date_limits && scoper_get_option( 'display_hints' ) )
 			if ( scoper_get_option('display_hints') ) {
 				echo '<div class="rs-optionhint" style="margin: 2em 0 1em 2em">';
-				_e('This controls what limits to apply to the User / Group roles you select for creation or modification. <strong>Currently stored limits</strong> are indicated by a colored background behind the User or Group name.  For details, hover over the name or view the User or Group Profile.', 'scoper' );
+				_e('This controls what limits to apply to the User / Group roles you select for creation or modification. <strong>Currently stored limits</strong> are indicated by a dotted border around the User or Group name.  For details, hover over the name or view the User or Group Profile.', 'scoper' );
 				echo '</div>';
 			}
 	

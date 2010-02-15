@@ -928,7 +928,9 @@ class Scoper
 				
 			global $wpdb;
 				
-			$qry = "SELECT $qcols FROM $wpdb->users";
+			$orderby = ( $cols == COL_ID_RS ) ? '' : 'ORDER BY display_name';
+
+			$qry = "SELECT $qcols FROM $wpdb->users $orderby";
 			
 			if ( COL_ID_RS == $cols )
 				return scoper_get_col( $qry );

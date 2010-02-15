@@ -54,7 +54,13 @@ printf(__('If the plugin has seriously broadened your CMS horizons, %s', 'scoper
 echo '</li><li>';
 printf(__('If you are an established web developer, %1$s grant me your professional opinion%2$s on how this work stacks up. Might the skills, work ethic and values I express here fit into a development team near you?', 'scoper'), '<a href="http://agapetry.net/general-contact-form/">', '</a>');
 echo '</li><li>';
-printf(__('Hire or refer my services</a> to design, redesign or enhance your site - quality care at reasonable rates.', 'scoper'), '<a href="http://agapetry.net/service-exploration-form/">', '</a>');
+
+// TODO: update translations once poEdit update is available to fix _x and _n handling
+if ( defined('WPLANG') && WPLANG )
+	printf(__('Hire or refer my services</a> to design, redesign or enhance your site - quality care at reasonable rates.', 'scoper'), '<a href="http://agapetry.net/service-exploration-form/">', '</a>');
+else
+	printf(__('Hire or refer my services</a> to develop or enhance your site - quality care at reasonable rates.', 'scoper'), '<a href="http://agapetry.net/service-exploration-form/">', '</a>');
+
 echo '</li></ul>';
 
 //if ( $status = awp_remote_fopen( 'http://localhost/aglocal/downloads/status.htm', 5) )

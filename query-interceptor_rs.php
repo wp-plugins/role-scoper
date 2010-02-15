@@ -653,7 +653,7 @@ class QueryInterceptor_RS
 			// (will replace "col_status = status_name" with "col_status = status_name AND ( [scoper requirements] )
 			foreach ($status_reqd_caps as $status_name => $reqd_caps) {
 				if ( 'trash' == $status_name )	// in wp-admin, we need to include trash posts for the count query, but not for the listing query unless trash status is requested
-					if ( ! strpos($scoper->last_request[$src_name], 'COUNT') && ( empty( $_POST['post_status'] ) || ( 'trash' != $_POST['post_status'] ) ) )
+					if ( ! strpos($scoper->last_request[$src_name], 'COUNT') && ( empty( $_GET['post_status'] ) || ( 'trash' != $_GET['post_status'] ) ) )
 						continue;
 
 				if ( $is_administrator )
