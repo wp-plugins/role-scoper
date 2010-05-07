@@ -19,12 +19,13 @@ class ScoperAdminFiltersItemUI {
 		
 		add_action('term_edit_ui_rs', array(&$this, 'ui_single_term_roles'), 10, 3);
 		
-		if ( ( strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) && scoper_get_otype_option( 'default_private', 'post', 'post' ) )
-		|| ( strpos( $_SERVER['REQUEST_URI'], 'page-new.php' ) && scoper_get_otype_option( 'default_private', 'post', 'page' ) ) )
+		$object_type = awp_post_type_from_uri();
+
+		if ( $object_type && scoper_get_otype_option( 'default_private', 'post', $object_type ) )
 			add_action('admin_footer', array(&$this, 'default_private_js') );
-		
-		if ( ( ( strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) || strpos( $_SERVER['REQUEST_URI'], 'post.php' ) )  && scoper_get_otype_option( 'sync_private', 'post', 'post' ) )
-		|| ( ( strpos( $_SERVER['REQUEST_URI'], 'page.php' ) || strpos( $_SERVER['REQUEST_URI'], 'page-new.php' ) ) && scoper_get_otype_option( 'sync_private', 'post', 'page' ) ) )
+			
+
+		if ( $object_type && scoper_get_otype_option( 'sync_private', 'post', $object_type ) )
 			add_action('admin_head', array(&$this, 'sync_private_js') );
 	}
 	
@@ -123,7 +124,7 @@ jQuery(document).ready( function($) {
 	
 	function act_tweak_metaboxes() {
 		static $been_here;
-		
+
 		if ( isset($been_here) )
 			return;
 
@@ -135,8 +136,9 @@ jQuery(document).ready( function($) {
 			return;
 		
 		$src_name = 'post';
-		$object_type = $this->scoper->data_sources->detect('type', $src_name);
 		
+		$object_type = $this->scoper->data_sources->detect('type', $src_name);
+
 		if ( empty($wp_meta_boxes[$object_type]) )
 			return;
 		

@@ -41,7 +41,7 @@ $wpdb->groups_meta_id_col =  'group_meta_id';
 $wpdb->user2group_gid_col = 		'group_id';
 $wpdb->user2group_uid_col = 		'user_id';
 $wpdb->user2group_assigner_id_col = 'assigner_id';
-
+$wpdb->user2group_status_col 	  = 'status';
 
 // sample integration with Vanilla (not recently tested or officially supported):
 // For groups and user2groups tables, user Vanilla forum's lum_role and lum_userrole (possible only if these are installed within WP database)

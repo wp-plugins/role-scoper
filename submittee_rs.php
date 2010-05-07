@@ -122,19 +122,6 @@ class Scoper_Submittee {
 		foreach ( $access_names as $access_name )
 			$disabled[$access_name] = empty( $_POST['access_types-' . $access_name ] );	
 		scoper_update_option($default_prefix . 'disabled_access_types', $disabled, $sitewide );
-		
-		$enable_taxonomies = array();
-		
-		//$reviewed_wp_taxonomies = explode( ',', $_POST['all_wp_taxonomies'] );
-		$selected_wp_taxonomies = isset($_POST['enable_wp_taxonomies']) ? $_POST['enable_wp_taxonomies'] : array();
-		
-		if ( isset($_POST['locked_wp_taxonomies']) ) {
-			$locked_wp_taxonomies  = explode( ',', $_POST['locked_wp_taxonomies'] );
-			$selected_wp_taxonomies = array_merge( $selected_wp_taxonomies, $locked_wp_taxonomies);
-		}
-		
-		$selected_wp_taxonomies = array_fill_keys($selected_wp_taxonomies, 1);
-		scoper_update_option($default_prefix . 'enable_wp_taxonomies', $selected_wp_taxonomies, $sitewide );
 
 		$this->update_page_otype_options( $sitewide, $customize_defaults );
 	}
@@ -144,7 +131,6 @@ class Scoper_Submittee {
 		
 		$default_prefix = ( $customize_defaults ) ? 'default_' : '';
 		
-		scoper_delete_option( $default_prefix . 'enable_wp_taxonomies', $sitewide );
 		scoper_delete_option( $default_prefix . 'disabled_access_types', $sitewide );
 
 		$reviewed_otype_options = explode(',', $_POST['all_otype_options']);
@@ -167,12 +153,12 @@ class Scoper_Submittee {
 			$options_sitewide = array_merge( $options_sitewide, array( 'disabled_role_caps' ) );
 		
 			
-		// must force use_term_roles and use_object_roles scope setting to follow enable_wp_taxonomies
+		// must force use_object_roles scope setting to follow use_term_roles
 		$reviewed_options []= 'use_term_roles';
 		$reviewed_options []= 'use_object_roles';
-		
-		if ( in_array( 'enable_wp_taxonomies', $options_sitewide ) )
-			$options_sitewide = array_merge( $options_sitewide, array( 'use_term_roles', 'use_object_roles' ) );
+
+		if ( in_array( 'use_term_roles', $options_sitewide ) )
+			$options_sitewide = array_merge( $options_sitewide, array( 'use_object_roles' ) );
 
 			
 		// must force all teaser option to follow scope of do_teaser
@@ -260,7 +246,7 @@ class Scoper_Submittee {
 			add_action( 'update_option_scoper_use_term_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
 			add_action( 'update_option_scoper_use_object_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
 		}
-			
+
 		$default_prefix = ( $customize_defaults ) ? 'default_' : '';
 		
 		$reviewed_otype_options = explode(',', $_POST['all_otype_options']);
@@ -269,12 +255,23 @@ class Scoper_Submittee {
 			if ( isset( $scoper_default_otype_options[$option_basename] ) ) {
 				if ( $opt = $scoper_default_otype_options[$option_basename] ) {
 					foreach ( array_keys($opt) as $src_otype ) {
-						$postvar = $option_basename . '-' . str_replace(':', '_', $src_otype);
-						$value = isset($_POST[$postvar]) ? $_POST[$postvar] : '';
-						if ( ! is_array($value) ) 
-							$value = trim($value);
-						
-						$otype_option_vals[ $option_basename ] [ $src_otype ] = stripslashes_deep($value);
+						if( is_array( $opt[$src_otype] ) ) {
+							foreach ( array_keys($opt[$src_otype]) as $taxonomy ) {
+								$postvar = $option_basename . '-' . str_replace(':', '_', $src_otype) . '-' . $taxonomy;
+								$value = isset($_POST[$postvar]) ? $_POST[$postvar] : '';
+								if ( ! is_array($value) ) 
+									$value = trim($value);
+								
+								$otype_option_vals[ $option_basename ] [ $src_otype ] [ $taxonomy ] = stripslashes_deep($value);
+							}
+						} else {
+							$postvar = $option_basename . '-' . str_replace(':', '_', $src_otype);
+							$value = isset($_POST[$postvar]) ? $_POST[$postvar] : '';
+							if ( ! is_array($value) ) 
+								$value = trim($value);
+							
+							$otype_option_vals[ $option_basename ] [ $src_otype ] = stripslashes_deep($value);	
+						}
 					}
 				}
 			}

@@ -24,7 +24,7 @@ if ( empty($role_bases) )
 
 $otype = $scoper->data_sources->member_property($src_name, 'object_types', $object_type);
 	
-require_once('admin_ui_lib_rs.php');
+require_once( SCOPER_ABSPATH . '/hardway/hardway-parent_rs.php');
 require_once( 'admin-bulk_rs.php' );
 require_once('role_assignment_lib_rs.php');
 $role_assigner = init_role_assigner();
@@ -138,7 +138,7 @@ if ( $object_roles ) {
 if ( $col_parent ) {
 	if ( $listed_objects ) {
 		if ( $unlisted_objects ) // query for any parent objects which don't have their own role assignments
-			$listed_objects = ScoperAdminUI::add_missing_parents($listed_objects, $unlisted_objects, $col_parent);
+			$listed_objects = ScoperHardwayParent::add_missing_parents($listed_objects, $unlisted_objects, $col_parent);
 
 		// convert keys from object ID to title+ID so we can alpha sort them
 		$listed_objects_alpha = array();
@@ -147,7 +147,7 @@ if ( $col_parent ) {
 
 		uksort($listed_objects_alpha, "strnatcasecmp");
 	
-		$listed_objects = ScoperAdminUI::order_by_hierarchy($listed_objects_alpha, $col_id, $col_parent);
+		$listed_objects = ScoperHardwayParent::order_by_hierarchy($listed_objects_alpha, $col_id, $col_parent);
 	} // endif any listed objects
 	
 } else { // endif doing object hierarchy
@@ -169,7 +169,7 @@ if ( ! $is_administrator )
 	$admin_items = ScoperAdminBulk::filter_objects_listing(ROLE_ASSIGNMENT_RS, $object_roles, $src, $object_type);  // unsets $object_roles elements as needed
 else
 	$admin_items = '';	// no need to filter admins
-
+	
 $role_display = array();
 $editable_roles = array();
 foreach ( $scoper->role_defs->get_all_keys() as $role_handle ) {

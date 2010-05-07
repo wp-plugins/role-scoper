@@ -49,10 +49,10 @@ class ScoperHardway
 			// avoid redundant filtering (currently replacing parent dropdown on flt_dropdown_pages filter)
 			return $results;
 		}
-
+		
 		if ( ! is_array($results) )
 			$results = (array) $results;
-		
+			
 		global $wpdb;
 
 		// === BEGIN Role Scoper ADDITION: global var; various special case exemption checks ===
@@ -61,7 +61,7 @@ class ScoperHardway
 		
 		// need to skip cache retrieval if QTranslate is filtering get_pages with a priority of 1 or less
 		$no_cache = ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate');
-		
+
 		// buffer titles in case they were filtered previously
 		$titles = scoper_get_property_array( $results, 'ID', 'post_title' );
 
@@ -84,7 +84,7 @@ class ScoperHardway
 			'authors' => '', 'parent' => -1, 'exclude_tree' => '',
 			'number' => '', 'offset' => 0,
 			
-			'depth' => 0,
+			'depth' => 0, 'suppress_filters' => 0,
 			'remap_parents' => -1,	'enforce_actual_depth' => -1,	'remap_thru_excluded_parent' => -1
 		);		// Role Scoper arguments added above
 		
@@ -113,7 +113,13 @@ class ScoperHardway
 		$number = (int) $number;
 		$offset = (int) $offset;
 
-
+		//$scoper->last_get_pages_args = $r; // don't copy entire args array unless it proves necessary
+		$scoper->last_get_pages_depth = $depth;
+		$scoper->last_get_pages_suppress_filters = $suppress_filters;
+		
+		if ( $suppress_filters )
+			return $results;
+		
 		// === BEGIN Role Scoper MODIFICATION: wp-cache key and flag specific to access type and user/groups
 		//
 		$key = md5( serialize( compact(array_keys($defaults)) ) );
@@ -250,7 +256,7 @@ class ScoperHardway
 	
 		} else {
 			// Pass query through the request filter
-			$request = apply_filters('objects_request_rs', $request, 'post', 'page', array('skip_teaser' => true));
+			$request = apply_filters('objects_request_rs', $request, 'post', 'page', array( 'skip_teaser' => true ) );
 			
 			// now that the request filter has been applied, restore reqd_caps value to normal
 			if ( ! $list_private_pages )
@@ -259,7 +265,7 @@ class ScoperHardway
 			// Execute the filtered query
 			$pages = scoper_get_results($request);
 		}
-		
+
 		if ( empty($pages) )
 			// alternate hook name (WP core already applied get_pages filter)
 			return apply_filters('get_pages_rs', array(), $r);
@@ -269,8 +275,7 @@ class ScoperHardway
 		//
 		// === END Role Scoper MODIFICATION ===
 		// ====================================
-		
-		
+
 		// Role Scoper note: WP core get_pages has already updated wp_cache and pagecache with unfiltered results.
 		update_page_cache($pages);
 		
@@ -323,7 +328,7 @@ class ScoperHardway
 		
 		// re-index the array, just in case anyone cares
         $pages = array_values($pages);
-		
+        
 			
 		// === BEGIN Role Scoper MODIFICATION: cache key and flag specific to access type and user/groups
 		//
@@ -371,7 +376,7 @@ class ScoperHardway
 
 		// The desired "root" is included in the ancestor array if using $child_of arg, but not if child_of = 0
 		$one_if_root = ( $child_of ) ? 0 : 1;
-		
+
 		foreach ( $items as $key => $item ) {
 			if ( ! empty($child_of) ) {
 				if ( ! isset($ancestors[$item->$col_id]) || ! in_array($child_of, $ancestors[$item->$col_id]) ) {
@@ -381,9 +386,10 @@ class ScoperHardway
 				}
 			}
 			
+			$parent_id = $item->$col_parent;
+			
 			if ( $remap_parents ) {
 				$id = $item->$col_id;
-				$parent_id = $item->$col_parent;
 				
 				if ( $parent_id && ( $child_of != $parent_id ) && isset($ancestors[$id]) ) {
 					
@@ -428,11 +434,14 @@ class ScoperHardway
 								$remapped_items [$key]= $items[$key];
 								unset( $items[$key]	);
 							}
-						}
+						}	
 					}
 				}
-			} // end if not skipping page parent remap
-			
+			} elseif ( $parent_id && ( $depth == 1 ) && ! isset($filtered_items_by_id[$parent_id]) ) { // end if not skipping page parent remap
+				unset($items[$key]); // Walker will not strip this item out based on wp_list_pages depth argument if its parent is missing
+
+				continue;
+			}
 			
 			// temporary WP bug workaround: need to keep track of parent, for reasons described below
 			if (  $child_of && ! $remapped_items ) {

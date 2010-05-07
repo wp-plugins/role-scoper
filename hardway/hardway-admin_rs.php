@@ -32,12 +32,6 @@ class ScoperAdminHardway {
 
 		if ( ( strpos($query, "PDATE $wpdb->posts ") && strpos($query, "post_parent") ) ) {
 			// as of WP 2.6, only the post_parent is being wiped.
-			if ( ! awp_ver('2.6') ) {
-				global $current_user;
-				$query = preg_replace( "/,\s*`post_author`\s*=\s*'{$current_user->ID}'/", "", $query);
-				$query = preg_replace( "/`post_author`\s*=\s*'{$current_user->ID}',/", "", $query);
-			}
-			
 			$query = preg_replace( "/,\s*`post_parent`\s*=\s*'0'/", "", $query);
 		}
 

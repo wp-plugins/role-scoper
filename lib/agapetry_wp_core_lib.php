@@ -59,7 +59,7 @@ if ( ! function_exists('awp_is_mu') ) {
 function awp_is_mu() {
 	global $wpdb, $wpmu_version;
 	
-	return ( function_exists('get_current_site_name') || ! empty($wpmu_version) || ( ! empty( $wpdb->base_prefix ) && ( $wpdb->base_prefix != $wpdb->prefix ) ) );
+	return ( ( defined('MULTISITE') && MULTISITE ) || function_exists('get_current_site_name') || ! empty($wpmu_version) || ( ! empty( $wpdb->base_prefix ) && ( $wpdb->base_prefix != $wpdb->prefix ) ) );
 }
 }
 
@@ -135,7 +135,7 @@ function awp_user_can($reqd_caps, $object_id = 0, $user_id = 0, $args = array() 
 	
 	if ( ! empty( $args['skip_revision_allowance'] ) )
 		$revisionary->skip_revision_allowance = false;
-
+	
 	foreach ($reqd_caps as $cap_name) {
 		if( empty($capabilities[$cap_name]) || ! $capabilities[$cap_name] ) {
 			// if we're about to fail due to a missing create_child_pages cap, honor edit_pages cap as equivalent
@@ -153,6 +153,32 @@ function awp_user_can($reqd_caps, $object_id = 0, $user_id = 0, $args = array() 
 	}
 
 	return true;
+}
+}
+
+if ( ! function_exists('awp_post_type_from_uri') ) {
+function awp_post_type_from_uri() {
+	$script_name = $_SERVER['SCRIPT_NAME'];
+	
+	// As of WP 3.0, post.php is used for all post types (TODO: move this to a function)
+	if ( strpos( $script_name, 'page-new.php' ) || strpos( $script_name, 'page.php' ) || strpos( $script_name, 'edit-pages.php' ) )
+		return 'page';
+	else {
+		if ( awp_ver( '3.0-dev' ) ) {
+			if ( strpos( $script_name, 'post-new.php' ) || strpos( $script_name, 'edit.php' ) ) {
+				$object_type = ! empty( $_GET['post_type'] ) ? $_GET['post_type'] : 'post';
+				
+			} elseif ( ! empty( $_GET['post'] ) ) {	 // post.php
+				if ( $_post = get_post( $_GET['post'] ) )
+					$object_type = $_post->post_type;
+			}
+		}
+
+		if ( ! empty($object_type) )
+			return $object_type;
+		else
+			return 'post';
+	}
 }
 }
 

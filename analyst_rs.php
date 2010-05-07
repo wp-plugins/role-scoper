@@ -155,7 +155,7 @@ class ScoperAnalyst {
 				}											
 			}
 			
-			if ( ! empty( $restricted_objects ) ) {
+			if ( ! empty( $restricted_roles ) ) {
 				$restricted_objects['post'] = agp_array_flatten( $restricted_roles['post'] );
 			
 				if ( $restricted_objects['post'] )

@@ -32,6 +32,8 @@ function scoper_deactivate() {
 		}
 	}
 
+	delete_option( 'scoper_logged_custom_types' );
+	
 	require_once('role-scoper_init.php');
 	scoper_clear_site_rules();
 	scoper_clear_all_file_rules();

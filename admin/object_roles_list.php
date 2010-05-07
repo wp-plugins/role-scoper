@@ -244,7 +244,11 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 				$link_this_role = ( ! isset($link_roles) || isset($link_roles[$obj_id]) );
 				
 				if ( $link_this_role ) {
-					$rs_edit_url = "admin.php?page=rs-object_role_edit&amp;src_name=$src_name&amp;object_type=$object_type&amp;object_id=$obj_id&amp;object_name=$object_name";
+					if ( 'group' == $object_type )
+						$rs_edit_url = $src_edit_url;
+					else
+						$rs_edit_url = "admin.php?page=rs-object_role_edit&amp;src_name=$src_name&amp;object_type=$object_type&amp;object_id=$obj_id&amp;object_name=$object_name";
+					
 					$html .= "\n\t<td><a {$title}{$limit_style}class='{$link_class}{$limit_class}' href='$rs_edit_url'>{$objnames[$obj_id]}</a></td>";
 				} else
 					$html .= "\n\t<td>{$objnames[$obj_id]}</td>";

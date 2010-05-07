@@ -33,7 +33,7 @@ function scoper_update_schema($last_db_ver) {
 	$cols[$wpdb->groups_descript_col] = "text NOT NULL";
 	$cols[$wpdb->groups_homepage_col] = "varchar(128) NOT NULL default ''";
 	$cols[$wpdb->groups_meta_id_col] = "varchar(64) NOT NULL default ''";
-	
+
 	if($tables = $wpdb->get_col('SHOW TABLES;'))
 		foreach($tables as $table)
 			if ($table == $wpdb->groups_rs)
@@ -87,7 +87,8 @@ function scoper_update_schema($last_db_ver) {
 	$cols[$wpdb->user2group_gid_col] = "bigint(20) unsigned NOT NULL default '0'";
 	$cols[$wpdb->user2group_uid_col] = "bigint(20) unsigned NOT NULL default '0'";
 	$cols[$wpdb->user2group_assigner_id_col] = "bigint(20) unsigned NOT NULL default '0'";
-				 
+	$cols[$wpdb->user2group_status_col] = "enum('active', 'recommended', 'requested') NOT NULL default 'active'";			 
+	
 	if($tables = $wpdb->get_col('SHOW TABLES;'))
 		foreach($tables as $table)
 			if ($table == $wpdb->user2group_rs)
@@ -100,7 +101,8 @@ function scoper_update_schema($last_db_ver) {
 		foreach ($cols as $colname => $typedef)
 			$query .= $colname . ' ' . $typedef . ',';
 		 
-		$query .= "PRIMARY KEY user2group ($wpdb->user2group_uid_col, $wpdb->user2group_gid_col));";
+		$query .= "PRIMARY KEY user2group ($wpdb->user2group_uid_col, $wpdb->user2group_gid_col)),"
+			. " KEY status ($wpdb->user2group_status_col, $wpdb->user2group_uid_col, $wpdb->user2group_gid_col) );";
 		
 		$wpdb->query($query);
 		

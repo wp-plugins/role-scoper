@@ -171,7 +171,7 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 		if ( $object_id )
 			if ( $it = $this->get_from_db($what, $src, $object_id) )
 				return $it;
-				
+					
 		// Is it one of the query variables in current URI?
 		if ( $it = $this->get_from_uri($what, $src, $object_type) )
 			return $it;
@@ -303,8 +303,13 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 				foreach( $src->$collection_property as $it => $it_properties )
 					if ( isset($it_properties->uri) )
 						foreach ( $it_properties->uri as $uri_sub )
-							if ( strpos($full_uri, $uri_sub) )
+							if ( strpos($full_uri, $uri_sub) ) {
+								// workaround for WP 3.0, which uses post.php, edit.php, post-new.php for all post types
+								if ( ( 'post' == $it ) && awp_ver('3.0-dev') )
+									$it = awp_post_type_from_uri();
+
 								return $it;
+							}
 		}
 			
 		// Try to pull the desired value from URI variables, 

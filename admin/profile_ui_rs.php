@@ -2,6 +2,8 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
+require_once( 'admin_ui_lib_rs.php' );
+
 class ScoperProfileUI {
 
 	function display_ui_user_roles($user, $groups_only = false) {
@@ -268,7 +270,7 @@ class ScoperProfileUI {
 				echo $html;
 				echo '</div>';
 				
-				if ( AWP_IS_MU )
+				if ( IS_MU_RS )
 					echo '<br /><hr /><br />';
 			}
 				//echo '<p>' . __('No roles are assigned to this group.', 'scoper'), '</p>';
@@ -304,9 +306,7 @@ class ScoperProfileUI {
 					$orig_blog_id = $blog_id;	
 				} else
 					$blog_ids = array( '1' );
-			
-				include_once('profile_ui_rs.php');
-					
+
 				foreach ( $blog_ids as $id ) {
 					if ( count($blog_ids) > 1 )
 						switch_to_blog( $id );
@@ -326,7 +326,7 @@ class ScoperProfileUI {
 	function display_ui_user_groups() {
 		if ( ! $all_groups = ScoperAdminLib::get_all_groups(UNFILTERED_RS) )
 			return;
-			
+
 		global $current_user, $profileuser;
 		$user_id = $profileuser->id;
 		
@@ -356,19 +356,50 @@ class ScoperProfileUI {
 		
 		if ( ! $editable_ids && ! $stored_groups )
 			return;
-		
+			
 		echo "<div id='userprofile_groupsdiv_rs' class='rs-group_members'>";
-		echo "<h3>" . __('User Groups', 'scoper') . "</h3>";
+		echo "<h3>";
 		
-		$css_id = 'group';
+		if ( defined( 'GROUPS_CAPTION_RS' ) )
+			echo ( GROUPS_CAPTION_RS );
+		else
+			_e( 'User Groups', 'scoper' );
+		 
+		echo "</h3>";
 		
-		$locked_ids = array_diff($stored_groups, $editable_ids );
-		$args = array( 'suppress_extra_prefix' => true, 'eligible_ids' => $editable_ids, 'locked_ids' => $locked_ids );
-		
-		require_once('agents_checklist_rs.php');
- 		ScoperAgentsChecklist::agents_checklist( ROLE_BASIS_GROUPS, $all_groups, $css_id, array_flip($stored_groups), $args);
-		
-		echo '</fieldset>';
+		if ( scoper_get_option( 'group_ajax' ) ) {
+			$arr_display_names = array();
+
+			$group_ids = array();
+			$group_ids['active'] = $stored_groups;
+			$group_ids['recommended'] = $current_user->get_groups_for_user( $user_id, array( 'status' => 'recommended' ) );
+			$group_ids['requested'] = $current_user->get_groups_for_user( $user_id, array( 'status' => 'requested' ) );
+
+			foreach ( $group_ids as $key => $ids ) {
+				foreach ( $ids as $group_id ) {
+					foreach ( array_keys($all_groups) as $nkey ) {
+						if ( $all_groups[$nkey]->ID == $group_id ) {
+							$arr_display_names [$key][$group_id]= $all_groups[$nkey]->display_name;
+							break;	 
+						}
+					}
+				}
+			}
+			
+			global $scoper_user_search;
+			$scoper_user_search->output_html( $arr_display_names, 'groups' );
+		} else {
+			$css_id = 'group';
+			
+			$locked_ids = array_diff($stored_groups, $editable_ids );
+			$args = array( 'suppress_extra_prefix' => true, 'eligible_ids' => $editable_ids, 'locked_ids' => $locked_ids );
+			
+			require_once('agents_checklist_rs.php');
+	 		ScoperAgentsChecklist::agents_checklist( ROLE_BASIS_GROUPS, $all_groups, $css_id, array_flip($stored_groups), $args);
+			
+			echo '</fieldset>';
+		}
+
 		echo '</div>';
 		
 		echo "<input type='hidden' name='rs_editing_user_groups' value='1' />";

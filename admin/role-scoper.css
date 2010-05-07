@@ -146,6 +146,10 @@ color: blue;
 color: #0a0;	
 }
 
+.rs-red, .rs-red a, .rs-red a:link, .rs-red a:visited {
+color: red;	
+}
+
 .rs-role-tbl th a {
 color: #bbb;	
 text-decoration: none;
@@ -738,4 +742,33 @@ font-weight: bold;
 
 #parent_id {
 width: 100%;
+}
+
+#userprofile_groupsdiv_rs button {
+	margin-top: 0.5em;
+}
+
+button.rs_add {
+	background-color: #8e8;	
+}
+
+button.rs_approve {
+	background-color: #8e8;	
+}
+
+button.rs_remove {
+	background-color: #e88;	
+}
+
+#to2_0, #to2_1, #to2_2, #to1_0, #to1_1, #to1_2 {
+	width: 6em;
+}
+
+#allTo2_0, #allTo2_1, #allTo2_2, #allTo1_0, #allTo1_1, #allTo1_2 {
+	width: 2.5em;
+}
+
+
+#to1_0, #to1_1, #to1_2 {
+	margin-top: 0.5em;
 }

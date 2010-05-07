@@ -2,7 +2,7 @@
 
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-	
+
 // link category roles, restrictions are only for bookmark management
 global $scoper;
 if ( $scoper->data_sources->is_member('link') )
@@ -348,7 +348,8 @@ class ScoperAdminHardway_Ltd {
 					$page_temp = get_post( $object_id );
 
 				if ( empty($page_temp) || ! isset($page_temp->post_parent) || $page_temp->post_parent ) {
-					$output = ScoperAdminUI::dropdown_pages();
+					require_once( SCOPER_ABSPATH . '/hardway/hardway-parent_rs.php');
+					$output = ScoperHardwayParent::dropdown_pages();
 					echo $output;
 				}
 				$query = "SELECT ID, post_parent FROM $posts WHERE 1=2";

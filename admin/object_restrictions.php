@@ -24,7 +24,7 @@ if ( empty($role_bases) )
 	
 $otype = $scoper->data_sources->member_property($src_name, 'object_types', $object_type);
 	
-require_once('admin_ui_lib_rs.php');
+require_once( SCOPER_ABSPATH . '/hardway/hardway-parent_rs.php');
 require_once( 'admin-bulk_rs.php' );
 $role_assigner = init_role_assigner();
 	
@@ -60,9 +60,10 @@ if ( scoper_get_option('display_hints') ) {
 	
 	$link_open = "<a href='admin.php?page=rs-$object_type-roles'>";
 	
-	$tx_names = $scoper->data_sources->member_property($src_name, 'uses_taxonomies');
-	if ( $tx_names && (1 == count($tx_names) ) && scoper_get_otype_option('use_term_roles', $src_name, $object_type) ) {
-		$tx_display = $scoper->taxonomies->member_property( current($tx_names), 'display_name' );
+	$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
+
+	if ( $uses_taxonomies && (1 == count($uses_taxonomies) ) ) {
+		$tx_display = $scoper->taxonomies->member_property( current($uses_taxonomies), 'display_name' );
 		printf(__('Reduce access to a specific %1$s by requiring some role(s) to be %2$s%3$s-assigned%4$s. Corresponding WP-assigned Roles and RS-assigned General and %5$s Role assignments are ignored.', 'scoper'), $display_name, $link_open, $display_name, '</a>', $tx_display);
 	} elseif ( count($tx_names) > 1 )
 		printf(__('Reduce access to a specific %1$s by requiring some role(s) to be %2$s%3$s-assigned%4$s. Corresponding WP-assigned Roles and RS-assigned General and Section Role assignments are ignored.', 'scoper'), $display_name, $link_open, $display_name, '</a>');
@@ -145,7 +146,7 @@ $listed_objects = ScoperAdminBulk::get_objects_info($object_ids, $object_names, 
 if ( $col_parent ) {
 	if ( $listed_objects ) {
 		if ( $unlisted_objects ) // query for any parent objects which don't have their own role assignments
-			$listed_objects = ScoperAdminUI::add_missing_parents($listed_objects, $unlisted_objects, $col_parent);
+			$listed_objects = ScoperHardwayParent::add_missing_parents($listed_objects, $unlisted_objects, $col_parent);
 
 		// convert keys from object ID to title+ID so we can alpha sort them
 		$listed_objects_alpha = array();
@@ -154,7 +155,7 @@ if ( $col_parent ) {
 
 		uksort($listed_objects_alpha, "strnatcasecmp");
 
-		$listed_objects = ScoperAdminUI::order_by_hierarchy($listed_objects_alpha, $col_id, $col_parent);
+		$listed_objects = ScoperHardwayParent::order_by_hierarchy($listed_objects_alpha, $col_id, $col_parent);
 	} // endif any listed objects
 	
 } else { // endif doing object hierarchy

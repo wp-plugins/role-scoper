@@ -107,6 +107,8 @@ class ScoperEditListingFilters {
 		}
 	}
 	
+	// Quick Edit provides access to some properties which some content-specific editors should not modify (Page parent, post/page visibility and status)
+	// For now, avoid this complication and filtering overhead by turning off Quick Edit for users lacking blog-wide edit_others capability
 	function act_maybe_hide_quickedit() {
 		global $current_user, $scoper;
 

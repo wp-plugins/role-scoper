@@ -9,7 +9,7 @@ require_once('db-config_rs.php');
  * role-scoper.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  */
 if ( ! class_exists('WP_Scoped_User') ) {
@@ -27,6 +27,10 @@ class WP_Scoped_User extends WP_User {
 		
 		$this->WP_User($id, $name);
 		
+		// without this, logged users have no read access to blogs they're not registered for
+		if ( IS_MU_RS && $id && ! is_admin() && empty( $this->allcaps ) )
+			$this->caps['subscriber'] = true;
+
 		// initialize blog_roles arrays
 		$this->assigned_blog_roles[ANY_CONTENT_DATE_RS] = array();
 		$this->blog_roles[ANY_CONTENT_DATE_RS] = array();
@@ -39,7 +43,8 @@ class WP_Scoped_User extends WP_User {
 		$defaults = array( 'disable_user_roles' => false, 'disable_group_roles' => false, 'disable_wp_roles' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
-		
+
+		/*
 		global $scoper;
 		
 		if ( empty($scoper) || empty($scoper->role_defs) ) {
@@ -55,7 +60,8 @@ class WP_Scoped_User extends WP_User {
 
 			//log_mem_usage_rs( 'Scoped User: new Scoper' );
 		}
-		
+		*/
+
 		if ( $this->ID ) {
 			if ( ! $disable_wp_roles ) {
 				// include both WP roles and custom caps, which are treated as a hidden single-cap role capable of satisfying single-cap current_user_can calls
@@ -88,11 +94,11 @@ class WP_Scoped_User extends WP_User {
 					}
 				}
 
-				$this->merge_scoped_blogcaps();
+				//$this->merge_scoped_blogcaps();
 			}
-			
-			foreach ( array_keys($this->assigned_blog_roles) as $date_key )
-				$this->blog_roles[$date_key] = $scoper->role_defs->add_contained_roles( $this->assigned_blog_roles[$date_key] );
+
+			//foreach ( array_keys($this->assigned_blog_roles) as $date_key )
+			//	$this->blog_roles[$date_key] = $scoper->role_defs->add_contained_roles( $this->assigned_blog_roles[$date_key] );
 			
 			// note: The allcaps property still governs current_user_can calls when the cap requirements do not pertain to a specific object.
 			// If WP roles fail to provide all required caps, the Role Scoper has_cap filter validate the current_user_can check 
@@ -163,6 +169,16 @@ class WP_Scoped_User extends WP_User {
 
 	// can be called statically by external modules
 	function get_groups_for_user( $user_id, $args = '' ) {
+		if ( empty($args['status']) )
+			$status = 'active';
+		elseif ( 'any' == $args['status'] ) {
+			$args['no_cache'] = true;
+			$status = '';
+		} else {
+			$args['no_cache'] = true;
+			$status = $args['status'];
+		}
+	
 		if ( empty($args['no_cache']) ) {
 			$cache = wpp_cache_get($user_id, 'group_membership_for_user');
 			if ( is_array($cache) )
@@ -173,18 +189,20 @@ class WP_Scoped_User extends WP_User {
 		
 		if ( ! $wpdb->user2group_rs )
 			return array();
+			
+		$status_clause = ( $status ) ? "AND status = '$status'" : '';	
 
-		$query = "SELECT $wpdb->user2group_gid_col FROM $wpdb->user2group_rs WHERE $wpdb->user2group_uid_col = '$user_id' ORDER BY $wpdb->user2group_gid_col";
+		$query = "SELECT $wpdb->user2group_gid_col FROM $wpdb->user2group_rs WHERE $wpdb->user2group_uid_col = '$user_id' $status_clause ORDER BY $wpdb->user2group_gid_col";
 		if ( ! $user_groups = scoper_get_col($query) )
 			$user_groups = array();
-		
+
 		// include WP metagroup(s) for WP blogrole(s)
 		$metagroup_ids = array();
 		if ( ! empty($args['metagroup_roles']) ) {
 			foreach ( array_keys($args['metagroup_roles']) as $role_handle )
 				$metagroup_ids []= 'wp_role_' . str_replace( 'wp_', '', $role_handle );
 		}
-		
+
 		if ( $metagroup_ids ) {
 			$meta_id_in = "'" . implode("', '", $metagroup_ids) . "'";
 
@@ -201,7 +219,7 @@ class WP_Scoped_User extends WP_User {
 
 			wpp_cache_set($user_id, $user_groups, 'group_membership_for_user');
 		}
-	
+
 		return $user_groups;
 	}
 	
@@ -215,7 +233,7 @@ class WP_Scoped_User extends WP_User {
 		
 		if ( ! empty($this->assigned_blog_roles) )
 			$args['metagroup_roles'] = $this->assigned_blog_roles[ANY_CONTENT_DATE_RS];
-
+			
 		$user_groups = WP_Scoped_User::get_groups_for_user( $this->ID, $args );
 		
 		return $user_groups;
@@ -346,8 +364,9 @@ class WP_Scoped_User extends WP_User {
 		global $scoper;
 					
 		foreach( array_keys($this->assigned_blog_roles[ANY_CONTENT_DATE_RS]) as $role_handle ) {
-			$role_spec = scoper_explode_role_handle($role_handle);
 			
+			$role_spec = scoper_explode_role_handle($role_handle);
+
 			if ( ! empty($role_spec->role_type) && ( 'rs' == $role_spec->role_type ) && $scoper->role_defs->is_member($role_handle) )
 				$this->allcaps = array_merge($this->allcaps, $scoper->role_defs->role_caps[$role_handle]);
 		}
@@ -386,7 +405,7 @@ function is_administrator_rs( $src_or_tx = '', $admin_type = 'content', $user = 
 			if ( $obj )
 				$src_or_tx = $obj;
 		}
-		
+
 		if ( ! in_array( $src_or_tx->name, array( 'post', 'category', 'term', 'link', 'group' ) ) ) {
 		
 			if ( ! empty($src_or_tx->defining_module_name) ) {

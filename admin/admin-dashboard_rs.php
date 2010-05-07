@@ -27,10 +27,15 @@ function scoper_right_now_pending() {
 	
 			$num = number_format_i18n( $num_pages->pending );
 			$text = _n( 'Pending Page', 'Pending Pages', intval($num_pages->pending), 'scoper' );
-	
-			$num = "<a href='edit-pages.php?post_status=pending'><span class='pending-count'>$num</span></a>";
-			$text = "<a class='waiting' href='edit-pages.php?post_status=pending'>$text</a>";
-	
+
+			if ( awp_ver('3.0-dev') ) {
+				$num = "<a href='edit.php?post_type=page&post_status=pending'><span class='pending-count'>$num</span></a>";
+				$text = "<a class='waiting' href='edit.php?post_type=page&post_status=pending'>$text</a>";
+			} else {
+				$num = "<a href='edit-pages.php?post_status=pending'><span class='pending-count'>$num</span></a>";
+				$text = "<a class='waiting' href='edit-pages.php?post_status=pending'>$text</a>";
+			}
+			
 			echo '<td class="first b b_pages b-waiting">' . $num . '</td>';
 			echo '<td class="t posts">' . $text . '</td>';
 			echo '<td class="b"></td>';

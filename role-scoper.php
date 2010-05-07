@@ -3,15 +3,15 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.1.7
+Version: 1.2.beta.1
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
-Min WP Version: 2.5
+Min WP Version: 2.6
 License: GPL version 2 - http://www.opensource.org/licenses/gpl-license.php
 */
 
 /*
-Copyright (c) 2009, Kevin Behrens.
+Copyright (c) 2010, Kevin Behrens.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,7 +30,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 	
-	
+if ( strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/index-extra.php' ) || strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/update.php' ) )
+	return;
+
 if ( defined( 'SCOPER_VERSION' ) ) {
 	// don't allow two copies of RS to run simultaneously
 	if ( is_admin() && strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/plugins.php' ) && ! strpos( urldecode($_SERVER['REQUEST_URI']), 'deactivate' ) ) {
@@ -42,9 +44,8 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-
-define ('SCOPER_VERSION', '1.1.7');
-define ('SCOPER_DB_VERSION', '1.1.1');
+define ('SCOPER_VERSION', '1.2.beta.1');
+define ('SCOPER_DB_VERSION', '1.1.2');
 
 define( 'ENABLE_PERSISTENT_CACHE', true );
 
@@ -71,7 +72,6 @@ To disable caching of the pages / categories listing, add the following lines to
 	define( 'SCOPER_NO_PAGES_CACHE', true );
 	define( 'SCOPER_NO_TERMS_CACHE', true );
 */
-
 
 // avoid lockout in case of editing plugin via wp-admin
 if ( defined('RS_DEBUG') && is_admin() && ( strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugin-editor.php' ) || strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugins.php' ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'activate' ) )
@@ -135,7 +135,10 @@ if ( ! defined('WP_CONTENT_URL') )
 if ( ! defined('WP_CONTENT_DIR') )
 	define( 'WP_CONTENT_DIR', str_replace('\\', '/', ABSPATH) . 'wp-content' );
 
-define ('SCOPER_ABSPATH', WP_CONTENT_DIR . '/plugins/' . SCOPER_FOLDER);
+if ( defined('WP_PLUGIN_DIR') )
+	define ('SCOPER_ABSPATH', WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . basename(SCOPER_FOLDER) );
+else
+	define ('SCOPER_ABSPATH', WP_CONTENT_DIR . '/plugins/' . SCOPER_FOLDER);
 
 define ('ANON_ROLEHANDLE_RS', 'wp_public_reader');
 
@@ -162,6 +165,18 @@ global $wpdb;
 global $scoper_role_types;
 $scoper_role_types = array('rs', 'wp', 'wp_cap');
 
+$bail = 0;
+
+if ( awp_ver( '2.7' ) ) {	// older db servers running on WP < 2.7 will have to fail silently because the has_cap check was introduced in 2.7
+	if ( ! $wpdb->has_cap( 'subqueries' ) ) {
+		rs_notice('Sorry, this version of Role Scoper requires a database server that supports subqueries (such as MySQL 4.1+).  Please upgrade your server or deactivate Role Scoper.');
+		$bail = 1;
+	}
+} elseif ( ! awp_ver('2.6') ) {
+	rs_notice('Sorry, this version of Role Scoper requires WordPress 2.6 or higher.  Please upgrade Wordpress or deactivate Role Scoper.  If you must run WP 2.2 - 2.5, try <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 0.9</a>.');
+	$bail = 1;	
+}
+
 if ( is_admin() || defined('XMLRPC_REQUEST') ) {
 	// Early bailout for problematic 3rd party plugin ajax calls
 	if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-wall-ajax.php') )
@@ -170,23 +185,11 @@ if ( is_admin() || defined('XMLRPC_REQUEST') ) {
 	// skip WP version check and init operations when a WP plugin auto-update is in progress
 	if ( false !== strpos($_SERVER['SCRIPT_NAME'], 'update.php') )
 		return;
-} else {
+} elseif ( ! $bail ) {
 	require_once('feed-interceptor_rs.php'); // must define get_currentuserinfo early
 }
 
 //log_mem_usage_rs( 'initial requires' );
-
-$bail = 0;
-
-if ( ! $wpdb->has_cap( 'subqueries' ) ) {
-	rs_notice('Sorry, this version of Role Scoper requires a database server that supports subqueries (such as MySQL 4.1+).  Please upgrade your server or deactivate Role Scoper.');
-	$bail = 1;
-}
-
-if ( ! awp_ver('2.5') ) {
-	rs_notice('Sorry, this version of Role Scoper requires WordPress 2.5.0 or higher.  Please upgrade Wordpress or deactivate Role Scoper.  If you must run WP 2.2 or 2.3, try <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 0.9</a>.');
-	$bail = 1;
-}
 
 // If someone else plugs set_current_user, we're going to take our marbles and go home - but first make sure they can't play either.
 // set_current_user() is a crucial entry point to instantiate extended class WP_Scoped_User and set it as global current_user.

@@ -331,7 +331,7 @@ class ScoperRoleAssigner
 
 				scoper_query($qry);
 			}
-			
+
 			if ( $agents || $propagate_agents )
 				$this->insert_role_assignments($scope, $role_handle, $src_or_tx_name, $item_id, $col_ug_id, $agents, $propagate_agents, $args );
 		} // end foreach roles

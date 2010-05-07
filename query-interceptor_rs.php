@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * query-interceptor_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  */
 
@@ -42,8 +42,6 @@ class QueryInterceptor_RS
 		
 		// filter args: $item, $src_name, $object_type, $args (note: to customize other args, filter must be called directly)
 		
-		//add_filter('objects_distinct_rs', array($this, 'flt_objects_distinct'), 50);
-		//add_filter('objects_join_rs', array($this, 'flt_objects_join'), 2, 4);
 		add_filter('objects_where_rs', array(&$this, 'flt_objects_where'), 2, 4);
 		add_filter('objects_request_rs', array(&$this, 'flt_objects_request'), 2, 4);
 		add_filter('objects_results_rs', array(&$this, 'flt_objects_results'), 50, 4);
@@ -251,28 +249,29 @@ class QueryInterceptor_RS
 		
 		// TODO: abstract this
 		if ( strpos( $request, "post_type = 'attachment'" ) ) {
-			// The listed objects are attachments, so query filter is based on objects they inherit from
-			global $wpdb;
-			// filter attachments on upload page by inserting a scoped subquery based on user roles on the post/page attachment is tied to
-			$rs_where = $this->flt_objects_where('', $src_name, $object_types, $args);
-			$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
-			
-			if ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS ) {
-				$author_clause = '';
-
-				if ( is_admin() ) {
-					// optionally hide other users' unattached uploads, but not from blog-wide Editors
-					global $current_user;
-					if ( ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) ) && ! scoper_get_option( 'admin_others_unattached_files' ) )
-						$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-				}
+			if ( ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {
+				// The listed objects are attachments, so query filter is based on objects they inherit from
+				global $wpdb;
+				// filter attachments on upload page by inserting a scoped subquery based on user roles on the post/page attachment is tied to
+				$rs_where = $this->flt_objects_where('', $src_name, $object_types, $args);
+				$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
 				
-				$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
-			} else
-				$unattached_clause = '';
-			
-			$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( $wpdb->posts.post_type = 'attachment' AND ( $unattached_clause $wpdb->posts.post_parent IN ($subqry) ) )", $request);
-		
+				if ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS ) {
+					$author_clause = '';
+	
+					if ( is_admin() ) {
+						// optionally hide other users' unattached uploads, but not from blog-wide Editors
+						global $current_user;
+						if ( ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) ) && ! scoper_get_option( 'admin_others_unattached_files' ) )
+							$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+					}
+					
+					$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
+				} else
+					$unattached_clause = '';
+				
+				$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( $wpdb->posts.post_type = 'attachment' AND ( $unattached_clause $wpdb->posts.post_parent IN ($subqry) ) )", $request);
+			}
 		} else {
 			// used by objects_where_scope_clauses() to determine whether to add a subselect or make use of existing JOIN	
 			$args['join'] = ( $pos_where ) ? substr( $request, 0, $pos_where + 1 ) : '';
@@ -292,7 +291,9 @@ class QueryInterceptor_RS
 				$request = substr($request, 0, $pos_where) . ' ' . $rs_join . ' WHERE 1=1 ' . $rs_where; // any pre-exising join clauses remain in $request
 			*/
 		}
-	
+
+		//d_echo( $request . '<br /><br />' );
+		
 		return $request;
 	}
 	
@@ -414,8 +415,8 @@ class QueryInterceptor_RS
 		$tease_otypes = $this->_get_teaser_object_types($src_name, $object_types, $args);
 		$tease_otypes = array_intersect($object_types, $tease_otypes);
 		
-		if ( empty($src->uses_taxonomies) )
-			$use_term_roles = false;
+		//if ( empty($src->uses_taxonomies) )
+		//	$use_term_roles = false;
 
 		if ( ! empty($src->no_object_roles) )
 			$use_object_roles = false;
@@ -436,10 +437,10 @@ class QueryInterceptor_RS
 				else
 					return $where;
 			}
-			
+
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
 		}
-		
+
 		// accomodate editing of published posts/pages to revision
 		$script_name = $_SERVER['SCRIPT_NAME'];
 		$revision_uris = apply_filters( 'scoper_revision_uris', array( 'p-admin/edit.php', 'p-admin/edit-pages.php', 'p-admin/widgets.php' ) );
@@ -655,7 +656,7 @@ class QueryInterceptor_RS
 				if ( 'trash' == $status_name )	// in wp-admin, we need to include trash posts for the count query, but not for the listing query unless trash status is requested
 					if ( ! strpos($scoper->last_request[$src_name], 'COUNT') && ( empty( $_GET['post_status'] ) || ( 'trash' != $_GET['post_status'] ) ) )
 						continue;
-
+		
 				if ( $is_administrator )
 					$status_where[$status_name][$object_type] = '1=1';
 				elseif ( empty($skip_teaser) && in_array($object_type, $tease_otypes) )
@@ -666,9 +667,7 @@ class QueryInterceptor_RS
 				else {
 					// filter defs for otypes which don't define a status will still have a single status element with value ''
 					$clause = $this->objects_where_role_clauses($src_name, $reqd_caps, $args);
-					
-					//dump($clause);
-					
+
 					if ( empty($clause) || ( '1=2' == $clause ) )	// this means no qualifying roles are available
 						$status_where[$status_name][$object_type] = '1=2';
 						
@@ -1057,10 +1056,15 @@ class QueryInterceptor_RS
 			// taxonomies arg is for limiting; default is to include all associated taxonomies in where clause
 			if ( $taxonomies )
 				$taxonomies = (array) $taxonomies;  // don't do array_intersect with uses_taxonomies here because flt_terms_where will call with src_name=taxonomy source (which does not itself have a uses_taxonomies property)
-			else
-				$taxonomies = $src->uses_taxonomies;
+			else {
+				if ( $use_term_roles )
+					$taxonomies = array_keys($use_term_roles);
+				else
+					$taxonomies = array();
+				//$taxonomies = $src->uses_taxonomies;
+			}
 		}
-		
+
 		$user_blog_roles = array( '' => array() );
 		
 		if ( $use_blog_roles ) {
@@ -1392,8 +1396,12 @@ class QueryInterceptor_RS
 	
 	// currently only used to conditionally launch teaser filtering
 	function flt_objects_results($results, $src_name, $object_types, $args = '') {
+		if ( ! $object_types || ( is_array($object_types) && count($object_types) > 1 ) )
+			$object_type = awp_post_type_from_uri();
+		else
+			$object_type = intval( $object_types );
 
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/edit-pages.php') && ! is_content_administrator_rs() ) {
+		if ( ( 'page' == $object_type ) && ! is_content_administrator_rs() ) {
 			// ScoperAncestry class is loaded by hardway_rs.php
 			$ancestors = ScoperAncestry::get_page_ancestors(); // array of all ancestor IDs for keyed page_id, with direct parent first
 

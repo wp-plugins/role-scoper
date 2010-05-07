@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * role-scoper_main.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  */
 class Scoper
@@ -80,15 +80,16 @@ class Scoper
 			foreach ( $this->role_defs->get_all_keys() as $role_handle ) {
 				if ( ! empty($this->role_defs->members[$role_handle]->objscope_equivalents) ) {
 					foreach( $this->role_defs->members[$role_handle]->objscope_equivalents as $equiv_key => $equiv_role_handle ) {
-						if ( scoper_get_option( "{$equiv_role_handle}_role_objscope" ) ) {	// If "Additional Object Role" option is set for this role, treat it as a regular direct-assigned Object Role
 						
+						if ( scoper_get_option( "{$equiv_role_handle}_role_objscope" ) ) {	// If "Additional Object Role" option is set for this role, treat it as a regular direct-assigned Object Role
+
 							if ( isset($this->role_defs->members[$equiv_role_handle]->valid_scopes) )
 								$this->role_defs->members[$equiv_role_handle]->valid_scopes = array('blog' => 1, 'term' => 1, 'object' => 1);
 	
 							unset( $this->role_defs->members[$role_handle]->objscope_equivalents[$equiv_key] );
 					
-							if ( ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $equiv_role_handle ) )
-								define( 'DISABLE_OBJSCOPE_EQUIV_' . $equiv_role_handle, true );	// prevent Role Caption / Abbrev from being substituted from equivalent role
+							if ( ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) )
+								define( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle, true );	// prevent Role Caption / Abbrev from being substituted from equivalent role
 						}
 					}
 				}
@@ -98,7 +99,7 @@ class Scoper
 			$this->role_defs = apply_filters('define_roles_rs', $this->role_defs);
 			$this->role_defs->remove_invalid(); // currently don't allow additional custom-defined post, page or link roles
 		}
-		
+				
 		// To support merging in of WP role assignments, always note actual WP-defined roles 
 		// regardless of which role type we are scoping with.
 		$this->role_defs->populate_with_wp_roles();
@@ -176,10 +177,8 @@ class Scoper
 		//log_mem_usage_rs( 'data sources' );
 		
 		require_once('taxonomies_rs.php');
-		
 		//log_mem_usage_rs( 'require taxonomies' );
-		
-		$this->taxonomies = new WP_Scoped_Taxonomies( $this->data_sources, scoper_get_option('enable_wp_taxonomies') );
+		$this->taxonomies = new WP_Scoped_Taxonomies( $this->data_sources );
 		$this->taxonomies->add_member_objects( scoper_core_taxonomies() );
 		$this->taxonomies = apply_filters('define_taxonomies_rs', $this->taxonomies);
 		$this->taxonomies->lock();
@@ -193,7 +192,7 @@ class Scoper
 	
 	function init() {
 		//log_mem_usage_rs( 'Scoper->init() start'  );
-		
+
 		scoper_version_check();
 		
 		if ( ! isset($this->data_sources) )
@@ -344,6 +343,9 @@ class Scoper
 			}
 		}
 
+		if ( awp_ver( '2.9' ) )
+			require_once('custom-types-helper_rs.php');
+		
 		if ( ! $disable_queryfilters ) {
 			if ( ! $is_administrator ) {
 				if ( $direct_file_access ) {
@@ -416,8 +418,13 @@ class Scoper
 			
 		} // endif query filtering not disabled for this access type
 
+		if ( scoper_get_option( 'group_ajax' ) && ( isset( $_GET['rs_user_search'] ) || isset( $_GET['rs_group_search'] ) ) ) {
+			require_once( 'admin/user_query_rs.php' );
+			exit;	
+		} 
+
 		do_action( 'scoper_init' );
-		
+			
 		// ===== end Content Filters
 		
 	} // end function init
@@ -512,8 +519,8 @@ class Scoper
 				require_once('admin/admin_lib_rs.php');
 				if ( $src = $this->taxonomies->member_property($taxonomy, 'source') ) {
 					if ( ! empty($src->cols->id) && ! empty($src->cols->parent) ) {
-						require_once('admin/admin_ui_lib_rs.php');
-						$results = ScoperAdminUI::order_by_hierarchy($results, $src->cols->id, $src->cols->parent);
+						require_once( 'hardway/hardway-parent_rs.php');
+						$results = ScoperHardwayParent::order_by_hierarchy($results, $src->cols->id, $src->cols->parent);
 					}
 				}
 			}
@@ -930,8 +937,11 @@ class Scoper
 				
 			$orderby = ( $cols == COL_ID_RS ) ? '' : 'ORDER BY display_name';
 
-			$qry = "SELECT $qcols FROM $wpdb->users $orderby";
-			
+			if ( IS_MU_RS && ! scoper_get_option( 'mu_sitewide_groups' ) && ! defined( 'FORCE_ALL_SITE_USERS_RS' ) )
+				$qry = "SELECT $qcols FROM $wpdb->users INNER JOIN $wpdb->usermeta AS um ON $wpdb->users.ID = um.user_id AND um.meta_key = '{$wpdb->prefix}capabilities' $orderby";
+			else
+				$qry = "SELECT $qcols FROM $wpdb->users $orderby";
+
 			if ( COL_ID_RS == $cols )
 				return scoper_get_col( $qry );
 			else

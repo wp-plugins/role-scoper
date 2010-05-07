@@ -32,7 +32,7 @@ class ScoperRoleStrings {
 				$str = __('Page Reader', 'scoper');
 				break;
 			case 'rs_private_page_reader' :
-				$str = ( OBJECT_UI_RS == $context ) ? __('Page Reader', 'scoper') : __('Private Page Reader', 'scoper');
+				$str = ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ? __('Page Reader', 'scoper') : __('Private Page Reader', 'scoper');
 				break;
 			case 'rs_page_associate' :
 				$str = __('Page Associate', 'scoper');
@@ -61,8 +61,33 @@ class ScoperRoleStrings {
 			case 'rs_group_manager' :
 				$str = __('Group Manager', 'scoper');
 				break;
+			case 'rs_group_moderator' :
+				$str = __('Group Moderator', 'scoper');
+				break;
+			case 'rs_group_applicant' :
+				$str = __('Group Applicant', 'scoper');
+				break;
 			default :
 				$str = '';
+
+				$custom_types = get_post_types( array(), 'object' );
+				
+				foreach( $custom_types as $custype ) {
+					if ( strpos( $role_handle, "_{$custype->name}_" ) ) {
+						if ( strpos( $role_handle, '_editor' ) )
+							$str = ( defined( 'SCOPER_PUBLISHER_CAPTION' ) ) ? sprintf( __( '%s Publisher', 'scoper' ), $custype->singular_label ) : sprintf( __( '%s Editor', 'scoper' ), $custype->singular_label );
+						elseif ( strpos( $role_handle, '_revisor' ) )
+							$str = sprintf( __( '%s Revisor', 'scoper' ), $custype->singular_label );
+						elseif ( strpos( $role_handle, '_author' ) )
+							$str = sprintf( __( '%s Author', 'scoper' ), $custype->singular_label );
+						elseif ( strpos( $role_handle, '_contributor' ) )
+							$str = sprintf( __( '%s Contributor', 'scoper' ), $custype->singular_label );
+						elseif ( false !== strpos( $role_handle, 'private_' ) && strpos( $role_handle, '_reader' ) )
+							$str = ( ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ) ? sprintf( __( '%s Reader', 'scoper' ), $custype->singular_label ) : sprintf( __( 'Private %s Reader', 'scoper' ), $custype->singular_label );
+						elseif ( strpos( $role_handle, '_reader' ) )
+							$str = sprintf( __( '%s Reader', 'scoper' ), $custype->singular_label );
+					}
+				}
 		} // end switch
 		
 		return apply_filters( 'role_display_name_rs', $str, $role_handle );			

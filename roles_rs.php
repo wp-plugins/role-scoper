@@ -128,7 +128,7 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 	
 	function filter_role_handles_by_type($role_handles, $role_type) {
 		$qualifying_handles = array();
-		
+
 		foreach ( array_keys($this->members) as $role_handle)
 			if ( $role_type == $this->members[$role_handle]->role_type )
 				$qualifying_handles []= $role_handle;
@@ -208,8 +208,19 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 	
 		$otype_roles = array();
 		
-		foreach ( array_keys($src->object_types) as $object_type ) {
-			if ( ! $ignore_usage_settings && ! scoper_get_otype_option('use_term_roles', $src->name, $object_type) )
+		if ( ! in_array( $taxonomy, array( 'category', 'post_tag' ) ) && $one_otype_per_role ) {
+			if ( $tx = get_taxonomy( $taxonomy ) )
+				if ( ! empty( $tx->object_type ) )
+					$use_otypes = (array) $tx->object_type;
+		}
+
+		if ( empty( $use_otypes ) )
+			$use_otypes = array_keys($src->object_types);
+
+		foreach ( $use_otypes as $object_type ) {
+			$use_term_roles = scoper_get_otype_option('use_term_roles', $src->name, $object_type);
+			
+			if ( ( ! $ignore_usage_settings && ! $use_term_roles ) || empty( $use_term_roles[$taxonomy] ) )
 				continue;
 
 			if ( $roles = $this->get_matching( SCOPER_ROLE_TYPE, $src->name, $object_type ) ) {
@@ -220,7 +231,7 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 				$otype_roles[$object_type] = $roles;
 			}
 		}
-			
+
 		//note: term roles are defined with src_name property corresponding to their object source (i.e. manage_categories has src_name 'post')
 		if ( $taxonomy ) {
 			if ( $roles = $this->get_matching( SCOPER_ROLE_TYPE, $src->name, $taxonomy, array(OP_ADMIN_RS) ) ) {
@@ -232,7 +243,7 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 					$otype_roles[$taxonomy] = $roles;	
 			}
 		}
-		
+
 		return $otype_roles;
 	}
 	
@@ -284,9 +295,9 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 	}
 	
 	function get_containing_roles($role_handle, $role_type = '') {
-		if ( ! isset($this->role_caps[$role_handle]) )
+		if ( ! isset($this->role_caps[$role_handle]) || ! is_array($this->role_caps[$role_handle]) )
 			return array();
-		
+
 		$containing_roles = array();
 		foreach ( array_keys($this->role_caps) as $other_role_handle )
 			if ( $other_role_handle != $role_handle )
@@ -311,14 +322,13 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		$contained_roles = array();
 
 		foreach ( $role_handles as $role_handle ) {
-			if ( ! isset($this->role_caps[$role_handle]) )
+			if ( ! isset($this->role_caps[$role_handle]) || ! is_array($this->role_caps[$role_handle]) )
 				continue;
-		
+
 			foreach ( array_keys($this->role_caps) as $other_role_handle ) {
-				if ( ($other_role_handle != $role_handle) || $include_this_role )
-					if ( ! array_diff_key($this->role_caps[$other_role_handle], $this->role_caps[$role_handle]) )
-						if ( $this->role_caps[$other_role_handle] ) { // don't take credit for including roles that have no pertinent caps
-							
+				if ( ( ($other_role_handle != $role_handle) || $include_this_role ) )
+					if ( $this->role_caps[$other_role_handle] ) // don't take credit for including roles that have no pertinent caps
+						if ( ! array_diff_key($this->role_caps[$other_role_handle], $this->role_caps[$role_handle]) ) {
 							// don't count Post Reader as being contained by Page roles, and vice versa	
 							$ambiguous_roles = array( 'post' => 'rs_post_reader', 'page' => 'rs_page_reader' );
 							if ( in_array( $other_role_handle, $ambiguous_roles ) ) {
@@ -396,12 +406,15 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		foreach ( $keys as $role_name ) {
 			$role = $wp_roles->role_objects[$role_name];
 			
-			// remove any WP caps which are in array, but have value = false
-			$caps = array_intersect($role->capabilities, array(true) );
+			if ( is_array( $role->capabilities ) ) {
+				// remove any WP caps which are in array, but have value = false
+				$caps = array_intersect( $role->capabilities, array(true) );
 			
-			// we only care about WP caps that are RS-defined
-			if ( $caps && is_array($caps) )
-				$caps = array_intersect_key($caps, array_flip($this->cap_defs->get_all_keys()) );
+				// we only care about WP caps that are RS-defined
+				if ( $caps && is_array($caps) )
+					$caps = array_intersect_key( $caps, array_flip($this->cap_defs->get_all_keys() ) );
+			} else
+				$caps = array();
 
 			$this->add( $role_name, 'wordpress', '', '', 'wp' );
 

@@ -2,6 +2,9 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
+if ( awp_ver( '2.9' ) )
+	require_once('custom-types_rs.php');
+
 /**
  * functions for the WordPress plugin Role Scoper
  * defaults_rs.php
@@ -17,7 +20,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * Note: for performance, default config mirrors Class definitions using stdObject cast from array
  *
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  */
  
@@ -25,12 +28,14 @@ function scoper_default_options() {
 	$def = array(
 		'persistent_cache' => 1,
 		'define_usergroups' => 1,
+		'group_ajax' => 1,
+		'group_requests' => 0,
+		'group_recommendations' => 0,
 		'enable_group_roles' => 1,
 		'enable_user_roles' => 1,
 		'role_type' => 'rs',
 		/*'rs_blog_roles' => 1, */
 		'custom_user_blogcaps' => 0,
-		'enable_wp_taxonomies' => array(), /* NOTE: category and link_category taxonomies are always enabled by hardcode (but their roles/restrictions can be disabled via otype option) */
 		'user_role_caps' => array(),	/* NOTE: "user" here does not refer to WP user account(s), but to the user of the plugin.  The option value adds capabilities to RS Role Definitions, and would have been better named "custom_role_caps"  */
 		'disabled_role_caps' => array(),
 		'disabled_access_types' => array(),
@@ -42,7 +47,7 @@ function scoper_default_options() {
 		'display_hints' => 1,
 		'hide_non_editor_admin_divs' => 1,
 		'role_admin_blogwide_editor_only' => 0,
-		'feed_link_http_auth' => 'logged',
+		'feed_link_http_auth' => 0,
 		'rss_private_feed_mode' => 'title_only',
 		'rss_nonprivate_feed_mode' => 'full_content',
 		'feed_teaser' => "View the content of this <a href='%permalink%'>article</a>",
@@ -79,7 +84,7 @@ function scoper_po_trigger( $string ) {
 	return $string;	
 }
 
-function scoper_default_otype_options() {
+function scoper_default_otype_options( $include_custom_types = true ) {
 	$def = array();
 
 	//------------------------ DEFAULT OBJECT TYPE OPTIONS ---------------------		
@@ -129,9 +134,9 @@ function scoper_default_otype_options() {
 	$def['admin_css_ids'] ['post:post'] = 'password-span; slugdiv; authordiv; commentstatusdiv; trackbacksdiv; postcustom; revisionsdiv';
 	$def['admin_css_ids'] ['post:page'] = 'password-span; pageslugdiv; pageauthordiv; pageparentdiv; pagecommentstatusdiv; pagecustomdiv; revisionsdiv';
 	
-	$def['use_term_roles']['post:post'] = 1;
-	$def['use_term_roles']['post:page'] = 0;  // Wordpress core does not categorize pages by default
-	$def['use_term_roles']['link:link'] = 1;
+	$def['use_term_roles']['post:post']['category'] = 1;
+	$def['use_term_roles']['post:page']['category'] = 0;  // Wordpress core does not categorize pages by default
+	$def['use_term_roles']['link:link']['link_category'] = 1;
 	
 	$def['use_object_roles']['post:post'] = 1;
 	$def['use_object_roles']['post:page'] = 1;
@@ -156,6 +161,32 @@ function scoper_default_otype_options() {
 	$def['object_roles_column']['post:post'] = 1;
 	$def['object_roles_column']['post:page'] = 1;
 
+	if ( $include_custom_types && awp_ver( '2.9' ) ) {
+		$post_types = get_post_types();
+		$custom_types = array_diff( $post_types, array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' ) );
+
+		foreach ( $custom_types as $name )
+			$def['use_object_roles']["post:{$name}"] = 0;
+
+		// note: WP 3.0 introduced function get_taxonomies
+		global $wp_taxonomies;
+		$core_taxonomies = array( 'category', 'link_category', 'nav_menu', 'ngg_tag' );
+		
+		foreach ( $wp_taxonomies as $wtx ) {
+			if ( ! in_array( $wtx->name, $core_taxonomies ) ) {
+				$_object_types = (array) $wtx->object_type;
+				foreach( $_object_types as $object_type ) {
+					if ( in_array( $object_type, $post_types ) )
+						$src_name = 'post';
+					else
+						$src_name = $object_type;
+
+					$def['use_term_roles']["{$src_name}:{$object_type}"][$wtx->name] = 0;
+				}
+			}
+		}
+	}
+	
 	return $def;
 }
 
@@ -170,7 +201,7 @@ function scoper_core_access_types() {
 	return $arr;	
 }
 
-function scoper_core_data_sources() {
+function scoper_core_data_sources( $include_custom_types = true ) {
 	global $wpdb;
 
 	$arr = array();
@@ -222,8 +253,6 @@ function scoper_core_data_sources() {
 			)
 		),
 
-	'uses_taxonomies' => array( 'category' ),
-
 	'query_hooks' => (object) array( 'request' => 'posts_request', 'results' => 'posts_results', 'listing' => 'the_posts' ),
 	
 	'query_replacements' => array( "OR post_author = [user_id] AND post_status = 'private'" => "OR post_status = 'private'" ),
@@ -260,24 +289,6 @@ function scoper_core_data_sources() {
 				'future' => 	array( 'edit_others_pages' ),
 				'trash' => 		array( 'edit_others_pages' )
 				)
-			),
-		'admin' => array(
-			'post' => array(
-				'published' =>	array( 'delete_others_posts', 'delete_published_posts' ),
-				'private' => 	array( 'delete_others_posts', 'delete_published_posts', 'delete_private_posts' ), 
-				'draft' => 		array( 'delete_others_posts' ),
-				'pending' => 	array( 'delete_others_posts' ),
-				'future' => 	array( 'delete_others_posts' ),
-				'trash' => 		array( 'delete_others_posts' )
-				),
-			'page' => array(
-				'published' => 	array( 'delete_others_pages', 'delete_published_pages' ),
-				'private' => 	array( 'delete_others_pages', 'delete_published_pages', 'delete_private_pages' ), 
-				'draft' => 		array( 'delete_others_pages' ),
-				'pending' => 	array( 'delete_others_pages' ),
-				'future' => 	array( 'delete_others_pages' ),
-				'trash' => 		array( 'delete_others_posts' )
-				)
 			)
 		),
 			
@@ -307,13 +318,17 @@ function scoper_core_data_sources() {
 		),
 	); // end outer array
 
+	// TODO: is this used?
+	$arr['post']->reqd_caps['admin'] = $arr['post']->reqd_caps['edit'];
+	
 	$arr[$name]->query_replacements = array( "OR $wpdb->posts.post_author = [user_id] AND $wpdb->posts.post_status = 'private'" => "OR $wpdb->posts.post_status = 'private'" );
 	
 	// preview supports non-published statuses, but requires edit capability
 	if ( ! empty($_GET['preview']) ) {
 		$arr[$name]->usage->statuses->access_type['front'] = array( 'draft', 'pending', 'future', 'published', 'private' );
-		$arr[$name]->reqd_caps['read']['post'] = array ( 'draft' => array('edit_others_posts'), 'pending' => array('edit_others_posts'), 'future' => array('edit_others_posts'), 'published' => array('edit_others_posts'), 'private' => array('edit_others_posts') );
-		$arr[$name]->reqd_caps['read']['page'] = array ( 'draft' => array('edit_others_pages'), 'pending' => array('edit_others_pages'), 'future' => array('edit_others_pages'), 'published' => array('edit_others_pages'), 'private' => array('edit_others_pages') );
+
+		$arr[$name]->reqd_caps['read']['post'] = array ( 'draft' => array('edit_others_posts'), 'pending' => array('edit_others_posts'), 'future' => array('edit_others_posts'), 'published' => array('read'), 'private' => array('read', 'read_private_posts') );
+		$arr[$name]->reqd_caps['read']['page'] = array ( 'draft' => array('edit_others_pages'), 'pending' => array('edit_others_pages'), 'future' => array('edit_others_pages'), 'published' => array('read'), 'private' => array('read', 'read_private_pages') );
 	}
 	
 	/* Post data source and others following the "save_{src_name}", etc. pattern
@@ -375,7 +390,6 @@ function scoper_core_data_sources() {
 			'id' => 'link_id', 				'name' => 'link_name', 			'type' => '', 
 			'owner' => 'link_owner',		'status' => ''
 			),
-		'uses_taxonomies' => array( 'link_category' ),
 		
 		'query_hooks' => (object) array( 'request' => 'links_request' ),	
 	
@@ -435,11 +449,14 @@ function scoper_core_data_sources() {
 		); // end outer array
 	*/
 	
+	if ( $include_custom_types && awp_ver( '2.9' ) )
+		scoper_add_custom_data_sources( $arr );
+
 	return $arr;
 }
 
 
-function scoper_core_taxonomies() {
+function scoper_core_taxonomies( $include_custom_types = true ) {
 	$arr = array();
 
 	$is_admin = is_admin();
@@ -493,11 +510,13 @@ function scoper_core_taxonomies() {
 		$arr['link_category']->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
 	}
 	
+	if ( $include_custom_types && awp_ver( '2.9' ) )
+		scoper_add_custom_taxonomies( $arr );
+	
 	return $arr;
 }
 
-
-function scoper_core_cap_defs() {
+function scoper_core_cap_defs( $include_custom_types = true ) {
 	$arr = array(
 	'read' =>  					(object) array( 'src_name' => 'post', 'object_type' => '', 'op_type' => OP_READ_RS,			'owner_privilege' => true,	'anon_user_has' => true, 'no_custom_remove' => true  ),
 	
@@ -533,7 +552,10 @@ function scoper_core_cap_defs() {
 	// note: taxonomy caps carry src_name of their associated object source (in this case, post)
 	'manage_categories' =>  	(object) array( 'src_name' => 'post', 'object_type' => 'category', 'op_type' => OP_ADMIN_RS, 'is_taxonomy_cap' => 'category' ),
 	
-	'manage_groups' =>   		(object) array( 'src_name' => 'group', 'object_type' => 'group', 'op_type' => OP_ADMIN_RS, 'no_custom_remove' => true )
+	'manage_groups' =>   		(object) array( 'src_name' => 'group', 'object_type' => 'group', 'op_type' => OP_ADMIN_RS, 'no_custom_remove' => true ),
+	'recommend_group_membership' => (object) array( 'src_name' => 'group', 'object_type' => 'group', 'op_type' => OP_EDIT_RS, 'no_custom_remove' => true ),
+	'request_group_membership' =>  (object) array( 'src_name' => 'group', 'object_type' => 'group', 'op_type' => OP_EDIT_RS, 'no_custom_remove' => true )
+	
 	); // CapDefs array
 	
 	foreach ( array_keys($arr) as $cap_name )
@@ -543,11 +565,14 @@ function scoper_core_cap_defs() {
 	$arr['create_child_pages']->defining_module_name = 'role-scoper';
 	$arr['manage_groups']->defining_module_name = 'role-scoper';
 	
+	if ( $include_custom_types && awp_ver( '2.9' ) )
+		scoper_add_custom_cap_defs( $arr );
+
 	return $arr;
 }
 
 //note: rs_ is a role type prefix which is required for array key, but will be stripped off for name property
-function scoper_core_role_caps() {
+function scoper_core_role_caps( $include_custom_types = true ) {
 	// separate array is friendlier to php array function
 	$arr = array(
 		'rs_post_reader' => array(
@@ -654,14 +679,30 @@ function scoper_core_role_caps() {
 		),
 		
 		'rs_group_manager' => array(
-			'manage_groups' => true
+			'manage_groups' => true,
+			'recommend_group_membership' => true,
+			'request_group_membership' => true
 		)
-		
 	); // end role_caps array
+	
+	//if ( defined( 'USER_QUERY_RS' ) ) {
+		$arr['rs_group_moderator'] = array(
+			'recommend_group_membership' => true,
+			'request_group_membership' => true
+		);
+		
+		$arr['rs_group_applicant'] = array(
+			'request_group_membership' => true
+		);
+	//}
+	
 	
 	if ( ! defined( 'RVY_VERSION' ) )
 		$arr = array_diff_key( $arr, array( 'rs_post_revisor' => 1, 'rs_page_revisor' => 1 ) );
 	
+	if ( $include_custom_types && awp_ver( '2.9' ) )
+		scoper_add_custom_role_caps( $arr );
+		
 	return $arr;
 }
 
@@ -690,7 +731,7 @@ function scoper_supplemental_wp_role_caps() {
 //
 //
 //note: rs_ is a role type prefix which is required for array key, but will be stripped off for name property
-function scoper_core_role_defs() {
+function scoper_core_role_defs( $include_custom_types = true ) {
 	$arr = array(
 	// note: object scope converts 'others' cap requirements to base cap, so for object scope assignment, 'Authors' and 'Editors' are equivalent.  
 	// Define 'Editors' roles for object assignment to avoid ambiguity with WP 'Post Author' / 'Page Author', who may have fewer caps on his object than the scoped "Authors".
@@ -717,10 +758,16 @@ function scoper_core_role_defs() {
 	
 	'rs_group_manager' =>		(object) array()
 	); // end role_defs array
+
+	//if ( defined( 'USER_QUERY_RS' ) ) {
+		$arr['rs_group_moderator'] = (object) array();
+		$arr['rs_group_applicant'] = (object) array();
+	//}
+	
 	
 	if ( ! defined( 'RVY_VERSION' ) )
 		$arr = array_diff_key( $arr, array( 'rs_post_revisor' => 1, 'rs_page_revisor' => 1 ) );
-
+		
 	if ( is_admin() ) {
 		$arr['rs_page_associate']->no_custom_caps = true;
 		
@@ -728,9 +775,12 @@ function scoper_core_role_defs() {
 		$arr['rs_private_page_reader']->other_scopes_check_role = array( 'private' => 'rs_private_page_reader', '' => 'rs_page_reader' );
 	}
 	
+	if ( $include_custom_types && awp_ver( '2.9' ) )
+		scoper_add_custom_role_defs( $arr );
+	
 	foreach ( array_keys($arr) as $key )
 		$arr[$key]->role_type = 'rs';
-	
+
 	return $arr;
 }
 ?>

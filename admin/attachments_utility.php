@@ -43,7 +43,8 @@ function scoper_attach_linked_uploads( $echo = false ) {
 			$num_bites++;
 		
 		$upload_path = $uploads['baseurl'];
-
+		$upload_dir = $uploads['basedir'];
+		
 		if ( $echo ) {
 			printf(__( "<strong>checking %s posts / pages...</strong>", 'scoper' ), $num_posts);
 			echo '<br /><br />';
@@ -85,6 +86,17 @@ function scoper_attach_linked_uploads( $echo = false ) {
 							if ( $echo ) {
 								//printf( _ x( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 								printf( __( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+								echo '<br /><br />';
+							}
+						
+							continue;
+						} 
+						
+						// make sure the linked file actually exists
+						if ( ! file_exists( str_replace( $upload_path, $upload_dir, $file_url ) ) ) {
+							if ( $echo ) {
+								//printf( _ x( '<span class="rs-brown">skipping unfilterable file in %1$s "%2$s":</span> %3$s', 'post_type, post_title, file_url', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
+								printf( __( '<span class="rs-red">skipping missing file in %1$s "%2$s":</span> %3$s', 'scoper' ), __(ucwords($row->post_type)), $row->post_title, $file_url);
 								echo '<br /><br />';
 							}
 						

@@ -3,7 +3,202 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
 class ScoperAdminBulkLib {
+	function role_assignment_list($roles, $agent_names, $checkbox_base_id = '', $role_basis = 'user') {
+		$agent_grouping = array();
+		$agent_list = array();
+		$role_propagated = array();
 
+		 if ( ! $checkbox_base_id )
+			$link_end = '';
+		
+		$date_limits = array();
+			
+		// This would sort entire list (currently grouping by assign_for and alphabetizing each grouping)
+		//$sorted_roles = array();
+		//uasort($agent_names, 'strnatcasecmp');
+		//foreach ( $agent_names as $agent_id => $agent_name )
+		//	$sorted_roles[$agent_id] = $roles[$agent_id];
+		foreach( $roles as $agent_id => $val ) { 
+			if ( $limitation_type = $val['date_limited'] + ( 2 * $val['content_date_limited'] ) )
+				$date_limits[ $agent_id ] = $val;
+			
+			if ( is_array($val) && ! empty($val['inherited_from']) )
+				$role_propagated[$agent_id] = true;
+		
+			if ( is_array($val) && ( 'both' == $val['assign_for'] ) )
+				$agent_grouping[$limitation_type][ASSIGN_FOR_BOTH_RS] [$agent_id]= $agent_names[$agent_id];
+			
+			elseif ( is_array($val) && ( 'children' == $val['assign_for'] ) )
+				$agent_grouping[$limitation_type][ASSIGN_FOR_CHILDREN_RS] [$agent_id]= $agent_names[$agent_id];
+				
+			else
+				$agent_grouping[$limitation_type][ASSIGN_FOR_ENTITY_RS] [$agent_id]= $agent_names[$agent_id];
+		}
+		
+		
+		// display for_entity assignments first, then for_both, then for_children
+		$assign_for_order = array( 'entity', 'both', 'children');
+		
+		$use_agents_csv = scoper_get_option("{$role_basis}_role_assignment_csv");
+		
+		foreach ( array_keys($agent_grouping) as $limitation_type ) {
+			
+			foreach ( $assign_for_order as $assign_for ) {
+				if ( ! isset($agent_grouping[$limitation_type][$assign_for]) )
+					continue;
+					
+				// sort each assign_for grouping alphabetically
+				uasort($agent_grouping[$limitation_type][$assign_for], 'strnatcasecmp');
+				
+				foreach ( $agent_grouping[$limitation_type][$assign_for] as $agent_id => $agent_name ) {
+					// surround rolename with bars to indicated it was inherited
+					$pfx = ( isset($role_propagated[$agent_id]) ) ? '{' : '';
+					$sfx = '';
+					
+					if ( $checkbox_base_id ) {
+						if ( $use_agents_csv )
+							$js_call = "agp_append('{$role_basis}_csv', ', $agent_name');";
+						else
+							$js_call = "agp_check_it('{$checkbox_base_id}{$agent_id}');";
+						
+						$link_end = " href='javascript:void(0)' onclick=\"$js_call\">";
+						$sfx = '</a>';
+					}
+						
+					// surround rolename with braces to indicated it was inherited
+					if ( $pfx )
+						$sfx .= '}';
+					
+					$limit_class = '';
+					$limit_style = '';
+					$link_class = 'rs-link_plain';
+					$title_text = '';
+					
+					if ( $limitation_type ) {
+						ScoperAdminUI::set_agent_formatting( $date_limits[$agent_id], $title_text, $limit_class, $link_class, $limit_style );
+						$title = "title='$title_text'";
+					} else
+						$title = "title='select'";
+
+					switch ( $assign_for ) {
+						case ASSIGN_FOR_BOTH_RS:
+							//roles which are assigned for entity and children will be bolded in list
+							$link = ( $link_end ) ? "<a {$title}{$limit_style}class='{$link_class}{$limit_class}'" . $link_end : '';
+							$agent_list[$limitation_type][ASSIGN_FOR_BOTH_RS] [$agent_id]= $pfx . $link . $agent_name . $sfx;
+					
+						break;
+						case ASSIGN_FOR_CHILDREN_RS:
+							//roles with are assigned only to children will be grayed
+							$link = ( $link_end ) ? "<a {$title}{$limit_style}class='{$link_class} rs-gray{$limit_class}'" . $link_end : '';
+							$agent_list[$limitation_type][ASSIGN_FOR_CHILDREN_RS] [$agent_id]= $pfx . "<span class='rs-gray'>" . $link . $agent_names[$agent_id] . $sfx . '</span>';
+							
+						break;
+						case ASSIGN_FOR_ENTITY_RS:
+							$link = ( $link_end ) ? "<a {$title}{$limit_style}class='{$link_class}{$limit_class}'" . $link_end : '';
+							$agent_list[$limitation_type][ASSIGN_FOR_ENTITY_RS] [$agent_id]= $pfx . $link . $agent_names[$agent_id] . $sfx;
+					}
+				} // end foreach agents
+
+				$agent_list[$limitation_type][$assign_for] = implode(', ', $agent_list[$limitation_type][$assign_for]);
+					
+				if ( ASSIGN_FOR_ENTITY_RS != $assign_for )
+					$agent_list[$limitation_type][$assign_for] = "<span class='rs-bold'>" .  $agent_list[$limitation_type][$assign_for] . '</span>';
+			} // end foreach assign_for
+			
+			$agent_list[$limitation_type] = implode(', ', $agent_list[$limitation_type]);
+		}
+			
+		if ( $agent_list )
+			return implode(', ', $agent_list);
+	}
+	
+	function taxonomy_scroll_links($tx, $terms, $admin_terms = '') {
+		if ( empty($terms) || ( is_array($admin_terms) && empty($admin_terms) ) )
+			return;
+		
+		echo '<strong>' . __('Scroll to current settings:','scoper') . '</strong><br />';	
+			
+		if ( $admin_terms && ! is_array($admin_terms) )
+			$admin_terms = '';
+	
+		$col_id = $tx->source->cols->id;
+		$col_name = $tx->source->cols->name;
+		$col_parent = $tx->source->cols->parent;
+
+		$font_ems = 1.2;
+		$text = '';
+		$term_num = 0;
+
+		$parent_id = 0;
+		$last_id = -1;
+		$last_parent_id = -1;
+		$parents = array();
+		$depth = 0;
+		
+		foreach( $terms as $term ) {
+			$term_id = $term->$col_id;
+			
+			if ( isset($term->$col_parent) )
+				$parent_id = $term->$col_parent;
+
+			if ( ! $admin_terms || ! empty($admin_terms[$term_id]) ) {
+				if ( $parent_id != $last_parent_id ) {
+					if ( ($parent_id == $last_id) && $last_id ) {
+						$parents[] = $last_id;
+						$depth++;
+					} elseif ($depth) {
+						do {
+							array_pop($parents);
+							$depth--;
+						} while ( $parents && ( end($parents) != $parent_id ) && $depth);
+					}
+					
+					$last_parent_id = $parent_id;
+				}
+
+				//echo "term {$term->$col_name}: depth $depth, current parents: ";
+				//dump($parents);
+				
+				if ( $term_num )
+					$text .= ( $parent_id ) ? ' - ' : ' . ';
+					
+				if ( ! $parent_id )
+					$depth = 0;
+				
+				$color_level_b = ($depth < 4) ? 220 - (60 * $depth) : 0;
+				$hexb = dechex($color_level_b);
+				if ( strlen($hexb) < 2 )
+					$hexb = "0" . $hexb;
+				
+				$color_level_g = ($depth < 4) ? 80 + (40 * $depth) : 215;
+				$hexg = dechex($color_level_g);
+				
+				$font_ems = ($depth < 5) ? 1.2 - (0.12 * $depth) : 0.6; 
+				$text .= "<span style='font-size: {$font_ems}em;'><a class='rs-link_plain' href='#item-$term_id'><span style='color: #00{$hexg}{$hexb};'>{$term->$col_name}</span></a></span>";
+			}
+			
+			$last_id = $term_id;
+			$term_num++;
+		}
+		
+		$text .= '<br />';
+		
+		return $text;
+	}
+	
+	function common_ui_msg( $msg_id ) {
+		if ( 'pagecat_plug' == $msg_id ) {
+			$msg = __('Category Roles for WordPress pages are <a %s>disabled for this blog</a>. Object Roles can be assigned to individual pages, and optionally propagated to sub-pages.', 'scoper');
+			echo '<li>';
+			printf( $msg, 'href="admin.php?page=rs-options"');
+			
+			echo ' ';
+			_e('Another option is to categorise pages via the <a>Page&nbsp;Category&nbsp;Plus</a>&nbsp;plugin.', 'scoper');
+
+			echo '</li>';
+		}
+	}
+	
 	// object_array = db results 2D array
 	function order_by_hierarchy($object_array, $col_id, $col_parent, $id_key = false) {
 		$ordered_results = array();

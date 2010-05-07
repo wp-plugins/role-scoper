@@ -46,25 +46,34 @@ class ScoperRewrite {
 	}
 	
 	function build_site_rules() {
-		$new_rules = '';
-
-		require_once( 'uploads_rs.php' );
-
-		$new_rules .= "\n# BEGIN Role Scoper\n";
+		$http_auth = scoper_get_option( 'feed_link_http_auth' );
+		$filtering = IS_MU_RS && scoper_get_option( 'file_filtering' );
 		
-		$new_rules .= "RewriteEngine On\n\n";
-
-		if ( scoper_get_option( 'feed_link_http_auth' ) ) {
-			// workaround for HTTP Authentication with PHP running as CGI
-			$new_rules .= "RewriteCond %{HTTP:Authorization} ^(.*)\n";
-			$new_rules .= "RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]\n";
+		$new_rules = '';
+		
+		if ( $http_auth || $filtering ) {
+			require_once( 'uploads_rs.php' );
+	
+			$new_rules = "\n# BEGIN Role Scoper\n";
+	
+			if ( $http_auth ) {
+				$new_rules .= "RewriteEngine On\n\n";
+				
+				// workaround for HTTP Authentication with PHP running as CGI
+				$new_rules .= "RewriteCond %{HTTP:Authorization} ^(.*)\n";
+				$new_rules .= "RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]\n";
+			}
+		
+			if ( $filtering ) {
+				if ( ! $http_auth )
+					$new_rules .= "RewriteEngine On\n\n";
+				
+				$new_rules .= ScoperRewriteMU::build_blog_file_redirects();
+			}
+			
+			$new_rules .= "\n# END Role Scoper\n\n";
 		}
 	
-		if ( IS_MU_RS && scoper_get_option( 'file_filtering' ) )
-			$new_rules .= ScoperRewriteMU::build_blog_file_redirects();
-		
-		$new_rules .= "\n# END Role Scoper\n\n";
-
 		return $new_rules;
 	}
 
@@ -161,7 +170,18 @@ class ScoperRewrite {
 
 			if ( false !== strpos( $row->guid, $baseurl ) ) {	// no need to include any attachments which are not in the uploads folder
 				$file_path =  str_replace( $baseurl, '', $row->guid );
-				$file_path =  str_replace('.', '\.', $file_path );
+				
+				// escape spaces
+				$file_path =  str_replace( ' ', '\s', $file_path );
+				
+				// escape horiz tabs (yes, at least one user has them in filenames)
+				$file_path =  str_replace( chr(9), '\t', $file_path );
+
+				// strip out all other nonprintable characters.  Affected files will not be filtered, but we avoid 500 error.  Possible TODO: advisory in file attachment utility
+				$file_path =  preg_replace( '/[\x00-\x1f\x7f]/', '', $file_path );
+
+				// escape all other regular expression operator characters
+				$file_path =  preg_replace( '/[\^\$\.\+\[\]\(\)\{\}]/', '\\\$0', $file_path );
 
 				$new_rules .= "RewriteCond %{REQUEST_URI} ^(.*)/$file_path" . "$ [NC]\n";
 				$new_rules .= "RewriteCond %{QUERY_STRING} !^(.*)rs_file_key=$key(.*)\n";

@@ -2,14 +2,61 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
-
+	
 function scoper_version_updated( $prev_version ) {
 		
 	if ( function_exists( 'wpp_cache_flush' ) )
 		wpp_cache_flush();
-		
+
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		// changes to taxonomy options storage in 1.1.8
+		if ( version_compare( $prev_version, '1.1.8', '<') ) {
+			global $wp_taxonomies;
+			
+			$enable_tx = get_option( 'scoper_enable_wp_taxonomies' );
+			$old_use_term_roles = get_option( 'scoper_use_term_roles' );
+			
+			$use_term_roles = array();
+
+			// convert existing use_term_roles entries to new array key structure
+			foreach ( $old_use_term_roles as $src_otype => $val ) {
+				if ( is_array( $val ) ) 	// don't do this twice!
+					break 2;
+				
+				if ( strpos( $src_otype, ':' ) ) {
+					$arr_src_otype = explode(':', $src_otype);
+					$src_name = $arr_src_otype[0];
+
+					if ( 'post' == $src_name )	
+						$use_term_roles[$src_otype]['category'] = intval($val);		// this was the only configuration scenario through 1.1.7
+					elseif( 'link' == $src_name )	
+						$use_term_roles[$src_otype]['link_category'] = intval($val);
+					elseif ( 'ngg_gallery' == $src_name )
+						$use_term_roles[$src_otype]['ngg_album'] = intval($val);
+				}
+			}
+
+			// Post_tag and custom taxonomies were activated for scoping via enable_wp_taxonomies storage.  Move those entries to use_term_roles instead.
+			foreach( $enable_tx as $taxonomy => $val ) {
+				if ( 'post_tag' == $taxonomy )
+					$use_term_roles['post:post'][$taxonomy] = intval($val);
+				elseif ( $taxonomy && ! in_array( $taxonomy, array( 'category', 'link_category' ) ) ) {
+					if ( $wp_tx = get_taxonomy( $taxonomy ) ) {
+						$object_types = (array) $wp_tx->object_type;	
+
+						foreach( $object_types as $object_type )
+							$use_term_roles["post:{$object_type}"][$taxonomy] = intval($val);
+					}	
+				}
+			}
+
+			update_option( 'scoper_use_term_roles', $use_term_roles );
+
+			//delete_option( 'scoper_enable_wp_taxonomies' );
+
+		} else break;
+		
 		if ( version_compare( $prev_version, '1.1', '<') ) {
 			// htaccess rules modified in v1.1
 			scoper_flush_site_rules();

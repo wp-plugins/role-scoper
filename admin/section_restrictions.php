@@ -14,7 +14,6 @@ $is_administrator = is_administrator_rs($tx, 'user');
 if ( ! $scoper->admin->user_can_admin_terms($taxonomy) )
 	wp_die(__awp('Cheatin&#8217; uh?'));
 
-require_once('admin_ui_lib_rs.php');
 require_once( 'admin-bulk_rs.php' );
 $role_assigner = init_role_assigner();
 
@@ -84,7 +83,7 @@ if ( empty($admin_terms) ) {
 wp_nonce_field( $nonce_id );
 
 echo '<br /><div id="rs-term-scroll-links">';
-echo ScoperAdminUI::taxonomy_scroll_links($tx, $all_terms, $admin_terms);
+echo ScoperAdminBulkLib::taxonomy_scroll_links($tx, $all_terms, $admin_terms);
 echo '</div><hr />';
 
 // ============ Assignment Mode Selection Display ================
@@ -116,7 +115,7 @@ $args = array( 'include_child_restrictions' => true, 'return_array' => true, 'ro
 $strict_terms = $scoper->get_restrictions(TERM_SCOPE_RS, $taxonomy, $args );
 //strict_terms[taxonomy][role name][term_id] = array: terms which require Role Scoper assignment for specified role (user blog roles ignored, required caps may be supplied by scoper term role or object-specific assignment)
 											// (for other terms, Role Scoper role assignment is optional (term role assignments will supplement blog caps)
-
+										
 $editable_roles = array();
 foreach ( $all_terms as $term ) {
 	$id = $term->$col_id;
@@ -146,7 +145,7 @@ echo '<hr />';
 echo '<h4 style="margin-bottom:0.1em"><a name="scoper_notes"></a>' . __("Notes", 'scoper') . ':</h4><ul class="rs-notes">';	
 
 if ( ('category' == $taxonomy) && ( ! scoper_get_otype_option('use_term_roles', 'post', 'page') ) )
-	ScoperAdminUI::common_ui_msg( 'pagecat_plug' );
+	ScoperAdminBulkLib::common_ui_msg( 'pagecat_plug' );
 	
 if ( empty($tx->object_source->no_object_roles) ) {
 	echo '<li>';

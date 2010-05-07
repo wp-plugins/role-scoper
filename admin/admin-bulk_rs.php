@@ -2,7 +2,9 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
+require_once('admin_lib-bulk_rs.php' );
 require_once('admin_ui_lib_rs.php');
+require_once( SCOPER_ABSPATH . '/hardway/hardway-parent_rs.php');
 
 class ScoperAdminBulk {
 
@@ -174,7 +176,6 @@ function display_inputs($mode, $assignment_modes, $args = '') {
 		_e('Set Role Duration and/or Content Date Limits (optional)', 'scoper');
 		echo '</h3>';
 
-		include_once( 'admin_lib-bulk_rs.php' );
 		ScoperAdminBulkLib::display_date_limit_inputs( $duration_limits_enabled, $content_date_limits_enabled );
 	}
 
@@ -313,7 +314,7 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 				}
 
 				if ( ROLE_ASSIGNMENT_RS == $mode ) {
-					$args = array( 'force_flush' => true, 'set_role_duration' => $set_role_duration, 'set_content_date_limits' => $set_content_date_limits );
+					$args = array( 'force_flush' => true, 'set_role_duration' => '', 'set_content_date_limits' => '' );
 					
 					if ( $duration_limits_enabled && ! empty($_POST['set_role_duration']) ) {
 						$is_limited = ( $date_entries_gmt->start_date_gmt || ( $date_entries_gmt->end_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['start_date_gmt_keep-timestamp'] ) || ! empty( $_POST['end_date_gmt_keep-timestamp'] ) );
@@ -372,7 +373,7 @@ function get_objects_info($object_ids, &$object_names, &$object_status, &$unlist
 	
 	// buffer titles in case they are translated
 	if ( 'page' == $otype->val )
-		$titles = ScoperAdminUI::get_page_titles();
+		$titles = ScoperHardwayParent::get_page_titles();
 	
 	$col_id = $src->cols->id;
 	$col_name = $src->cols->name;
@@ -462,12 +463,12 @@ function filter_objects_listing($mode, &$role_settings, $src, $object_type) {
 	
 	$qry = "SELECT $src->table.{$src->cols->id} FROM $src->table WHERE 1=1";
 	
-	$filter_args['require_full_object_role'] = true;
+	//$filter_args['require_full_object_role'] = true;
 	$qry_flt = apply_filters('objects_request_rs', $qry, $src->name, $object_type, $filter_args);
 	
 	if ( $cu_admin_results = scoper_get_col( $qry_flt ) )
 		$cu_admin_results = array_fill_keys( $cu_admin_results, true );
-	
+		
 	if ( ROLE_ASSIGNMENT_RS == $mode ) {
 		foreach ( array_keys($role_settings) as $role_basis )
 			foreach ( array_keys($role_settings[$role_basis]) as $obj_id )
@@ -833,7 +834,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 		$last_id = $id;
 		$last_name = $name;
 		$next_id = ( $id && isset($all_items[$key + 1]) ) ? $all_items[$key + 1]->$col_id : 0;
-			
+
 		if (TERM_SCOPE_RS == $scope) {
 			if ( $next_id )
 				$nextlink = "<a{$ie_link_style} href='#item-" . $next_id . "'>" . $nexttext . "</a>";
@@ -859,7 +860,9 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 				. "agp_toggle_display('jump-$id','block');";
 		
 		$role_class = '';
-				
+			
+		
+			
 		if ( $id ) { // never hide defaults block
 			if ( ROLE_ASSIGNMENT_RS == $mode ) {
 				$role_class = '';
@@ -986,7 +989,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 						
 							$assignment_names = array_intersect_key($agent_names[$role_basis], $assigned_roles[$role_basis][$id][$role_handle]);
 							$assignment_list[$role_basis] = "<span class='$role_basis-csv'><span class='rs-bold'>" . $agent_list_prefix[$role_basis] . '</span>'
-							. ScoperAdminUI::role_assignment_list($assigned_roles[$role_basis][$id][$role_handle], $assignment_names, $checkbox_id, $role_basis)
+							. ScoperAdminBulkLib::role_assignment_list($assigned_roles[$role_basis][$id][$role_handle], $assignment_names, $checkbox_id, $role_basis)
 							. '</span>';
 						}
 					}

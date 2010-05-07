@@ -114,7 +114,8 @@ class ScoperAdminHardwayLegacy {
 	
 	// prevents core / legacy strings from being forced into plugin .po
 	function _n_( $single, $plural, $number, $domain = 'default' ) {
-		return _n( $single, $plural, $number, $domain );
+		$args = func_get_args();
+		return call_user_func_array('__ngettext', $args);
 	}
 	
 	// prevents core / legacy strings from being forced into plugin .po

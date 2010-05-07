@@ -22,7 +22,6 @@ if ( GROUP_ROLES_RS && ( $is_administrator || $scoper->admin->user_can_admin_ter
 if ( empty($role_bases) )
 	wp_die(__awp('Cheatin&#8217; uh?'));
 
-require_once('admin_ui_lib_rs.php');
 require_once( 'admin-bulk_rs.php' );
 require_once('role_assignment_lib_rs.php');
 $role_assigner = init_role_assigner();
@@ -103,7 +102,7 @@ if ( empty($admin_terms) ) {
 wp_nonce_field( $nonce_id );
 
 echo '<br /><div id="rs-term-scroll-links">';
-echo ScoperAdminUI::taxonomy_scroll_links($tx, $all_terms, $admin_terms);
+echo ScoperAdminBulkLib::taxonomy_scroll_links($tx, $all_terms, $admin_terms);
 echo '</div><hr />';
 
 // ============ Users / Groups and Assignment Mode Selection Display ================
@@ -199,7 +198,7 @@ if ( ! empty($tx->requires_term) ) {
 }
 
 if ( ('category' == $taxonomy) && ( ! scoper_get_otype_option('use_term_roles', 'post', 'page') ) )
-	ScoperAdminUI::common_ui_msg( 'pagecat_plug' );
+	ScoperAdminBulkLib::common_ui_msg( 'pagecat_plug' );
 
 if ( empty($tx->object_source->no_object_roles) ) {
 	echo '<li>';

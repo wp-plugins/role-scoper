@@ -61,7 +61,10 @@ class ScoperAdminFiltersUI
 			add_filter( 'capabilities_list', array(&$this, 'flt_capabilities_list') );	// capabilities_list is a Role Manager hook
 		
 		//temporary solution to alert user of filtering performed on saved page - see corresponding code in hardway-admin
-		if ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/page-new.php') || strpos($script_name, 'p-admin/edit-pages.php') ) {
+		
+		$object_type = awp_post_type_from_uri();
+		
+		if ( 'page' == $object_type ) {
 			global $current_user;
 			if ( $notice = get_option("scoper_notice_{$current_user->ID}") ) {
 				delete_option( "scoper_notice_{$current_user->ID}" );
@@ -190,9 +193,10 @@ class ScoperAdminFiltersUI
 	}
 
 	function ui_admin_footer() {
-		echo '<span style="float:right; margin-left: 2em"><a href="http://agapetry.net/">' . __('Role Scoper', 'scoper') . '</a> ' . SCOPER_VERSION . ' | ' . '<a href="http://agapetry.net/forum/">' . __('Support Forum', 'scoper') . '</a>&nbsp;</span>';
+		if ( (false !== strpos($_SERVER['HTTP_USER_AGENT'], 'msie 7') ) )
+			echo '<span style="float:right; margin-left: 2em"><a href="http://agapetry.net/">' . __('Role Scoper', 'scoper') . '</a> ' . SCOPER_VERSION . ' | ' . '<a href="http://agapetry.net/forum/">' . __('Support Forum', 'scoper') . '</a>&nbsp;</span>';
 	}
-	
+
 	function ui_user_groups() {
 		if ( ! is_user_administrator_rs() && ! scoper_get_option( 'display_user_profile_groups' ) )
 			return;

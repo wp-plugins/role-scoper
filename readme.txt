@@ -2,8 +2,8 @@
 Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
-Requires at least: 2.5
-Tested up to: 2.9.2
+Requires at least: 2.6
+Tested up to: 3.0
 Stable Tag: 1.1.7
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
@@ -19,32 +19,29 @@ Users of any level can be elevated to read or edit content of your choice.  Rest
 Scoped role restrictions and assignments are reflected in every aspect of the WordPress interface, from front end content and navigation to administrative post and comment totals.  Although Role Scoper provides extreme flexibility and powerful bulk administration forms, basic usage is just a set of user checkboxes in the Post/Page Edit Form.
 
 = Partial Feature List =
-* Customize access for specific Pages, Posts, Categories
-* Control Read and/or Edit access
-* WP roles work as is but can be limited by content-specific restrictions
-* Assign additional content-specific roles to Users or User Groups
-* Assign additional blog-wide role for a specific object type
+* WP roles work as is or can be limited by content-specific Restrictions
+* RS roles grant additional Read or Edit access for specific Pages, Posts or Categories
+* Define User Groups and give them one or more RS roles
 * Can elevate Subscribers to edit desired content (ensures safe failure mode)
 * Control which categories users can post to
 * Control which pages users can associate sub-pages to
 * Specify element(s) in Edit Form to withhold from non-Editors
-* Limit the duration of role assignments
-* Limit the content dates which a role assignment applies to
-* Front-end Page, Category and Tag listings match modified access
+* Grant Read or Edit access for a limited time duration
+* Limit the post/page publish dates which a role assignment applies to
 * Customizable Hidden Content Teaser (or hide posts/pages completely) 
 * RSS Feed Filter with HTTP authentication option
 * File Attachment filter blocks direct URL requests if user can't read corresponding post/page
 * Inheritance of Restrictions and Roles to sub-categories / sub-pages
 * Default Restrictions and Roles for new content
-* Un-editable posts/pages are excluded from the editing list
+* Un-editable posts are excluded from the Edit Posts/Pages list
 * Optimized to limit additional database queries
 * XML-RPC support
 * Integrates with the <a href="http://wordpress.org/extend/plugins/revisionary/">Revisionary plugin</a> for moderated revisioning of published content.
+* Supports custom Post Types and Taxonomies (when defined using WP schema by a plugin such as <a href="http://wordpress.org/extend/plugins/custom-post-type-ui/">Custom Post Type UI</a>) 
 * Extensive WP-mu support
 
 = Plugin API =
-* Apply restrictions and roles for any custom taxonomy
-* Abstract architecture and API allow other plugins to define their own role definitions for scoping
+* Abstract architecture and API allow other plugins to define their own data/taxonomy schema and role definitions
 * Author provides some <a href="http://agapetry.net/category/plugins/role-scoper/role-scoper-extensions/">extensions to support integration with other plugins</a>
 
 = Template Functions =
@@ -106,6 +103,52 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+**1.2 Beta 1 - 7 May 2010**
+
+= WordPress 3.0 Compatibility =
+* Compat : WP 3.0 elimination of page.php, edit-pages.php, page-new.php broke many aspects of page filtering
+* Compat : Support RS Roles, Restrictions for Custom Post Types created via WP 2.9 / 3.0 framework
+* Compat : Support RS Roles for Custom Taxonomies created via WP 2.9 / 3.0 framework
+* Compat : WP 3.0 Multisite menu items had invalid link
+
+= New Features =
+* Feature : Ajax interface for group membership selection
+* Feature : Group membership requests
+* Feature : Group membership recommendations (2-tier membership moderation)
+
+= Major Bug Fixes =
+* BugFix : File Filtering was not imposed based on Post/Page Restrictions or Default Category Roles (also required Private visibility)
+* BugFix : RS Restrictions and Roles were not applied to Sticky Posts
+* BugFix : Attachment filenames with spaces, parenthesis and other special chars caused corrupt or ineffective .htaccess (possibly resulting in Internal Server Error)
+* BugFix : Last blog paging link sometimes hidden when Hidden Content Teaser enabled (also caused WP-PageNavi conflict)
+* BugFix : With Revisionary (or possibly other plugins) enabled, posts are inappropriately forced into default category in logged user cannot post there.
+* BugFix : Custom calls to wp_dropdown_pages (in template or other plugin code) were sometimes filtered inappropriately
+
+= Minor Bug Fixes =
+* BugFix : When previewing a post, non-editors don't see Page or Post listings in sidebar / topbar
+* BugFix : Recent Comments widget included comments on unreadable posts, with WP 2.9
+* BugFix : Custom WP_PLUGIN_DIR was not supported
+* BugFix : In Bulk Object Roles Edit forms, links to edit roles of individual object were broken
+* BugFix : RS addition to wp-admin footer forced horizontal scroll bar in IE7
+* BugFix : Role Basis settings (User Roles and Group Roles enable / disable) were hidden and unalterable
+* BugFix : If Page Reader is enabled as an "Additional Object Role", Private Page Reader also remains captioned as "Page Reader"
+* BugFix : If Post Reader is enabled as an "Additional Object Role", Private Post Reader also remains captioned as "Post Reader"
+* BugFix : Bad edit link on User Profile where user is a Group Manager for specific group(s)
+* BugFix : When scanning Posts/Pages for unregistered attachments, File Attachment Utility did not distinguish broken links
+
+= Plugin Compatibility =
+* Compat : WP-PageNavi - conflict with paging links, see above
+* Compat : Amember - PHP Warning (array_diff_key) after importing users
+* Compat : QTranslate - unparsed page titles in Page Parent dropdown
+* Compat : Simple Section Nav - children of excluded pages bubbled up to the page menu
+* Compat : Reveal IDs plugin wiped out "Groups" column in Edit Users page
+* Compat : Role Scoper potentially wiped out other plugin custom columns on Edit Users page
+
+= Other Changes =
+* Change : Apply Excerpt Teaser Prefix,Suffix whenever excerpt, pre-more, or first X chars replace content, if SCOPER_FORCE_EXCERPT_SUFFIX is defined.
+* Perf : Don't load and initialize Role Scoper on asynchronous dashboard feed calls (WP dev blog, etc.)
+
 
 = 1.1.7 - 15 Feb 2010 =
 * BugFix : In Post/Page Edit Form, user checkboxes for role assignment were not sorted alphabetically (since 1.1.RC1)
@@ -548,7 +591,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
 * QTranslate : use Role Scoper 1.0.7 or later, which disables caching of pages, terms listing.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
 * Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget or Snazzy Archives instead.
-* Maintenance Mode : not compatible due to forced early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Comment out the following line in maintenance-mode.php: `&& !mw&#95;current&#95;user&#95;can&#95;access&#95;on&#95;maintenance()`
+* Maintenance Mode : not compatible due to early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Insert the following line at the top of function current_user_can_access_on_maintenance in maintenance-mode.php: `return false;`
 * Flutter : As of Nov 2009, RS filtering of Flutter categories requires that the Flutter function GetCustomWritePanels (in the RCCWP_CustomWritePanel class, file plugins/fresh-page/RCCWP_CustomWritePanel.php) be modified to the following:
 
     function GetCustomWritePanels() 

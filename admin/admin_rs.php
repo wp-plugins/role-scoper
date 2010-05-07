@@ -19,8 +19,6 @@ define( 'OBJECT_UI_RS', 'object_ui' );
 
 require_once( 'admin_lib_rs.php' );
 
-require_once( 'admin_ui_lib_rs.php' );
-
 if ( IS_MU_RS )
 	require_once( 'admin_lib-mu_rs.php' );
 
@@ -138,6 +136,26 @@ class ScoperAdmin
 		// TODO: replace some of this JS with equivalent JQuery
 		echo "\n" . "<script type='text/javascript' src='" . SCOPER_URLPATH . "/admin/agapetry.js'></script>";
 		echo "\n" . "<script type='text/javascript' src='" . SCOPER_URLPATH . "/admin/role-scoper.js'></script>";
+		
+		if ( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) && ( strpos( $_SERVER['REQUEST_URI'], 'user-edit.php' ) || strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) || strpos( $_SERVER['REQUEST_URI'], 'page=rs-groups' ) ) ) {
+			global $scoper_user_search;
+			
+			if ( strpos( $_SERVER['REQUEST_URI'], 'page=rs-groups' ) ) {
+				$agent_type = 'users';
+				$agent_id = $_GET['id'];
+			} else {
+				$agent_type = 'groups';
+				if ( strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) ) {
+					global $current_user;
+					$agent_id = $current_user->ID;	
+				} else
+					$agent_id = $_GET['user_id'];
+			}
+
+			require_once( 'user_search_ui_rs.php' );
+			$scoper_user_search = new ScoperUserSearch( $agent_type );
+			$scoper_user_search->output_js( $agent_type, $agent_id );
+		}
 	}
 	
 	function flt_contextual_help_list ($help, $screen) {
@@ -249,19 +267,24 @@ class ScoperAdmin
 		dump($_wp_menu_nopriv);
 		*/
 		
-		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('manage_groups') );
-		
+		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
+
 		// Users Tab
 		if ( DEFINE_GROUPS_RS && $can_manage_groups ) {
 			$cap_req = ( $can_manage_groups ) ? 'read' : 'manage_groups';
 			
+			$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');
+			
+			if ( IS_MU_RS )
+				$pfx = ( awp_ver('3.0-dev') ) ? 'ms' : 'wpmu';
+			
 			if ( IS_MU_RS && scoper_get_site_option( 'mu_sitewide_groups' ) ) {
-				add_submenu_page( 'wpmu-admin.php', __('Role Groups', 'scoper'), __('Role Groups', 'scoper'), $cap_req, 'rs-groups' );
+				add_submenu_page( "$pfx-admin.php", $groups_caption, $groups_caption, $cap_req, 'rs-groups' );
 				
 				$func = "include_once('$path' . '/admin/groups.php');";
-				add_action('wpmu-admin_page_rs-groups' , create_function( '', $func ) );
+				add_action("$pfx-admin_page_rs-groups" , create_function( '', $func ) );
 			} else {
-				add_submenu_page( 'users.php', __('Role Groups', 'scoper'), __('Role Groups', 'scoper'), $cap_req, 'rs-groups' );
+				add_submenu_page( 'users.php', $groups_caption, $groups_caption, $cap_req, 'rs-groups' );
 				
 				$func = "include_once('$path' . '/admin/groups.php');";
 				add_action( 'users_page_rs-groups' , create_function( '', $func ) );
@@ -307,7 +330,7 @@ class ScoperAdmin
 			$restrictions_menu = 'rs-page-restrictions';
 			$object_submenus_first = true;
 
-		} elseif ( $can_admin_terms ) {
+		} elseif ( $can_admin_terms && $scoper->taxonomies->member_property( key($can_admin_terms),  'requires_term' ) ) {
 			$taxonomy = key($can_admin_terms);
 			$roles_menu = "rs-$taxonomy-roles_t";
 			$restrictions_menu = "rs-$taxonomy-restrictions_t";
@@ -342,9 +365,8 @@ class ScoperAdmin
 			if ( empty( $restrictions_menu ) )
 				$restrictions_menu =  'rs-category-restrictions_t';  // If RS Realms are customized, the can_admin_terms / can_admin_objects result can override this default, even for user administrators
 		}
-		
 			
-		// For convenience in WP 2.5 - 2.6, set the primary menu link (i.e. default submenu) based on current URI
+		// For convenience in WP 2.6, set the primary menu link (i.e. default submenu) based on current URI
 		// When viewing Category Roles, make Restriction menu default-link to Category Restrictions submenu (and likewise for other terms/objects)
 		// (ozh plugin breaks this, and it is not needed in 2.7+ due to core JS dropdown)
 		if ( ! awp_ver('2.7-dev') && ! awp_is_plugin_active('wp_ozh_adminmenu.php') ) { 
@@ -459,15 +481,11 @@ class ScoperAdmin
 							
 							$first_pass = false;
 						}
-						
+
 						add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-roles_t");
 						
 						$func = "include_once('$path' . '/admin/section_roles.php');scoper_admin_section_roles('$taxonomy');";
 						add_action($roles_hook_page . "rs-$taxonomy-roles_t", create_function( '', $func ) );	
-						
-						if ( ! awp_ver('2.6') )
-							add_action("_page_" . "rs-$taxonomy-roles_t", create_function( '', $func ) );	
-						
 					
 						if ( ! empty($tx->requires_term) ) {
 							$show_restrictions_menu = true;
@@ -476,9 +494,6 @@ class ScoperAdmin
 							
 							$func = "include_once('$path' . '/admin/section_restrictions.php');scoper_admin_section_restrictions('$taxonomy');";
 							add_action($restrictions_hook_page . "rs-$taxonomy-restrictions_t", create_function( '', $func ) );	
-				
-							if ( ! awp_ver('2.6') )
-								add_action("_page_" . "rs-$taxonomy-restrictions_t", create_function( '', $func ) );
 						}
 					} // end foreach taxonomy
 				} // endif can admin terms
@@ -536,18 +551,11 @@ class ScoperAdmin
 							
 							$func = "include_once('$path' . '/admin/object_roles.php');scoper_admin_object_roles('$src_name', '$object_type');";
 							add_action($roles_hook_page . $roles_page, create_function( '', $func ) );
-						
-							if ( ! awp_ver('2.6') )
-								add_action("_page_" . $roles_page, create_function( '', $func ) );
-							
 								
 							add_submenu_page($restrictions_menu, sprintf(__('%s Restrictions', 'scoper'), $display_name), $display_name_plural, 'read', $restrictions_page);
 								
 							$func = "include_once('$path' . '/admin/object_restrictions.php');scoper_admin_object_restrictions('$src_name', '$object_type');";
-							add_action($restrictions_hook_page . $restrictions_page, create_function( '', $func ) );	
-					
-							if ( ! awp_ver('2.6') )
-								add_action("_page_" . $restrictions_page, create_function( '', $func ) );	
+							add_action($restrictions_hook_page . $restrictions_page, create_function( '', $func ) );		
 						} // end foreach obj type
 					} // end foreach data source
 				} // endif can admin objects
@@ -638,7 +646,7 @@ class ScoperAdmin
 		
 
 		// satisfy WordPress' demand that all admin links be properly defined in menu
-		if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=object_role_edit' ) ) {
+		if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-object_role_edit' ) ) {
 			add_submenu_page($roles_menu, __('Object Role Edit', 'scoper'), __('Object Role Edit', 'scoper'), 'read', 'rs-object_role_edit');
 			
 			$func = "include_once('$path' . '/admin/object_role_edit.php');";

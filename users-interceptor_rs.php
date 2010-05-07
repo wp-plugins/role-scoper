@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * users-interceptor_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  */
  
@@ -219,9 +219,11 @@ class UsersInterceptor_RS
 				if ( ! $src = $this->scoper->data_sources->get($src_name) )
 					continue;
 
-				if ( $this_src_object_id && $args['use_term_roles'] && ! empty($src->uses_taxonomies) ) {
+				$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, array_keys($otypes) );
+
+				if ( $this_src_object_id && $args['use_term_roles'] && ! empty($uses_taxonomies) ) {
 					$args['object_terms'] = array();
-					foreach ( $src->uses_taxonomies as $taxonomy ) 
+					foreach ( $uses_taxonomies as $taxonomy ) 
 						$args['object_terms'][$taxonomy] = $this->scoper->get_terms($taxonomy, UNFILTERED_RS, COL_ID_RS, $this_src_object_id);
 				}
 			}
@@ -525,21 +527,23 @@ class UsersInterceptor_RS
 		// --------- ACCOUNT FOR TERM ROLES -----------
 		// Consider term scope settings and role assignments
 		//
-		if ( $use_term_roles && $src_name && $roles && ! empty($src->uses_taxonomies) ) {
+		$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
+
+		if ( $use_term_roles && $src_name && $roles && ! empty($uses_taxonomies) ) {
 
 			// If scoping with RS roles, strip out WP role definitions (which were included for blogrole clause)
 			$var = SCOPER_ROLE_TYPE;
 			$term_roles = ( 'rs' == SCOPER_ROLE_TYPE ) ? $this->scoper->role_defs->filter_roles_by_type($roles, 'rs') : $roles;
 			
 			if ( $term_roles )
-				foreach ( $src->uses_taxonomies as $taxonomy )
+				foreach ( $uses_taxonomies as $taxonomy )
 					// include users with a sufficient term role assignment in any term
 					$qualifying_roles[TERM_SCOPE_RS][$taxonomy] = scoper_role_handles_to_names(array_keys($term_roles));
 				
 			// Honor blog-wide assignment of any non-objscope role, but only if at least one term
 			// is not "strict" (i.e. merges blogroles into term-specific assignments).
 			if ( ! $ignore_strict_terms ) {
-				$term_roles = $this->get_unrestricted_term_roles($term_roles, $src->uses_taxonomies, $object_id, $object_terms);
+				$term_roles = $this->get_unrestricted_term_roles($term_roles, $uses_taxonomies, $object_id, $object_terms);
 				
 				// If scoping with RS roles, disqualify a WP blog role if all of the qualifying RS roles it contains were excluded by the strict terms filter.
 				if ( ('rs' == SCOPER_ROLE_TYPE) ) {

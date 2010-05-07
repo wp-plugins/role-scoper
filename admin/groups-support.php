@@ -198,7 +198,54 @@ class UserGroups_tp {
 		
 		return true;
 	}
+	
+	function update_group_members_multi_status( $group_id, $current_members ) {
+		$posted_members = array();
+		
+		$is_administrator = is_user_administrator_rs();
 
+		$can_manage = $is_administrator || current_user_can( 'manage_groups' );
+		$can_moderate = $can_manage || current_user_can( 'recommend_group_membership' );
+		
+		if ( ! $can_moderate && ! current_user_can( 'request_group_membership' ) )
+			return;
+		
+		if ( $can_manage )
+			$posted_members['active'] = explode( ',', trim($_POST['current_agents_rs_csv'], ',') );
+		else
+			$current_members = array_diff_key( $current_members, array( 'active' => true ) );
+
+		if ( $can_moderate ) {
+			$current_members['recommended'] = ScoperAdminLib::get_group_members($group_id, COL_ID_RS, false, array( 'status' => 'recommended' ) );
+			$posted_members['recommended'] = explode( ',', trim($_POST['recommended_agents_rs_csv'], ',') );
+		}
+
+		$current_members['requested'] = ScoperAdminLib::get_group_members($group_id, COL_ID_RS, false, array( 'status' => 'requested' ) );
+		$posted_members['requested'] = explode( ',', trim($_POST['requested_agents_rs_csv'], ',') );
+
+		$all_current_members = agp_array_flatten ( $current_members );
+		$all_posted_members = agp_array_flatten ( $posted_members );
+		
+		foreach ( $current_members as $status => $stored ) {
+			// remove group memberships which were not posted for any status			
+			foreach ( $stored as $user_id ) {
+				if ( $user_id )
+					if ( ! in_array( $user_id, $all_posted_members ) )
+						ScoperAdminLib::remove_group_user($group_id, $user_id);
+			}
+		}
+		
+		foreach ( $posted_members as $status => $posted ) {
+			// insert or update group memberships as specified
+			foreach ( $posted as $user_id ) {
+				if ( $user_id )
+					if ( ! in_array( $user_id, $all_current_members ) )
+						ScoperAdminLib::add_group_user($group_id, $user_id, $status);
+					elseif ( ! in_array( $user_id, $current_members[$status] ) )
+						ScoperAdminLib::update_group_user($group_id, $user_id, $status);
+			}
+		}
+	}
 	
 	// Called once each for members checklist, managers checklist in admin UI.
 	// In either case, current (checked) members are at the top of the list.
@@ -207,51 +254,11 @@ class UserGroups_tp {
 		
 		if ( ! $all_users )
 			$all_users = $scoper->users_who_can('', COLS_ID_DISPLAYNAME_RS);
-		
+
 		if ( $group_id )
 			$group = ScoperAdminLib::get_group($group_id);
 			
-		if ( 'manager' == $user_class ) {
-			if ( $group_id ) {
-				$group_role_defs = $scoper->role_defs->qualify_roles( 'manage_groups');
-
-				require_once('role_assignment_lib_rs.php');
-				$current_roles = ScoperRoleAssignments::organize_assigned_roles(OBJECT_SCOPE_RS, 'group', $group_id, array_keys($group_role_defs), ROLE_BASIS_USER);
-
-				$current_roles = agp_array_flatten($current_roles, false);
-				
-				$current_ids = ( isset($current_roles['assigned']) ) ? $current_roles['assigned'] : array();
-			} else
-				$current_ids = array();
-			
-			$cap_name = ( defined( 'SCOPER_USER_ADMIN_CAP' ) ) ? constant( 'SCOPER_USER_ADMIN_CAP' ) : 'edit_users';
-			$admin_ids = $scoper->users_who_can( $cap_name, COL_ID_RS );
-				
-			$require_blogwide_editor = false;
-					
-			if ( ! empty($group) ) {
-				if ( ! strpos( $group->meta_id, '_nr_' ) ) {	// don't limit manager selection for groups that don't have role assignments
-					$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
-				}
-			}
-				
-			if ( 'admin' == $require_blogwide_editor ) {
-				$eligible_ids = $admin_ids;
-				
-			} elseif ( 'admin_content' == $require_blogwide_editor ) {
-				$cap_name = ( defined( 'SCOPER_CONTENT_ADMIN_CAP' ) ) ? constant( 'SCOPER_CONTENT_ADMIN_CAP' ) : 'activate_plugins';
-				$eligible_ids = array_unique( array_merge( $admin_ids, $scoper->users_who_can( $cap_name, COL_ID_RS ) ) );
-				
-			} elseif ( $require_blogwide_editor ) {
-				$post_editors = $scoper->users_who_can('edit_others_posts', COL_ID_RS);
-				$page_editors = $scoper->users_who_can('edit_others_pages', COL_ID_RS);
-				
-				$eligible_ids = array_unique( array_merge($post_editors, $page_editors, $admin_ids) );
-			
-			} else
-				$eligible_ids = '';
-
-		} else {
+		if ( 'member' == $user_class ) {
 			$current_ids = ($group_id) ? array_flip(ScoperAdminLib::get_group_members($group_id, COL_ID_RS)) : array();
 
 			if ( ! empty($group) && in_array( $group->meta_id, array( 'rv_pending_rev_notice_ed_nr_', 'rv_scheduled_rev_notice_ed_nr_' ) ) ) {
@@ -267,9 +274,55 @@ class UserGroups_tp {
 			}
 			
 			$admin_ids = array();
-		}
+		} else {
+			$reqd_cap = ( 'moderator' == $user_class ) ? 'recommend_group_membership' : 'manage_groups';
+			
+			if ( $group_id ) {
+				$group_role_defs = $scoper->role_defs->qualify_roles( $reqd_cap );
+
+				require_once('role_assignment_lib_rs.php');
+				$current_roles = ScoperRoleAssignments::organize_assigned_roles(OBJECT_SCOPE_RS, 'group', $group_id, array_keys($group_role_defs), ROLE_BASIS_USER);
+
+				$current_roles = agp_array_flatten($current_roles, false);
+				
+				$current_ids = ( isset($current_roles['assigned']) ) ? $current_roles['assigned'] : array();
+			} else
+				$current_ids = array();
+			
+			$cap_name = ( defined( 'SCOPER_USER_ADMIN_CAP' ) ) ? constant( 'SCOPER_USER_ADMIN_CAP' ) : 'edit_users';
+			$admin_ids = $scoper->users_who_can( $cap_name, COL_ID_RS );
+			
+			// optionally, limit available group managers according to role_admin_blogwide_editor_only option 
+			if ( 'manager' == $user_class ) {	
+				$require_blogwide_editor = false;
+					
+				if ( ! empty($group) ) {
+					if ( ! strpos( $group->meta_id, '_nr_' ) ) {	// don't limit manager selection for groups that don't have role assignments
+						$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
+					}
+				}
+				
+				if ( 'admin' == $require_blogwide_editor ) {
+					$eligible_ids = $admin_ids;
+					
+				} elseif ( 'admin_content' == $require_blogwide_editor ) {
+					$cap_name = ( defined( 'SCOPER_CONTENT_ADMIN_CAP' ) ) ? constant( 'SCOPER_CONTENT_ADMIN_CAP' ) : 'activate_plugins';
+					$eligible_ids = array_unique( array_merge( $admin_ids, $scoper->users_who_can( $cap_name, COL_ID_RS ) ) );
+					
+				} elseif ( $require_blogwide_editor ) {
+					$post_editors = $scoper->users_who_can('edit_others_posts', COL_ID_RS);
+					$page_editors = $scoper->users_who_can('edit_others_pages', COL_ID_RS);
+					
+					$eligible_ids = array_unique( array_merge($post_editors, $page_editors, $admin_ids) );
+				
+				} else
+					$eligible_ids = '';
+			} else
+				$eligible_ids = '';
+				
+		} // endif user class is not "member" 
 		
-		$css_id = ( 'manager' == $user_class ) ? 'manager' : 'member';
+		$css_id = $user_class;
 		$args = array( 'eligible_ids' => $eligible_ids, 'via_other_scope_ids' => $admin_ids, 'suppress_extra_prefix' => true );
  		require_once('agents_checklist_rs.php');
 		ScoperAgentsChecklist::agents_checklist( ROLE_BASIS_USER, $all_users, $css_id, $current_ids, $args);

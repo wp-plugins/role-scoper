@@ -69,9 +69,11 @@ class Role_Usage_RS {
 		}
 		
 		// which of these results ignore blog role assignments?
-		if ( ! empty( $src->uses_taxonomies ) ) {
+		$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_types );
+		
+		if ( ! empty( $uses_taxonomies ) ) {
 			
-			foreach ($src->uses_taxonomies as $taxonomy) {
+			foreach ($uses_taxonomies as $taxonomy) {
 
 				$tx_object_types = $object_types;
 				

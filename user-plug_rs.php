@@ -33,7 +33,7 @@ function wp_set_current_user($id, $name = '') {
 	if ( ! $id && ! $name && is_admin() )
 		return $current_user;
 
-	scoper_version_check();
+	//scoper_version_check();
 
 	if ( $id || ( $name && get_userdatabylogin($name) ) )
 		require_once('scoped-user.php');

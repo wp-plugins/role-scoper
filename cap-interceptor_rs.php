@@ -7,10 +7,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * cap-interceptor_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  */
-
 class CapInterceptor_RS
 {	
 	var $skip_id_generation = false;
@@ -60,7 +59,7 @@ class CapInterceptor_RS
 			$hascap_object_ids = array();
 			$tested_object_ids = array();	
 		}
-		
+			
 		// work around bug in mw_EditPost method (requires publish_pages AND publish_posts cap)
 		if ( defined('XMLRPC_REQUEST') && ( 'publish_posts' == $orig_reqd_caps[0] ) ) {
 			global $xmlrpc_post_type_rs;
@@ -78,7 +77,7 @@ class CapInterceptor_RS
 				return $wp_blogcaps;
 			}
 		}
-		
+			
 		//dump($orig_reqd_caps);
 		//dump($args);
 		
@@ -89,7 +88,6 @@ class CapInterceptor_RS
 		//rs_errlog(serialize($args));
 		rs_errlog(' ');
 		*/
-
 		
 		// permitting this filter to execute early in an attachment request resets the found_posts record, preventing display in the template
 		if ( is_attachment() && ! is_admin() && ! did_action('template_redirect') ) {
@@ -137,7 +135,7 @@ class CapInterceptor_RS
 					
 					if ( is_preview() || agp_strpos_any( $script_name, $revision_uris ) || ( in_array( get_post_field('post_status', $scoper->data_sources->detect('id', 'post') ), array('publish', 'private') ) ) ) {
 						if ( rvy_get_option('pending_revisions') ) {
-							if ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/edit-pages.php') )
+							if ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/edit-pages.php') || ( ! empty( $_GET['post_type'] ) && 'page' == $_GET['post_type'] ) )
 								$use_cap_req = 'edit_pages';
 							else
 								$use_cap_req = 'edit_posts';
@@ -167,29 +165,23 @@ class CapInterceptor_RS
 			
 		// WP core quirk workaround: edit_others_posts is required as preliminary check for populating authors dropdown for pages
 		// (but we are doing are own validation, so just short circuit the WP get_editable_user_ids safeguard 
-		if ( ('edit_others_posts' == $reqd_caps[0]) && ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/page-new.php') ) ) {
-			
+		if ( ('edit_others_posts' == $reqd_caps[0]) && ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/page-new.php') || ( ! empty( $_GET['post_type'] ) && 'page' == $_GET['post_type'] ) ) ) {
 			$key = array_search( 'edit_others_posts', $rs_reqd_caps );
-
-			if ( awp_ver('2.6') ) { // Allow contributors to edit published post/page, with change stored as a revision pending review
-				$object_types = $scoper->cap_defs->object_types_from_caps($rs_reqd_caps);
-				$object_type = key($object_types);
-				
-				require_once( 'lib/agapetry_wp_admin_lib.php' ); // function awp_metaboxes_started()
-				
-				if ( ! awp_metaboxes_started($object_type) && ! strpos($script_name, 'p-admin/revision.php') && false === strpos(urldecode($_SERVER['REQUEST_URI']), 'page=revisions' )  ) // don't enable contributors to view/restore revisions
-					$rs_reqd_caps[$key] = 'edit_pages';
-				else
-					$rs_reqd_caps[$key] = 'edit_published_pages';
-				
-			} elseif ( $args[2] ) {
-				// $wp_blogcaps = array_merge( $wp_blogcaps, array('edit_others_posts' => true) );
-				$rs_reqd_caps[$key] = 'edit_others_pages';
-			}
+	
+			// Allow contributors to edit published post/page, with change stored as a revision pending review
+			$object_types = $scoper->cap_defs->object_types_from_caps($rs_reqd_caps);
+			$object_type = key($object_types);
+			
+			require_once( 'lib/agapetry_wp_admin_lib.php' ); // function awp_metaboxes_started()
+			
+			if ( ! awp_metaboxes_started($object_type) && ! strpos($_SERVER['SCRIPT_NAME'], 'p-admin/revision.php') && false === strpos(urldecode($_SERVER['REQUEST_URI']), 'page=revisions' )  ) // don't enable contributors to view/restore revisions
+				$rs_reqd_caps[$key] = 'edit_pages';
+			else
+				$rs_reqd_caps[$key] = 'edit_published_pages';
 		}
 		
 		// also short circuit any unnecessary edit_posts checks within page edit form, but only after admin menu is drawn
-		if ( ('edit_posts' == $reqd_caps[0]) && ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/page-new.php') ) && did_action('admin_notices') ) {
+		if ( ('edit_posts' == $reqd_caps[0]) && ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/page-new.php') || ( ! empty( $_GET['post_type'] ) && 'page' == $_GET['post_type'] ) ) && did_action('admin_notices') ) {
 			$key = array_search( 'edit_posts', $rs_reqd_caps );
 		
 			$wp_blogcaps = array_merge( $wp_blogcaps, array('edit_posts' => true) );
@@ -198,7 +190,6 @@ class CapInterceptor_RS
 				$rs_reqd_caps[$key] = 'edit_pages';
 		}
 		
-
 		// If no object id was passed in, we won't do much.
 		if ( empty($args[2]) ) {
 			if ( ! $this->skip_id_generation && ! defined('XMLRPC_REQUEST') ) {
@@ -207,10 +198,22 @@ class CapInterceptor_RS
 					$scoper->generate_id_caps = array('moderate_comments', 'manage_categories', 'edit_published_posts', 'edit_published_pages', 'edit_others_posts', 'edit_others_pages', 'publish_posts', 'publish_pages', 'delete_others_posts', 'delete_others_pages', 'upload_files');
 					$scoper->generate_id_caps = apply_filters( 'caps_to_generate_object_id_rs', $scoper->generate_id_caps );
 
-					if ( ! strpos($script_name, 'p-admin/page.php') && ! strpos($script_name, 'p-admin/page-new.php') )
-						$scoper->generate_id_caps []= 'edit_posts';
+					// as of WP 3.0, all post types use post.php (TODO - shorten this logic)
+					if ( awp_ver( '3.0-beta' ) )
+						$add_cap = ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') || ( empty( $_GET['post_type'] ) || 'page' != $_GET['post_type'] );
+					else
+						$add_cap = ! strpos($script_name, 'p-admin/page.php') && ! strpos($script_name, 'p-admin/page-new.php');
 					
-					if ( ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') )
+					if ( $add_cap )
+						$scoper->generate_id_caps []= 'edit_posts';
+	
+					// as of WP 2.9, all post types use post.php
+					if ( awp_ver( '3.0-beta' ) )
+						$add_cap = ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') || ( ! empty( $_GET['post_type'] ) && 'post' != $_GET['post_type'] );
+					else
+						$add_cap = ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php');
+						
+					if ( $add_cap )
 						$scoper->generate_id_caps []= 'edit_pages';
 				}
 	
@@ -245,7 +248,7 @@ class CapInterceptor_RS
 					// If we are about to fail the blogcap requirement, credit a missing cap if 
 					// the user has it by term role for ANY term.
 					// This prevents failing initial UI entrance exams that assume blogroles-only
-					if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) )
+					//if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) )
 						if ( ! $this->skip_any_term_check )
 							if ( $tax_caps = $this->user_can_for_any_term($missing_caps) )
 								$wp_blogcaps = array_merge($wp_blogcaps, $tax_caps);
@@ -273,7 +276,7 @@ class CapInterceptor_RS
 							}
 							
 							if ( ! $skip ) {
-								$any_objrole_caps = array( 'edit_posts', 'edit_pages', 'edit_comments', 'manage_links', 'manage_categories', 'manage_groups', 'upload_files' );
+								$any_objrole_caps = array( 'edit_posts', 'edit_pages', 'edit_comments', 'manage_links', 'manage_categories', 'manage_groups', 'recommend_group_membership', 'request_group_membership', 'upload_files' );
 								$any_objrole_caps = apply_filters( 'caps_granted_from_any_objrole_rs', $any_objrole_caps );
 			
 								//dump($any_objrole_caps);
@@ -370,7 +373,9 @@ class CapInterceptor_RS
 		// Workaround to deal with WP core's checking of publish cap prior to storing categories
 		// Store terms to DB in advance of any cap-checking query which may use those terms to qualify an operation
 		if ( in_array('publish_posts', $rs_reqd_caps) && ! empty($_POST) && $object_id ) {
-			foreach ( $src->uses_taxonomies as $taxonomy ) {
+			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
+			
+			foreach ( $uses_taxonomies as $taxonomy ) {
 				$stored_terms = $scoper->get_terms($taxonomy, UNFILTERED_RS, COL_ID_RS, $object_id);
 
 				$post_var = isset( $src->http_post_vars->$taxonomy ) ? $src->http_post_vars->$taxonomy : $taxonomy;
@@ -407,7 +412,7 @@ class CapInterceptor_RS
 		
 		
 		// is the requested object a revision or attachment?
-		$maybe_revision = ( 'post' == $src_name &&  awp_ver('2.6') && ! isset($hascap_object_ids[$src_name][$object_type][$capreqs_key][$object_id]) );
+		$maybe_revision = ( 'post' == $src_name && ! isset($hascap_object_ids[$src_name][$object_type][$capreqs_key][$object_id]) );
 
 		$maybe_attachment = strpos($_SERVER['SCRIPT_NAME'], 'p-admin/upload.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/media.php');
 
@@ -501,7 +506,7 @@ class CapInterceptor_RS
 				if ( isset($args['use_term_roles']) )
 					$use_term_roles = $args['use_term_roles'];
 				else
-					$use_term_roles = $src->uses_taxonomies && scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );	
+					$use_term_roles = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );	
 	
 				$use_object_roles = ( empty($src->no_object_roles) ) ? scoper_get_otype_option( 'use_object_roles', $src_name, $object_type ) : false;
 				
@@ -520,7 +525,7 @@ class CapInterceptor_RS
 				$query = "SELECT $src->table.{$src->cols->id} FROM $src->table WHERE 1=1 $where $id_in";
 
 				$okay_ids = scoper_get_col($query);
-				
+								
 				// If set of listed ids is not known, each current_user_can call will generate a new query construction
 				// But if the same query is generated, use buffered result
 				if ( ! empty($okay_ids) )
@@ -669,7 +674,7 @@ class CapInterceptor_RS
 	// is overly narrow access, not overly open.
 	function user_can_for_any_term($reqd_caps, $user = '') {
 		global $scoper;
-	
+
 		if ( ! is_object($user) ) {
 			global $current_user;
 			$user = $current_user;
@@ -686,7 +691,9 @@ class CapInterceptor_RS
 		foreach ( $caps_by_otype as $src_name => $otypes ) {
 			$src = $scoper->data_sources->get($src_name);
 		
-			if ( empty($src->uses_taxonomies) )
+			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, array_keys($otypes) );
+
+			if ( empty($uses_taxonomies) )
 				continue;
 			
 			foreach ( $otypes as $this_otype_caps ) { // keyed by object_type
@@ -695,7 +702,7 @@ class CapInterceptor_RS
 				foreach ( $caps_by_op as $this_op_caps ) { // keyed by op_type
 					$roles = $scoper->role_defs->qualify_roles($this_op_caps);
 
-					foreach ($src->uses_taxonomies as $taxonomy) {
+					foreach ($uses_taxonomies as $taxonomy) {
 						if ( ! isset($user->term_roles[$taxonomy]) )
 							$user->term_roles[$taxonomy] = $user->get_term_roles_daterange($taxonomy);				// call daterange function populate term_roles property - possible perf enhancement for subsequent code even though we don't conider content_date-limited roles here
 							

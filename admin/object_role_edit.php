@@ -74,4 +74,9 @@ if ( isset($args['html_inserts']->close->container) )
 </p>
 </form>
 
+<?php
+if ( $object_type )
+	echo "<a href='admin.php?page=rs-{$object_type}-roles'>" . __( 'back' ) . '</a>';
+?>
+
 </div>

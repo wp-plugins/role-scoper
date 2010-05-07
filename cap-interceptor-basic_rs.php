@@ -69,7 +69,7 @@ class CapInterceptorBasic_RS
 
 		$id_in = " AND $src->table.{$src->cols->id} = '$object_id'";
 
-		$use_term_roles = $src->uses_taxonomies && scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );	
+		$use_term_roles = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );	
 
 		$use_object_roles = ( empty($src->no_object_roles) ) ? scoper_get_otype_option( 'use_object_roles', $src_name, $object_type ) : false;
 		

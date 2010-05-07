@@ -5,7 +5,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 if ( DEFINE_GROUPS_RS && ( awp_ver('2.8') || defined('scoper_users_custom_column') ) ) {
 	add_filter('manage_users_columns', array('ScoperAdminUsers', 'flt_users_columns'));
-	add_action('manage_users_custom_column', array('ScoperAdminUsers', 'flt_users_custom_column'), 10, 3);
+	add_action('manage_users_custom_column', array('ScoperAdminUsers', 'flt_users_custom_column'), 99, 3); // filter late in case other plugin filters do not retain passed value
 }
 
 // abuse referer check to detect Role Manager role rename operation
@@ -48,11 +48,12 @@ class ScoperAdminUsers {
 
 					foreach( $group_names as $name => $id )
 						$group_names[$name] = "<a href='" . "admin.php?page=rs-groups&amp;mode=edit&amp;id=$id'>$name</a>";
-						
+
 					return implode(", ", $group_names);
 				}
 			}
-		}
+		} else
+			return $content;
 	}
 	
 	function act_rolemanager_referer($action) {

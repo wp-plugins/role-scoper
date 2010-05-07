@@ -459,6 +459,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	
 	function scoper_flt_pre_object_terms ($selected_terms, $taxonomy, $args = '') {
+
 		// strip out fake term_id -1 (if applied)
 		if ( $selected_terms )
 			$selected_terms = array_diff($selected_terms, array(-1));
@@ -541,6 +542,11 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	// Reinstate any object terms which the object already has, but were hidden from the user due to lack of edit caps
 	// (if a user does not have edit cap within some term, he can neither add nor remove them from an object)
 	function scoper_reinstate_hidden_terms($taxonomy, $object_terms) {
+		static $processed_post_ids;
+		
+		if ( ! isset( $processed_post_ids ) )
+			$processed_post_ids = array();
+			
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) )
 			return $object_terms;
 		
@@ -561,12 +567,18 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		
 		$orig_object_terms = $object_terms;
 			
+		
+		if ( isset( $processed_post_ids[$object_id] ) )	// no need to do this more than once per post, doing so with Revisionary enabled causes autosave-inserted default category to be reinstated
+			return $object_terms;
+		else
+			$processed_post_ids[$object_id] = true;
+
 		// make sure _others caps are required only for objects current user doesn't own
 		$base_caps_only = false;
 		if ( ! empty($src->cols->owner) ) {
 			$col_owner = $src->cols->owner;
 			if ( $object = $scoper->data_sources->get_object($src->name, $object_id) ) {
-
+				
 				// don't reinstate terms which were only inserted by autosave
 				if ( empty( $object->post_modified_gmt ) )
 					return $object_terms;

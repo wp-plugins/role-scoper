@@ -7,6 +7,7 @@ global $scoper, $wpdb, $current_user;
 
 $role_assigner = init_role_assigner();
 
+require_once('admin_lib-bulk_rs.php' );
 require_once('admin_ui_lib_rs.php');
 require_once('role_assignment_lib_rs.php');
 
@@ -37,10 +38,11 @@ if ( GROUP_ROLES_RS && ( $is_administrator ) ) {
 
 if ( empty($role_bases) )
 	wp_die(__awp('Cheatin&#8217; uh?'));
-
+	
+	
 $duration_limits_enabled = scoper_get_option('role_duration_limits');
 $content_date_limits_enabled = scoper_get_option('role_content_date_limits');
-	
+
 $agent_names = array();
 foreach ( $role_bases as $role_basis )
 	foreach( $agents[$role_basis] as $agent )
@@ -249,8 +251,7 @@ if ( $duration_limits_enabled || $content_date_limits_enabled ) {
 	echo '<h3 style="margin-bottom: 0">3.&nbsp;';
 	_e('Set Role Duration and/or Content Date Limits (optional)', 'scoper');
 	echo '</h3>';
-	
-	include_once( 'admin_lib-bulk_rs.php' );
+
 	ScoperAdminBulkLib::display_date_limit_inputs( $duration_limits_enabled, $content_date_limits_enabled );
 
 	echo '<br /><h3>4.&nbsp;';
@@ -316,14 +317,14 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 		$otype_roles[$object_type] = $scoper->role_defs->get_matching( SCOPER_ROLE_TYPE, $src_name, $object_type );
 		$otype_source[$object_type] = $src_name;
 		
+		$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
+		
 		if ( $include_taxonomy_otypes ) {
-			if ( scoper_get_otype_option('use_term_roles', $src_name, $object_type) ) {
-				foreach ( $src->uses_taxonomies as $taxonomy)
-					if ( $tx_roles = $scoper->role_defs->get_matching( SCOPER_ROLE_TYPE, $src_name, $taxonomy ) )
-						$otype_roles[$taxonomy] = $tx_roles;
-					
-				$include_taxonomy_otypes = false;
-			}	
+			foreach ( $uses_taxonomies as $taxonomy)
+				if ( $tx_roles = $scoper->role_defs->get_matching( SCOPER_ROLE_TYPE, $src_name, $taxonomy ) )
+					$otype_roles[$taxonomy] = $tx_roles;
+				
+			$include_taxonomy_otypes = false;
 		}
 		
 		if ( ! $otype_roles )
@@ -358,7 +359,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 					if ( is_array($blog_roles[$role_basis]) && isset($blog_roles[$role_basis][$role_handle]) ) {
 						$assignment_names = array_intersect_key($agent_names[$role_basis], $blog_roles[$role_basis][$role_handle]);
 						$assignment_list[$role_basis] = "<span class='$role_basis-csv'>" . $agent_list_prefix[$role_basis]
-						. ScoperAdminUI::role_assignment_list($blog_roles[$role_basis][$role_handle], $assignment_names, $role_basis)
+						. ScoperAdminBulkLib::role_assignment_list($blog_roles[$role_basis][$role_handle], $assignment_names, $role_basis)
 						. '</span>';
 					}
 				}

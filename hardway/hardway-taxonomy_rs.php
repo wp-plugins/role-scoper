@@ -352,7 +352,6 @@ class ScoperHardwayTaxonomy
 			
 		$query = apply_filters('terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser));
 
-		
 		// if no filering was applied because the teaser is enabled, prevent a redundant query
 		if ( ! empty($exclude_tree) || ($query_base != $query) || $parent || ( 'all' != $fields ) ) {
 			$terms = scoper_get_results($query);
@@ -406,7 +405,7 @@ class ScoperHardwayTaxonomy
 		// === END Role Scoper ADDITION ===
 		// ================================
 
-	
+
 		// === BEGIN Role Scoper MODIFICATION: call alternate functions 
 		// rs_tally_term_counts() replaces _pad_term_counts()
 		// rs_get_term_descendants replaces _get_term_children()
@@ -531,7 +530,8 @@ function rs_get_term($term_id, $taxonomy) {
 	global $scoper;
 	
 	if ( ! isset($scoper->taxonomies[$taxonomy]) ) {
-		return new WP_Error('invalid_taxonomy', __awp('Invalid Taxonomy') . ': ' . __($taxonomy));
+		//return new WP_Error('invalid_taxonomy', __awp('Invalid Taxonomy') . ': ' . __($taxonomy));
+		return false;
 	}
 
 	$tx = $scoper->taxonomies[$taxonomy];

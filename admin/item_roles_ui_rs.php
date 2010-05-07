@@ -2,7 +2,8 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('role_assignment_lib_rs.php');
+require_once( 'admin_ui_lib_rs.php' );
+require_once( 'role_assignment_lib_rs.php' );
 
 class ScoperItemRolesUI {
 	var $loaded_src_name;
@@ -443,14 +444,12 @@ class ScoperItemRolesUI {
 			
 		if ( USER_ROLES_RS && ! empty($this->current_roles[ROLE_BASIS_USER][$role_handle]) ) {
 			$count = count(array_keys($this->current_roles[ROLE_BASIS_USER][$role_handle]['assigned']));
-			$agents_caption[] = ( GROUP_ROLES_RS ) ? sprintf(_n('%s user', '%s users', $count, 'scoper'), $count) : $count;
-			//$any_roles_assigned = true;
+			$agents_caption[] = sprintf(_n('%s user', '%s users', $count, 'scoper'), $count);
 		}
 		
 		if ( GROUP_ROLES_RS && ! empty($this->current_roles[ROLE_BASIS_GROUPS][$role_handle]) ) {
 			$count = count(array_keys($this->current_roles[ROLE_BASIS_GROUPS][$role_handle]['assigned']));
-			$agents_caption[] = ( USER_ROLES_RS ) ? sprintf(_n('%s group', '%s groups', $count, 'scoper'), $count) : $count;
-			//$any_roles_assigned = true;
+			$agents_caption[] = sprintf(_n('%s group', '%s groups', $count, 'scoper'), $count);
 		}
 		
 		if ( $agents_caption ) {

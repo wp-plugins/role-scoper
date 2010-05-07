@@ -30,16 +30,16 @@ class ScoperTeaser {
 				$request = $scoper->last_request[$src_name];
 		}
 
-		if ( count($results) >= $wp_query->query_vars['posts_per_page'] ) {
-			// pagination could be broken by subsequent query for filtered ids, so buffer current paging parameters
+		
+		// Pagination could be broken by subsequent query for filtered ids, so buffer current paging parameters
+		// ( this code mimics WP_Query::get_posts() )
+		$found_posts_query = apply_filters( 'found_posts_query', 'SELECT FOUND_ROWS()' );
+		$buffer_found_posts = $wpdb->get_var( $found_posts_query );
+		
+		if ( $buffer_found_posts >= $wp_query->query_vars['posts_per_page'] ) {
 			$restore_pagination = true;
-			
-			// this code mimics WP_Query::get_posts().
-			$found_posts_query = apply_filters( 'found_posts_query', 'SELECT FOUND_ROWS()' );
-			$buffer_found_posts = $wpdb->get_var( $found_posts_query );
 			$buffer_found_posts = apply_filters( 'found_posts', $buffer_found_posts );
-		} else
-			$restore_pagination = false;
+		}
 		
 		$col_id = $src->cols->id;
 		$col_content = $src->cols->content;
@@ -180,11 +180,11 @@ class ScoperTeaser {
 			$results = array_values($results);
 		
 		// pagination could be broken by the filtered ids query performed in this function, so original paging parameters were buffered
-		if ( $restore_pagination ) {
+		if ( ! empty($restore_pagination) ) {
 			// WP query will apply found_posts filter shortly after this function returns.  Feed it the buffered value from original unfiltered results.
 			// Static flag in created function ensures it is only applied once.
 			$func_name = create_function( '$a', 'static $been_here; if ( ! empty($been_here) ) return $a; else {$been_here = true; ' . "return $buffer_found_posts;}" );
-			add_filter( 'found_posts', $func_name, 99);
+			add_filter( 'found_posts', $func_name, 1);
 		}
 		
 		return $results;
@@ -234,13 +234,14 @@ class ScoperTeaser {
 
 		if ( ! empty($x_chars_teaser[$object_type]) )
 			$num_chars = ( defined('SCOPER_TEASER_NUM_CHARS') ) ? SCOPER_TEASER_NUM_CHARS : 50;
-		
+			
 		// Content replacement mode is applied in the following preference order:
 		// 1. Custom excerpt, if available and if selected teaser mode is "excerpt", "excerpt or more", or "excerpt, pre-more or first x chars"
 		// 2. Pre-more content, if applicable and if selected teaser mode is "excerpt or more", or "excerpt, pre-more or first x chars"
 		// 3. First X Characters (defined by SCOPER_TEASER_NUM_CHARS), if total content is longer than that and selected teaser mode is "excerpt, pre-more or first x chars"
 			
 		$teaser_set = false;
+		$use_excerpt_suffix = true;
 		
 		// optionally, use post excerpt as the hidden content teaser instead of a fixed replacement
 		if ( ! empty($excerpt_teaser[$object_type]) && isset($col_content) && isset($col_excerpt) && ! empty($object->$col_excerpt) ) {
@@ -276,20 +277,33 @@ class ScoperTeaser {
 			// but only if since no custom excerpt exists or teaser options aren't set to some variation of "use excerpt as teaser"
 			if ( ! empty($teaser_replace[$object_type][$col_excerpt]) )
 				$object->$col_excerpt = $teaser_replace[$object_type][$col_excerpt];
+				
+			// If SCOPER_FORCE_EXCERPT_SUFFIX is defined, use the "content" prefix and suffix only when fully replacing content with a fixed teaser 
+			$use_excerpt_suffix = false;
 		}
-
 
 		// NOTE: fixed teaser prepends / appends are always applied to the specified entity regardless of what the content / excerpt was replaced with.
 		// (i.e. the fixed excerpt suffix is NOT applied to the teaser content due to an "excerpt as teaser" setting)
 		// Likewise, we don't suppress a fixed content suffix because the content was replaced with pre-more_tag content
-		foreach ( $teaser_prepend[$object_type] as $col => $entry )
-			if ( isset($object->$col) )
-				$object->$col = $entry . $object->$col;
-			
-		foreach ( $teaser_append[$object_type] as $col => $entry )
-			if ( isset($object->$col) )
-				$object->$col .= $entry;
-			
+		if ( $use_excerpt_suffix ) {
+			if ( defined( 'SCOPER_FORCE_EXCERPT_SUFFIX' ) ) {  // deal with ambiguity in teaser settings.  Previously, content prefix/suffix was applied even if RS substitutes the excerpt as displayed content
+				$teaser_prepend[$object_type][$col_content] = $teaser_prepend[$object_type][$col_excerpt];
+				$teaser_append[$object_type][$col_content] = $teaser_append[$object_type][$col_excerpt];
+			}
+
+			foreach ( $teaser_prepend[$object_type] as $col => $entry )
+				if ( isset($object->$col) )
+					$object->$col = $entry . $object->$col;
+				
+			foreach ( $teaser_append[$object_type] as $col => $entry )
+				if ( isset($object->$col) ) {
+					if ( ( $col == $col_content ) && ! empty( $more_pos ) && defined( 'SCOPER_FORCE_EXCERPT_SUFFIX' ) ) {  // WP will strip off anything after the more comment
+						$object->$col = str_replace( '<!--more-->', "$entry<!--more-->", $object->$col );
+					} else
+						$object->$col .= $entry;
+				}
+		}
+				
 		// no need to display password form if we're blocking content anyway
 		if ( 'post' == $src_name )
 			if ( ! empty( $object->post_password ) )

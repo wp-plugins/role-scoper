@@ -7,79 +7,9 @@ require_once('lib/agapetry_config_items.php');
 class WP_Scoped_Taxonomies extends AGP_Config_Items {
 	var $data_sources;
 
-	function WP_Scoped_Taxonomies( &$data_sources, $arr_use_wp_taxonomies ) {
+	function WP_Scoped_Taxonomies( &$data_sources, $unused = '' ) {
 		$this->data_sources =& $data_sources;
-		
-		if ( ! is_array( $arr_use_wp_taxonomies ) )
-			$arr_use_wp_taxonomies = array();
-			
-		// don't allow category or link category to be disabled via enable_wp_taxonomies option
-		$arr_use_wp_taxonomies = array_merge( $arr_use_wp_taxonomies, array( 'category' => 1, 'link_category' => 1 ) );
-
-		// Detect and support additional WP taxonomies (just require activation via Role Scoper options panel)
-		if ( ! empty($arr_use_wp_taxonomies) ) {
-			global $wp_taxonomies;
-			
-			if ( defined( 'CUSTAX_DB_VERSION' ) ) {	// Extra support for Custom Taxonomies plugin
-				global $wpdb;
-				if ( ! empty($wpdb->custom_taxonomies) ) {
-					$custom_taxonomies = array();
-					$results = $wpdb->get_results( "SELECT * FROM $wpdb->custom_taxonomies" );  // * to support possible future columns
-					foreach ( $results as $row )
-						$custom_taxonomies[$row->slug] = $row;
-				}
-			} else
-				$custom_taxonomies = array();
-			
-			foreach ( $wp_taxonomies as $taxonomy => $wp_tax ) {
-				// taxonomy must be approved for scoping and have a Scoper-defined object type
-				if ( isset($arr_use_wp_taxonomies[$taxonomy]) ) {
-					$tx_otypes = (array) $wp_tax->object_type;
-					
-					foreach ( $tx_otypes as $wp_tax_object_type ) {
-					
-						if ( $data_sources->is_member($wp_tax_object_type) )
-							$src_name = $wp_tax_object_type;
-						elseif ( ! $src_name = $data_sources->is_member_alias($wp_tax_object_type) ) // in case the 3rd party plugin uses a taxonomy->object_type property different from the src_name we use for RS data source definition
-							continue;
-						
-						if ( ( 'post' != $wp_tax_object_type ) && ( 'link_category' != $taxonomy ) )
-							$taxonomy = $wp_tax_object_type . '_' . $taxonomy;
-
-						// create taxonomies definition if necessary (additional properties will be set later)
-						$this->members[$taxonomy] = (object) array(
-							'name' => $taxonomy,								
-							'uses_standard_schema' => 1,	'autodetected_wp_taxonomy' => 1,
-							'hierarchical' => $wp_tax->hierarchical,
-							'object_source' => $src_name
-						);
-						
-						$this->members[$taxonomy]->requires_term = $wp_tax->hierarchical;	// default all hierarchical taxonomies to strict, non-hierarchical to non-strict
-	
-						if ( isset( $custom_taxonomies[$taxonomy] ) && ! empty( $custom_taxonomies[$taxonomy]->plural ) ) {
-							$this->members[$taxonomy]->display_name = $custom_taxonomies[$taxonomy]->name;
-							$this->members[$taxonomy]->display_name_plural = $custom_taxonomies[$taxonomy]->plural;
-							
-							// possible future extension to Custom Taxonomies plugin: ability to specify "required" property apart from hierarchical property (and enforce it in Edit Forms)
-							if ( isset( $custom_taxonomies[$taxonomy]->required ) )
-								$this->members[$taxonomy]->requires_term = $custom_taxonomies[$taxonomy]->required;
-						} else {
-							$this->members[$taxonomy]->display_name = ucwords( __( preg_replace('/[_-]/', ' ', $taxonomy) ) );
-							$this->members[$taxonomy]->display_name_plural = $this->members[$taxonomy]->display_name;			
-						}
-						
-						if ( ! in_array($taxonomy, $data_sources->member_property($src_name, 'uses_taxonomies') ) ) {
-							$obj_src =& $data_sources->get_ref($src_name);
-							$obj_src->uses_taxonomies []= $taxonomy;
-						}
-						
-						$this->process( $this->members[$taxonomy], $this->data_sources );
-					}
-						
-				} // endif scoping is enabled for this taxonomy
-			} // end foreach taxonomy know to WP core
-		} // endif any taxonomies have scoping enabled
-	} // end function
+	}
 	
 	// creates related data source and taxonomy objects
 	function &add( $name, $defining_module_name, $display_name, $display_name_plural, $uses_standard_schema = true, $default_strict = true, $args = '' ) {	
@@ -115,16 +45,22 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 			// auto-added custom WP taxonomies set object_source to name provided by wp_taxonomies
 			$tx->object_source =& $data_sources->get_ref($tx->object_source);
 		else {
-			// scoper-defined taxonomies set object source by uses_taxonomies property of WP_Scoped_Data_Source object
-			foreach ($data_sources->get_all_keys() as $src_name) {
-				$uses_taxonomies = $data_sources->member_property($src_name, 'uses_taxonomies');
-				if ( is_array( $uses_taxonomies) )
-					foreach ( $uses_taxonomies as $uses_taxonomy )
-						if ( $uses_taxonomy == $taxonomy ) {
-							$tx->object_source =& $data_sources->get_ref($src_name);
-							break 2;	
-						}
+			if ( in_array( $tx->name, array( 'category', 'post_tag' ) ) )	// this should not be necessary, but leave as extra failsafe for now
+				$object_src_name = 'post';
+			else {
+				$use_term_roles = scoper_get_option( 'use_term_roles' );
+
+				foreach( array_keys($use_term_roles) as $src_otype ) {
+					if ( isset($use_term_roles[$src_otype][$taxonomy]) ) {
+						$arr_src_otype = explode( ':', $src_otype );
+						$object_src_name = $arr_src_otype[0];
+						break;
+					}
+				}
 			}
+			
+			if ( $object_src_name )
+				$tx->object_source =& $data_sources->get_ref($object_src_name);
 		}
 		
 		// Apply default / derived properties to Taxonomy definitions
@@ -182,8 +118,9 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 	
 	// override base class method because process function for this subclass takes data_sources reference as 2nd arg
 	function process_added_members($arr) {
-		foreach (array_keys($arr) as $name )
+		foreach ( array_keys($arr) as $name ) {
 			$this->process($this->members[$name], $this->data_sources);
+		}
 	}
 	
 	// standard taxonomy query variables using WP taxonomy schema with objects filtering or term id filtering

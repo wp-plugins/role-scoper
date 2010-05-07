@@ -153,7 +153,11 @@ class ScoperAdminFilters
 		
 		add_filter( 'posts_fields', array(&$this, 'flt_posts_fields') );
 		
-		
+		if ( scoper_get_option( 'group_ajax' ) ) {
+			add_action( 'add_group_user_rs', array(&$this, 'new_group_user_notification'), 10, 3 );
+			add_action( 'update_group_user_rs', array(&$this, 'edit_group_user_notification'), 10, 4 );
+		}
+
 		// TODO: make this optional
 		// include private posts in the post count for each term
 		global $wp_taxonomies;
@@ -162,10 +166,36 @@ class ScoperAdminFilters
 				$wp_taxonomies[$key]->update_count_callback = 'scoper_update_post_term_count';
 		}
 	}
-
+	
 	function act_log_post_status( $post_id ) {
 		if ( $post = get_post( $post_id ) )
 			$this->last_post_status[$post->ID] = $post->post_status;
+	}
+	
+	function new_group_user_notification ( $user_id, $group_id, $status ) {
+		if ( 'active' == $status )
+			return;
+			
+		require_once( 'group-notification_rs.php' );
+			
+		if ( 'requested' == $status )
+			return ScoperGroupNotification::membership_request_notify( $user_id, $group_id );
+		elseif ( 'recommended' == $status )
+			return ScoperGroupNotification::membership_recommendation_notify( $user_id, $group_id );
+	}
+	
+	function edit_group_user_notification ( $user_id, $group_id, $status, $prev_status ) {
+		if ( $status == $prev_status )
+			return;
+			
+		require_once( 'group-notification_rs.php' );
+
+		if ( ! $prev_status )
+			return $this->new_group_user_notification( $user_id, $group_id, $status );
+	 	elseif ( 'active' == $status )
+			return ScoperGroupNotification::membership_activation_notify( $user_id, $group_id, true );
+		elseif ( 'recommended' == $status )
+			return ScoperGroupNotification::membership_recommendation_notify( $user_id, $group_id, true );
 	}
 	
 	// optional filter for WP role edit based on user level
@@ -194,10 +224,10 @@ class ScoperAdminFilters
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) )
 			return $cols;
 		
-		if ( 
-		( defined( 'SCOPER_EDIT_PAGES_LEAN' ) && strpos(urldecode($_SERVER['REQUEST_URI']), 'wp-admin/edit-pages.php') )
-		|| ( defined( 'SCOPER_EDIT_POSTS_LEAN' ) && strpos(urldecode($_SERVER['REQUEST_URI']), 'wp-admin/edit.php') )
-		) {
+		if (   // possible TODO: reinstate support for separate activation of pages / posts lean (as of WP 2.9, all post types us edit.php)
+		( ( defined( 'SCOPER_EDIT_PAGES_LEAN' ) || defined( 'SCOPER_EDIT_POSTS_LEAN' ) ) && 
+		  ( strpos(urldecode($_SERVER['REQUEST_URI']), 'wp-admin/edit-pages.php') || strpos(urldecode($_SERVER['REQUEST_URI']), 'wp-admin/edit.php') ) )
+	    ) {
 			global $wpdb;
 			$cols = "$wpdb->posts.ID, $wpdb->posts.post_author, $wpdb->posts.post_date, $wpdb->posts.post_date_gmt, $wpdb->posts.post_title, $wpdb->posts.post_status, $wpdb->posts.comment_status, $wpdb->posts.ping_status, $wpdb->posts.post_password, $wpdb->posts.post_name, $wpdb->posts.to_ping, $wpdb->posts.pinged, $wpdb->posts.post_parent, $wpdb->posts.post_modified, $wpdb->posts.post_modified_gmt, $wpdb->posts.guid, $wpdb->posts.post_type, $wpdb->posts.post_mime_type, $wpdb->posts.menu_order, $wpdb->posts.comment_count";
 		}
@@ -427,29 +457,39 @@ class ScoperAdminFilters
 	}
 	
 	function act_update_user_groups($user_id) {
-		//check_admin_referer('scoper-edit_usergroups');	
-
 		if ( empty( $_POST['rs_editing_user_groups'] ) ) // otherwise we'd delete group assignments if another plugin calls do_action('profile_update') unexpectedly
 			return;
 
 		global $current_user;
 		
+		$editable_group_ids = array();
+		$stored_groups = array();
+		
 		if ( $user_id == $current_user->ID )
-			$stored_groups = $current_user->groups;
+			$stored_groups['active'] = $current_user->groups;
 		else {
 			$user = new WP_Scoped_User($user_id, '', array( 'skip_role_merge' => 1 ) );
-			$stored_groups = $user->groups;
+			$stored_groups['active'] = $user->groups;
+		}
+		
+		// by retrieving filtered groups here, user will only modify membership for groups they can administer
+		$editable_group_ids['active'] = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => 'manage_groups' ) );
+		
+		if( scoper_get_option( 'group_ajax' ) ) {
+			$this->update_user_groups_multi_status( $user_id, $stored_groups, $editable_group_ids );
+			return;
+		} else {
+			$stored_groups = $stored_groups['active'];
+			$editable_group_ids = $editable_group_ids['active'];
 		}
 			
-		// by retrieving filtered groups here, user will only modify membership for groups they can administer
-		$editable_group_ids = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS);
-		
-		$posted_groups = ( isset($_POST['group']) ) ? $_POST['group'] : array();
-		
 		if ( ! empty($_POST['groups_csv']) ) {
 			if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( 'groups_csv', 'groups' ) )
 				$posted_groups = array_merge($posted_groups, $csv_for_item);
-		}
+		} else
+			$posted_groups = ( isset($_POST['group']) ) ? $_POST['group'] : array();
+			
+		$posted_groups = array_unique( $posted_groups );
 		
 		foreach ($editable_group_ids as $group_id) {
 			if( in_array($group_id, $posted_groups) ) { // checkbox is checked
@@ -458,6 +498,88 @@ class ScoperAdminFilters
 
 			} elseif( isset($stored_groups[$group_id]) ) {
 				ScoperAdminLib::remove_group_user($group_id, $user_id);
+			}
+		}
+	}
+	
+	function update_user_groups_multi_status( $user_id, $stored_groups, $editable_group_ids ) {
+		global $current_user;
+		
+		$posted_groups = array();
+		
+		$is_administrator = is_user_administrator_rs();
+
+		$can_manage = $is_administrator || current_user_can( 'manage_groups' );
+		$can_moderate = $can_manage || current_user_can( 'recommend_group_membership' );
+		
+		if ( ! $can_moderate && ! current_user_can( 'request_group_membership' ) )
+			return;
+		
+		if ( $can_manage )
+			$posted_groups['active'] = explode( ',', trim($_POST['current_agents_rs_csv'], '') );
+		else
+			$stored_groups = array_diff_key( $stored_groups, array( 'active' => true ) );
+			
+		if ( $can_moderate ) {
+			$posted_groups['recommended'] = explode( ',', trim($_POST['recommended_agents_rs_csv'], '') );
+
+			$stored_groups['recommended'] = $current_user->get_groups_for_user( $current_user->ID, array( 'status' => 'recommended' ) );
+			
+			$editable_group_ids['recommended'] = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => 'recommend_group_membership' ) );
+		
+			if ( isset($editable_group_ids['active']) )
+				$editable_group_ids['recommended'] = array_unique( $editable_group_ids['recommended'] + $editable_group_ids['active'] );
+		}
+
+		$stored_groups['requested'] = $current_user->get_groups_for_user( $current_user->ID, array( 'status' => 'requested' ) );
+
+		$editable_group_ids['requested'] = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => 'request_group_membership' ) );
+
+		if ( isset($editable_group_ids['recommended']) )
+			$editable_group_ids['requested'] = array_unique( $editable_group_ids['requested'] + $editable_group_ids['recommended'] );
+
+		$posted_groups['requested'] = explode( ',', trim($_POST['requested_agents_rs_csv'], '') );
+		
+		$all_posted_groups = agp_array_flatten( $posted_groups );
+		
+		$all_stored_groups = array();
+		foreach ( array_keys($stored_groups) as $status )
+			$all_stored_groups = $all_stored_groups + $stored_groups[$status];
+		
+		/*
+		dump($_POST);	
+		dump($editable_group_ids);
+		dump($stored_groups);
+		dump($all_stored_groups);
+		dump($posted_groups);
+		dump($all_posted_groups);
+		die;
+		*/
+			
+		foreach ( $stored_groups as $status => $stored ) {
+			if ( ! $editable_group_ids[$status] )
+				continue;
+			
+			// remove group memberships which were not posted for any status, if logged user can edit the group
+			foreach ( $stored as $group_id ) {
+				if ( ! in_array( $group_id, $all_posted_groups ) )
+					if ( in_array( $group_id, $editable_group_ids[$status] ) )
+						ScoperAdminLib::remove_group_user($group_id, $user_id);
+			}
+		}
+
+		foreach ( $posted_groups as $status => $posted ) {
+			if ( ! $editable_group_ids[$status] )
+				continue;
+
+			// insert or update group memberships as specified, if logged user can edit the group
+			foreach ( $posted as $group_id ) {
+				if ( in_array( $group_id, $editable_group_ids[$status] ) ) {
+					if ( ! in_array( $group_id, $all_stored_groups ) )
+						ScoperAdminLib::add_group_user($group_id, $user_id, $status);
+					elseif ( ! in_array( $group_id, $stored_groups[$status] ) )
+						ScoperAdminLib::update_group_user($group_id, $user_id, $status);
+				}
 			}
 		}
 	}

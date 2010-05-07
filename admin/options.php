@@ -35,7 +35,11 @@ class ScoperOptionUI {
 			$style = ( ! empty($args['style']) ) ? $args['style'] : '';
 			
 			echo "<div class='agp-vspaced_input'>"
-				. "<label for='$option_name'><input name='$option_name' type='checkbox' $js_clause $style id='$option_name' value='1' " . checked('1', $return['val'], false) . " /> "
+				. "<label for='$option_name'><input name='$option_name' type='checkbox' $js_clause $style id='$option_name' value='1' ";
+				
+				 checked('1', $return['val']);
+				 
+			echo " /> "
 				. $this->option_captions[$option_name]
 				. "</label>";
 				
@@ -79,7 +83,9 @@ class ScoperOptionUI {
 					$id = str_replace(':', '_', $option_name . '-' . $src_otype);
 					
 					echo "<label for='$id'>";
-					echo "<input name='$id' type='checkbox' id='$id' value='1' " . checked('1', $val, false) . " /> ";
+					echo "<input name='$id' type='checkbox' id='$id' value='1' ";
+					checked('1', $val);
+					echo " /> ";
 	
 					printf( $caption, $display_name_plural );
 					echo ('</label><br />');
@@ -200,6 +206,9 @@ $ui->section_captions = array(
 $ui->option_captions = array(
 	'persistent_cache' => __('Cache roles and groups to disk', 'scoper'),
 	'define_usergroups' => __('Enabled', 'scoper'),
+	'group_ajax' => __('Use jQuery selection UI', 'scoper' ),
+	'group_requests' => __('Enable membership requests', 'scoper' ),
+	'group_recommendations' => __('Enable membership recommendations', 'scoper' ),
 	'enable_group_roles' => __('Apply Group Roles', 'scoper'),
 	'enable_user_roles' => __('Apply User Roles', 'scoper'),
 	'role_type' => __( 'Within any scope, each user or group has:', 'scoper'),
@@ -247,7 +256,7 @@ $ui->option_captions = array(
 	'admin_css_ids' => __('Limited Editing Elements', 'scoper'),
 	'limit_object_editors' => __('Limit eligible users for object-specific editing roles', 'scoper'),
 	'private_items_listable' => __('Include Private Pages in listing if user can read them', 'scoper'),
-	'enable_wp_taxonomies' => __('settings', 'scoper'),
+	'use_term_roles' => __('settings', 'scoper'),
 	'disabled_access_types' => __('settings', 'scoper'),
 	/* disabled_role_caps' => __('settings', 'scoper'), */
 	'user_role_caps' => __('settings', 'scoper')	/* NOTE: submitee.php must sync disabled_role_caps and user_role_caps scope setting */
@@ -256,7 +265,7 @@ $ui->option_captions = array(
 
 $ui->form_options = array( 
 'features' => array(
-	'user_groups'	=> 		array( 'define_usergroups', 'mu_sitewide_groups' ),
+	'user_groups'	=> 		array( 'define_usergroups', 'group_ajax', 'group_requests', 'group_recommendations', 'mu_sitewide_groups' ),
 	'front_end' 	=> 		array( 'strip_private_caption', 'no_frontend_admin' ),
 	'pages_listing' => 		array( 'private_items_listable', 'remap_page_parents', 'enforce_actual_page_depth', 'remap_thru_excluded_page_parent' ),
 	'categories_listing' =>	array( 'remap_term_parents', 'enforce_actual_term_depth', 'remap_thru_excluded_term_parent' ),
@@ -288,7 +297,7 @@ $ui->form_options = array(
 	'additional_object_roles' => array( 'rs_page_reader_role_objscope', 'rs_post_reader_role_objscope', 'rs_page_author_role_objscope', 'rs_post_author_role_objscope', 'rs_page_revisor_role_objscope', 'rs_post_revisor_role_objscope' )
 ), 
 'realm' => array(
-	'term_object_scopes' =>	array( 'enable_wp_taxonomies' ), /* 'use_term_roles', 'use_object_roles'  NOTE: all term_object_scopes options follow scope setting of enable_wp_taxonomies */
+	'term_object_scopes' =>	array( 'use_term_roles' ), /* 'use_term_roles', 'use_object_roles'  NOTE: all related options follow scope setting of use_term_roles */
 	'access_types' =>		array( 'disabled_access_types' )
 ), 
 'rs_role_definitions' => array(
@@ -455,7 +464,7 @@ echo "<div id='rs-features' style='clear:both;margin:0' class='rs-options $color
 if ( scoper_get_option('display_hints', $sitewide, $customize_defaults) ) {
 	echo '<div class="rs-optionhint">';
 	_e("This page enables <strong>optional</strong> adjustment of Role Scoper's features. For most installations, the default settings are fine.", 'scoper');
-	
+
 	if ( IS_MU_RS && function_exists('is_site_admin') && is_site_admin() ) {
 		if ( $sitewide ) {
 			if ( ! $customize_defaults ) {
@@ -499,6 +508,25 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		$hint = __('If enabled, each user group will be available for role assignment in any blog.  Any existing blog-specific groups will be unavailable.  Group role assignments are still blog-specific.', 'scoper');
 		$ui->option_checkbox( 'mu_sitewide_groups', $tab, $section, $hint, '' );
 	}	
+	
+	if ( awp_ver( '2.8' ) ) {
+		$hint = __('Specify group membership via a search/results interface, instead of simple checkboxes.', 'scoper');
+		$js_call = "agp_display_if('group_requests_div', 'group_ajax');agp_display_if('group_recommendations_div', 'group_ajax');";
+		$ret = $ui->option_checkbox( 'group_ajax', $tab, $section, $hint, '', array( 'js_call' => $js_call ) );	
+		$group_ajax = $ret['val'] || ! $ret['in_scope'];
+		
+		$hint = __('A general role of Group Applicant (or the request_group_membership capability) allows a user to request membership in any existing group via their user profile.', 'scoper');
+		$css_display = ( $group_ajax ) ? 'block' : 'none';
+		echo "<div id='group_requests_div' style='display:$css_display; margin-top: 1em;margin-left:2em;'>";
+		$ui->option_checkbox( 'group_requests', $tab, $section, $hint, '' );	
+		echo '</div>';
+		
+		$hint = __('A Group Moderator role (general or group-specific) allows a user to recommend group members, possibly in response to requests.  This can serve as a two-tier approval mechanism.', 'scoper');
+		$css_display = ( $group_ajax ) ? 'block' : 'none';
+		echo "<div id='group_recommendations_div' style='display:$css_display; margin-top: 1em;margin-left:2em;'>";
+		$ui->option_checkbox( 'group_recommendations', $tab, $section, $hint, '' );
+		echo '</div>';
+	}
 	?>
 	</td></tr>
 <?php endif; // any options accessable in this section
@@ -1183,7 +1211,7 @@ if ( $ui->display_hints ) {
 <?php
 
 $section = 'role_basis';
-if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui->form_options[$tab][$section] ) ) : 	// for now, teaser option are all-or-nothing sitewide / blogwide 															
+if ( ! empty( $ui->form_options[$tab][$section] ) ) :														
 ?>
 	<tr valign="top">
 	<th scope="row"><?php echo $ui->section_captions[$tab][$section];		// --- ROLE BASIS SECTION --- 
@@ -1619,7 +1647,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 ?>	<tr valign="top">
 	<th scope="row">
 <?php 
-													// --- OBJECT SCOPE SECTION ---
+													// --- TERM / OBJECT SCOPE SECTION ---
 				echo $ui->section_captions[$tab][$section];
 ?></th><td>
 <?php 		
@@ -1628,7 +1656,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 
 			$option_name = "use_{$scope}_roles";
 			
-			if ( in_array( 'enable_wp_taxonomies', $ui->form_options[$tab][$section_alias] ) ) {	// use_term_roles and use_object_roles follow option scope of enable_wp_taxonomies
+			if ( in_array( 'use_term_roles', $ui->form_options[$tab][$section_alias] ) ) {	// use_object_roles follow option scope of use_term_roles
 			
 				$ui->all_otype_options []= $option_name;
 				
@@ -1637,34 +1665,46 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 						$opt_vals = array();
 							
 					$opt_vals = array_merge($ui->def_otype_options[$option_name], $opt_vals);
-				
-					foreach ( $opt_vals as $src_otype => $val ) {
-						$id = str_replace(':', '_', $option_name . '-' . $src_otype);
-						?>
-						<div class="agp-vspaced_input">
-						<label for="<?php echo($id);?>">
-						<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
-						<?php 
-						if ( TERM_SCOPE_RS == $scope ) {
-							$src_name = scoper_src_name_from_src_otype($src_otype);
-							if ( $uses_taxonomies = $scoper->data_sources->member_property($src_name, 'uses_taxonomies') ) {
-								$taxonomy = reset( $uses_taxonomies );
-								$tx_display = $scoper->taxonomies->member_property($taxonomy, 'display_name');
-							} else
-								$tx_display = __('Section', 'scoper');
-							
-							$display_name_plural = $scoper->admin->interpret_src_otype($src_otype);
-							//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
-							printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
-							
-							if ( ! $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
-								echo '* ';
-								$any_loose_taxonomy = true;
-							}
-						} else
-							echo $scoper->admin->interpret_src_otype($src_otype, true);
 
-						echo ('</label></div>');
+					foreach ( $opt_vals as $src_otype => $val ) {
+						if ( TERM_SCOPE_RS == $scope ) {
+							foreach( array_keys($opt_vals[$src_otype]) as $taxonomy ) {
+								$id = str_replace( ':', '_', $option_name . '-' . $src_otype . '-' . $taxonomy );
+								?>
+								<div class="agp-vspaced_input">
+								<label for="<?php echo($id);?>">
+								<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val[$taxonomy]);?> />
+								<?php 
+								if ( TERM_SCOPE_RS == $scope ) {
+									$tx_display = $scoper->taxonomies->member_property( $taxonomy, 'display_name' );
+	
+									if ( ! $tx_display )
+										$tx_display = $taxonomy;
+									
+									$display_name_plural = $scoper->admin->interpret_src_otype($src_otype);
+
+									//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
+									printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
+									
+									if ( ! $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
+										echo '* ';
+										$any_loose_taxonomy = true;
+									}
+								} else
+									echo $scoper->admin->interpret_src_otype($src_otype, true);
+									
+								echo ('</label></div>');
+							}
+						} else {
+							$id = str_replace( ':', '_', $option_name . '-' . $src_otype );
+							?>
+							<div class="agp-vspaced_input">
+							<label for="<?php echo($id);?>">
+							<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
+							<?php 
+							echo $scoper->admin->interpret_src_otype($src_otype, true);
+							echo ('</label></div>');
+						}
 					} // end foreach src_otype
 				} // endif default option isset
 				
@@ -1672,58 +1712,9 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 			
 			
 			if ( 'term' == $scope ) {
-				$option_name = "enable_wp_taxonomies";
-				$enabled = scoper_get_option($option_name, $sitewide, $customize_defaults);
-
-				$locked_taxonomies = array( 'category' => 1, 'link_category' => 1 );
-				
-				$all = implode(',', array_keys( array_diff_key($wp_taxonomies, $locked_taxonomies) ) );
-				echo "<input type='hidden' name='all_wp_taxonomies' value='$all' />";
-				
-				$locked = array();
-				
-				// Detect and support any WP taxonomy
-				foreach ( $wp_taxonomies as $taxonomy => $wtx ) {					// in case the 3rd party plugin uses a taxonomy->object_type property different from the src_name we use for RS data source definition
-					if ( isset( $locked_taxonomies[$taxonomy] ) )
-						continue;
-					
-					if ( ! $scoper->data_sources->is_member($wtx->object_type) && ! $scoper->data_sources->is_member_alias($wtx->object_type) )
-						continue;
-			
-					$disabled_attrib = ( $scoper->taxonomies->is_member($taxonomy) && ! $scoper->taxonomies->member_property($taxonomy, 'autodetected_wp_taxonomy') ) ? 'disabled="disabled"' : '';
-					
-					$id = $option_name . '-' . $taxonomy;
-					$val = isset($enabled[$taxonomy]);
-					
-					if ( $disabled_attrib && $val )
-						continue;
-						//$locked[$taxonomy] = 1;
-			?>
-			<div class="agp-vspaced_input">
-			<label for="<?php echo($id);?>">
-			<input name="<?php echo($option_name);?>[]" type="checkbox" id="<?php echo($id);?>" <?php echo($disabled_attrib);?> value="<?php echo($taxonomy);?>" <?php checked(true, $val);?> />
-			<?php
-					if ( ! $tx_display = $scoper->taxonomies->member_property($taxonomy, 'display_name') )
-						$tx_display = __( ucwords(str_replace('_', ' ', $taxonomy)) );
-					
-					$display_name_plural = $scoper->admin->interpret_src_otype($wtx->object_type);
-					//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
-					printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
-									
-					if ( ! $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
-						echo '* ';
-						$any_loose_taxonomy = true;
-					}
-						
-					echo("$taxonomy_display_name</label></div>");
-				} // end foreach wp tax
-				
-				$locked = implode(',', array_keys($locked) );
-				echo "<input type='hidden' name='locked_wp_taxonomies' value='$locked' />";
-				
 				if ( ! empty($any_loose_taxonomy) )
 					echo "<span class='rs-gray'>" . __( '* = Role Assignment only (no Restrictions)', 'scoper' ) . '</span>';
-			}	
+			}
 			
 		} // end foreach scope
 	?>
@@ -1875,7 +1866,9 @@ foreach ( $available_form_options as $tab_name => $sections ) {
 				$id = "{$option_name}_sitewide";
 				$val = isset( $scoper_options_sitewide[$option_name] );
 				echo "<label for='$id'>";
-				echo "<input name='rs_options_sitewide[]' type='checkbox' id='$id' value='$option_name' $disabled " . checked('1', $val, false) . " />";
+				echo "<input name='rs_options_sitewide[]' type='checkbox' id='$id' value='$option_name' $disabled ";
+				checked('1', $val);
+				echo " />";
 
 				printf( $option_scope_stamp, $ui->option_captions[$option_name] );
 					

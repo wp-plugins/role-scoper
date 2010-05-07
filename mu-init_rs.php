@@ -7,11 +7,13 @@ function scoper_default_options_sitewide() {
 	$def = array(
 		'persistent_cache' => true,
 		'define_usergroups' => true,
+		'group_ajax' => true,
+		'group_requests' => true,
+		'group_recommendations' => true,
 		'enable_group_roles' => true,
 		'enable_user_roles' => true,
 		'role_type' => true,
 		'custom_user_blogcaps' => true,
-		'enable_wp_taxonomies' => true,
 		'no_frontend_admin' => true,
 		'indicate_blended_roles' => true,
 		'version_update_notice' => true,
@@ -39,7 +41,6 @@ function scoper_default_options_sitewide() {
 		'role_content_date_limits' => true,
 
 		'disabled_access_types' => true,
-		'enable_wp_taxonomies' => true,
 		'use_term_roles' => true,
 		'use_object_roles' => true,
 		'disabled_role_caps' => true,

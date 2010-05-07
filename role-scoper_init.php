@@ -2,8 +2,6 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('defaults_rs.php');
-	
 require_once('hardway/cache-persistent.php');
 
 if ( is_admin() )
@@ -115,7 +113,7 @@ function scoper_version_check() {
 	$ver_change = false;
 
 	$ver = get_option('scoper_version');
-
+	
 	if ( empty($ver['db_version']) || version_compare( SCOPER_DB_VERSION, $ver['db_version'], '!=') ) {
 		$ver_change = true;
 		
@@ -132,10 +130,10 @@ function scoper_version_check() {
 		
 		if ( version_compare( SCOPER_VERSION, $ver['version'], '!=') ) {
 			$ver_change = true;
-			
+
 			require_once('admin/update_rs.php');
 			scoper_version_updated( $ver['version'] );
-			
+
 			scoper_check_revision_settings();
 		}
 		
@@ -195,6 +193,17 @@ function scoper_init() {
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
 	}
 	
+	if ( is_admin() && awp_ver( '2.9' ) ) {
+		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
+		
+		$logged_types = (array) scoper_get_option( 'logged_custom_types' );
+	
+		if ( array_diff( $custom_types, $logged_types ) ) {
+			require_once( 'admin/sync-custype-caps_rs.php' );
+			scoper_sync_wp_custype_caps();
+		}
+	}
+	
 	if ( is_admin() ) {
 		require_once( 'admin/admin-init_rs.php' );
 		scoper_admin_init();	
@@ -210,8 +219,18 @@ function scoper_init() {
 	if ( empty($scoper) )		// set_current_user may have already triggered scoper creation and role_cap load
 		$scoper = new Scoper();
 
-	log_mem_usage_rs( 'new Scoper done' );
+	global $current_user;
+	
+	if ( ! empty( $current_user ) ) {
+		if ( 'rs' == SCOPER_ROLE_TYPE )
+			$current_user->merge_scoped_blogcaps();
 		
+		foreach ( array_keys($current_user->assigned_blog_roles) as $date_key )
+			$current_user->blog_roles[$date_key] = $scoper->role_defs->add_contained_roles( $current_user->assigned_blog_roles[$date_key] );
+	}
+		
+	log_mem_usage_rs( 'new Scoper done' );
+	
 	$scoper->init();
 	
 	log_mem_usage_rs( 'scoper->init() done' );
@@ -270,6 +289,10 @@ function scoper_refresh_default_otype_options() {
 	global $scoper_default_otype_options;
 	
 	$scoper_default_otype_options = apply_filters( 'default_otype_options_rs', scoper_default_otype_options() );
+	
+	// compat workaround for old versions of Role Scoping for NGG which use old otype option key structure
+	if ( isset( $scoper_default_otype_options['use_term_roles']['ngg_gallery:ngg_gallery'] ) && ( ! is_array($scoper_default_otype_options['use_term_roles']['ngg_gallery:ngg_gallery']) ) )
+		$scoper_default_otype_options['use_term_roles']['ngg_gallery:ngg_gallery'] = array( 'ngg_album' => 1 );
 }
 
 function scoper_get_default_otype_options() {
@@ -402,10 +425,10 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 				$optval = $scoper_blog_options["scoper_$option_basename"];
 		}
 	}
-
+	
 	//dump($get_default);
 	//dump($scoper_blog_options);
-	
+
 	if ( ! isset( $optval ) ) {
 		global $scoper_default_options;
 	
@@ -413,20 +436,39 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 			if ( did_action( 'scoper_init' ) )	// Make sure other plugins have had a chance to apply any filters to default options
 				scoper_refresh_default_options();
 			else {
-				$hardcode_defaults = scoper_default_options();
-				if ( isset($hardcode_defaults[$option_basename]) )
-					$optval = $hardcode_defaults[$option_basename];	
+				static $hardcode_option_defaults;
+				
+				if ( empty($hardcode_option_defaults) )
+					$hardcode_option_defaults = scoper_default_options();
+
+				if ( isset($hardcode_option_defaults[$option_basename]) )
+					$optval = $hardcode_option_defaults[$option_basename];	
+				else {
+					static $hardcode_otype_option_defaults;
+					
+					if ( empty($hardcode_otype_option_defaults) )
+						$hardcode_otype_option_defaults = scoper_default_otype_options();
+					
+					if ( isset($hardcode_otype_option_defaults[$option_basename]) )
+						$optval = $hardcode_otype_option_defaults[$option_basename];	
+				}
 			}
 		}
 		
 		if ( ! empty($scoper_default_options) && ! empty( $scoper_default_options[$option_basename] ) )
 			$optval = $scoper_default_options[$option_basename];
 			
-		if ( ! isset($optval) )
-			return '';
+		if ( ! isset($optval) ) {
+			global $scoper_default_otype_options;
+			if ( isset( $scoper_default_otype_options[$option_basename] ) )
+				return $scoper_default_otype_options[$option_basename];
+		}
 	}
 
-	return maybe_unserialize($optval);
+	if ( isset($optval) )
+		return maybe_unserialize($optval);
+	else
+		return '';
 }
 
 function scoper_get_otype_option( $option_main_key, $src_name, $object_type = '', $access_name = '')  {
@@ -690,6 +732,28 @@ if ( ! awp_ver( '2.8' ) && ! function_exists('_x') ) {
 	function _x( $text, $context, $domain ) {
 		return _c( "$text|$context", $domain );
 	}
+}
+
+function scoper_get_taxonomy_usage( $src_name, $object_types = '' ) {
+	$taxonomies = array();
+	if ( ! is_array( $object_types ) )
+		$object_types = (array) $object_types;
+
+	if ( $use_term_roles = scoper_get_option( 'use_term_roles' ) ) {
+		foreach ( array_keys($use_term_roles) as $src_otype ) {
+			$arr_src_otype = explode( ':', $src_otype );
+			
+			if ( $src_name == $arr_src_otype[0] ) {
+				if ( ! $object_types || in_array( $arr_src_otype[1], $object_types ) )
+					$taxonomies = array_merge( $taxonomies, array_intersect( (array) $use_term_roles[$src_otype], array( 1 ) ) );  // array cast prevents PHP warning on first-time execution following update to RS 1.2
+			}
+		}
+	}
+	
+	if ( $taxonomies )
+		return array_keys($taxonomies);
+	else
+		return array();
 }
 
 ?>

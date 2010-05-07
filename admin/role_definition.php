@@ -92,17 +92,17 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 		}
 		
 		if ( $include_taxonomy_otypes ) {
-			if ( scoper_get_otype_option('use_term_roles', $src_name, $object_type) ) {
-				foreach ( $src->uses_taxonomies as $taxonomy) {
-					$tx_display_name = $scoper->taxonomies->member_property($taxonomy, 'display_name');
-				
-					if ( $tx_roles = $rs_role_defs->get_matching( 'rs', $src_name, $taxonomy ) ) {
-						$otype_roles[$taxonomy] = $tx_roles;
-						$otype_display_names[$taxonomy] = $tx_display_name;
-					}
-				}	
-				$include_taxonomy_otypes = false;
+			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
+			
+			foreach ( $uses_taxonomies as $taxonomy) {
+				$tx_display_name = $scoper->taxonomies->member_property($taxonomy, 'display_name');
+			
+				if ( $tx_roles = $rs_role_defs->get_matching( 'rs', $src_name, $taxonomy ) ) {
+					$otype_roles[$taxonomy] = $tx_roles;
+					$otype_display_names[$taxonomy] = $tx_display_name;
+				}
 			}	
+			$include_taxonomy_otypes = false;
 		}
 		
 		if ( ! $otype_roles )

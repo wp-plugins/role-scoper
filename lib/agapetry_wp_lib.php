@@ -64,4 +64,22 @@ function awp_administrator_roles() {
 	
 	return $admin_roles;
 }
+
+function awp_mail( $address, $title, $message ) {
+	$blog_name = get_option( 'blogname' );
+	$admin_email = get_option( 'admin_email' );
+	
+    $headers = 'From: ' . $blog_name . ' <' . $admin_email . '>' . "\r\n";
+    $headers .= 'Reply-To: ' . $blog_name . ' <'. $admin_email . '>' . "\r\n";
+	$headers .= 'Return-Path: ' . $blog_name . ' <'. $admin_email . '>' . "\r\n";
+
+	if ( defined( 'RS_DEBUG' ) ) {
+		//$log = "$title <br />to $address<br />$message<br /><br />";
+		//rs_errlog( $log );
+		//return;
+		
+		wp_mail( $address, $title, $message, $headers );
+	} else
+		@wp_mail( $address, $title, $message, $headers );
+}
 ?>

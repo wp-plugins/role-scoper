@@ -2,13 +2,13 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-//add_filter( 'get_previous_post_join', array('QueryInterceptorFront_RS', 'flt_adjacent_post_join') );
-//add_filter( 'get_next_post_join', array('QueryInterceptorFront_RS', 'flt_adjacent_post_join') );
 add_filter( 'get_previous_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 add_filter( 'get_next_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 
 add_filter('getarchives_where', array('QueryInterceptorFront_RS', 'flt_getarchives_where') );
 	
+add_filter( 'option_sticky_posts', array('QueryInterceptorFront_RS', 'flt_sticky_posts') );
+
 class QueryInterceptorFront_RS {
 	// custom wrapper to clean up after get_previous_post_where, get_next_post_where nonstandard arg syntax 
 	// (uses alias p for post table, passes "WHERE post_type=...)
@@ -43,6 +43,15 @@ class QueryInterceptorFront_RS {
 		$where = 'WHERE 1=1 ' . $where;
 			
 		return $where;
+	}
+	
+	function flt_sticky_posts( $post_ids ) {
+		if ( $post_ids && ! is_content_administrator_rs() ) {
+			global $wpdb;
+			$post_ids = scoper_get_col( apply_filters( 'objects_request_rs', "SELECT ID FROM $wpdb->posts WHERE ID IN ('" . implode( ',', $post_ids ) . "')", 'post' ) );
+		}
+
+		return $post_ids;
 	}
 }
 ?>
