@@ -29,32 +29,46 @@ class ScoperRewriteMU {
 
 		$pos_rs_start = strpos( $contents, "\n# BEGIN Role Scoper" );
 
-		$default_rule = 'RewriteRule ^(.*/)?files/$ index.php [L]';
+		$default_file_redirect_rule = array();
 		
-		if ( $pos_def = strpos( $contents, $default_rule ) ) {
-			$fp = fopen($htaccess_path, 'w');
-			
-			if ( $pos_rs_start )
-				fwrite($fp, substr( $contents, 0, $pos_rs_start ) );
-			else
-				fwrite($fp, substr( $contents, 0, $pos_def ) );
+		$default_file_redirect_rule []= 'RewriteRule ^(.*/)?files/$ index.php [L]';	// WP-MU < 3.0
+		$default_file_redirect_rule []= 'RewriteRule ^([_0-9a-zA-Z-]+/)?files/(.+) wp-includes/ms-files.php?file=$2 [L]';  // WP 3.0
+		
+		foreach ( $default_file_redirect_rule as $default_rule ) {
+			if ( $pos_def = strpos( $contents, $default_rule ) ) {
+				$fp = fopen($htaccess_path, 'w');
 				
-			if ( $include_rs_rules )
-				fwrite($fp, ScoperRewrite::build_site_rules() );
-
-			fwrite($fp, substr( $contents, $pos_def ) );
+				if ( $pos_rs_start )
+					fwrite($fp, substr( $contents, 0, $pos_rs_start ) );
+				else
+					fwrite($fp, substr( $contents, 0, $pos_def ) );
+					
+				if ( $include_rs_rules )
+					fwrite($fp, ScoperRewrite::build_site_rules() );
 	
-			fclose($fp);
+				fwrite($fp, substr( $contents, $pos_def ) );
+		
+				fclose($fp);
+				
+				break;
+			}
 		}
 	}
 	
 	// In case a modified or future MU regenerates the site .htaccess, filter contents to include RS rules
 	function insert_site_rules( $rules = '' ) {
-		$default_rule = 'RewriteRule ^(.*/)?files/$ index.php [L]';
+		$default_file_redirect_rule = array();
 		
-		if ( $pos_def = strpos( $rules, $default_rule ) )
-			$rules = substr( $rules, 0, $pos_def ) . ScoperRewrite::build_site_rules() . substr( $rules, $pos_def );
-		
+		$default_file_redirect_rule []= 'RewriteRule ^(.*/)?files/$ index.php [L]';	 // WP-MU < 3.0
+		$default_file_redirect_rule []= 'RewriteRule ^([_0-9a-zA-Z-]+/)?files/(.+) wp-includes/ms-files.php?file=$2 [L]';	// WP 3.0
+
+		foreach ( $default_file_redirect_rule as $default_rule ) {
+			if ( $pos_def = strpos( $rules, $default_rule ) ) {
+				$rules = substr( $rules, 0, $pos_def ) . ScoperRewrite::build_site_rules() . substr( $rules, $pos_def );
+				break;
+			}
+		}
+				
 		return $rules;
 	}
 	
@@ -71,7 +85,7 @@ class ScoperRewriteMU {
 				
 		require_once( 'analyst_rs.php' );
 		
-		$new_rules .= "\n#Run file requests through blog-specific .htaccess to support filtering.  Files that pass through filtering will be redirected to blogs.php for cache handling.\n";
+		$new_rules .= "\n#Run file requests through blog-specific .htaccess to support filtering.  Files that pass through filtering will be redirected by default WP rules.\n";
 		
 		$results = scoper_get_results( "SELECT blog_id, path FROM $wpdb->blogs ORDER BY blog_id" );
 		

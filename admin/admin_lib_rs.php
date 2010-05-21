@@ -390,8 +390,6 @@ class ScoperAdminLib {
 		$qry = "UPDATE $wpdb->user2group_rs SET $wpdb->user2group_status_col='$status' WHERE $wpdb->user2group_gid_col='$group_id' AND $wpdb->user2group_uid_col IN ($id_in)";
 		scoper_query( $qry );
 
-		rs_errlog( $qry );
-		
 		foreach( $user_ids as $user_id ) {
 			$prev = ( isset( $prev_status[$user_id] ) ) ? $prev_status[$user_id] : '';
 			do_action( 'update_group_user_rs', $group_id, $user_id, $status, $prev );

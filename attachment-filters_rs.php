@@ -58,7 +58,7 @@ function agp_return_file( $file_path, $attachment_id = 0 ) {
 	$redirect = $file_url . "?rs_file_key=$key";
 
 	//rs_errlog( "redirect: $redirect" );
-	
+
 	wp_redirect( $redirect );
 	exit(0);
 }
@@ -73,6 +73,15 @@ class AttachmentFilters_RS {
 	}
 	
 	function _user_can_read_file( $file, &$return_attachment_id, &$matched_published_post, $uploads = '' ) {
+		// don't filter the direct file URL request if filtering is disabled, or if the request is from wp-admin
+		if ( defined('DISABLE_QUERYFILTERS_RS') || is_content_administrator_rs() || ! scoper_get_option( 'file_filtering' )
+		|| ( ! empty($_SERVER['HTTP_REFERER']) && ( false !== strpos($_SERVER['HTTP_REFERER'], '/wp-admin' ) ) && ( false !== strpos($_SERVER['HTTP_REFERER'], get_option('siteurl') . '/wp-admin' ) ) ) ) {
+			// note: image links from wp-admin should now never get here due to http_referer RewriteRule, but leave above check just in case - inexpensive since we're checking for wp-admin before calling get_option
+
+			//rs_errlog("skipping filtering for $file");
+			return true;
+		}
+		
 		if ( ! is_array( $uploads ) || empty($uploads['basedir']) ) {
 			require_once( 'uploads_rs.php' );
 			$uploads = scoper_get_upload_info();
@@ -82,14 +91,6 @@ class AttachmentFilters_RS {
 		
 		$file_path = $uploads['basedir'] . "/$file";
 		
-		// don't filter the direct file URL request if filtering is disabled, or if the request is from wp-admin
-		if ( defined('DISABLE_QUERYFILTERS_RS') || is_content_administrator_rs() || ! scoper_get_option( 'file_filtering' )
-		|| ( ! empty($_SERVER['HTTP_REFERER']) && ( false !== strpos($_SERVER['HTTP_REFERER'], '/wp-admin' ) ) && ( false !== strpos($_SERVER['HTTP_REFERER'], get_option('siteurl') . '/wp-admin' ) ) ) ) {
-			// note: image links from wp-admin should now never get here due to http_referer RewriteRule, but leave above check just in case - inexpensive since we're checking for wp-admin before calling get_option
-
-			//rs_errlog("skipping filtering for $file_path");
-			return true;
-		}
 		
 		//rs_errlog("$file_path exists.");	
 		

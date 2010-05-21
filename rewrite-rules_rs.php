@@ -115,9 +115,9 @@ class ScoperRewrite {
 			
 		require_once( 'uploads_rs.php' );
 		$uploads = scoper_get_upload_info();
-		
+
 		// If a filter has changed MU basedir, don't filter file attachments for this blog because we might not be able to regenerate the basedir for rule removal at RS deactivation
-		if ( ! IS_MU_RS || strpos( $uploads['basedir'], "/blogs.dir/$blog_id/files/" ) ) {
+		if ( ! IS_MU_RS || strpos( $uploads['basedir'], "/blogs.dir/$blog_id/files" ) ) {
 			$htaccess_path = trailingslashit($uploads['basedir']) . '.htaccess';
 
 			ScoperRewrite::insert_with_markers( $htaccess_path, 'Role Scoper', $rules );
@@ -198,8 +198,7 @@ class ScoperRewrite {
 						
 			}
 		} // end foreach protected attachment
-		
-		
+
 		if ( IS_MU_RS && defined('SCOPER_MU_FILE_PROCESSING') ) { // unless SCOPER_MU_FILE_PROCESSING is defined (indicating blogs.php has been modified for compatibility), blogs.php processing will be bypassed for all files
 			$content_path = trailingslashit( str_replace( $strip_path, '', str_replace( '\\', '/', WP_CONTENT_DIR ) ) );
 

@@ -104,6 +104,15 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+
+= 1.2 Beta 2 - 20 May 2010 =
+* BugFix : File Filtering did not work on WP 3.0 Multisite
+* BugFix : File Filtering did not work on new MU blogs until plugin re-activation or File Filtering re-enable
+* BugFix : If redundant Page / Post / Category roles were stored to database, they could only be deleted one at a time (giving the appearance and effect of a failed role deletion)
+* BugFix : Javascript error in Page Edit form, failed to set tooltip caption for Page Role checkboxes
+* BugFix : PHP Warning on RS version upgrade if previous installation never customized RS options
+
+
 **1.2 Beta 1 - 7 May 2010**
 
 = WordPress 3.0 Compatibility =

@@ -2,6 +2,8 @@
 
 add_action( 'scoper_init', 'scoper_review_file_htaccess' );
 
+add_action( 'wpmu_new_blog', 'scoper_flush_site_rules' );
+
 // indicates, for MU installations, which of the RS options (and OType options) should be controlled site-wide
 function scoper_default_options_sitewide() {
 	$def = array(
