@@ -26,6 +26,7 @@ class CapInterceptor_RS
 		// (note: custom caps from other plugins can be scoper-controlled if they are defined via a Role Scoper Extension plugin)
 		add_filter('user_has_cap', array(&$this, 'flt_user_has_cap'), 99, 3);  // scoping will be defeated if our filter isn't applied last
 	}
+
 	
 	// CapInterceptor_RS::flt_user_has_cap
 	//
@@ -54,12 +55,12 @@ class CapInterceptor_RS
 			return $wp_blogcaps;
 			
 		$in_process = true;
-	
+		
 		if ( empty($hascap_object_ids) ) {
 			$hascap_object_ids = array();
 			$tested_object_ids = array();	
 		}
-			
+
 		// work around bug in mw_EditPost method (requires publish_pages AND publish_posts cap)
 		if ( defined('XMLRPC_REQUEST') && ( 'publish_posts' == $orig_reqd_caps[0] ) ) {
 			global $xmlrpc_post_type_rs;
@@ -108,6 +109,14 @@ class CapInterceptor_RS
 			return $wp_blogcaps;		
 		}
 		
+		// custom workaround to reveal all private / restricted content in all blogs if logged into main blog 
+		if ( defined( 'SCOPER_MU_MAIN_BLOG_RULES' ) ) {
+			include_once( 'mu-custom.php' );
+			if ( ! array_diff( $orig_reqd_caps, array( 'read', 'read_private_pages', 'read_private_posts' ) ) )
+				if ( $return_caps = ScoperMU_Custom::current_user_logged_into_main( $wp_blogcaps, $orig_reqd_caps ) )
+					return $return_caps;
+		} // end custom workaround
+		
 		global $current_user;
 		
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
@@ -116,7 +125,7 @@ class CapInterceptor_RS
 			$user = new WP_Scoped_User($user_id);
 		else
 			$user = $current_user;
-
+			
 		// If something blew away the scoped allcaps array (which includes RS blogroles), regenerate it.  This has only been reported with MU, but check under WP just in case
 		//if ( $user->ID && ! isset( $user->allcaps['is_scoped_user'] ) )
 		//	$user->merge_scoped_blogcaps();

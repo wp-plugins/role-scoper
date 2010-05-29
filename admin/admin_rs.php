@@ -110,8 +110,8 @@ class ScoperAdmin
 		}
 		
 		if ( ! empty($src) && ! empty($src->cols->parent) && ! empty($otype_def->ignore_object_hierarchy) ) {
-			$obj_title = sprintf( __('assign role for this %s', 'scoper'), strtolower($otype_def->display_name) );
-			$child_title = sprintf( __('assign role for sub-%s', 'scoper'), strtolower($otype_def->display_name_plural) );
+			$obj_title = sprintf( __('assign role for this %s', 'scoper'), mb_strtolower($otype_def->display_name) );
+			$child_title = sprintf( __('assign role for sub-%s', 'scoper'), mb_strtolower($otype_def->display_name_plural) );
 		
 			$js_params = "var role_for_object_title = '$obj_title';"
 					. "var role_for_children_title = '$child_title';";
@@ -408,7 +408,7 @@ class ScoperAdmin
 		$roles_cap = 'read'; // we apply other checks within this function to confirm the menu is valid for current user
 		$restrictions_caption = __('Restrictions', 'scoper');
 		$roles_caption = __('Roles', 'scoper');
-		
+
 		if ( $tweak_menu ) {
 			$roles_hook_page = 'admin_page_';
 			$restrictions_hook_page = 'admin_page_';

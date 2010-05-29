@@ -575,7 +575,7 @@ function item_tree_jslinks($mode, $args='') {
 	";
 	$style = ( $default_hide_empty ) ? '' : ' style="display:none;"';
 	
-	$display_name_plural = ( ! empty($src->display_name) ) ? strtolower($src->display_name_plural) : __('items', 'scoper');
+	$display_name_plural = ( ! empty($src->display_name) ) ? mb_strtolower($src->display_name_plural) : __('items', 'scoper');
 	
 	if ( ROLE_RESTRICTION_RS == $mode )
 		$title = sprintf(__('include the newest %s with default restrictions', 'scoper'), $display_name_plural);
@@ -754,9 +754,9 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	}
 	
 	$title_roles = __('edit roles', 'scoper');
-	//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), strtolower($display_name) );
-	$title_item = sprintf(__('edit %s', 'scoper'), strtolower($display_name) );
-	//$title_term = sprintf(_ x('edit %s', 'category/link category/etc', 'scoper'), strtolower($display_name) );
+	//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), mb_strtolower($display_name) );
+	$title_item = sprintf(__('edit %s', 'scoper'), mb_strtolower($display_name) );
+	//$title_term = sprintf(_ x('edit %s', 'category/link category/etc', 'scoper'), mb_strtolower($display_name) );
 
 	foreach($all_items as $key => $item) {
 		$id = $item->$col_id;
@@ -1068,7 +1068,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 		<li><table class='widefat' style='width:auto;'>
 		<thead>
 		<tr class="thead">
-		<th colspan="2"><?php printf(__('select / unselect all:', 'scoper'), strtolower($otype_or_tx->display_name_plural))?></th>
+		<th colspan="2"><?php printf(__('select / unselect all:', 'scoper'), mb_strtolower($otype_or_tx->display_name_plural))?></th>
 		<!--<th colspan="2" style="text-align: center"><?php _e('Actions') ?></th>-->
 		</tr>
 		</thead>
@@ -1090,7 +1090,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 
 				// $check_shorcut was displayed in first <td>
 				$id = "rs-Z-{$role_codes[$role_handle]}";
-				$caption = ' <span class="rs-subtext">' . sprintf( __('(all %s)', 'scoper'), strtolower($otype_or_tx->display_name_plural) ) . '</span>'; 
+				$caption = ' <span class="rs-subtext">' . sprintf( __('(all %s)', 'scoper'), mb_strtolower($otype_or_tx->display_name_plural) ) . '</span>'; 
 				$js_call = "scoper_checkroles('$id', '$all_items_ser', '{$role_codes[$role_handle]}');";
 				echo "\n\t<tr $style>"
 					. "<td><input type='checkbox' id='$id' onclick=\"$js_call\" /></td>"

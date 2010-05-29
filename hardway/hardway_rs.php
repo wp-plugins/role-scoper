@@ -362,7 +362,8 @@ class ScoperHardway
 		if ( $depth < 0 )
 			$depth = 0;
 		
-		$exclude = preg_split('/[\s,]+/',$exclude);
+		if ( $exclude )
+			$exclude = preg_split('/[\s,]+/',$exclude);
 		
 		$filtered_items_by_id = array();
 		foreach ( $items as $item )

@@ -110,9 +110,9 @@ class ScoperAdminUI {
 	
 		if ( TERM_SCOPE_RS == $scope ) {
 			if ( ! $display_name_plural ) 
-				$display_name_plural = ( 'link_category' == $tx->name ) ? strtolower( $this->scoper->taxonomies->member_property('category', 'display_name_plural') ) : strtolower($tx->display_name_plural);
+				$display_name_plural = ( 'link_category' == $tx->name ) ? mb_strtolower( $this->scoper->taxonomies->member_property('category', 'display_name_plural') ) : mb_strtolower($tx->display_name_plural);
 			if ( ! $display_name ) 
-				$display_name = ( 'link_category' == $tx->name ) ? strtolower( $this->scoper->taxonomies->member_property('category', 'display_name') ) : strtolower($tx->display_name);
+				$display_name = ( 'link_category' == $tx->name ) ? mb_strtolower( $this->scoper->taxonomies->member_property('category', 'display_name') ) : mb_strtolower($tx->display_name);
 		}
 		
 		$table_captions = array();
@@ -140,8 +140,8 @@ class ScoperAdminUI {
 		$args = array_merge( $defaults, (array) $args);
 		extract($args);
 	
-		$display_name_plural = strtolower($tx_or_otype->display_name_plural);
-		$display_name = strtolower($tx_or_otype->display_name);
+		$display_name_plural = mb_strtolower($tx_or_otype->display_name_plural);
+		$display_name = mb_strtolower($tx_or_otype->display_name);
 
 		if ( $role_basis ) {
 			if ( ! $agent_caption && $role_basis )
@@ -150,7 +150,7 @@ class ScoperAdminUI {
 		} else
 			$generic_name = __awp('Name');
 			
-		$agent_caption = strtolower($agent_caption);
+		$agent_caption = mb_strtolower($agent_caption);
 		
 		echo '<h4 style="margin-bottom:0.1em"><a name="scoper_key"></a>' . __("Users / Groups Key", 'scoper') . ':</h4><ul class="rs-agents_key">';	
 		

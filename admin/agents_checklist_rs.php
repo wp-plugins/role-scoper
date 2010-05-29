@@ -357,7 +357,7 @@ class ScoperAgentsChecklist {
 				
 			$disabled = ( $locked_ids && isset($locked_ids[$id]) ) ? " disabled='disabled'" : '';
 			
-			$li_title = "title=' " . strtolower($agent_display_name) . " '";
+			$li_title = "title=' " . mb_strtolower($agent_display_name) . " '";
 			
 			if ( $check_for_incomplete_submission && isset($_POST['scoper_error']) && isset($_POST[$id_prefix]) )
 				$this_checked = ( in_array($id, $_POST[$id_prefix]) ) ? ' checked="checked"' : '';
@@ -454,31 +454,9 @@ class ScoperAgentsChecklist {
 			echo '</div></div>';
 			
 		// display key
-		/*
 		if ( $any_inherited && $inherited_prefix )
 			$key ['inherited']= "$inherited_prefix $inherited_suffix"
-				 . '<span class="rs-keytext">' . sprintf(_ x('inherited from parent %s', 'user/group role status key: this role is assigned via parent object', 'scoper'), strtolower($objtype_display_name)) . '</span>';
-		
-		if ( $any_other_role && $via_other_role_prefix )
-			$key ['other_role']= "<span class='rs-via-r'>{$via_other_role_prefix}&nbsp;{$via_other_role_suffix}"
-				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _ x('has via other role', 'user/group role status key: all caps in this role are assigned via another role', 'scoper') ) . '</span></span>';
-		
-		if ( $any_other_basis && $via_other_basis_prefix )
-			$key ['other_basis']= "<span class='rs-via-b'>{$via_other_basis_prefix}&nbsp;{$via_other_basis_suffix}"
-				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _ x('has via group', 'user role status key: this role is assigned to a group the user is in', 'scoper') ) . '</span></span>';
-		
-		if ( $any_other_scope && $via_other_scope_prefix )
-			$key ['other_scope']= "<span class='rs-via-s'>{$via_other_scope_prefix}&nbsp;{$via_other_scope_suffix}"
-				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', _ x('has via other scope', 'user role status key: this role is assigned blog-wide or term-wide', 'scoper') ) . '</span></span>';
-		 
-		if ( $propagation )
-			$key ['propagation']= "{<input type='checkbox' disabled='disabled' name='rs-prop_key_{$agents_subset}_{$id_prefix}' id='rs-prop_key_{$agents_subset}_{$id_prefix}' $ie_checkbox_style />}"
-				 . '<span class="rs-keytext">' . sprintf(_ x('propagate to sub-%s', 'user/group role status key: propagate this role to sub-objects', 'scoper'), strtolower($objtype_display_name_plural)) . '</span>';
-		*/
-		
-		if ( $any_inherited && $inherited_prefix )
-			$key ['inherited']= "$inherited_prefix $inherited_suffix"
-				 . '<span class="rs-keytext">' . sprintf(__('inherited from parent %s', 'scoper'), strtolower($objtype_display_name)) . '</span>';
+				 . '<span class="rs-keytext">' . sprintf(__('inherited from parent %s', 'scoper'), mb_strtolower($objtype_display_name)) . '</span>';
 		
 		if ( $any_other_role && $via_other_role_prefix )
 			$key ['other_role']= "<span class='rs-via-r'>{$via_other_role_prefix}&nbsp;{$via_other_role_suffix}"
@@ -494,7 +472,7 @@ class ScoperAgentsChecklist {
 		 
 		if ( $propagation )
 			$key ['propagation']= "{<input type='checkbox' disabled='disabled' name='rs-prop_key_{$agents_subset}_{$id_prefix}' id='rs-prop_key_{$agents_subset}_{$id_prefix}' $ie_checkbox_style />}"
-				 . '<span class="rs-keytext">' . sprintf(__('propagate to sub-%s', 'scoper'), strtolower($objtype_display_name_plural)) . '</span>';
+				 . '<span class="rs-keytext">' . sprintf(__('propagate to sub-%s', 'scoper'), mb_strtolower($objtype_display_name_plural)) . '</span>';
 	
 		
 		if ( $any_date_limits && $object_id )

@@ -50,11 +50,13 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 			else {
 				$use_term_roles = scoper_get_option( 'use_term_roles' );
 
-				foreach( array_keys($use_term_roles) as $src_otype ) {
-					if ( isset($use_term_roles[$src_otype][$taxonomy]) ) {
-						$arr_src_otype = explode( ':', $src_otype );
-						$object_src_name = $arr_src_otype[0];
-						break;
+				if ( is_array( $use_term_roles ) ) {
+					foreach( array_keys($use_term_roles) as $src_otype ) {
+						if ( isset($use_term_roles[$src_otype][$taxonomy]) ) {
+							$arr_src_otype = explode( ':', $src_otype );
+							$object_src_name = $arr_src_otype[0];
+							break;
+						}
 					}
 				}
 			}

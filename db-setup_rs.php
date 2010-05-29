@@ -93,7 +93,7 @@ function scoper_update_schema($last_db_ver) {
 		foreach($tables as $table)
 			if ($table == $wpdb->user2group_rs)
 				break;	
-	
+		
 	if ( $table != $wpdb->user2group_rs ) { // table doesn't already exist
 
 		$query = "CREATE TABLE IF NOT EXISTS " . $wpdb->user2group_rs . ' (';
@@ -101,9 +101,9 @@ function scoper_update_schema($last_db_ver) {
 		foreach ($cols as $colname => $typedef)
 			$query .= $colname . ' ' . $typedef . ',';
 		 
-		$query .= "PRIMARY KEY user2group ($wpdb->user2group_uid_col, $wpdb->user2group_gid_col)),"
-			. " KEY status ($wpdb->user2group_status_col, $wpdb->user2group_uid_col, $wpdb->user2group_gid_col) );";
-		
+		$query .= "PRIMARY KEY user2group ($wpdb->user2group_uid_col, $wpdb->user2group_gid_col),"
+			. " KEY status_key ($wpdb->user2group_status_col, $wpdb->user2group_uid_col, $wpdb->user2group_gid_col) );";
+
 		$wpdb->query($query);
 		
 	} else {

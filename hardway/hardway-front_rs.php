@@ -27,6 +27,9 @@ class ScoperHardwayFront
 	}
 
 	function flt_recent_comments($query) {
+		
+		//d_echo "<br />$query<br />";
+		
 		// Due to missing get_comments hook, this filter operates on every front-end query.
 		// If query doesn't pertain to comments, skip out with as little overhead as possible.
 		if ( strpos($query, 'comment') 

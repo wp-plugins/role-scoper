@@ -282,27 +282,25 @@ class ScoperTeaser {
 			$use_excerpt_suffix = false;
 		}
 
-		// NOTE: fixed teaser prepends / appends are always applied to the specified entity regardless of what the content / excerpt was replaced with.
-		// (i.e. the fixed excerpt suffix is NOT applied to the teaser content due to an "excerpt as teaser" setting)
-		// Likewise, we don't suppress a fixed content suffix because the content was replaced with pre-more_tag content
-		if ( $use_excerpt_suffix ) {
-			if ( defined( 'SCOPER_FORCE_EXCERPT_SUFFIX' ) ) {  // deal with ambiguity in teaser settings.  Previously, content prefix/suffix was applied even if RS substitutes the excerpt as displayed content
-				$teaser_prepend[$object_type][$col_content] = $teaser_prepend[$object_type][$col_excerpt];
-				$teaser_append[$object_type][$col_content] = $teaser_append[$object_type][$col_excerpt];
-			}
+		// Deal with ambiguity in teaser settings.  Previously, content prefix/suffix was applied even if RS substitutes the excerpt as displayed content.  
+		// To avoid confusion with existing installations, only use excerpt prefix/suffix if a value is set or constant is defined.
+		if ( $use_excerpt_suffix && defined( 'SCOPER_FORCE_EXCERPT_SUFFIX' ) ) {
+			$teaser_prepend[$object_type][$col_content] = $teaser_prepend[$object_type][$col_excerpt];
 
-			foreach ( $teaser_prepend[$object_type] as $col => $entry )
-				if ( isset($object->$col) )
-					$object->$col = $entry . $object->$col;
-				
-			foreach ( $teaser_append[$object_type] as $col => $entry )
-				if ( isset($object->$col) ) {
-					if ( ( $col == $col_content ) && ! empty( $more_pos ) && defined( 'SCOPER_FORCE_EXCERPT_SUFFIX' ) ) {  // WP will strip off anything after the more comment
-						$object->$col = str_replace( '<!--more-->', "$entry<!--more-->", $object->$col );
-					} else
-						$object->$col .= $entry;
-				}
-		}
+			$teaser_append[$object_type][$col_content] = $teaser_append[$object_type][$col_excerpt];
+		}	
+			
+		foreach ( $teaser_prepend[$object_type] as $col => $entry )
+			if ( isset($object->$col) )
+				$object->$col = $entry . $object->$col;
+			
+		foreach ( $teaser_append[$object_type] as $col => $entry )
+			if ( isset($object->$col) ) {
+				if ( ( $col == $col_content ) && ! empty( $more_pos ) ) {  // WP will strip off anything after the more comment
+					$object->$col = str_replace( '<!--more-->', "$entry<!--more-->", $object->$col );
+				} else
+					$object->$col .= $entry;
+			}
 				
 		// no need to display password form if we're blocking content anyway
 		if ( 'post' == $src_name )

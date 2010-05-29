@@ -105,12 +105,21 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 
+= 1.2 Beta 3 - 29 May 2010 =
+* BugFix : Private Posts were excluded from Recent Posts widget if Hidden Content Teaser enabled, even if logged user can read the post
+* BugFix : On some installations, Page Roles could not be updated correctly following upgrade from older Role Scoper version
+* BugFix : Users could not be added to groups following first-time installation of RS (since 1.2 Beta 1)
+* BugFix : Hidden Content Teaser prefix and suffix were not applied if configured for "fixed teaser" (since 1.2 Beta 1)
+* BugFix : PHP Warning in taxonomies_rs.php if previous installation never customized RS options (since 1.2 Beta 1)
+* Lang : Use mb_strtolower() for better multibyte support in translated captions
+
+
 = 1.2 Beta 2 - 20 May 2010 =
 * BugFix : File Filtering did not work on WP 3.0 Multisite
 * BugFix : File Filtering did not work on new MU blogs until plugin re-activation or File Filtering re-enable
 * BugFix : If redundant Page / Post / Category roles were stored to database, they could only be deleted one at a time (giving the appearance and effect of a failed role deletion)
 * BugFix : Javascript error in Page Edit form, failed to set tooltip caption for Page Role checkboxes
-* BugFix : PHP Warning on RS version upgrade if previous installation never customized RS options
+* BugFix : PHP Warning on RS version upgrade if previous installation never customized RS options (since 1.2 Beta 1)
 
 
 **1.2 Beta 1 - 7 May 2010**

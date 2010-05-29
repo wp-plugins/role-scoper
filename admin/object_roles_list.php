@@ -223,8 +223,8 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			
 			$style = ' class="rs-backwhite"';
 	
-			//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), strtolower($otype->display_name) );
-			$title_item = sprintf( __('edit %s', 'scoper'), strtolower($otype->display_name) );
+			//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), mb_strtolower($otype->display_name) );
+			$title_item = sprintf( __('edit %s', 'scoper'), mb_strtolower($otype->display_name) );
 			
 			foreach ( $object_roles[$duration_key] as $obj_id => $roles ) {
 				$object_name = attribute_escape($objnames[$obj_id]);

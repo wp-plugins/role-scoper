@@ -243,10 +243,18 @@ class QueryInterceptor_RS
 			$pos_where = $pos_suffix;
 		}
 
-		// As of RS 1.1, using subselects in where clause instead
-		//$args['request'] = $request;
-		//$rs_join = $this->flt_objects_join('', $src_name, $object_types, $args);
-		
+		if ( 'post' == $src_name ) {
+			// If the query uses an alias for the posts table, be sure to use that alias in the WHERE clause also.
+			//
+			// NOTE: if query refers to non-active blog, this code will prevent a DB syntax error, but will not cause the correct roles / restrictions to be applied.
+			// 		Other plugins need to use switch_to_blog() rather than just executing a query on a non-main blog.
+			$matches = array();
+			if ( $return = preg_match( '/SELECT .* FROM [^ ]+posts AS ([^ ]) .*/', $request, $matches ) )
+				$args['source_alias'] = $matches[1];
+			elseif ( $return = preg_match( '/SELECT .* FROM ([^ ]+)posts .*/', $request, $matches ) )
+				$args['source_alias'] = $matches[1] . 'posts';
+		}
+
 		// TODO: abstract this
 		if ( strpos( $request, "post_type = 'attachment'" ) ) {
 			if ( ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {
@@ -283,17 +291,10 @@ class QueryInterceptor_RS
 				$request = $request . ' WHERE 1=1 ' . $where;
 			else
 				$request = substr($request, 0, $pos_where) . ' WHERE 1=1 ' . $rs_where; // any pre-exising join clauses remain in $request
-			
-			/*
-			if ( $pos_where === false )
-				$request = $request . ' ' . $rs_join . ' WHERE 1=1 ' . $where;
-			else
-				$request = substr($request, 0, $pos_where) . ' ' . $rs_join . ' WHERE 1=1 ' . $rs_where; // any pre-exising join clauses remain in $request
-			*/
 		}
 
 		//d_echo( $request . '<br /><br />' );
-		
+
 		return $request;
 	}
 	
@@ -597,25 +598,32 @@ class QueryInterceptor_RS
 		}
 		
 		if ( empty($skip_teaser) && ! array_diff($object_types, $tease_otypes) ) {
-			if ( empty($user->ID) && $status_clause_pos && ! $pos_second ) {
+			if ( $status_clause_pos && ! $pos_second ) {
 			
-				// Since we're dropping out of this function early in advance of teaser filtering, 
-				// must take this opportunity to add private status to the query (otherwise WP excludes private for anon user)
-				// (But don't do this if the query is for a specific status, or if teaser is configured to hide private content)
-				$check_otype = ( count($tease_otypes) && in_array('post', $tease_otypes) ) ? 'post' : $tease_otypes[0];
-
-				if ( ! scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) {
-					if ( count($status_vals) == count($src->statuses) ) {
-						$where = str_replace( $basic_status_clause['published'], "1=1", $where);
-					} else {
-						$in_statuses = "'" . implode("', '", $status_vals ) . "'";
-						$use_status_col = ( $status_col_with_table ) ? "{$src_table}.$col_status" : $col_status;
-						$where = str_replace( $basic_status_clause['published'], "$use_status_col IN ($in_statuses)", $where);
+				// All object types potentially returned by this query will have a teaser filter applied to results, so we don't need to filter the query
+				
+				if ( empty($user->ID) ) {
+					// Since we're dropping out of this function early in advance of teaser filtering, 
+					// must take this opportunity to add private status to the query (otherwise WP excludes private for anon user)
+					// (But don't do this if the query is for a specific status, or if teaser is configured to hide private content)
+					$check_otype = ( count($tease_otypes) && in_array('post', $tease_otypes) ) ? 'post' : $tease_otypes[0];
+	
+					if ( ! scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) {
+						if ( count($status_vals) == count($src->statuses) ) {
+							$where = str_replace( $basic_status_clause['published'], "1=1", $where);
+						} else {
+							$in_statuses = "'" . implode("', '", $status_vals ) . "'";
+							$use_status_col = ( $status_col_with_table ) ? "{$src_table}.$col_status" : $col_status;
+							$where = str_replace( $basic_status_clause['published'], "$use_status_col IN ($in_statuses)", $where);
+						}
 					}
 				}
-			}
-			
-			return $where;  // all object types potentially returned by this query will have a teaser filter applied to results
+					
+				// if a "post_status = 'publish'" clause is present, we need to filter private posts into the result set so they can be either displayed or teased as appropr
+				global $wpdb;
+				return preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($wpdb->posts.post_status = 'publish' OR $wpdb->posts.post_status = 'private')", $where);
+			} else
+				return $where;
 		}
 
 

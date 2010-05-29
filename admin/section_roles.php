@@ -107,7 +107,7 @@ echo '</div><hr />';
 
 // ============ Users / Groups and Assignment Mode Selection Display ================
 // little hack to avoid awkward caption with "link category" {
-$display_name_plural = ( 'link_category' == $taxonomy ) ? strtolower( $scoper->taxonomies->member_property('category', 'display_name_plural') ) : strtolower($tx->display_name_plural);
+$display_name_plural = ( 'link_category' == $taxonomy ) ? mb_strtolower( $scoper->taxonomies->member_property('category', 'display_name_plural') ) : mb_strtolower($tx->display_name_plural);
 
 if ( empty($tx->source->cols->parent) || ( ! empty($tx->uses_standard_schema) && empty($tx->hierarchical) ) )
 	$assignment_modes = array( 
