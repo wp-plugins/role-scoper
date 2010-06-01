@@ -208,7 +208,7 @@ class CapInterceptor_RS
 					$scoper->generate_id_caps = apply_filters( 'caps_to_generate_object_id_rs', $scoper->generate_id_caps );
 
 					// as of WP 3.0, all post types use post.php (TODO - shorten this logic)
-					if ( awp_ver( '3.0-beta' ) )
+					if ( awp_ver( '3.0-dev' ) )
 						$add_cap = ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') || ( empty( $_GET['post_type'] ) || 'page' != $_GET['post_type'] );
 					else
 						$add_cap = ! strpos($script_name, 'p-admin/page.php') && ! strpos($script_name, 'p-admin/page-new.php');
@@ -217,7 +217,7 @@ class CapInterceptor_RS
 						$scoper->generate_id_caps []= 'edit_posts';
 	
 					// as of WP 2.9, all post types use post.php
-					if ( awp_ver( '3.0-beta' ) )
+					if ( awp_ver( '3.0-dev' ) )
 						$add_cap = ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') || ( ! empty( $_GET['post_type'] ) && 'post' != $_GET['post_type'] );
 					else
 						$add_cap = ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php');

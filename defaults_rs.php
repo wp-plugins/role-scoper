@@ -504,7 +504,7 @@ function scoper_core_taxonomies( $include_custom_types = true ) {
 			'default_term_option' => 'default_link_category',
 			'admin_actions' => array ( 'term_edit_ui' => 'edit_link_category_form' )
 		); // end outer array
-	
+
 		$arr['link_category']->display_name = __('Link Category', 'scoper');
 		$arr['link_category']->display_name_plural = __awp('Link Categories');
 		$arr['link_category']->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';

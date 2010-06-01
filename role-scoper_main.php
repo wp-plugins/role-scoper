@@ -179,6 +179,7 @@ class Scoper
 		require_once('taxonomies_rs.php');
 		//log_mem_usage_rs( 'require taxonomies' );
 		$this->taxonomies = new WP_Scoped_Taxonomies( $this->data_sources );
+		
 		$this->taxonomies->add_member_objects( scoper_core_taxonomies() );
 		$this->taxonomies = apply_filters('define_taxonomies_rs', $this->taxonomies);
 		$this->taxonomies->lock();

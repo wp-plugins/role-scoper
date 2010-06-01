@@ -104,6 +104,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2 RC - 1 June 2010 =
+* BugFix : Roles and Restricions menu did not remain collapsed
+* BugFix : On abnormally configured web servers, RS menu links did not work
+* Change : When running with WP 3.0, use "Network / Site" terminology in captions
+* Change : On WP < 2.9, Roles and Restrictions menus will appear at the bottom of the navigation sidebar
+
 
 = 1.2 Beta 3 - 29 May 2010 =
 * BugFix : Private Posts were excluded from Recent Posts widget if Hidden Content Teaser enabled, even if logged user can read the post
@@ -438,7 +444,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Support nonstandard usage of wp_dropdown_pages filter by Simple Section Nav plugin
 * Compat : PHP Warning after AMember creates a role with no capabilities
 * Compat : Apply RS restrictions and roles to Snazzy Archives plugin listing
-* Compat : PHP Warning "Missing argument 2" with WMPL plugin
+* Compat : PHP Warning "Missing argument 2" with WPML plugin
 * Compat : Suppress RS filtering when another plugin has initiated a scheduled operation via WP Cron (conflict with WP Robot, Twitter News Feeds)
 * Compat : Tiny MCE Advanced (conflict was present in RS 1.1 beta versions)
 * Compat : Flutter (may require Flutter code patch, see Notes)

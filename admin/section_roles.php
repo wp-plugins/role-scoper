@@ -173,7 +173,12 @@ _e('A Role is a collection of capabilities.', 'scoper');
 echo '</li>';
 
 echo '<li>';
-_e("Capabilities in a user's WordPress Role (and, optionally, RS-assigned General Roles) enable blog-wide operations (read/edit/delete) on some object type (post/page/link), perhaps of a certain status (private/published/draft).", 'scoper');
+
+if ( awp_ver( '3.0-dev' ) )
+	_e("Capabilities in a user's WordPress Role (and, optionally, RS-assigned General Roles) enable site-wide operations (read/edit/delete) on some object type (post/page/link), perhaps of a certain status (private/published/draft).", 'scoper');
+else
+	_e("Capabilities in a user's WordPress Role (and, optionally, RS-assigned General Roles) enable blog-wide operations (read/edit/delete) on some object type (post/page/link), perhaps of a certain status (private/published/draft).", 'scoper');
+
 echo '</li>';
 
 echo '<li>';
@@ -189,7 +194,12 @@ echo '</li>';
 
 if ( ! empty($tx->requires_term) ) {
 	echo '<li>';
-	printf(__('If a role is restricted for some %s, general (blog-wide) assignments of that role are ignored.', 'scoper'), $tx->display_name);
+	
+	if ( awp_ver( '3.0-dev' ) )
+		printf(__('If a role is restricted for some %s, general (site-wide) assignments of that role are ignored.', 'scoper'), $tx->display_name);
+	else
+		printf(__('If a role is restricted for some %s, general (blog-wide) assignments of that role are ignored.', 'scoper'), $tx->display_name);
+
 	echo '</li>';
 
 	echo '<li>';

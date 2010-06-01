@@ -36,6 +36,9 @@ function scoper_add_custom_taxonomies( &$taxonomies ) {
 			$custom_taxonomies = array();
 
 		foreach ( $wp_taxonomies as $taxonomy => $wp_tax ) {
+			if ( in_array( $taxonomy, $core_taxonomies ) )
+				continue;
+			
 			// taxonomy must be approved for scoping and have a Scoper-defined object type
 			if ( isset($arr_use_wp_taxonomies[$taxonomy]) || strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-options' ) ) { // always load taxonomy ID data for Realm Options display
 				$tx_otypes = (array) $wp_tax->object_type;

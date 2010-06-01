@@ -219,7 +219,7 @@ $ui->option_captions = array(
 	/* 'version_check_minutes' => __('', 'scoper'), */
 	'strip_private_caption' => __('Suppress "Private:" Caption', 'scoper'),
 	'display_hints' => __('Display Administrative Hints', 'scoper'),
-	'hide_non_editor_admin_divs' => __('Specified element IDs also require the following blog-wide Role:', 'scoper'),
+	'hide_non_editor_admin_divs' => __('Specified element IDs also require the following site-wide Role:', 'scoper'),
 	'role_admin_blogwide_editor_only' => __('Roles and Restrictions can be set:', 'scoper'),
 	'feed_link_http_auth' => __( 'HTTP Authentication Request in RSS Feed Links', 'scoper' ),
 	'rss_private_feed_mode' => __( 'Display mode for readable private posts', 'scoper' ),
@@ -352,12 +352,21 @@ if ( $customize_defaults )
 <table width = "100%"><tr>
 <td width = "90%">
 <h2><?php 
-if ( $sitewide )
-	_e('Role Scoper Site Options', 'scoper');
-elseif ( $customize_defaults )
-	_e('Role Scoper Default Blog Options', 'scoper');
-elseif ( IS_MU_RS )
-	_e('Role Scoper Blog Options', 'scoper');
+if ( $sitewide ) {
+	if ( awp_ver( '3.0-dev' ) )
+		_e('Role Scoper Network Options', 'scoper');
+	else
+		_e('Role Scoper Site Options', 'scoper');
+} elseif ( $customize_defaults ) {
+	if ( awp_ver( '3.0-dev' ) )
+		_e('Role Scoper Default Site Options', 'scoper');
+	else
+		_e('Role Scoper Default Blog Options', 'scoper');
+} elseif ( IS_MU_RS )
+	if ( awp_ver( '3.0-dev' ) )
+		_e('Role Scoper Single Site Options', 'scoper');
+	else
+		_e('Role Scoper Blog Options', 'scoper');
 else
 	_e('Role Scoper Options', 'scoper');
 ?>
@@ -373,13 +382,21 @@ else
 if ( $sitewide ) {
 	$color_class = 'rs-backgreen';
 	echo '<p style="margin-top:0">';
-	_e( 'These settings will be applied to all blogs.', 'scoper' );
+	
+	if ( awp_ver( '3.0-dev' ) )
+		_e( 'These settings will be applied to all sites.', 'scoper' );
+	else
+		_e( 'These settings will be applied to all blogs.', 'scoper' );
 	echo '</p>';
 	
 } elseif ( $customize_defaults ) {
 	$color_class = 'rs-backgray';
 	echo '<p style="margin-top:0">';
-	_e( 'These are the <strong>default</strong> settings for options which can be adjusted per-blog.', 'scoper' );
+	
+	if ( awp_ver( '3.0-dev' ) )
+		_e( 'These are the <strong>default</strong> settings for options which can be adjusted per-site.', 'scoper' );
+	else
+		_e( 'These are the <strong>default</strong> settings for options which can be adjusted per-blog.', 'scoper' );
 	echo '</p>';
 	
 } else
@@ -472,14 +489,22 @@ if ( scoper_get_option('display_hints', $sitewide, $customize_defaults) ) {
 				$link_close = '</a>';
 		
 				echo  ' ';
-				printf( __('Note that, depending on your configuration, %1$s blog-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
+				
+				if ( awp_ver( '3.0-dev' ) )
+					printf( __('Note that, depending on your configuration, %1$s site-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
+				else
+					printf( __('Note that, depending on your configuration, %1$s blog-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
 			}
 		} else {
 			$link_open = "<a href='admin.php?page=rs-site_options'>";
 			$link_close = '</a>';
 	
 			echo ' ';
-			printf( __('Note that, depending on your configuration, %1$s site-wide options%2$s may also be available.', 'scoper'), $link_open, $link_close );
+			
+			if ( awp_ver( '3.0-dev' ) )
+				printf( __('Note that, depending on your configuration, %1$s network-wide options%2$s may also be available.', 'scoper'), $link_open, $link_close );
+			else
+				printf( __('Note that, depending on your configuration, %1$s site-wide options%2$s may also be available.', 'scoper'), $link_open, $link_close );
 		}
 	}
 	
@@ -645,7 +670,11 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		<?php
 		echo $ui->option_captions['role_admin_blogwide_editor_only'];
 		
-		$captions = array( '0' => __('by the Author or Editor of any Post/Category/Page', 'scoper'), '1' => __('by blog-wide Editors and Administrators', 'scoper'), 'admin_content' => __('by Content Administrators only', 'scoper'), 'admin' => __('by User Administrators only', 'scoper') );   // legacy-stored 'admin' in older versions
+		$captions = array( '0' => __('by the Author or Editor of any Post/Category/Page', 'scoper'), '1' => __('by site-wide Editors and Administrators', 'scoper'), 'admin_content' => __('by Content Administrators only', 'scoper'), 'admin' => __('by User Administrators only', 'scoper') );   // legacy-stored 'admin' in older versions
+		
+		if ( ! awp_ver( '3.0-dev' ) )
+			$captions['1'] = __('by blog-wide Editors and Administrators', 'scoper');
+
 		foreach ( $captions as $key => $value) {
 			$key = strval($key);
 			echo "<div style='margin: 0 0 0.5em 2em;'><label for='{$id}_{$key}'>";
@@ -664,7 +693,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	<?php 
 	} // endif role_admin_blogwide_editor_only controlled in this option scope
 		
-	$hint = __('If enabled, users who are not blog-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper');
+	$hint = ( awp_ver( '3.0-dev' ) ? __('If enabled, users who are not site-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper') : __('If enabled, users who are not blog-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper');
 	$ret = $ui->option_checkbox( 'admin_others_unattached_files', $tab, $section, $hint, '' );	
 	
 	$hint = __('If enabled, Post Author and Page Author selection dropdowns will be filtered based on scoped roles.', 'scoper');
@@ -1293,7 +1322,13 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 	}
 	
 	echo '<span class="rs-subtext">';
-	if ( $ui->display_hints ) _e('Users who do not meet this blog-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of "Main Page".  Nor will they be able to move a currently published page from "Main Page" to a different Page Parent.', 'scoper');
+	if ( $ui->display_hints ) {
+		if ( awp_ver( '3.0' ) )
+			_e('Users who do not meet this site-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of "Main Page".  Nor will they be able to move a currently published page from "Main Page" to a different Page Parent.', 'scoper');
+		else
+			_e('Users who do not meet this blog-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of "Main Page".  Nor will they be able to move a currently published page from "Main Page" to a different Page Parent.', 'scoper');
+	}
+	
 	echo '</span>';
 	?>
 
@@ -1455,7 +1490,10 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 		?>
 		<div class="agp-vspaced_input">
 		<?php
-		_e('Specified element IDs also require the following blog-wide Role:', 'scoper');
+		if ( awp_ver( '3.0 ' ) )
+			_e('Specified element IDs also require the following site-wide Role:', 'scoper');
+		else
+			_e('Specified element IDs also require the following blog-wide Role:', 'scoper');
 		
 		$admin_caption = ( $custom_content_admin_cap ) ? __('Content Administrator', 'scoper') : __awp('Administrator');
 		
@@ -1473,7 +1511,12 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 		?>
 		<span class="rs-subtext">
 		<?php 
-		if ( $ui->display_hints) _e('Note: The above roles are type-specific RS roles (for the object type involved) which must be contained in a user\'s blog-wide WordPress role.', 'scoper');
+		if ( $ui->display_hints) { 
+			if ( awp_ver( '3.0-dev' ) )
+				_e('Note: The above roles are type-specific RS roles (for the object type involved) which must be contained in a user\'s site-wide WordPress role.', 'scoper');
+			else
+				_e('Note: The above roles are type-specific RS roles (for the object type involved) which must be contained in a user\'s blog-wide WordPress role.', 'scoper');
+		}
 		?>
 		</span>
 		</div>
@@ -1493,7 +1536,12 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 	
 	<?php
 	$otype_caption = __('Limit eligible users for %s-specific editing roles', 'scoper');
-	$hint = __('Role Scoper can enable any user to edit a post or page you specify, regardless of their blog-wide WordPress role.  If that\'s not a good thing, check above options to require basic editing capability blog-wide or category-wide.', 'scoper');
+	
+	if ( awp_ver( '3.0-dev' ) )
+		$hint = __('Role Scoper can enable any user to edit a post or page you specify, regardless of their site-wide WordPress role.  If that\'s not a good thing, check above options to require basic editing capability blog-wide or category-wide.', 'scoper');
+	else
+		$hint = __('Role Scoper can enable any user to edit a post or page you specify, regardless of their blog-wide WordPress role.  If that\'s not a good thing, check above options to require basic editing capability blog-wide or category-wide.', 'scoper');
+	
 	$ui->otype_option_checkboxes( 'limit_object_editors', $otype_caption, $tab, $section, $hint, '<br /><br />', array( 'plural_display_name' => false ) );
 	
 	$hint =  __('In the Edit Post/Edit Page roles tabs, decorate user/group name with colors and symbols if they have the role implicitly via group, general role, category role, or a superior post/page role.', 'scoper');
@@ -1826,7 +1874,10 @@ $option_scope_stamp = __( 'sitewide control of "%s"', 'scoper' );
 foreach ( $available_form_options as $tab_name => $sections ) {
 	echo '<li>';
 	
-	$explanatory_caption = __( 'Selected options will be controlled site-wide via <strong>Site Admin > Role Options</strong>; unselected options can be set per-blog via <strong>Roles > Options</strong>', 'scoper' );
+	if( awp_ver( '3.0-dev' ) )
+		$explanatory_caption = __( 'Selected options will be controlled network-wide via <strong>Super Admin > Role Options</strong>; unselected options can be set per-site via <strong>Roles > Options</strong>', 'scoper' );
+	else
+		$explanatory_caption = __( 'Selected options will be controlled site-wide via <strong>Site Admin > Role Options</strong>; unselected options can be set per-blog via <strong>Roles > Options</strong>', 'scoper' );
 	
 	if ( isset( $ui->tab_captions[$tab_name] ) )
 		$tab_caption = $ui->tab_captions[$tab_name];

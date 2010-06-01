@@ -12,7 +12,12 @@ echo "<div id='rs-roledefs' style='clear:both;margin:0;' class='rs-options agp_j
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-optionhint">';
 	echo '<p style="margin-top:0">';
-	_e('These roles are defined by Role Scoper (and possibly other plugins) for your use in designating content-specific access or supplemental blog-wide access.  Although the default capabilities are ideal for most installations, you may modify them at your discretion.', 'scoper');
+	
+	if ( awp_ver( '3.0-dev' ) )
+		_e('These roles are defined by Role Scoper (and possibly other plugins) for your use in designating content-specific access or supplemental site-wide access.  Although the default capabilities are ideal for most installations, you may modify them at your discretion.', 'scoper');
+	else
+		_e('These roles are defined by Role Scoper (and possibly other plugins) for your use in designating content-specific access or supplemental blog-wide access.  Although the default capabilities are ideal for most installations, you may modify them at your discretion.', 'scoper');
+	
 	echo '</p>';
 	
 	echo '<p>';
@@ -20,7 +25,11 @@ if ( scoper_get_option('display_hints') ) {
 	echo '</p>';
 	
 	echo '<p>';
-	_e('WordPress Role assignments function as a default which may be supplemented or overriden by blog-wide or content-specific assignment of these RS Roles.', 'scoper');  
+	
+	if ( awp_ver( '3.0-dev' ) )
+		_e('WordPress Role assignments function as a default which may be supplemented or overriden by site-wide or content-specific assignment of these RS Roles.', 'scoper');  
+	else
+		_e('WordPress Role assignments function as a default which may be supplemented or overriden by blog-wide or content-specific assignment of these RS Roles.', 'scoper');  
 
 	echo '</p>';
 	echo '</div>';

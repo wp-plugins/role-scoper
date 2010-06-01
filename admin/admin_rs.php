@@ -59,6 +59,68 @@ class ScoperAdmin
 			require_once('flutter_helper_rs.php');
 	}
 
+	function menu_handler() {
+		$rs_page = $_GET['page'];
+		$url = SCOPER_ABSPATH . '/admin/';
+		
+		switch ($rs_page) {
+		case 'rs-options' :
+			include_once( $url . 'options.php');
+			scoper_options( false );
+			break;
+			
+		case 'rs-general-roles' :
+			include_once( $url . 'general_roles.php');
+			break;
+			
+		case 'rs-groups' :
+			include_once( $url . 'groups.php');
+			break;
+			
+		case 'rs-default_groups' :
+			include_once( $url . 'default_groups.php');
+			break;
+			
+		case 'rs-group_members' :
+			include_once( $url . 'group_members.php');
+			break;
+			
+		case 'rs-object_role_edit' :
+			include_once( $url . 'object_role_edit.php');
+			break;
+
+		case 'rs-about' :
+			include_once( $url . 'about.php');
+			break;
+			
+		case 'rs-attachments_utility' :
+			include_once( $url . 'attachments_utility.php');
+			break;
+			
+		default :
+			if ( strpos( $rs_page, '-roles' ) )
+				$topic = 'roles';
+			elseif( strpos( $rs_page, '-restrictions' ) )
+				$topic = 'restrictions';
+
+			if ( ! empty($topic) ) {
+				$matches = array();
+				if ( preg_match( "/rs-(.*)-$topic(.*)/", $rs_page, $matches ) ) {
+					if ( strpos( $rs_page, "{$topic}_t" ) ) {
+						include_once( SCOPER_ABSPATH . "/admin/section_{$topic}.php" );
+						call_user_func( "scoper_admin_section_{$topic}", $matches[1] ); 
+					} else {
+						if ( ! $matches[2] )
+							$matches[2] = 'post';
+	
+						include_once( SCOPER_ABSPATH . "/admin/object_{$topic}.php" );
+						call_user_func( "scoper_admin_object_{$topic}", $matches[2], $matches[1] ); 
+					}
+				}
+			}
+		} // end switch
+	}
+	
 	// adds an Options link next to Deactivate, Edit in Plugins listing
 	function flt_plugin_action_links($links, $file) {
 		if ( $file == SCOPER_BASENAME ) {
@@ -253,19 +315,6 @@ class ScoperAdmin
 					$can_admin_terms[$taxonomy] = true;
 				}
 		}
-
-		/*
-		global $_wp_menu_nopriv;
-		if ( ! empty($can_admin_objects['post']['post']) || ! empty($can_admin_terms['category']) )
-			if ( isset($_wp_menu_nopriv['edit.php']) )
-				unset($_wp_menu_nopriv['edit.php']);
-				
-		if ( ! empty($can_admin_objects['post']['page']) )
-			if ( isset($_wp_menu_nopriv['edit-pages.php']) )
-				unset($_wp_menu_nopriv['edit-pages.php']);
-		
-		dump($_wp_menu_nopriv);
-		*/
 		
 		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
 
@@ -278,33 +327,17 @@ class ScoperAdmin
 			if ( IS_MU_RS )
 				$pfx = ( awp_ver('3.0-dev') ) ? 'ms' : 'wpmu';
 			
-			if ( IS_MU_RS && scoper_get_site_option( 'mu_sitewide_groups' ) ) {
-				add_submenu_page( "$pfx-admin.php", $groups_caption, $groups_caption, $cap_req, 'rs-groups' );
-				
-				$func = "include_once('$path' . '/admin/groups.php');";
-				add_action("$pfx-admin_page_rs-groups" , create_function( '', $func ) );
-			} else {
-				add_submenu_page( 'users.php', $groups_caption, $groups_caption, $cap_req, 'rs-groups' );
-				
-				$func = "include_once('$path' . '/admin/groups.php');";
-				add_action( 'users_page_rs-groups' , create_function( '', $func ) );
-				add_action( 'profile_page_rs-groups' , create_function( '', $func ) );
-			}
+			if ( IS_MU_RS && scoper_get_site_option( 'mu_sitewide_groups' ) )
+				add_submenu_page( "$pfx-admin.php", $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
+			else
+				add_submenu_page( 'users.php', $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
 
 			// satisfy WordPress' demand that all admin links be properly defined in menu
-			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-default_groups' ) ) {
-				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Default Groups', 'scoper'), $cap_req, 'rs-default_groups');
-
-				$func = "include_once('$path' . '/admin/default_groups.php');";
-				add_action( 'users_page_rs-default_groups' , create_function( '', $func ) );
-			}
-			
-			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-group_members' ) ) {
-				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Group Members', 'scoper'), $cap_req, 'rs-group_members');
-
-				$func = "include_once('$path' . '/admin/group_members.php');";
-				add_action( 'users_page_rs-group_members' , create_function( '', $func ) );
-			}
+			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-default_groups' ) )
+				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Default Groups', 'scoper'), $cap_req, 'rs-default_groups', array( &$this, 'menu_handler' ) );
+		
+			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-group_members' ) )
+				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Group Members', 'scoper'), $cap_req, 'rs-group_members', array( &$this, 'menu_handler' ) );
 		}
 
 		// the rest of this function pertains to Roles and Restrictions menus
@@ -381,27 +414,13 @@ class ScoperAdmin
 		//  Manually set menu indexes for positioning below Users menu,
 		//  but not if Flutter (a.k.a. Fresh Page) plugin is active.  It re-indexes menu items 
 		if ( ! defined( 'SCOPER_DISABLE_MENU_TWEAK' ) ) {
-			if ( awp_ver('2.8-dev') ) {
-				if ( ! awp_ver('3.0') ) { // review and increment this with each WP version until there's a clean way to force menu proximity to 'Users'
-					if ( isset( $menu[70] ) && $menu[70][2] == 'users.php' ) {
-						$tweak_menu = true;
-						$restrictions_menu_key = 71;
-						$roles_menu_key = 72;
-					}
-				}
-			} elseif ( awp_ver('2.7-dev') && empty($menu[51]) && empty($menu[52]) ) {
-				if ( isset( $menu[50] ) && $menu[50][2] == 'users.php' ) {
+			if ( awp_ver('2.9') ) {
+				// review each WP version for menu indexes until there's a clean way to force menu proximity to 'Users'
+				if ( isset( $menu[70] ) && $menu[70][2] == 'users.php' ) {  // WP 2.9 and 3.0
 					$tweak_menu = true;
-					$restrictions_menu_key = 51;
-					$roles_menu_key = 52;
+					$restrictions_menu_key = 71;
+					$roles_menu_key = 72;
 				}
-			} elseif ( empty($menu[37]) && empty($menu[38]) && empty($menu[39]) ) {
-				$tweak_menu = true;
-				$restrictions_menu_key = 38;
-				$roles_menu_key = 39;
-				
-				$menu[37] = $menu[40];	//move Users menu so we can put Roles, Restrictions after it
-				unset($menu[40]);
 			}
 		}
 
@@ -410,42 +429,15 @@ class ScoperAdmin
 		$roles_caption = __('Roles', 'scoper');
 
 		if ( $tweak_menu ) {
-			$roles_hook_page = 'admin_page_';
-			$restrictions_hook_page = 'admin_page_';
-
-			// note: as of WP 2.7-near-beta, custom content dir for menu icon is not supported
-			$menu[$restrictions_menu_key] = array( '0' => $restrictions_caption, 'read', $restrictions_menu, __('Role Restrictions', 'scoper'), 'menu-top' );
-			$menu[$restrictions_menu_key][6] = SCOPER_URLPATH . '/admin/images/menu/restrictions.png';
-			
-			$menu[$roles_menu_key] = array( '0' => $roles_caption, $roles_cap, $roles_menu, __('Role Scoper Options', 'scoper'), 'menu-top' );
-			$menu[$roles_menu_key][6] = SCOPER_URLPATH . '/admin/images/menu/roles.png';
-			
-			global $_registered_pages;
-			$_registered_pages["admin_page_$roles_menu"] = true;
-			$_registered_pages["admin_page_$restrictions_menu"] = true;
+			add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/restrictions.png', $restrictions_menu_key );
+			add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/roles.png', $roles_menu_key );
 		} else {
-			add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, '', SCOPER_URLPATH . '/admin/images/menu/restrictions.png' );
-			add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, '', SCOPER_URLPATH . '/admin/images/menu/roles.png');
-		
-			$roles_hook_page_base = sanitize_title( __('Roles', 'scoper') ) . '_page_';	// the page hook names use translated menu title
-			$roles_hook_page = $roles_hook_page_base;
-			$restrictions_hook_page_base = sanitize_title( __('Restrictions', 'scoper') ) . '_page_';
+			add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/restrictions.png' );
+			add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/roles.png' );
 		}
-		
-		
-		if ( $is_option_administrator ) {
-			$func = "include_once('$path' . '/admin/options.php');scoper_options( false );";
-			$hook_page = ( $tweak_menu ) ? $roles_hook_page : 'toplevel_page_';
-			add_action($hook_page . 'rs-options' , create_function( '', $func ) );
-		}
-		
-		
-		if ( $general_roles ) {
-			add_submenu_page($roles_menu, __('General Roles', 'scoper'), __('General', 'scoper'), 'read', 'rs-general_roles');
-			
-			$func = "include_once('$path' . '/admin/general_roles.php');";
-			add_action($roles_hook_page . 'rs-general_roles', create_function( '', $func ) );
-		}
+
+		if ( $general_roles )
+			add_submenu_page($roles_menu, __('General Roles', 'scoper'), __('General', 'scoper'), 'read', 'rs-general_roles', array( &$this, 'menu_handler' ) );
 			
 		$first_pass = true;
 
@@ -468,32 +460,13 @@ class ScoperAdmin
 						}
 						
 						$show_roles_menu = true;
-						
-						// deal with WP hook naming quirk for non-tweaked plugin menus
-						if ( ! $tweak_menu ) {
-							if ( $first_pass ) {
-								$roles_hook_page = ( $is_user_administrator || $general_roles ) ? $roles_hook_page_base : 'toplevel_page_';	// otherwise Options / General are the toplevel submenu
-								$restrictions_hook_page = 'toplevel_page_';
-							} else {
-								$roles_hook_page = $roles_hook_page_base;
-								$restrictions_hook_page = $restrictions_hook_page_base;
-							}
-							
-							$first_pass = false;
-						}
 
-						add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-roles_t");
-						
-						$func = "include_once('$path' . '/admin/section_roles.php');scoper_admin_section_roles('$taxonomy');";
-						add_action($roles_hook_page . "rs-$taxonomy-roles_t", create_function( '', $func ) );	
-					
+						add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-roles_t", array( &$this, 'menu_handler' ) );
+
 						if ( ! empty($tx->requires_term) ) {
 							$show_restrictions_menu = true;
-	
-							add_submenu_page($restrictions_menu, sprintf(__('%s restrictions', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-restrictions_t");
-							
-							$func = "include_once('$path' . '/admin/section_restrictions.php');scoper_admin_section_restrictions('$taxonomy');";
-							add_action($restrictions_hook_page . "rs-$taxonomy-restrictions_t", create_function( '', $func ) );	
+
+							add_submenu_page($restrictions_menu, sprintf(__('%s restrictions', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-restrictions_t", array( &$this, 'menu_handler' ) );
 						}
 					} // end foreach taxonomy
 				} // endif can admin terms
@@ -521,19 +494,6 @@ class ScoperAdmin
 	
 							$show_roles_menu = true;
 							$show_restrictions_menu = true;
-							
-							// deal with WP hook naming quirk for non-tweaked plugin menus
-							if ( ! $tweak_menu ) {
-								if ( $first_pass ) {
-									$roles_hook_page = ( $is_user_administrator || $general_roles ) ? $roles_hook_page_base : 'toplevel_page_';	// otherwise Options / General are the toplevel submenu
-									$restrictions_hook_page = 'toplevel_page_';
-								} else {
-									$roles_hook_page = $roles_hook_page_base;
-									$restrictions_hook_page = $restrictions_hook_page_base;
-								}
-							
-								$first_pass = false;
-							}
 						
 							if ( ( $src_name != $object_type ) && ( 'post' != $src_name ) ) {
 								$roles_page = "rs-{$object_type}-roles_{$src_name}";
@@ -547,46 +507,33 @@ class ScoperAdmin
 							$display_name = $this->interpret_src_otype($src_otype, false);
 							$display_name_plural = $this->interpret_src_otype($src_otype, true);
 							
-							add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $display_name), $display_name_plural, 'read', $roles_page);
+							add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $display_name), $display_name_plural, 'read', $roles_page, array( &$this, 'menu_handler' ) );
 							
-							$func = "include_once('$path' . '/admin/object_roles.php');scoper_admin_object_roles('$src_name', '$object_type');";
-							add_action($roles_hook_page . $roles_page, create_function( '', $func ) );
-								
-							add_submenu_page($restrictions_menu, sprintf(__('%s Restrictions', 'scoper'), $display_name), $display_name_plural, 'read', $restrictions_page);
-								
-							$func = "include_once('$path' . '/admin/object_restrictions.php');scoper_admin_object_restrictions('$src_name', '$object_type');";
-							add_action($restrictions_hook_page . $restrictions_page, create_function( '', $func ) );		
+							add_submenu_page($restrictions_menu, sprintf(__('%s Restrictions', 'scoper'), $display_name), $display_name_plural, 'read', $restrictions_page, array( &$this, 'menu_handler' ) );	
 						} // end foreach obj type
 					} // end foreach data source
 				} // endif can admin objects
 			} // endif drawing object scope submenus
 		} // end foreach submenu scope
 
-		if ( $is_user_administrator ) {
-			add_submenu_page($roles_menu, __('About Role Scoper', 'scoper'), __('About', 'scoper'), 'read', 'rs-about');
-
-			$func = "include_once('$path' . '/admin/about.php');";
-			add_action( $roles_hook_page . 'rs-about' , create_function( '', $func ) );
-		}
+		if ( $is_user_administrator )
+			add_submenu_page($roles_menu, __('About Role Scoper', 'scoper'), __('About', 'scoper'), 'read', 'rs-about', array( &$this, 'menu_handler' ) );
 			
-
+			
 		global $submenu;
 			
 		// Change Role Scoper Options submenu title from default "Roles" to "Options"
 		if ( $is_option_administrator ) {
 			if ( isset($submenu[$roles_menu][0][2]) && ( $roles_menu == $submenu[$roles_menu][0][2] ) )
 				$submenu[$roles_menu][0][0] = __awp('Options');
-
-			// satisfy WordPress' demand that all admin links be properly defined in menu
-			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'rs-attachments_utility' ) ) {
-				add_submenu_page($roles_menu, __('Attachment Utility', 'scoper'), __('Attachment Utility', 'scoper'), 'read', 'rs-attachments_utility');
 				
-				$func = "include_once('$path' . '/admin/attachments_utility.php');";
-				add_action( 'admin_page_rs-attachments_utility' , create_function( '', $func ) );
-			}
+			// satisfy WordPress' demand that all admin links be properly defined in menu
+			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'rs-attachments_utility' ) )
+				add_submenu_page($roles_menu, __('Attachment Utility', 'scoper'), __('Attachment Utility', 'scoper'), 'read', 'rs-attachments_utility', array( &$this, 'menu_handler' ) );
+
 		} elseif ( empty($show_restrictions_menu) || empty($show_roles_menu) ) {
 			// Remove Roles or Restrictions menu if it has no submenu
-			if ( $tweak_menu ) {
+			if ( $tweak_menu ) { // since we forced the menu keys, no need to loop through menu looking for them
 				if ( empty($show_restrictions_menu) && isset($menu[$restrictions_menu_key]) )
 					unset($menu[$restrictions_menu_key]);
 					
@@ -646,12 +593,8 @@ class ScoperAdmin
 		
 
 		// satisfy WordPress' demand that all admin links be properly defined in menu
-		if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-object_role_edit' ) ) {
-			add_submenu_page($roles_menu, __('Object Role Edit', 'scoper'), __('Object Role Edit', 'scoper'), 'read', 'rs-object_role_edit');
-			
-			$func = "include_once('$path' . '/admin/object_role_edit.php');";
-			add_action( 'admin_page_rs-object_role_edit' , create_function( '', $func ) );
-		}
+		if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-object_role_edit' ) )
+			add_submenu_page($roles_menu, __('Object Role Edit', 'scoper'), __('Object Role Edit', 'scoper'), 'read', 'rs-object_role_edit', array( &$this, 'menu_handler' ) );
 	}
 
 	

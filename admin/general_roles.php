@@ -183,7 +183,12 @@ $assignment_modes = array( ASSIGN_FOR_ENTITY_RS => __('Assign', 'scoper'), REMOV
 <?php
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
-	_e("Supplement any user's blog-wide WordPress Role with additional, type-specific role(s). This does not alter the WordPress role.", 'scoper');
+	
+	if ( awp_ver( '3.0-dev' ) )
+		_e("Supplement any user's site-wide WordPress Role with additional, type-specific role(s). This does not alter the WordPress role.", 'scoper');
+	else
+		_e("Supplement any user's blog-wide WordPress Role with additional, type-specific role(s). This does not alter the WordPress role.", 'scoper');
+		
 	echo '</div>';
 }
 ?>
