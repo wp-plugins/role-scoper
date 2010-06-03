@@ -69,7 +69,7 @@ class ScoperAdmin
 			scoper_options( false );
 			break;
 			
-		case 'rs-general-roles' :
+		case 'rs-general_roles' :
 			include_once( $url . 'general_roles.php');
 			break;
 			

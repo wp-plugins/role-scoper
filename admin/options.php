@@ -693,7 +693,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	<?php 
 	} // endif role_admin_blogwide_editor_only controlled in this option scope
 		
-	$hint = ( awp_ver( '3.0-dev' ) ? __('If enabled, users who are not site-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper') : __('If enabled, users who are not blog-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper');
+	$hint = awp_ver( '3.0-dev' ) ? __('If enabled, users who are not site-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper') : __('If enabled, users who are not blog-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper');
 	$ret = $ui->option_checkbox( 'admin_others_unattached_files', $tab, $section, $hint, '' );	
 	
 	$hint = __('If enabled, Post Author and Page Author selection dropdowns will be filtered based on scoped roles.', 'scoper');
