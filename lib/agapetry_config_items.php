@@ -95,11 +95,6 @@ class AGP_Config_Items {
 	}
 	
 	function is_member($name) {
-		if ( is_array( $name ) ) {
-			dump($name);
-			//die;	
-		}
-		
 		return isset($this->members[$name]);
 	}
 	

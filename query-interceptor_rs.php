@@ -162,9 +162,11 @@ class QueryInterceptor_RS
 			$reqd_caps_by_otype = $scoper->get_terms_reqd_caps($object_src_name);
 			
 			//TODO: can this be safely put right in default_rs.php?
-			if ( $reqd_caps_by_otype == array( 'post' => array('read') ) )
-				if ( scoper_get_otype_option('use_term_roles', 'post', 'page') )
+			if ( $reqd_caps_by_otype == array( 'post' => array('read') ) ) {
+				$page_taxonomy_usage = scoper_get_otype_option('use_term_roles', 'post', 'page');
+				if ( array_intersect( $page_taxonomy_usage, array(1) ) )
 					$reqd_caps_by_otype ['page'] = array('read');
+			}
 		
 			// if required operation still unknown, default based on access type
 			if ( ! $reqd_caps_by_otype )
@@ -189,9 +191,6 @@ class QueryInterceptor_RS
 		$args['skip_owner_clause'] = true;
 		$args['terms_reqd_caps'] = $reqd_caps_by_otype;
 		$args['taxonomies'] = $taxonomies;
-
-		// As of RS 1.1, using subselects in where clause instead
-		//$rs_join = $this->flt_objects_join('', $src_name, '', $args);
 		
 		$where = $this->flt_objects_where($where, $src_name, '', $args);
 		
@@ -640,9 +639,11 @@ class QueryInterceptor_RS
 			
 			// don't bother generating these parameters if we're just going to pass the object type through for teaser filtering
 			if ( ! in_array($object_type, $tease_otypes) ) {
-				if ( $terms_query && ! $object_type )
-					$otype_use_term_roles = true;
-				else {
+				if ( $terms_query && ! $object_type ) {
+					$otype_use_term_roles = scoper_get_otype_option('use_term_roles', 'post', 'post');  // TODO: review this
+					//$otype_use_term_roles = true;
+					
+				} else {
 					$otype_use_term_roles = ( -1 == $use_term_roles ) ? scoper_get_otype_option('use_term_roles', $src_name, $object_type) : $use_term_roles;
 					if ( ( ! $otype_use_term_roles ) && ( $terms_query ) )
 						continue;	
@@ -825,7 +826,7 @@ class QueryInterceptor_RS
 
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
-
+		
 		global $scoper;
 
 		if ( '' === $custom_user_blogcaps )
@@ -1165,7 +1166,6 @@ class QueryInterceptor_RS
 					$args['src_name'] = $src_name;
 					$args['object_type'] = $object_type;
 
-					
 					if ( $user_terms = $scoper->qualify_terms_daterange($reqd_caps, $taxonomy, $role_handle_arg, $args) ) {
 						
 						if ( ! isset($term_count[$taxonomy]) )

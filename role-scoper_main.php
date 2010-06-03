@@ -722,7 +722,7 @@ class Scoper
 		$defaults = array( 'src_name' => '', 'object_type' => '',  'user' => '', 
 						   'return_id_type' => COL_ID_RS, 'use_blog_roles' => true, 
 							'alternate_roles' => '', 'override_roles' => '', 'object_type' => '', 'ignore_restrictions' => false );
-
+			
 		if ( isset($args['qualifying_roles']) )
 			unset($args['qualifying_roles']);
 			
