@@ -449,8 +449,10 @@ function scoper_core_data_sources( $include_custom_types = true ) {
 		); // end outer array
 	*/
 	
-	if ( $include_custom_types && awp_ver( '2.9' ) )
+	if ( $include_custom_types && awp_ver( '2.9' ) ) {
 		scoper_add_custom_data_sources( $arr );
+		//add_action( 'init', 'scoper_add_custom_data_sources', 99 );	// for compat with More Types plugin
+	}
 
 	return $arr;
 }
@@ -510,8 +512,10 @@ function scoper_core_taxonomies( $include_custom_types = true ) {
 		$arr['link_category']->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
 	}
 	
-	if ( $include_custom_types && awp_ver( '2.9' ) )
-		scoper_add_custom_taxonomies( $arr );
+	if ( $include_custom_types && awp_ver( '2.9' ) ) {
+		scoper_add_custom_taxonomies(&$arr);
+		//add_action( 'init', 'scoper_add_custom_taxonomies', 99 );		// for compat with More Types plugin
+	}
 	
 	return $arr;
 }

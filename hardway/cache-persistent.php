@@ -192,7 +192,7 @@ function wpp_cache_test( &$err_msg, $text_domain = '' ) {
 	} elseif ( defined( 'DISABLE_PERSISTENT_CACHE' ) ) {
 		$err_msg = __('The file cache will not operate because DISABLE_PERSISTENT_CACHE is defined, possibly in wp-config.php or role-scoper.php.', 'scoper');
 		$err = true;
-	} elseif ( ! is_writable($cache_dir) || ! is_dir($cache_dir)) {
+	} elseif ( ! is_writable($cache_dir) || ! @ is_dir($cache_dir)) {
 		$err_msg = sprintf( __('The file cache cannot operate because the cache directory (%s) is not writeable to WordPress.', $text_domain), $cache_dir );
 		$err = true;
 	} elseif ( ! defined('SCOPER_SAFE_MODE_CACHE') && ini_get('safe_mode') ) {
@@ -269,7 +269,7 @@ class WP_Persistent_Object_Cache {
 			$this->cache_dir = WP_CONTENT_DIR.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
 		}
 		
-		if (is_writable($this->cache_dir) && is_dir($this->cache_dir)) {
+		if (is_writable($this->cache_dir) && @ is_dir($this->cache_dir)) {
 				$this->cache_enabled = true;
 		} else {
 			if (is_writable(WP_CONTENT_DIR)) {
@@ -497,7 +497,7 @@ class WP_Persistent_Object_Cache {
 			# Get indexed directory from stack
 			$dir = $stack[$index];
 
-			if ( ! is_dir($dir) ) {
+			if ( ! @ is_dir($dir) ) {
 				$index++;
 				continue;
 			}

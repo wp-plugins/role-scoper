@@ -310,12 +310,13 @@ class ScoperAdmin
 
 		// which taxonomies does this user have any administration over?
 		foreach ( $scoper->taxonomies->get_all() as $taxonomy => $tx ) {
-			if ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) )
+			if ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) {
 				if ( scoper_get_otype_option('use_term_roles', $tx->object_source->name) ) {
 					$can_admin_terms[$taxonomy] = true;
 				}
+			}
 		}
-		
+
 		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
 
 		// Users Tab

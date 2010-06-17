@@ -206,15 +206,17 @@ function scoper_init() {
 	
 	if ( is_admin() ) {
 		require_once( 'admin/admin-init_rs.php' );
+		
+		//add_action( 'init', 'scoper_admin_init', 99 );	// need to process the submission later for compat with More Types plugin
 		scoper_admin_init();	
 	}
 		
-	log_mem_usage_rs( 'scoper_admin_init done' );
+	//log_mem_usage_rs( 'scoper_admin_init done' );
 		
 	require_once('scoped-user.php');
 	require_once('role-scoper_main.php'); // ensure that is_administrator() functions are defined if $scoper is used prior to get_current_user()
 
-	log_mem_usage_rs( 'require role-scoper_main' );
+	//log_mem_usage_rs( 'require role-scoper_main' );
 	
 	if ( empty($scoper) )		// set_current_user may have already triggered scoper creation and role_cap load
 		$scoper = new Scoper();
@@ -229,11 +231,11 @@ function scoper_init() {
 			$current_user->blog_roles[$date_key] = $scoper->role_defs->add_contained_roles( $current_user->assigned_blog_roles[$date_key] );
 	}
 		
-	log_mem_usage_rs( 'new Scoper done' );
+	//log_mem_usage_rs( 'new Scoper done' );
 	
 	$scoper->init();
 	
-	log_mem_usage_rs( 'scoper->init() done' );
+	//log_mem_usage_rs( 'scoper->init() done' );
 }
 
 // called by Extension plugins if data_rs table is required

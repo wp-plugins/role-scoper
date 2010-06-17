@@ -459,13 +459,12 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	
 	function scoper_flt_pre_object_terms ($selected_terms, $taxonomy, $args = '') {
-
 		// strip out fake term_id -1 (if applied)
-		if ( $selected_terms )
-			$selected_terms = array_diff($selected_terms, array(-1));
+		if ( $selected_terms && is_array($selected_terms) )
+			$selected_terms = array_diff($selected_terms, array(-1, 0, '0', '-1'));
 			
 		// TODO: skip this for content admins?
-		if ( empty($selected_terms) || empty($selected_terms[0]) ) {  // not sure who is changing empty $_POST['post_category'] array to an array with nullstring element, but we have to deal with that
+		if ( empty($selected_terms) ) {  // not sure who is changing empty $_POST['post_category'] array to an array with nullstring element, but we have to deal with that
 			global $scoper;
 
 			if ( $tx = $scoper->taxonomies->get( $taxonomy ) ) {
@@ -500,10 +499,11 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 		if ( ! is_array($selected_terms) )
 			$selected_terms = array();
+			
 
 		$user_terms = array(); // will be returned by filter_terms_for_status
 		$selected_terms = scoper_filter_terms_for_status($taxonomy, $selected_terms, $user_terms);
-
+		
 		if ( $object_id = $scoper->data_sources->detect('id', $src) ) {
 			$selected_terms = scoper_reinstate_hidden_terms($taxonomy, $selected_terms);
 			
@@ -515,7 +515,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			*/
 		}
 
-		if ( empty($selected_terms) || empty($selected_terms[0]) ) {
+		if ( empty($selected_terms) ) {
 			// if array empty, insert default term (wp_create_post check is only subverted on updates)
 			if ( $option_name = $scoper->taxonomies->member_property($taxonomy, 'default_term_option') ) {
 				$default_terms = get_option($option_name);
@@ -535,7 +535,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 			$selected_terms = (array) $default_terms;
 		}
-		
+
 		return $selected_terms;
 	}
 	

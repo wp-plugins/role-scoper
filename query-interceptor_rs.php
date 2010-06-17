@@ -230,7 +230,7 @@ class QueryInterceptor_RS
 		}
 		
 		//$request = agp_force_distinct($request); // in case data source didn't provide a hook for objects_distinct
-		
+
 		if ( ! strpos($request, ' WHERE 1=1 ') )
 			$request = str_replace(' WHERE ', ' WHERE 1=1 AND ', $request);
 			
@@ -620,7 +620,9 @@ class QueryInterceptor_RS
 					
 				// if a "post_status = 'publish'" clause is present, we need to filter private posts into the result set so they can be either displayed or teased as appropr
 				global $wpdb;
-				return preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($wpdb->posts.post_status = 'publish' OR $wpdb->posts.post_status = 'private')", $where);
+				$where = preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($src_table.post_status = 'publish' OR $src_table.post_status = 'private')", $where);
+				$where = preg_replace( "/$src_table.post_status\s*=\s*'publish'/", "($src_table.post_status = 'publish' OR $src_table.post_status = 'private')", $where);
+				return $where;
 			} else
 				return $where;
 		}

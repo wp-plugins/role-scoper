@@ -1,6 +1,9 @@
 <?php
 
-function scoper_add_custom_taxonomies( &$taxonomies ) {
+function scoper_add_custom_taxonomies(&$taxonomies) {
+	//global $scoper;
+	//$taxonomies =& $scoper->taxonomies->members;
+	
 	// note: use_term_roles elements are auto-created (and thus eligible for scoping activation via Roles > Realm) based on registered WP taxonomies
 	$arr_use_wp_taxonomies = array();
 
@@ -22,7 +25,7 @@ function scoper_add_custom_taxonomies( &$taxonomies ) {
 
 	// Detect and support additional WP taxonomies (just require activation via Role Scoper options panel)
 	if ( ! empty($arr_use_wp_taxonomies) ) {
-		global $scoper, $wp_taxonomies;
+		global $scoper, $wp_taxonomies, $wp_post_types;
 		
 		if ( defined( 'CUSTAX_DB_VERSION' ) ) {	// Extra support for Custom Taxonomies plugin
 			global $wpdb;
@@ -45,19 +48,19 @@ function scoper_add_custom_taxonomies( &$taxonomies ) {
 
 				foreach ( $tx_otypes as $wp_tax_object_type ) {
 				
-					if ( isset( $scoper->data_sources->members['post']->object_types[$wp_tax_object_type] ) )
+					if ( isset($wp_post_types[$wp_tax_object_type]) || isset( $scoper->data_sources->members['post']->object_types[$wp_tax_object_type] ) )
 						$src_name = 'post';
 					elseif ( $scoper->data_sources->is_member($wp_tax_object_type) ) 
 						$src_name = $wp_tax_object_type;
 					elseif ( ! $src_name = $scoper->data_sources->is_member_alias($wp_tax_object_type) )  // in case the 3rd party plugin uses a taxonomy->object_type property different from the src_name we use for RS data source definition
 						continue;
-
+						
 					// create taxonomies definition if necessary (additional properties will be set later)
 					$taxonomies[$taxonomy] = (object) array(
 						'name' => $taxonomy,								
 						'uses_standard_schema' => 1,	'autodetected_wp_taxonomy' => 1,
 						'hierarchical' => $wp_tax->hierarchical,
-						'object_source' => $src_name
+						'object_source' => $scoper->data_sources->get( $src_name )
 					);
 					
 					$taxonomies[$taxonomy]->requires_term = $wp_tax->hierarchical;	// default all hierarchical taxonomies to strict, non-hierarchical to non-strict
@@ -79,11 +82,14 @@ function scoper_add_custom_taxonomies( &$taxonomies ) {
 	} // endif any taxonomies have scoping enabled		
 }
 
-function scoper_add_custom_data_sources( &$data_sources ) {
+function scoper_add_custom_data_sources(&$data_sources) {
+	//global $scoper;
+	//$data_sources =& $scoper->data_sources->members;
+
 	$custom_types = get_post_types( array(), 'object' );
 
 	$core_types = array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' );
-
+	
 	foreach ( $custom_types as $otype ) {
 		if ( ! in_array( $otype->name, $core_types ) ) {
 			$name = $otype->name;	
