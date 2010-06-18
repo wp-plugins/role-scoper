@@ -700,11 +700,18 @@ class CapInterceptor_RS
 		foreach ( $caps_by_otype as $src_name => $otypes ) {
 			$src = $scoper->data_sources->get($src_name);
 		
+			// deal with upload_files and other capabilities which have no specific object type
+			if ( ! array_diff_key( $otypes, array( '' => true ) ) ) {
+				$otypes['post'] = $otypes[''];
+				$otypes['page'] = $otypes[''];
+				unset( $otypes[''] );
+			}
+			
 			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, array_keys($otypes) );
 
 			if ( empty($uses_taxonomies) )
 				continue;
-			
+				
 			foreach ( $otypes as $this_otype_caps ) { // keyed by object_type
 				$caps_by_op = $scoper->cap_defs->organize_caps_by_op($this_otype_caps);
 

@@ -176,7 +176,7 @@ class ScoperHardwayFront
 		if ( !empty($include) ) {
 			$exclude = '';
 			$exclude_tree = '';
-			$interms = preg_split('/[\s,]+/',$include);
+			$interms = wp_parse_id_list($include);
 			if ( count($interms) ) {
 				foreach ( (array) $interms as $interm ) {
 					if (empty($inclusions))
@@ -193,7 +193,7 @@ class ScoperHardwayFront
 	
 		$exclusions = '';
 		if ( !empty($exclude) ) {
-			$exterms = preg_split('/[\s,]+/',$exclude);
+			$exterms = wp_parse_id_list($exclude);
 			if ( count($exterms) ) {
 				foreach ( (array) $exterms as $exterm ) {
 					if ( empty($exclusions) )

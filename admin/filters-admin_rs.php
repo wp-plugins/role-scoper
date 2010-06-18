@@ -555,13 +555,13 @@ class ScoperAdminFilters
 		dump($all_posted_groups);
 		die;
 		*/
-			
+
 		foreach ( $stored_groups as $status => $stored ) {
 			if ( ! $editable_group_ids[$status] )
 				continue;
 			
 			// remove group memberships which were not posted for any status, if logged user can edit the group
-			foreach ( $stored as $group_id ) {
+			foreach ( array_keys($stored) as $group_id ) {
 				if ( ! in_array( $group_id, $all_posted_groups ) )
 					if ( in_array( $group_id, $editable_group_ids[$status] ) )
 						ScoperAdminLib::remove_group_user($group_id, $user_id);

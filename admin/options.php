@@ -862,6 +862,9 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :
 		echo '<br />';
 		printf( __( "Database Schema Version: %s", 'scoper'), SCOPER_DB_VERSION);
 		echo '<br />';
+		global $wp_version;
+		printf( __( "WordPress Version: %s", 'scoper'), $wp_version );
+		echo '<br />';
 		printf( __( "PHP Version: %s", 'scoper'), phpversion() );
 		echo '<br />';
 		

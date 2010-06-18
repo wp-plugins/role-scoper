@@ -106,13 +106,15 @@ class ScoperHardway
 				$no_cache = true;
 		}
 		// === END Role Scoper MODIFICATION ===
-
-
+		
 		$r = wp_parse_args( $args, $defaults );
+		
 		extract( $r, EXTR_SKIP );
 		$number = (int) $number;
 		$offset = (int) $offset;
 
+		$child_of = (int) $child_of;  // Role Scoper modification: null value will confuse children array check
+		
 		//$scoper->last_get_pages_args = $r; // don't copy entire args array unless it proves necessary
 		$scoper->last_get_pages_depth = $depth;
 		$scoper->last_get_pages_suppress_filters = $suppress_filters;
@@ -151,7 +153,7 @@ class ScoperHardway
 			$meta_key = '';
 			$meta_value = '';
 			$hierarchical = false;
-			$incpages = preg_split('/[\s,]+/',$include);
+			$incpages = wp_parse_id_list($include);
 			if ( count($incpages) ) {
 				foreach ( $incpages as $incpage ) {
 					if (empty($inclusions))
@@ -166,7 +168,7 @@ class ScoperHardway
 	
 		$exclusions = '';
 		if ( !empty($exclude) ) {
-			$expages = preg_split('/[\s,]+/',$exclude);
+			$expages = wp_parse_id_list($exclude);
 			if ( count($expages) ) {
 				foreach ( $expages as $expage ) {
 					if (empty($exclusions))
@@ -181,7 +183,7 @@ class ScoperHardway
 	
 		$author_query = '';
 		if (!empty($authors)) {
-			$post_authors = preg_split('/[\s,]+/',$authors);
+			$post_authors = wp_parse_id_list($authors);
 	
 			if ( count($post_authors) ) {
 				foreach ( $post_authors as $post_author ) {
@@ -363,7 +365,7 @@ class ScoperHardway
 			$depth = 0;
 		
 		if ( $exclude )
-			$exclude = preg_split('/[\s,]+/',$exclude);
+			$exclude = wp_parse_id_list($exclude);
 		
 		$filtered_items_by_id = array();
 		foreach ( $items as $item )

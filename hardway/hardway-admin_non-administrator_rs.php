@@ -480,7 +480,7 @@ class ScoperAdminHardway_Ltd {
 			$exclude = '';  //ignore exclude, category, and category_name params if using include
 			$category = '';
 			$category_name = '';
-			$inclinks = preg_split('/[\s,]+/',$include);
+			$inclinks = wp_parse_id_list($include);
 			if ( count($inclinks) ) {
 				foreach ( $inclinks as $inclink ) {
 					if (empty($inclusions))
@@ -495,7 +495,7 @@ class ScoperAdminHardway_Ltd {
 	
 		$exclusions = '';
 		if ( !empty($exclude) ) {
-			$exlinks = preg_split('/[\s,]+/',$exclude);
+			$exlinks = wp_parse_id_list($exclude);
 			if ( count($exlinks) ) {
 				foreach ( $exlinks as $exlink ) {
 					if (empty($exclusions))
@@ -523,7 +523,7 @@ class ScoperAdminHardway_Ltd {
 		$category_query = '';
 		$join = '';
 		if ( !empty($category) ) {
-			$incategories = preg_split('/[\s,]+/',$category);
+			$incategories = wp_parse_id_list($category);
 			if ( count($incategories) ) {
 				foreach ( $incategories as $incat ) {
 					if (empty($category_query))

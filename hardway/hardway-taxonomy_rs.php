@@ -146,6 +146,9 @@ class ScoperHardwayTaxonomy
 		$args = wp_parse_args( $args, $defaults );
 		$args['number'] = (int) $args['number'];
 		$args['offset'] = absint( $args['offset'] );
+		
+		$args['child_of'] = (int) $args['child_of'];	// Role Scoper modification: null value will confuse children array check
+		
 		if ( !$single_taxonomy || !is_taxonomy_hierarchical($taxonomies[0]) ||
 			'' !== $args['parent'] ) {
 			$args['child_of'] = 0;
@@ -232,7 +235,7 @@ class ScoperHardwayTaxonomy
 		$inclusions = '';
 		if ( !empty($include) ) {
 			$exclude = '';
-			$interms = preg_split('/[\s,]+/',$include);
+			$interms = wp_parse_id_list($include);
 			if ( count($interms) ) {
 				foreach ( $interms as $interm ) {
 					if (empty($inclusions))
@@ -254,7 +257,7 @@ class ScoperHardwayTaxonomy
 			remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
 			// === END Role Scoper MODIFICATION ===
 			
-			$excluded_trunks = preg_split('/[\s,]+/',$exclude_tree);
+			$excluded_trunks = wp_parse_id_list($exclude_tree);
 			foreach( (array) $excluded_trunks as $extrunk ) {
 				$excluded_children = (array) get_terms($taxonomies[0], array('child_of' => intval($extrunk), 'fields' => 'ids'));
 				$excluded_children[] = $extrunk;
@@ -273,7 +276,8 @@ class ScoperHardwayTaxonomy
 		}
 
 		if ( !empty($exclude) ) {
-			$exterms = preg_split('/[\s,]+/',$exclude);
+			$exterms = wp_parse_id_list($exclude);
+			
 			if ( count($exterms) ) {
 				foreach ( $exterms as $exterm ) {
 					if (empty($exclusions))
