@@ -223,7 +223,7 @@ function scoper_init() {
 
 	global $current_user;
 	
-	if ( ! empty( $current_user ) ) {
+	if ( ! empty( $current_user ) && isset($current_user->assigned_blog_roles) ) {
 		if ( 'rs' == SCOPER_ROLE_TYPE )
 			$current_user->merge_scoped_blogcaps();
 		
@@ -281,6 +281,7 @@ function scoper_set_conditional_defaults() {
 function scoper_refresh_default_options() {
 	global $scoper_default_options;
 
+	require_once( 'defaults_rs.php');
 	$scoper_default_options = apply_filters( 'default_options_rs', scoper_default_options() );
 	
 	if ( IS_MU_RS )
@@ -440,9 +441,11 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 			else {
 				static $hardcode_option_defaults;
 				
-				if ( empty($hardcode_option_defaults) )
+				if ( empty($hardcode_option_defaults) ) {
+					require_once( 'defaults_rs.php');
 					$hardcode_option_defaults = scoper_default_options();
-
+				}
+					
 				if ( isset($hardcode_option_defaults[$option_basename]) )
 					$optval = $hardcode_option_defaults[$option_basename];	
 				else {

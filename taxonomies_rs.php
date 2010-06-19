@@ -61,7 +61,7 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 				}
 			}
 			
-			if ( $object_src_name )
+			if ( ! empty($object_src_name) )
 				$tx->object_source =& $data_sources->get_ref($object_src_name);
 		}
 		

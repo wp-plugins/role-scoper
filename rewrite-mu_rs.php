@@ -14,7 +14,11 @@ class ScoperRewriteMU {
 
 	// directly inserts essential RS rules into the main wp-mu .htaccess file
 	function update_mu_htaccess( $include_rs_rules = true ) {
-		$include_rs_rules = $include_rs_rules && scoper_get_option( 'file_filtering' );
+		//rs_errlog( "update_mu_htaccess: arg = $include_rs_rules" );
+		
+		$include_rs_rules = $include_rs_rules && get_site_option( 'scoper_file_filtering' );	// scoper_get_option is not reliable for initial execution following plugin activation
+		
+		//rs_errlog( "update_mu_htaccess: $include_rs_rules" );
 		
 		if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
 			include_once( ABSPATH . '/wp-admin/includes/file.php' );
@@ -24,7 +28,7 @@ class ScoperRewriteMU {
 
 		if ( ! file_exists($htaccess_path) )
 			return;
-		
+			
 		$contents = file_get_contents( $htaccess_path );
 
 		$pos_rs_start = strpos( $contents, "\n# BEGIN Role Scoper" );
@@ -32,7 +36,8 @@ class ScoperRewriteMU {
 		$default_file_redirect_rule = array();
 		
 		$default_file_redirect_rule []= 'RewriteRule ^(.*/)?files/$ index.php [L]';	// WP-MU < 3.0
-		$default_file_redirect_rule []= 'RewriteRule ^([_0-9a-zA-Z-]+/)?files/(.+) wp-includes/ms-files.php?file=$2 [L]';  // WP 3.0
+		$default_file_redirect_rule []= 'RewriteRule ^([_0-9a-zA-Z-]+/)?files/(.+) wp-includes/ms-files.php?file=$2 [L]';  // WP 3.0 - subdomain
+		$default_file_redirect_rule []= 'RewriteRule ^files/(.+) wp-includes/ms-files.php?file=$1 [L]'; // WP 3.0 - subdirectory
 		
 		foreach ( $default_file_redirect_rule as $default_rule ) {
 			if ( $pos_def = strpos( $contents, $default_rule ) ) {
@@ -45,7 +50,7 @@ class ScoperRewriteMU {
 					
 				if ( $include_rs_rules )
 					fwrite($fp, ScoperRewrite::build_site_rules() );
-	
+
 				fwrite($fp, substr( $contents, $pos_def ) );
 		
 				fclose($fp);

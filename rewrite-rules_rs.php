@@ -47,7 +47,7 @@ class ScoperRewrite {
 	
 	function build_site_rules() {
 		$http_auth = scoper_get_option( 'feed_link_http_auth' );
-		$filtering = IS_MU_RS && scoper_get_option( 'file_filtering' );
+		$filtering = IS_MU_RS && get_site_option( 'scoper_file_filtering' );	// scoper_get_option is not reliable for initial execution following plugin activation
 		
 		$new_rules = '';
 		

@@ -466,6 +466,7 @@ function scoper_core_taxonomies( $include_custom_types = true ) {
 	$name = 'category';
 	$arr[$name] = (object) array(
 		'requires_term' => true,	'uses_standard_schema' => true, 'hierarchical' => true, 'default_term_option' => 'default_category',	
+		'object_source' => 'post',
 		'admin_filters' => (object) array( 'pre_object_terms' => 'pre_post_category' ),
 		'admin_actions' => (object) array( 
 			'create_term' => 'created_category', 	'edit_term' => 'edit_category', 	'delete_term' => 'delete_category',		
@@ -504,7 +505,8 @@ function scoper_core_taxonomies( $include_custom_types = true ) {
 			'requires_term' => true,
 			'uses_standard_schema' => true, 'hierarchical' => false,
 			'default_term_option' => 'default_link_category',
-			'admin_actions' => array ( 'term_edit_ui' => 'edit_link_category_form' )
+			'admin_actions' => array ( 'term_edit_ui' => 'edit_link_category_form' ),
+			'object_source' => 'link'
 		); // end outer array
 
 		$arr['link_category']->display_name = __('Link Category', 'scoper');
