@@ -144,5 +144,4 @@ function scoper_review_file_htaccess() {
 	if ( ! $last_regen || ( $min_date > $last_regen ) )
 		scoper_flush_file_rules();
 }
-
 ?>

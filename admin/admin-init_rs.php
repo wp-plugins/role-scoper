@@ -52,5 +52,12 @@ function scoper_use_posted_init_options() {
 
 	wpp_cache_init( IS_MU_RS && scoper_establish_group_scope() );
 }
+
+function agp_strtolower( $str ) {
+	if ( defined( 'SCOPER_MB_STRINGS' ) )
+		return mb_strtolower( $str );
+	else
+		return strtolower( $str );
+}
 	
 ?>

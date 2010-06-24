@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.6-dev =
+* BugFix : multibyte string functions used in Role Scoper admin forms caused fatal errors on servers lacking that PHP module
+* BugFix : Page Parent filtering was broken for new pages with WP 3.0
+
+
 = 1.2.5 - 19 June 2010 =
 * BugFix : .htaccess file became corrupted on WP-MU versions < 3.0 on plugin re-activation with File Filtering enabled, causing inaccessable site
 * BugFix : On WP 3.0, File Filtering was not automatically re-enabled following plugin de-activation, re-activation

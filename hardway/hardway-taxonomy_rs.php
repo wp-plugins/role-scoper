@@ -56,7 +56,7 @@ class ScoperHardwayTaxonomy
 		// === END Role Scoper MODIFICATION ===
 		
 		foreach ( (array) $taxonomies as $taxonomy ) {
-			if ( ! is_taxonomy($taxonomy) ) {
+			if ( ! taxonomy_exists($taxonomy) ) {
 				// === BEGIN Role Scoper MODIFICATION: this caused plugin activation error in some situations (though at that time, the error object was created and return on a single line, not byRef as now) ===
 				//
 				//$error = & new WP_Error('invalid_taxonomy', __awp('Invalid Taxonomy'));

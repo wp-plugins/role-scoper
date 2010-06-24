@@ -3,10 +3,9 @@
 class ScoperHardwayParent {
 
 	function flt_dropdown_pages($orig_options_html) {
-		global $scoper, $post_ID;
+		global $scoper, $post_ID, $post;
 			
 		//log_mem_usage_rs( 'start flt_dropdown_pages()' );
-
 		if ( empty($post_ID) )
 			$object_id = $scoper->data_sources->detect('id', 'post', 0, 'post');
 		else
@@ -19,7 +18,7 @@ class ScoperHardwayParent {
 			
 		//if ( is_content_administrator_rs() )	// WP 2.7 excludes private pages from Administrator's parent dropdown
 		//	return $orig_options_html;
-
+		
 		if ( is_content_administrator_rs() ) {
 			$can_associate_main = true;
 			
@@ -32,19 +31,25 @@ class ScoperHardwayParent {
 		} else
 			$can_associate_main = false;
 		
+		if ( awp_ver( '3.0' ) )
+			$is_new = ( $post->post_status == 'auto-draft' );
+		else
+			$is_new = ( $object_id < 1 );
+
 		// Generate the filtered page parent options, but only if user can de-associate with main page, or if parent is already non-Main
-		if ( $can_associate_main || ! $object_id || $stored_parent_id ) {
+		if ( $can_associate_main || $is_new || $stored_parent_id ) {
+			if ( $is_new ) $object_id = '0';
 			$options_html = ScoperHardwayParent::dropdown_pages($object_id, $stored_parent_id );
 		} else {
 			$options_html = '';
 		}
-
+		
 		$object_type = awp_post_type_from_uri();
 		
 		// User can't associate or de-associate a page with Main page unless they have edit_pages blog-wide.
 		// Prepend the Main Page option if appropriate (or, to avoid submission errors, if we generated no other options)
 		if ( ( strpos( $orig_options_html, __('Main Page (no parent)') ) || ( 'page' == $object_type ) ) 
-		&& ( $can_associate_main || ( $object_id && ! $stored_parent_id ) || empty($options_html) ) ) {
+		&& ( $can_associate_main || ( ! $is_new && ! $stored_parent_id ) || empty($options_html) ) ) {
 			$current = ( $stored_parent_id ) ? '' : ' selected="selected"';
 			$option_main = "\t" . '<option value=""' . $current . '> ' . __('Main Page (no parent)') . "</option>";
 		} else

@@ -4,6 +4,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 require_once('hardway/cache-persistent.php');
 
+if ( ! awp_ver( '3.0' ) )
+	require_once( 'wp-legacy_rs.php' );
+
 if ( is_admin() )
 	require_once( 'admin/admin-init_rs.php' );
 
@@ -760,16 +763,4 @@ function scoper_get_taxonomy_usage( $src_name, $object_types = '' ) {
 	else
 		return array();
 }
-
-
-// include this (from WP 3.0 code) so hardway terms/pages filters can use it on older WP
-if ( ! awp_ver( '3.0' ) && ! function_exists( 'wp_parse_id_list' ) ) :
-function wp_parse_id_list( $list ) {
-	if ( !is_array($list) )
-		$list = preg_split('/[\s,]+/', $list);
-
-	return array_unique(array_map('absint', $list));
-}
-endif;
-
 ?>

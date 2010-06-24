@@ -853,7 +853,7 @@ class Scoper
 				$good_terms[$date_key] = array_unique( $good_terms[$date_key] );
 		
 			// if COL_TAXONOMY_ID_RS, return a term_taxonomy_id instead of term_id
-			if ( $good_terms[$date_key] && (COL_TAXONOMY_ID_RS == $return_id_type) && is_taxonomy($taxonomy) ) {
+			if ( $good_terms[$date_key] && (COL_TAXONOMY_ID_RS == $return_id_type) && taxonomy_exists($taxonomy) ) {
 				$all_terms_cols = $this->get_terms( $taxonomy, UNFILTERED_RS );
 				$good_tt_ids = array();
 				foreach ( $good_terms[$date_key] as $term_id )

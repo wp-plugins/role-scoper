@@ -309,11 +309,11 @@ class UsersInterceptor_RS
 				$table_aliases = array( ROLE_BASIS_USER => 'uro', ROLE_BASIS_GROUPS => 'gro' );
 				$SCOPER_ROLE_TYPE = SCOPER_ROLE_TYPE;
 				
-				if ( ! empty($stored_owner_id) && $owner_has_all_caps && USER_ROLES_RS && ! $ignore_user_roles )
-					$ot_where['owner'][ROLE_BASIS_USER] = "uro.user_id = '$stored_owner_id'";
-				
 				foreach ( $qry_roles as $cap_name => $user_types ) { // note: default is to put qualifying roles from all reqd_caps into a single "cap_name" element
 					$ot_where = array();
+					
+					if ( ! empty($stored_owner_id) && $owner_has_all_caps && USER_ROLES_RS && ! $ignore_user_roles )
+						$ot_where['owner'][ROLE_BASIS_USER] = "uro.user_id = '$stored_owner_id'";
 					
 					foreach ( $user_types as $user_type => $role_bases ) {
 						foreach ( $role_bases as $role_basis => $scopes ) {

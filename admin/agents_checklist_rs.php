@@ -357,7 +357,7 @@ class ScoperAgentsChecklist {
 				
 			$disabled = ( $locked_ids && isset($locked_ids[$id]) ) ? " disabled='disabled'" : '';
 			
-			$li_title = "title=' " . mb_strtolower($agent_display_name) . " '";
+			$li_title = "title=' " . agp_strtolower($agent_display_name) . " '";
 			
 			if ( $check_for_incomplete_submission && isset($_POST['scoper_error']) && isset($_POST[$id_prefix]) )
 				$this_checked = ( in_array($id, $_POST[$id_prefix]) ) ? ' checked="checked"' : '';
@@ -456,7 +456,7 @@ class ScoperAgentsChecklist {
 		// display key
 		if ( $any_inherited && $inherited_prefix )
 			$key ['inherited']= "$inherited_prefix $inherited_suffix"
-				 . '<span class="rs-keytext">' . sprintf(__('inherited from parent %s', 'scoper'), mb_strtolower($objtype_display_name)) . '</span>';
+				 . '<span class="rs-keytext">' . sprintf(__('inherited from parent %s', 'scoper'), agp_strtolower($objtype_display_name)) . '</span>';
 		
 		if ( $any_other_role && $via_other_role_prefix )
 			$key ['other_role']= "<span class='rs-via-r'>{$via_other_role_prefix}&nbsp;{$via_other_role_suffix}"
@@ -472,7 +472,7 @@ class ScoperAgentsChecklist {
 		 
 		if ( $propagation )
 			$key ['propagation']= "{<input type='checkbox' disabled='disabled' name='rs-prop_key_{$agents_subset}_{$id_prefix}' id='rs-prop_key_{$agents_subset}_{$id_prefix}' $ie_checkbox_style />}"
-				 . '<span class="rs-keytext">' . sprintf(__('propagate to sub-%s', 'scoper'), mb_strtolower($objtype_display_name_plural)) . '</span>';
+				 . '<span class="rs-keytext">' . sprintf(__('propagate to sub-%s', 'scoper'), agp_strtolower($objtype_display_name_plural)) . '</span>';
 	
 		
 		if ( $any_date_limits && $object_id )

@@ -172,8 +172,8 @@ class ScoperAdmin
 		}
 		
 		if ( ! empty($src) && ! empty($src->cols->parent) && ! empty($otype_def->ignore_object_hierarchy) ) {
-			$obj_title = sprintf( __('assign role for this %s', 'scoper'), mb_strtolower($otype_def->display_name) );
-			$child_title = sprintf( __('assign role for sub-%s', 'scoper'), mb_strtolower($otype_def->display_name_plural) );
+			$obj_title = sprintf( __('assign role for this %s', 'scoper'), agp_strtolower($otype_def->display_name) );
+			$child_title = sprintf( __('assign role for sub-%s', 'scoper'), agp_strtolower($otype_def->display_name_plural) );
 		
 			$js_params = "var role_for_object_title = '$obj_title';"
 					. "var role_for_children_title = '$child_title';";
