@@ -612,8 +612,8 @@ class QueryInterceptor_RS
 							$where = str_replace( $basic_status_clause['published'], "1=1", $where);
 						} else {
 							$in_statuses = "'" . implode("', '", $status_vals ) . "'";
-							$use_status_col = ( $status_col_with_table ) ? "{$src_table}.$col_status" : $col_status;
-							$where = str_replace( $basic_status_clause['published'], "$use_status_col IN ($in_statuses)", $where);
+							//$use_status_col = ( $status_col_with_table ) ? "{$src_table}.$col_status" : $col_status;
+							$where = str_replace( $basic_status_clause['published'], "{$src_table}.$col_status IN ($in_statuses)", $where);
 						}
 					}
 				}
@@ -766,7 +766,8 @@ class QueryInterceptor_RS
 					$status_prefix = "1=1";
 				} else {
 					$name_in = "'" . implode("', '", array_keys($clause_status_vals)) . "'";
-					$status_prefix = "$col_status IN ($name_in)";
+					//$status_prefix = "$col_status IN ($name_in)";
+					$status_prefix = "{$src_table}.$col_status IN ($name_in)";
 				}
 			} elseif ( $col_status && $status_name ) {
 				$status_prefix = $basic_status_clause[$status_name];	

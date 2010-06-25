@@ -110,6 +110,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : If multiple sticky posts exists, all except one were dropped down to non-sticky display position
 * BugFix : Various PHP warnings (harmless to normal installations)
 * BugFix : "Add New" links were included in Posts, Pages menu if user has an object-specific editing role but lacks the sitewide role required for object creation
+* BugFix : Database error when filtering Recent Comments widget (ambiguous reference to post_status)
 
 
 = 1.2.5 - 19 June 2010 =
