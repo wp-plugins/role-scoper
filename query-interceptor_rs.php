@@ -231,9 +231,9 @@ class QueryInterceptor_RS
 		
 		//$request = agp_force_distinct($request); // in case data source didn't provide a hook for objects_distinct
 
-		if ( ! strpos($request, ' WHERE 1=1 ') )
-			$request = str_replace(' WHERE ', ' WHERE 1=1 AND ', $request);
-			
+		if ( ! preg_match('/\s*WHERE 1=1\s*/', $request) )
+			$request = preg_replace('/\s*WHERE\s*/', ' WHERE 1=1 AND ', $request);
+
 		$pos_where = 0;
 		$pos_suffix = 0;
 		$where = agp_parse_after_WHERE_11( $request, $pos_where, $pos_suffix );  // any existing where, orderby or group by clauses remain in $where
