@@ -69,7 +69,13 @@
 			$user = $current_user;
 		}
 			
-		if ( $new_object = ! $object_id && ( false !== $object_id ) ) {
+		if ( awp_ver( '3.0' ) && ( 'post' == $src_name ) ) {
+			global $post;
+			$new_object = ( 'auto-draft' == $post->post_status );
+		} else
+			$new_object = ! $object_id && ( false !== $object_id );
+			
+		if ( $new_object ) {
 			//for new objects, default to requiring caps for 1st defined status (=published for posts)
 			$src = $scoper->data_sources->get($src_name);
 			reset ($src->statuses);

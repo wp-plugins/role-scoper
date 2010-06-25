@@ -554,23 +554,9 @@ class ScoperAdmin
 		}
 		
 		
-		// workaround for WP 2.7's universal inclusion of "Add New" in Posts, Pages menu
+		// workaround for WP's universal inclusion of "Add New"
 		if ( awp_ver('2.7') ) {
-			if ( isset($submenu['edit-pages.php']) ) {
-				foreach ( $submenu['edit-pages.php'] as $key => $arr ) {
-					if ( isset($arr['2']) && ( 'page-new.php' == $arr['2'] ) ) {
-						$scoper->cap_interceptor->skip_id_generation = true;
-						$scoper->cap_interceptor->skip_any_object_check = true;	
-	
-						if ( ! current_user_can('edit_pages') )
-							unset( $submenu['edit-pages.php'][$key]);
-							
-						$scoper->cap_interceptor->skip_id_generation = false;
-						$scoper->cap_interceptor->skip_any_object_check = false;
-					}
-				}
-			}
-			
+			// Posts menu
 			if ( isset($submenu['edit.php']) ) {
 				foreach ( $submenu['edit.php'] as $key => $arr ) {
 					if ( isset($arr['2']) && ( 'post-new.php' == $arr['2'] ) ) {
@@ -582,6 +568,47 @@ class ScoperAdmin
 							
 						$scoper->cap_interceptor->skip_id_generation = false;
 						$scoper->cap_interceptor->skip_any_object_check = false;
+					}
+				}
+			}
+			
+			if ( awp_ver( '3.0' ) ) {
+				// handle Pages and custom post types
+				$src = $scoper->data_sources->get( 'post' );
+				foreach ( array_keys($src->object_types) as $_post_type ) {
+					if ( $wp_type = get_post_type_object( $_post_type ) ) {
+					
+						if ( isset($submenu["edit.php?post_type=$_post_type"]) ) {
+							foreach ( $submenu["edit.php?post_type=$_post_type"] as $key => $arr ) {
+								if ( isset($arr['2']) && ( "post-new.php?post_type=$_post_type" == $arr['2'] ) ) {
+									$scoper->cap_interceptor->skip_id_generation = true;
+									$scoper->cap_interceptor->skip_any_object_check = true;	
+				
+									if ( ! current_user_can($wp_type->cap->edit_posts) )
+										unset( $submenu["edit.php?post_type=$_post_type"][$key]);
+										
+									$scoper->cap_interceptor->skip_id_generation = false;
+									$scoper->cap_interceptor->skip_any_object_check = false;
+								}
+							}
+						}
+					}
+				}
+				
+			} else {
+				// Pages menu
+				if ( isset($submenu['edit-pages.php']) ) {
+					foreach ( $submenu['edit-pages.php'] as $key => $arr ) {
+						if ( isset($arr['2']) && ( 'page-new.php' == $arr['2'] ) ) {
+							$scoper->cap_interceptor->skip_id_generation = true;
+							$scoper->cap_interceptor->skip_any_object_check = true;	
+		
+							if ( ! current_user_can('edit_pages') )
+								unset( $submenu['edit-pages.php'][$key]);
+								
+							$scoper->cap_interceptor->skip_id_generation = false;
+							$scoper->cap_interceptor->skip_any_object_check = false;
+						}
 					}
 				}
 			}

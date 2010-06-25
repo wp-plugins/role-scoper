@@ -109,6 +109,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Page Parent filtering was broken for new pages with WP 3.0
 * BugFix : If multiple sticky posts exists, all except one were dropped down to non-sticky display position
 * BugFix : Various PHP warnings (harmless to normal installations)
+* BugFix : "Add New" links were included in Posts, Pages menu if user has an object-specific editing role but lacks the sitewide role required for object creation
 
 
 = 1.2.5 - 19 June 2010 =
