@@ -515,7 +515,7 @@ function scoper_core_taxonomies( $include_custom_types = true ) {
 	}
 	
 	if ( $include_custom_types && awp_ver( '2.9' ) ) {
-		scoper_add_custom_taxonomies(&$arr);
+		scoper_add_custom_taxonomies($arr);
 		//add_action( 'init', 'scoper_add_custom_taxonomies', 99 );		// for compat with More Types plugin
 	}
 	

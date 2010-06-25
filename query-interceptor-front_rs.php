@@ -48,7 +48,7 @@ class QueryInterceptorFront_RS {
 	function flt_sticky_posts( $post_ids ) {
 		if ( $post_ids && ! is_content_administrator_rs() ) {
 			global $wpdb;
-			$post_ids = scoper_get_col( apply_filters( 'objects_request_rs', "SELECT ID FROM $wpdb->posts WHERE ID IN ('" . implode( ',', $post_ids ) . "')", 'post' ) );
+			$post_ids = scoper_get_col( apply_filters( 'objects_request_rs', "SELECT ID FROM $wpdb->posts WHERE ID IN ('" . implode( "','", $post_ids ) . "')", 'post' ) );
 		}
 
 		return $post_ids;

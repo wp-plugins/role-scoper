@@ -105,8 +105,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.2.6-dev =
-* BugFix : multibyte string functions used in Role Scoper admin forms caused fatal errors on servers lacking that PHP module
+* BugFix : Multibyte string functions used in Role Scoper admin forms caused fatal errors on servers lacking that PHP module
 * BugFix : Page Parent filtering was broken for new pages with WP 3.0
+* BugFix : If multiple sticky posts exists, all except one were dropped down to non-sticky display position
+* BugFix : Various PHP warnings (harmless to normal installations)
 
 
 = 1.2.5 - 19 June 2010 =
