@@ -392,9 +392,11 @@ function get_objects_info($object_ids, &$object_names, &$object_status, &$unlist
 	$unroled_count = 0;
 	$unroled_limit = ( ! empty($otype->admin_max_unroled_objects) ) ? $otype->admin_max_unroled_objects : 999999;
 
-	if ( ! empty($src->cols->type) && ! empty($otype->val) )
+	if ( ! empty($src->cols->type) && ! empty($otype->val) ) {
 		$otype_clause = "AND {$src->cols->type} = '$otype->val'";
-	else
+		if ( 'post' == $src->name )
+			$otype_clause .= "AND {$src->cols->status} != 'auto-draft'";
+	} else
 		$otype_clause = '';
 	
 	$obj = '';

@@ -111,6 +111,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Various PHP warnings (harmless to normal installations)
 * BugFix : "Add New" links were included in Posts, Pages menu if user has an object-specific editing role but lacks the sitewide role required for object creation
 * BugFix : Database error when filtering Recent Comments widget (ambiguous reference to post_status)
+* BugFix : Query parsing become confused by queries which included a tab character before or after WHERE instead of a space
+* BugFix : Auto-drafts were listed in Page Roles, Page Restrictions administration forms with WP 3.0
 
 
 = 1.2.5 - 19 June 2010 =
