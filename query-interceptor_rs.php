@@ -121,8 +121,8 @@ class QueryInterceptor_RS
 		if ( ! $taxonomies )
 			return $request;
 		
-		if ( ! strpos($request, ' WHERE 1=1 ') )
-			$request = str_replace(' WHERE ', ' WHERE 1=1 AND ', $request);
+		if ( ! preg_match('/\s*WHERE 1=1\s*/', $request) )
+			$request = preg_replace('/\s*WHERE\s*/', ' WHERE 1=1 AND ', $request);
 			
 		$pos_where = 0;
 		$pos_suffix = 0;
@@ -295,14 +295,6 @@ class QueryInterceptor_RS
 		//d_echo( $request . '<br /><br />' );
 
 		return $request;
-	}
-	
-	function is_term_table_joined( $request, $taxonomy ) {
-		global $scoper;
-	
-		if ( $qvars = $scoper->taxonomies->get_terms_query_vars($taxonomy) )
-			if ( false !== strpos($request, " {$qvars->term->table} {$qvars->term->as} ") )
-				return true;
 	}
 	
 	// called by flt_objects_where, flt_objects_results
@@ -1070,7 +1062,7 @@ class QueryInterceptor_RS
 				$taxonomies = (array) $taxonomies;  // don't do array_intersect with uses_taxonomies here because flt_terms_where will call with src_name=taxonomy source (which does not itself have a uses_taxonomies property)
 			else {
 				if ( $use_term_roles )
-					$taxonomies = array_keys($use_term_roles);
+					$taxonomies = array_keys( array_intersect( $use_term_roles, array( 1, '1', true ) ) );
 				else
 					$taxonomies = array();
 				//$taxonomies = $src->uses_taxonomies;
@@ -1130,7 +1122,7 @@ class QueryInterceptor_RS
 			$all_terms_qualified = array();
 			$all_taxonomies_qualified = array();
 			
-			if ( $use_term_roles ) {
+			if ( $taxonomies ) {
 				$args['return_id_type'] = COL_TAXONOMY_ID_RS;
 				
 				$strict_taxonomies = array();
@@ -1193,7 +1185,7 @@ class QueryInterceptor_RS
 			}
 
 			foreach ( array_keys($user_blog_roles) as $date_key ) {
-				if ( ! empty($all_taxonomies_qualified[$date_key]) || ( ! $use_term_roles && ! empty($user_blog_roles[$date_key][$role_handle]) ) ) {
+				if ( ! empty($all_taxonomies_qualified[$date_key]) || ( ! $taxonomies && ! empty($user_blog_roles[$date_key][$role_handle]) ) ) {
 					if ( $date_key || $objscope_clause || ! empty($require_blog_and_obj_role) )
 						$where[$date_key][$objscope_clause][BLOG_SCOPE_RS] = "1=1";
 					else {
@@ -1258,7 +1250,6 @@ class QueryInterceptor_RS
 		// support mirroring of inconveniently stored 3rd party plugin data into data_rs table (by RS Extension plugins)
 		$rs_data_clause = ( ! empty($src->uses_rs_data_table) ) ? "AND $src_table.topic = 'object' AND $src_table.src_or_tx_name = '$src_name' AND $src_table.object_type IN ('" . implode("', '", $object_types) . "')" : '';
 							
-		
 		// implode the array of where criteria into a query as concisely as possible 
 		foreach ( $where as $date_key => $objscope_clauses ) {
 	
@@ -1294,14 +1285,9 @@ class QueryInterceptor_RS
 								} else {
 									$this_tx_clause = "{$qvars->term->alias}.{$qvars->term->col_id} IN ('" . implode("', '", $terms) . "')";
 
-									// If the request already has a corresponding join on the object2term (term_relationships) table, use it.  Otherwise, use a subselect rather than adding our own LEFT JOIN.
-									// (But if this taxonomy is strict and uses the WP term_relationships table, we cannot add an AND clause referencing the same INNER JOIN as aliases as those used for categories.)  
-									//if( $this->is_term_table_joined( $join, $taxonomy ) && ( ! $is_strict || ( 'category' == $taxonomy ) || ! $scoper->taxonomies->member_property( $taxonomy, 'uses_standard_schema' ) ) )
-									//	$taxonomy_clauses[$is_strict] []= "$this_tx_clause $objscope_clause";
-									//else {
-										$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause $rs_data_clause";
-										$taxonomy_clauses[$is_strict] []= "$src_table.{$src->cols->id} IN ( $terms_subselect ) $objscope_clause";
-									//}
+									// Use a subselect rather than adding our own LEFT JOIN.
+									$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause $rs_data_clause";
+									$taxonomy_clauses[$is_strict] []= "$src_table.{$src->cols->id} IN ( $terms_subselect ) $objscope_clause";
 								}
 						}
 
@@ -1401,7 +1387,7 @@ class QueryInterceptor_RS
 		
 		if ( empty($where) )
 			$where = '1=2';
-
+			
 		return $where;
 	}
 	

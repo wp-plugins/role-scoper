@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.6
 Tested up to: 3.0
-Stable Tag: 1.2.5
+Stable Tag: 1.2.6
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -104,7 +104,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.2.6-dev =
+= 1.2.6 - 30 June 2010 =
 * BugFix : Multibyte string functions used in Role Scoper admin forms caused fatal errors on servers lacking that PHP module
 * BugFix : Page Parent filtering was broken for new pages with WP 3.0
 * BugFix : If multiple sticky posts exists, all except one were dropped down to non-sticky display position
@@ -113,6 +113,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Database error when filtering Recent Comments widget (ambiguous reference to post_status)
 * BugFix : Query parsing become confused by queries which included a tab character before or after WHERE instead of a space
 * BugFix : Auto-drafts were listed in Page Roles, Page Restrictions administration forms with WP 3.0
+* BugFix : Category Roles / Restrictions were applied regardless of Realm settings (causing overly restricted read access under some configurations)
 
 
 = 1.2.5 - 19 June 2010 =
