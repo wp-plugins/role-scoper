@@ -227,7 +227,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			$title_item = sprintf( __('edit %s', 'scoper'), agp_strtolower($otype->display_name) );
 			
 			foreach ( $object_roles[$duration_key] as $obj_id => $roles ) {
-				$object_name = attribute_escape($objnames[$obj_id]);
+				$object_name = esc_attr($objnames[$obj_id]);
 		
 				$html .= "\n\t<tr$style>";
 				

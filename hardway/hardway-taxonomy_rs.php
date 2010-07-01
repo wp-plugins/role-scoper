@@ -35,7 +35,7 @@ if ( $scoper->is_front() || ! is_content_administrator_rs() ) {
  */	
 class ScoperHardwayTaxonomy
 {	
-	//  Scoped equivalent to WP 2.8.3 core get_terms
+	//  Scoped equivalent to WP 3.0 core get_terms
 	//	Currently, scoped roles cannot be enforced without replicating the whole function 
 	// 
 	// Cap requirements depend on access type, and are specified in the WP_Scoped_Data_Source->get_terms_reqd_caps corresponding to taxonomy in question
@@ -74,6 +74,8 @@ class ScoperHardwayTaxonomy
 		if ( ! $scoper->taxonomies->is_member( $taxonomies[0] ) )
 			return $results;
 		
+
+			
 		// no backend filter for administrators
 		$parent_or = '';
 		if ( ( is_admin() || defined('XMLRPC_REQUEST') ) ) {
@@ -98,7 +100,7 @@ class ScoperHardwayTaxonomy
 		static $no_cache;
 		if ( ! isset($no_cache) )
 			$no_cache = defined( 'SCOPER_NO_TERMS_CACHE' ) || ( ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate') );
-
+			
 		// this filter currently only supports a single taxonomy for each get_terms call
 		// (although the terms_where filter does support multiple taxonomies and this function could be made to do so)
 		if ( ! $single_taxonomy )
@@ -107,7 +109,7 @@ class ScoperHardwayTaxonomy
 		// link category roles / restrictions are only scoped for management (TODO: abstract this)
 		if ( $single_taxonomy && ( 'link_category' == $taxonomies[0] ) && $scoper->is_front() )
 			return $results;
-
+			
 		// depth is not really a get_terms arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
 		if ( ! empty($args['exclude']) && empty($args['exclude_tree']) && ! empty($args['depth']) && ( 1 == $args['depth'] ) )
 			$args['exclude_tree'] = $args['exclude'];
@@ -224,17 +226,23 @@ class ScoperHardwayTaxonomy
 			$orderby = 't.slug';
 		else if ( 'term_group' == $_orderby )
 			$orderby = 't.term_group';
-		elseif ( empty($_orderby) || 'id' == $_orderby )
+		else if ( 'none' == $_orderby )
+			$orderby = '';
+		else if ( empty($_orderby) || 'id' == $_orderby )
 			$orderby = 't.term_id';
 		elseif ( 'order' == $_orderby )
 			$orderby = 't.term_order';
 	
 		$orderby = apply_filters( 'get_terms_orderby', $orderby, $args );
 
+		if ( !empty($orderby) )
+			$orderby = "ORDER BY $orderby";
+		
 		$where = '';
 		$inclusions = '';
 		if ( !empty($include) ) {
 			$exclude = '';
+			$exclude_tree = '';
 			$interms = wp_parse_id_list($include);
 			if ( count($interms) ) {
 				foreach ( $interms as $interm ) {
@@ -261,7 +269,7 @@ class ScoperHardwayTaxonomy
 			foreach( (array) $excluded_trunks as $extrunk ) {
 				$excluded_children = (array) get_terms($taxonomies[0], array('child_of' => intval($extrunk), 'fields' => 'ids'));
 				$excluded_children[] = $extrunk;
-				foreach( (array) $excluded_children as $exterm ) {
+				foreach( $excluded_children as $exterm ) {
 					if ( empty($exclusions) )
 						$exclusions = ' AND ( t.term_id <> ' . intval($exterm) . ' ';
 					else
@@ -276,15 +284,12 @@ class ScoperHardwayTaxonomy
 		}
 
 		if ( !empty($exclude) ) {
-			$exterms = wp_parse_id_list($exclude);
-			
-			if ( count($exterms) ) {
-				foreach ( $exterms as $exterm ) {
-					if (empty($exclusions))
-						$exclusions = ' AND ( t.term_id <> "' . intval($exterm) . '" ';
-					else
-						$exclusions .= ' AND t.term_id <> "' . intval($exterm) . '" ';
-				}
+			$exterms = wp_parse_id_list($exclude);		
+			foreach ( $exterms as $exterm ) {
+				if (empty($exclusions))
+					$exclusions = ' AND ( t.term_id <> "' . intval($exterm) . '" ';
+				else
+					$exclusions .= ' AND t.term_id <> "' . intval($exterm) . '" ';
 			}
 		}
 	
@@ -320,7 +325,7 @@ class ScoperHardwayTaxonomy
 
 		// don't limit the query results when we have to descend the family tree 
 		if ( ! empty($number) && ! $hierarchical && empty( $child_of ) && '' == $parent ) {
-			if( $offset )
+			if ( $offset )
 				$limit = 'LIMIT ' . $offset . ',' . $number;
 			else
 				$limit = 'LIMIT ' . $number;
@@ -334,19 +339,28 @@ class ScoperHardwayTaxonomy
 		}
 			
 		$selects = array();
-		if ( 'all' == $fields )
-			$selects = array('t.*', 'tt.*');
-		else if ( 'ids' == $fields )
-			$selects = array('t.term_id', 'tt.parent', 'tt.count');
-		else if ( 'names' == $fields )
-			$selects = array('t.term_id', 'tt.parent', 'tt.count', 't.name');
-	        
+		switch ( $fields ) {
+			case 'all':
+				$selects = array('t.*', 'tt.*');
+				break;
+			case 'ids':
+			case 'id=>parent':
+				$selects = array('t.term_id', 'tt.parent', 'tt.count');
+				break;
+			case 'names':
+				$selects = array('t.term_id', 'tt.parent', 'tt.count', 't.name');
+				break;
+			case 'count':
+				$orderby = '';
+				$order = '';
+				$selects = array('COUNT(*)');
+		}
 		$select_this = implode(', ', apply_filters( 'get_terms_fields', $selects, $args ));
 
 
 		// === BEGIN Role Scoper MODIFICATION: run the query through scoping filter
 		//
-		$query_base = "SELECT DISTINCT $select_this FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE 1=1 AND tt.taxonomy IN ($in_taxonomies) $where $parent_or ORDER BY $orderby $order $limit";
+		$query_base = "SELECT DISTINCT $select_this FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE 1=1 AND tt.taxonomy IN ($in_taxonomies) $where $parent_or $orderby $order $limit";
 
 		// only force application of scoped query filter if we're NOT doing a teaser  
 		if ( 'all' == $fields )
@@ -361,6 +375,11 @@ class ScoperHardwayTaxonomy
 			$terms = scoper_get_results($query);
 		} else
 			$terms = $results;
+			
+		if ( 'count' == $fields ) {
+			$term_count = $wpdb->get_var($query);
+			return $term_count;
+		}
 			
 		if ( 'all' == $fields )
 			update_term_cache($terms);
@@ -459,7 +478,11 @@ class ScoperHardwayTaxonomy
 		// ================================
 		
 		$_terms = array();
-		if ( 'ids' == $fields ) {
+		if ( 'id=>parent' == $fields ) {
+			while ( $term = array_shift($terms) )
+				$_terms[$term->term_id] = $term->parent;
+			$terms = $_terms;
+		} elseif ( 'ids' == $fields ) {
 			while ( $term = array_shift($terms) )
 				$_terms[] = $term->term_id;
 			$terms = $_terms;

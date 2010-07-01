@@ -677,14 +677,16 @@ class ScoperRoleAssigner
 				}
 			}
 			
-			if ( ! empty($req_ids[$role_handle]) ) {
-				// log propagated restrictions
-				$id_in = "'" . implode("', '", array_keys($req_ids[$role_handle]) ) . "'";
-				$qry = "SELECT requirement_id AS assignment_id, inherited_from FROM $wpdb->role_scope_rs WHERE inherited_from IN ($id_in)";
-		
-				if ( $results = scoper_get_results($qry) )
-					foreach ( $results as $row )
-						$propagated_restrictions[$row->inherited_from][$row->assignment_id] = true;
+			foreach( array_keys($req_ids) as $role_handle ) {
+				if ( ! empty($req_ids[$role_handle]) ) {
+					// log propagated restrictions
+					$id_in = "'" . implode("', '", array_keys($req_ids[$role_handle]) ) . "'";
+					$qry = "SELECT requirement_id AS assignment_id, inherited_from FROM $wpdb->role_scope_rs WHERE inherited_from IN ($id_in)";
+			
+					if ( $results = scoper_get_results($qry) )
+						foreach ( $results as $row )
+							$propagated_restrictions[$row->inherited_from][$row->assignment_id] = true;
+				}
 			}
 					
 			if ( ! $is_administrator )
@@ -713,7 +715,7 @@ class ScoperRoleAssigner
 				if ( $default_strict && ! in_array($role_handle, $default_strict_roles) )
 					continue;
 
-				if ( ! $default_strict && $default_strict_roles && in_array($role_handle, $default_strict_roles) )
+				if ( ! $default_strict && ! empty($default_strict_roles) && in_array($role_handle, $default_strict_roles) )
 					continue;
 					
 				$max_scope = $setting['max_scope'];
@@ -798,7 +800,7 @@ class ScoperRoleAssigner
 			return;
 		
 		// keep track of which objects from non-post data sources have ever had their roles/restrictions custom-edited
-		if ( ! $is_auto_insertion && ( (TERM_SCOPE_RS == $scope) || ( (OBJECT_SCOPE_RS == $scope) && ('post' != $src_or_tx_name) ) ) ) {
+		if ( ! $is_auto_insertion && ( (TERM_SCOPE_RS == $max_scope) || ( (OBJECT_SCOPE_RS == $max_scope) && ('post' != $src_or_tx_name) ) ) ) {
 			$custom_role_items = get_option( "scoper_custom_{$src_or_tx_name}" );
 
 			if ( ! is_array($custom_role_items) )
@@ -865,7 +867,7 @@ class ScoperRoleAssigner
 			
 			// keep track of which objects have ever had their roles/restrictions custom-edited
 			if ( ! $is_auto_insertion ) {
-				if ( (OBJECT_SCOPE_RS == $scope) && ('post' == $src_or_tx_name) )
+				if ( (OBJECT_SCOPE_RS == $max_scope) && ('post' == $src_or_tx_name) )
 					update_post_meta($obj_or_term_id, '_scoper_custom', true);
 				else
 					$custom_role_items[$obj_or_term_id] = true;

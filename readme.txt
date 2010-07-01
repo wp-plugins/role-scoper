@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 2.6
 Tested up to: 3.0
-Stable Tag: 1.2.6
+Stable Tag: 1.2.7
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.2.7 - 30 June 2010 =
+* BugFix : Conflict with Tag Cloud (since 1.2.6) 
+
 
 = 1.2.6 - 30 June 2010 =
 * BugFix : Multibyte string functions used in Role Scoper admin forms caused fatal errors on servers lacking that PHP module

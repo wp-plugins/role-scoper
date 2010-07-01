@@ -121,7 +121,7 @@ class QueryInterceptor_RS
 		if ( ! $taxonomies )
 			return $request;
 		
-		if ( ! preg_match('/\s*WHERE 1=1\s*/', $request) )
+		if ( ! preg_match('/\s*WHERE\s*1=1/', $request) )
 			$request = preg_replace('/\s*WHERE\s*/', ' WHERE 1=1 AND ', $request);
 			
 		$pos_where = 0;
@@ -231,7 +231,7 @@ class QueryInterceptor_RS
 		
 		//$request = agp_force_distinct($request); // in case data source didn't provide a hook for objects_distinct
 
-		if ( ! preg_match('/\s*WHERE 1=1\s*/', $request) )
+		if ( ! preg_match('/\s*WHERE\s*1=1/', $request) )
 			$request = preg_replace('/\s*WHERE\s*/', ' WHERE 1=1 AND ', $request);
 
 		$pos_where = 0;
@@ -291,8 +291,6 @@ class QueryInterceptor_RS
 			else
 				$request = substr($request, 0, $pos_where) . ' WHERE 1=1 ' . $rs_where; // any pre-exising join clauses remain in $request
 		}
-
-		//d_echo( $request . '<br /><br />' );
 
 		return $request;
 	}
@@ -1446,7 +1444,7 @@ class QueryInterceptor_RS
 
 function agp_parse_after_WHERE_11( $request, &$pos_where, &$pos_suffix ) {
 	$request_u = strtoupper($request);
-	$pos_where = strpos( $request_u, ' WHERE 1=1 ');
+	$pos_where = strpos( $request_u, ' WHERE 1=1');
 	
 	if ( ! $pos_where ) {
 		$suffix_terms = array(' ORDER BY ', ' GROUP BY ', ' LIMIT ');

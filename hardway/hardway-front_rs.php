@@ -237,7 +237,7 @@ class ScoperHardwayFront
 		// embedded select statement for posts ID IN clause
 		$posts_qry = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1";
 		$posts_qry = apply_filters('objects_request_rs', $posts_qry, 'post', 'post', array('skip_teaser' => true));
-		
+
 		$qry = "SELECT DISTINCT t.*, tt.*, COUNT(p.ID) AS count FROM $wpdb->terms AS t"
 			. " INNER JOIN $wpdb->term_taxonomy AS tt ON tt.term_id = t.term_id AND tt.taxonomy = 'post_tag'"
 			. " INNER JOIN $wpdb->term_relationships AS tagr ON tagr.term_taxonomy_id = tt.term_taxonomy_id"

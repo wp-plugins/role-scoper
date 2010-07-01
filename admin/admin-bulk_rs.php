@@ -201,7 +201,7 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 	check_admin_referer( $nonce_id );
 
 	$set_roles = array();
-	$selected_roles = $_POST['roles'];
+	$selected_roles = isset($_POST['roles']) ? $_POST['roles'] : array();
 	
 	if ( OBJECT_SCOPE_RS == $scope ) {
 		$src = $scoper->data_sources->get($src_or_tx_name);
@@ -764,7 +764,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 		$id = $item->$col_id;
 		
 		if ( ! empty($object_names[$id]) )
-			$name = attribute_escape(str_replace(' ', '&nbsp;', $object_names[$id]) );
+			$name = esc_attr(str_replace(' ', '&nbsp;', $object_names[$id]) );
 		else
 			$name = str_replace(' ', '&nbsp;', $item->$col_name);
 
