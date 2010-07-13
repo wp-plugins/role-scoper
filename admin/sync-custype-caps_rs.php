@@ -11,6 +11,8 @@ function scoper_sync_wp_custype_caps( $requested_blog_id = '' ) {
 	$add_caps = array_fill_keys( array( 'administrator', 'editor', 'revisor', 'author', 'contributor' ), array() );
 
 	foreach ( $custom_types as $name ) {
+		$wp_post_types[$name]->capability_type = $name;
+		
 		$add_caps['administrator'] = array_merge( $add_caps['administrator'],	array( "read_private_{$name}s", "edit_{$name}s", "edit_others_{$name}s", "edit_private_{$name}s", "edit_published_{$name}s", "delete_{$name}s", "delete_others_{$name}s", "delete_private_{$name}s", "delete_published_{$name}s", "publish_{$name}s" ) );
 		$add_caps['editor'] = array_merge( $add_caps['editor'], 				array( "read_private_{$name}s", "edit_{$name}s", "edit_others_{$name}s", "edit_private_{$name}s", "edit_published_{$name}s", "delete_{$name}s", "delete_others_{$name}s", "delete_private_{$name}s", "delete_published_{$name}s", "publish_{$name}s" ) );
 		$add_caps['revisor'] = array_merge( $add_caps['revisor'], 				array( "edit_{$name}s", "edit_others_{$name}s", "delete_{$name}s", "delete_others_{$name}s" ) );

@@ -1,5 +1,24 @@
 <?php
 
+function scoper_force_distinct_post_caps() {
+	global $wp_post_types;
+	
+	$generic_caps = array();
+	foreach( array( 'post', 'page' ) as $post_type )
+		$generic_caps[$post_type] = array_values( get_object_vars( $wp_post_types[$post_type]->cap ) );
+
+	foreach( array_keys($wp_post_types) as $type ) {	
+		$wp_post_types[$type]->capability_type = $type;
+			
+		// don't allow any capability defined for this type to match any capability defined for post or page (unless this IS post or page type)
+		foreach( get_object_vars( $wp_post_types[$type]->cap ) as $cap_property => $type_cap )
+			foreach( array( 'post', 'page' ) as $generic_type )
+				if ( ( $type != $generic_type ) & in_array( $type_cap, $generic_caps[$generic_type] ) )
+					$wp_post_types[$type]->cap->$cap_property = str_replace( 'post', $type, $cap_property );
+					
+	}
+}
+
 function scoper_add_custom_taxonomies(&$taxonomies) {
 	//global $scoper;
 	//$taxonomies =& $scoper->taxonomies->members;
@@ -86,14 +105,16 @@ function scoper_add_custom_data_sources(&$data_sources) {
 	//global $scoper;
 	//$data_sources =& $scoper->data_sources->members;
 
+	global $wp_post_types;
+	
 	$custom_types = get_post_types( array(), 'object' );
 
 	$core_types = array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' );
 	
-	foreach ( $custom_types as $otype ) {
-		if ( ! in_array( $otype->name, $core_types ) ) {
-			$name = $otype->name;	
-			$captype = $otype->capability_type;
+	foreach ( $custom_types as $name => $otype ) {
+		if ( ! in_array( $name, $core_types ) ) {
+			$wp_post_types[$name]->capability_type = $name;
+			$captype = $name;
 			
 			$singular_label = ( ! empty($otype->labels->singular_name) ) ? $otype->labels->singular_name : $otype->singular_label;
 			$data_sources['post']->object_types[$name] = (object) array( 'val' => $name, 'uri' => array( "wp-admin/add-{$name}.php", "wp-admin/manage-{$name}.php" ), 'display_name' => $singular_label, 'display_name_plural' => $otype->label, 'ignore_object_hierarchy' => true, 'admin_default_hide_empty' => true, 'admin_max_unroled_objects' => 100 );

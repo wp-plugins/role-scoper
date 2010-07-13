@@ -87,8 +87,7 @@ jQuery(document).ready( function($) {
 		
 		// ========= register WP-rendered metaboxes ============
 		$src_name = 'post';
-		
-		$box_object_types = array_diff( get_post_types( array( 'public' => true ) ), array('attachment') );
+		$box_object_types = array( 'post', 'page' );
 
 		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 
@@ -111,13 +110,12 @@ jQuery(document).ready( function($) {
 			}
 			
 			$role_defs = $this->scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_name, $object_type);
-
+			
 			foreach ( $role_defs as $role_handle => $role_def ) {
 				if ( ! isset($role_def->valid_scopes[OBJECT_SCOPE_RS]) )
 					continue;
 
 				$box_id = $role_handle;
-
 				add_meta_box( $box_id, $this->scoper->role_defs->get_abbrev( $role_handle, OBJECT_UI_RS ), array(&$this, 'draw_object_roles_content'), $object_type );
 				$this->meta_box_ids[$role_handle] = $box_id;
 			}
@@ -137,28 +135,30 @@ jQuery(document).ready( function($) {
 		if ( empty($wp_meta_boxes) )
 			return;
 		
-		$object_type = awp_post_type_from_uri(); 
+		$src_name = 'post';
+		
+		$object_type = $this->scoper->data_sources->detect('type', $src_name);
 
 		if ( empty($wp_meta_boxes[$object_type]) )
 			return;
-
-		global $scoper;
-		$object_id = $scoper->data_sources->detect( 'id', 'post' ); // scoper_get_object_id();
+		
+		$object_id = $this->scoper->data_sources->detect('id', $src_name, '', $object_type);
 		
 		$is_administrator = is_user_administrator_rs();
-		$can_admin_object = $is_administrator || $this->scoper->admin->user_can_admin_object('post', $object_type, $object_id);
+		$can_admin_object = $is_administrator || $this->scoper->admin->user_can_admin_object($src_name, $object_type, $object_id);
 		
 		if ( $can_admin_object ) { 
 			$this->init_item_roles_ui();
-			$this->item_roles_ui->load_roles('post', $object_type, $object_id);
+			$this->item_roles_ui->load_roles($src_name, $object_type, $object_id);
 		}
 
 		foreach ( $wp_meta_boxes[$object_type] as $context => $priorities ) {
 			foreach ( $priorities as $priority => $boxes ) {
 				foreach ( array_keys($boxes) as $box_id ) {
+			
 					if ( $role_handle = array_search( $box_id, $this->meta_box_ids ) ) {
 						// eliminate metabox shells for roles which will be suppressed for this user
-						if ( ! $is_administrator && ( ! $can_admin_object || ! $this->scoper->admin->user_can_admin_role($role_handle, $object_id, 'post', $object_type) ) ) {
+						if ( ! $is_administrator && ( ! $can_admin_object || ! $this->scoper->admin->user_can_admin_role($role_handle, $object_id, $src_name, $object_type) ) ) {
 							unset( $wp_meta_boxes[$object_type][$context][$priority][$box_id] );
 						}
 						
@@ -178,7 +178,7 @@ jQuery(document).ready( function($) {
 	function draw_object_roles_content( $object, $box ) {
 		if ( empty($box['id']) )
 			return;
-
+		
 		// id format: src_name:object_type:role_handle (As of WP 2.7, this is only safe way to transfer these parameters)
 		//$role_attribs = explode( ':', $box['id'] );
 		
@@ -187,10 +187,11 @@ jQuery(document).ready( function($) {
 
 		$object_id = ( isset($object->ID) ) ? $object->ID : 0;
 		
-		$object_type = awp_post_type_from_uri();
+		$src_name = 'post';
+		$object_type = $this->scoper->data_sources->detect('type', 'post');
 		
 		$this->init_item_roles_ui();
-		$this->item_roles_ui->draw_object_roles_content('post', $object_type, $box['id'], $object_id, false, $object);
+		$this->item_roles_ui->draw_object_roles_content($src_name, $object_type, $box['id'], $object_id, false, $object);
 	}
 	
 	function ui_single_term_roles($taxonomy, $args, $term) {
@@ -198,7 +199,7 @@ jQuery(document).ready( function($) {
 		$this->item_roles_ui->single_term_roles_ui($taxonomy, $args, $term);
 	}
 	
-	// This is now called only by non-post data sources which define admin_actions->object_edit_ui
+	// This is now called only with WP < 2.5 and by non-post data sources which define admin_actions->object_edit_ui
 	function ui_object_roles($src_name, $args = '') {
 		$defaults = array( 'object_type' => '' );
 		$args = array_merge( $defaults, (array) $args );
@@ -208,10 +209,10 @@ jQuery(document).ready( function($) {
 			return;
 		
 		if ( ! $object_type )
-			if ( ! $object_type = scoper_get_object_type( $src_name ) )
+			if ( ! $object_type = $this->scoper->data_sources->detect('type', $src_name) )
 				return;
 				
-		$object_id = scoper_get_object_id( $src_name, $object_type );
+		$object_id = $this->scoper->data_sources->detect('id', $src_name, '', $object_type);
 		
 		if ( ! $this->scoper->admin->user_can_admin_object($src_name, $object_type, $object_id) )
 			return;

@@ -190,7 +190,7 @@ function scoper_maybe_init() {
 
 function scoper_init() {
 	global $scoper;
-
+	
 	if ( IS_MU_RS ) {
 		global $scoper_sitewide_options;
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
@@ -198,6 +198,9 @@ function scoper_init() {
 	
 	if ( is_admin() && awp_ver( '2.9' ) ) {
 		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
+		
+		require_once( 'custom-types_rs.php' );
+		scoper_force_distinct_post_caps();
 		
 		$logged_types = (array) scoper_get_option( 'logged_custom_types' );
 	

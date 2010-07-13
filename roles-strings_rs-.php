@@ -70,24 +70,22 @@ class ScoperRoleStrings {
 			default :
 				$str = '';
 
-				$custom_types = get_post_types( array( '_builtin' => false, 'public' => true ), 'object' );
+				$custom_types = get_post_types( array(), 'object' );
 				
 				foreach( $custom_types as $custype ) {
 					if ( strpos( $role_handle, "_{$custype->name}_" ) ) {
-						$label = $custype->labels->singular_name;
-						
 						if ( strpos( $role_handle, '_editor' ) )
-							$str = ( defined( 'SCOPER_PUBLISHER_CAPTION' ) ) ? sprintf( __( '%s Publisher', 'scoper' ), $label ) : sprintf( __( '%s Editor', 'scoper' ), $label );
+							$str = ( defined( 'SCOPER_PUBLISHER_CAPTION' ) ) ? sprintf( __( '%s Publisher', 'scoper' ), $custype->singular_label ) : sprintf( __( '%s Editor', 'scoper' ), $custype->singular_label );
 						elseif ( strpos( $role_handle, '_revisor' ) )
-							$str = sprintf( __( '%s Revisor', 'scoper' ), $label );
+							$str = sprintf( __( '%s Revisor', 'scoper' ), $custype->singular_label );
 						elseif ( strpos( $role_handle, '_author' ) )
-							$str = sprintf( __( '%s Author', 'scoper' ), $label );
+							$str = sprintf( __( '%s Author', 'scoper' ), $custype->singular_label );
 						elseif ( strpos( $role_handle, '_contributor' ) )
-							$str = sprintf( __( '%s Contributor', 'scoper' ), $label );
+							$str = sprintf( __( '%s Contributor', 'scoper' ), $custype->singular_label );
 						elseif ( false !== strpos( $role_handle, 'private_' ) && strpos( $role_handle, '_reader' ) )
-							$str = ( ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ) ? sprintf( __( '%s Reader', 'scoper' ), $label ) : sprintf( __( 'Private %s Reader', 'scoper' ), $label );
+							$str = ( ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ) ? sprintf( __( '%s Reader', 'scoper' ), $custype->singular_label ) : sprintf( __( 'Private %s Reader', 'scoper' ), $custype->singular_label );
 						elseif ( strpos( $role_handle, '_reader' ) )
-							$str = sprintf( __( '%s Reader', 'scoper' ), $label );
+							$str = sprintf( __( '%s Reader', 'scoper' ), $custype->singular_label );
 					}
 				}
 		} // end switch
@@ -96,33 +94,48 @@ class ScoperRoleStrings {
 	}
 	
 	function get_abbrev( $role_handle, $context = '' ) {
-		if ( strpos( $role_handle, '_reader' ) ) {
-			// TODO: support distinct captioning of status-specific object role for other custom statuses
-			//if ( ( false !== strpos( $role_handle, 'private_' ) ) && ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) )
-			//	$str = __('Private Readers', 'scoper');
-			//else
+		switch( $role_handle ) {
+			case 'rs_post_reader' :
+			case 'rs_page_reader' :
 				$str = __('Readers', 'scoper');
-
-		} elseif ( strpos( $role_handle, '_contributor' ) )
-			$str = __('Contributors', 'scoper');
+				break;
+			case 'rs_private_post_reader' :
+			case 'rs_private_page_reader' :
+				$str = ( ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ) ? __('Readers', 'scoper') : __('Private Readers', 'scoper');
+				break;
+			case 'rs_post_contributor' :
+			case 'rs_page_contributor' :
+				$str = __('Contributors', 'scoper');
+				break;
+			case 'rs_post_author' :
+			case 'rs_page_author' :
+				$str = __('Authors', 'scoper');
+				break;
+			case 'rs_post_revisor' :
+			case 'rs_page_revisor' :
+				$str = __('Revisors', 'scoper');
+				break;
+			case 'rs_post_editor' :
+			case 'rs_page_editor' :
+				if ( defined( 'SCOPER_PUBLISHER_CAPTION' ) )
+					$str = __('Publishers', 'scoper');
+				else
+					$str = __('Editors', 'scoper');
+				break;
+			case 'rs_page_associate' :
+				$str = __('Associates', 'scoper');
+				break;
 			
-		elseif ( strpos( $role_handle, '_author' ) )
-			$str = __('Authors', 'scoper');
-			
-		elseif ( strpos( $role_handle, '_revisor' ) )
-			$str = __('Revisors', 'scoper');
-			
-		elseif ( strpos( $role_handle, '_editor' ) ) {
-			if ( defined( 'SCOPER_PUBLISHER_CAPTION' ) )
-				$str = __('Publishers', 'scoper');
-			else
-				$str = __('Editors', 'scoper');
-				
-		} elseif ( strpos( $role_handle, '_associate' ) )
-			$str = __('Readers', 'scoper');
-			
-		elseif ( strpos( $role_handle, '_manager' ) )
-			$str = __('Managers', 'scoper');
+			case 'rs_link_editor' :
+				$str = __('Admins', 'scoper');
+				break;
+			case 'rs_category_manager' :
+			case 'rs_group_manager' :
+				$str = __('Managers', 'scoper');
+				break;
+			default :
+				$str = '';
+		} // end switch
 		
 		return apply_filters( 'role_abbrev_rs', $str, $role_handle );
 	}

@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8.beta - 13 July 2010 =
+* BugFix : Role assignment metaboxes did not display for custom types
+* Change : Force type-specific capability_type and caps for all custom post types
+
+
 = 1.2.7 - 30 June 2010 =
 * BugFix : Conflict with Tag Cloud (since 1.2.6) 
 
