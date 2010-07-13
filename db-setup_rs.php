@@ -110,14 +110,6 @@ function scoper_update_schema($last_db_ver) {
 
 		// if existing table was found but specified groupid and userid columns are invalid, bail
 		$tablefields = $wpdb->get_col("DESC $wpdb->user2group_rs", 0);
-		
-		foreach ($tablefields as $column) if ($column == $wpdb->user2group_gid_col) break;	
-		if ($column != $wpdb->user2group_gid_col)
-			wp_die ( sprintf( 'Database config error: specified ID column (%1$s) not found in table %2$s', $wpdb->user2group_gid_col, $wpdb->user2group_rs ) );
-		
-		foreach ($tablefields as $column) if ($column == $wpdb->user2group_uid_col) break;	
-		if ($column != $wpdb->user2group_uid_col)
-			wp_die ( sprintf( 'Database config error: specified ID column (%1$s) not found in table %2$s', $wpdb->user2group_uid_col, $wpdb->user2group_rs ) );
 
 		foreach ($cols as $requiredcol_name => $requiredcol_typedef) {
 			foreach ($tablefields as $col_name)
