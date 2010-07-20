@@ -117,9 +117,8 @@ class ScoperRewrite {
 		$uploads = scoper_get_upload_info();
 
 		// If a filter has changed MU basedir, don't filter file attachments for this blog because we might not be able to regenerate the basedir for rule removal at RS deactivation
-		if ( ! IS_MU_RS || strpos( $uploads['basedir'], "/blogs.dir/$blog_id/files" ) ) {
+		if ( ! IS_MU_RS || strpos( $uploads['basedir'], "/blogs.dir/$blog_id/files" ) || ( false !== strpos( $uploads['basedir'], trailingslashit(WP_CONTENT_DIR) . 'uploads' ) ) ) {
 			$htaccess_path = trailingslashit($uploads['basedir']) . '.htaccess';
-
 			ScoperRewrite::insert_with_markers( $htaccess_path, 'Role Scoper', $rules );
 		}
 	}

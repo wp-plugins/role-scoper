@@ -22,6 +22,9 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 			'uri_vars' => (object) array( 'id' => 'cat_ID' )
 		); // end outer array
 		
+		if ( awp_ver( '3.0' ) )
+			$args['edit_url'] = '%1$s/wp-admin/edit-tags.php?action=edit&taxonomy=category&tag_ID=%2$d';
+			
 		// $src_name, $table_basename, $display_name, $display_name_plural, $col_id, $col_name
 		$this->add('term', 'role-scoper', __('Term', 'scoper'), __('Terms', 'scoper'), 'terms', 'term_id', 'name', $args );
 	}

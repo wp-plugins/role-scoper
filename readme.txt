@@ -104,8 +104,20 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.2.8.beta - 13 July 2010 =
+= 1.2.8 Beta 2 - 19 July 2010 =
+* BugFix : Custom-defined WP Nav menus were not filtered for RS restrictions / roles
+* BugFix : Hidden Content Teaser was not applied to sticky posts
+* BugFix : Hidden Content Teaser could not be enabled for custom post types
+* BugFix : In admin menus, "Add New" was not properly suppressed in some configurations
+* BugFix : File Attachment Filter was inactive for installations upgraded to WP 3.0 multisite and still using wp-content/uploads folder
+* BugFix : On failed direct file access attempt, any page / term listings on 404 page were not filtered for RS restrictions / roles
+* BugFix : Category Roles, Category Restrictions bulk admin forms had invalid category edit links
+* Change : Suppress scroll links in Term Roles / Restrictions bulk admin form if terms total over 300
+
+
+= 1.2.8 Beta - 13 July 2010 =
 * BugFix : Role assignment metaboxes did not display for custom types
+* BugFix : On version upgrade from RS < 1.2, groups_rs db table update failed under certain conditions
 * Change : Force type-specific capability_type and caps for all custom post types
 
 

@@ -192,149 +192,47 @@ class Scoper
 	}
 	
 	function init() {
-		//log_mem_usage_rs( 'Scoper->init() start'  );
-
 		scoper_version_check();
 		
 		if ( ! isset($this->data_sources) )
 			$this->load_config();
 		
 		$is_administrator = is_content_administrator_rs();
-
+		
 		if ( $doing_cron = defined('DOING_CRON') )
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') )
 				define('DISABLE_QUERYFILTERS_RS', true);
 		
-		$direct_file_access = strpos($_SERVER['QUERY_STRING'], 'rs_rewrite');
-		$this->direct_file_access = $direct_file_access;
-		$frontend_admin = false;
-		
-		//log_mem_usage_rs( 'before new Scoper Admin' );
-		
-		if ( $is_admin = is_admin() ) {
+		if ( is_admin() )
+			$this->add_admin_ui_filters( $is_administrator );
+
+		if ( ! $this->direct_file_access = strpos($_SERVER['QUERY_STRING'], 'rs_rewrite') )
+			$this->add_main_filters();
+
+		// ===== Special early exit if this is a plugin install script
+		if ( is_admin() ) {
 			$script_name = $_SERVER['SCRIPT_NAME'];
-
-			// ===== Admin filters (menu and other basics) which are (almost) always loaded 
-			require_once('admin/admin_rs.php');
-			
-			//log_mem_usage_rs( 'require admin_rs.php' );
-			
-			$this->admin = new ScoperAdmin();
-
-			//log_mem_usage_rs( 'new Scoper Admin done' );
-			
-			if ( ! strpos($script_name, 'p-admin/async-upload.php' ) ) {
-				if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator ) {
-					require_once( 'admin/filters-admin-ui_rs.php' );
-					
-					//log_mem_usage_rs( 'require filters-admin-ui_rs.php' );
-					
-					$this->filters_admin_ui = new ScoperAdminFiltersUI();
-					
-					//log_mem_usage_rs( 'new Scoper Admin FiltersUI done' );
-				}
-			}
-			// =====
-
-			// ===== Script-specific Admin filters 
-			if ( strpos($script_name, 'p-admin/users.php') ) {
-				require_once( 'admin/filters-admin-users_rs.php' );
-				
-				//log_mem_usage_rs( 'require filters-admin-users' );
-
-			} elseif ( strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/edit-pages.php') ) {
-				if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator )
-					require_once( 'admin/filters-admin-ui-listing_rs.php' );
-					
-					//log_mem_usage_rs( 'required filters-admin-ui-listing_rs.php' );
-			}
-			// =====
-
-		} elseif ( ! $direct_file_access && ! $doing_cron && $this->is_front() ) {		
-			// ===== Front-end-only filters which are always loaded
-			if ( ! defined('DISABLE_QUERYFILTERS_RS') ) {
-				require_once('query-interceptor-front_rs.php');
-				
-				//log_mem_usage_rs( 'required query-interceptor-front_rs.php' );
-			}
-				
-			if ( ! $is_administrator ) {
-				require_once('qry-front_non-administrator_rs.php');
-
-				//log_mem_usage_rs( 'require qry-front_non-administrator_rs.php' );
-				
-				$this->feed_interceptor = new FeedInterceptor_RS(); // file already required in role-scoper.php
-				
-				//log_mem_usage_rs( 'new feed-interceptor' );
-			}
-
-			require_once('template-interceptor_rs.php');
-			$this->template_interceptor = new TemplateInterceptor_RS();
-
-			//log_mem_usage_rs( 'new template_interceptor' );
-			
-			$frontend_admin = ! scoper_get_option('no_frontend_admin'); // potential performance enhancement
-			// =====
-		}
-		
-		// ===== Filters which support automated role maintenance following content creation/update
-		// Require an explicitly set option to skip these for front end access, just in case other plugins modify content from the front end.
-		if ( ( $is_admin || defined('XMLRPC_REQUEST') || ( ( $frontend_admin || $doing_cron ) && ! $direct_file_access ) ) ) {
-			require_once( 'admin/cache_flush_rs.php' );
-			require_once( 'admin/filters-admin_rs.php' );
-
-			//log_mem_usage_rs( 'require filters-admin' );
-			
-			$this->filters_admin = new ScoperAdminFilters();
-			
-			//log_mem_usage_rs( 'new ScoperAdminFilters' );
-		}
-		// =====
-
-		if ( $is_admin ) {
-			// ===== Special early exit if this is a plugin install script
 			if ( strpos($script_name, 'p-admin/plugins.php') || strpos($script_name, 'p-admin/plugin-install.php') || strpos($script_name, 'p-admin/plugin-editor.php') ) {
-				// flush cache on activation of any plugin, in case we cached results based on its presence / absence
-				if ( ! empty($_POST) || ! empty($_REQUEST['action']) ) {
+				// flush RS cache on activation of any plugin, in case we cached results based on its presence / absence
+				if ( ( ! empty($_POST) ) || ( ! empty($_REQUEST['action']) ) ) {
 					wpp_cache_flush();
 				}
-				
+
 				do_action( 'scoper_init' );
 				return; // no further filtering on WP plugin maintenance scripts
 			}
-			// =====
 		}
-
-
-		// ===== Filters which are always loaded (except on plugin scripts), for any access type
-		if ( ! $direct_file_access && ! $doing_cron ) {
-			include_once( 'hardway/wp-patches_agp.php' ); // simple patches for WP
-			
-			if ( $this->is_front() || strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/edit-pages.php') ) {
-
-				require_once('query-interceptor-base_rs.php');
-			
-				//log_mem_usage_rs( 'require query-interceptor-base_rs' );
-			
-				$this->query_interceptor_base = new QueryInterceptorBase_RS();  // listing filter used for role status indication in edit posts/pages and on front end by template functions
-			
-				//log_mem_usage_rs( 'new QueryInterceptorBase_RS' );
-			}
-		}
+		// =====
 
 		require_once('attachment-interceptor_rs.php');
 		$this->attachment_interceptor = new AttachmentInterceptor_RS(); // .htaccess file is always there, so we always need to handle its rewrites
-		
-		//log_mem_usage_rs( 'new AttachmentInterceptor_RS' );
-		// =====
-
-
+				
 		// ===== Content Filters to limit/enable the current user
 		$disable_queryfilters = defined('DISABLE_QUERYFILTERS_RS');
-		
-		if ( $disable_queryfilters && ! $direct_file_access ) {
-			// need to always load filers for profile.php to support filtering of subscribe2 categories based on category read access
-			// (potential for other plugins to make similar use of profile.php)
+
+		if ( $disable_queryfilters ) {
+			// Some wp-admin pages need to list pages or categories based on front-end access.  Classic example is Subscribe2 categories checklist, included in Subscriber profile
+			// In that case, filtering will be applied even if wp-admin filtering is disabled.  API hook enables other plugins to defined their own "always filter" URIs.
 			$always_filter_uris = apply_filters('scoper_always_filter_uris', array( 'p-admin/profile.php' ) );
 			foreach ( $always_filter_uris as $uri_sub ) {
 				if ( strpos(urldecode($_SERVER['REQUEST_URI']), $uri_sub) ) {
@@ -343,86 +241,31 @@ class Scoper
 				}
 			}
 		}
-
+		
 		if ( awp_ver( '2.9' ) )
 			require_once('custom-types-helper_rs.php');
 		
 		if ( ! $disable_queryfilters ) {
-			if ( ! $is_administrator ) {
+			 if ( ! $is_administrator ) {
 				if ( $direct_file_access ) {
 					require_once('cap-interceptor-basic_rs.php');  // only need to support basic read_post / read_page check for direct file access
 					add_filter('user_has_cap', array('CapInterceptorBasic_RS', 'flt_user_has_cap'), 99, 3);
-					
-					//log_mem_usage_rs( 'new CapInterceptorBasic_RS' );
-					
 				} else {
 					require_once('cap-interceptor_rs.php');
-					
 					$this->cap_interceptor = new CapInterceptor_RS();
-					
-					//log_mem_usage_rs( 'new CapInterceptor_RS' );
 				}
 			}
-			
+
 			// (also use content filters on front end to FILTER IN private content which WP inappropriately hides from administrators)
-			if ( $this->is_front() || ! $is_administrator ) {
+			if ( ( ! $is_administrator ) || $this->is_front() ) {
 				require_once('query-interceptor_rs.php');
-				
-				//log_mem_usage_rs( 'require query-interceptor_rs' );
-				
 				$this->query_interceptor = new QueryInterceptor_RS();
-			
-				//log_mem_usage_rs( 'new QueryInterceptor_RS' );
 			}
-			
-			
-			if ( ! $direct_file_access ) {
-				// port or low-level query filters to work around limitations in WP core API
-				require_once('hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
-				
-				//log_mem_usage_rs( 'required hardway_rs' );
-				
-				// buffering of taxonomy children is disabled with non-admin user logged in
-				// But that non-admin user may add cats.  Don't allow unfiltered admin to rely on an old copy of children
-				global $wp_taxonomies;
-				if ( ! empty($wp_taxonomies) ) {
-					foreach ( array_keys($wp_taxonomies) as $taxonomy )
-						add_filter ( "option_{$taxonomy}_children", create_function( '$option_value', "return rs_get_terms_children('$taxonomy', " . '$option_value );') );
-						//add_filter("option_{$taxonomy}_children", create_function( '', "return rs_get_terms_children('$taxonomy');") );
-				}
-			}
-		
-			if ( $is_admin || defined('XMLRPC_REQUEST') ) {
-                if ( ! strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugin-editor.php' ) && ! strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugins.php' ) ) {
-					// low-level filtering for miscellaneous admin operations which are not well supported by the WP API
-					$hardway_uris = array(
-					'p-admin/index.php',		'p-admin/revision.php',			'admin.php?page=rvy-revisions',
-					'p-admin/post.php', 		'p-admin/post-new.php', 		'p-admin/page.php', 		'p-admin/page-new.php', 
-					'p-admin/link-manager.php', 'p-admin/edit.php', 			'p-admin/edit-pages.php', 	'p-admin/edit-comments.php', 
-					'p-admin/categories.php', 	'p-admin/link-category.php', 	'p-admin/edit-link-categories.php', 'p-admin/upload.php',
-					'p-admin/edit-tags.php', 	'p-admin/profile.php',			'p-admin/link-add.php',	'p-admin/admin-ajax.php' );
-	
-					$hardway_uris = apply_filters('scoper_admin_hardway_uris', $hardway_uris);
 
-					$uri = urldecode($_SERVER['REQUEST_URI']);
-					foreach ( $hardway_uris as $uri_sub ) {	// index.php can only be detected by index.php, but 3rd party-defined hooks may include arguments only present in REQUEST_URI
-						if ( defined('XMLRPC_REQUEST') || strpos($script_name, $uri_sub) || strpos($uri, $uri_sub) ) {
-							require_once('hardway/hardway-admin_rs.php');
-							
-							//log_mem_usage_rs( 'required hardway-admin_rs' );
-							
-							break;
-						}
-					}
-            	}
-			} // endif is_admin or xmlrpc
-			
+			if ( ! $this->direct_file_access )
+				$this->add_hardway_filters();
+
 		} // endif query filtering not disabled for this access type
-
-		if ( scoper_get_option( 'group_ajax' ) && ( isset( $_GET['rs_user_search'] ) || isset( $_GET['rs_group_search'] ) ) ) {
-			require_once( 'admin/user_query_rs.php' );
-			exit;	
-		} 
 
 		do_action( 'scoper_init' );
 			
@@ -430,7 +273,122 @@ class Scoper
 		
 	} // end function init
 	
+	
+	// filters which are only needed for the wp-admin UI
+	function add_admin_ui_filters( $is_administrator ) {
+		$script_name = $_SERVER['SCRIPT_NAME'];
+		
+		// ===== Admin filters (menu and other basics) which are (almost) always loaded 
+		require_once('admin/admin_rs.php');
+		$this->admin = new ScoperAdmin();
+		
+		if ( ! strpos($script_name, 'p-admin/async-upload.php' ) ) {
+			if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator ) {
+				require_once( 'admin/filters-admin-ui_rs.php' );
+				$this->filters_admin_ui = new ScoperAdminFiltersUI();
+			}
+		}
+		// =====
 
+		// ===== Script-specific Admin filters 
+		if ( strpos($script_name, 'p-admin/users.php') ) {
+			require_once( 'admin/filters-admin-users_rs.php' );
+			
+		} elseif ( strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/edit-pages.php') ) {
+			if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator )
+				require_once( 'admin/filters-admin-ui-listing_rs.php' );
+		}
+		// =====
+		
+		if ( scoper_get_option( 'group_ajax' ) && ( isset( $_GET['rs_user_search'] ) || isset( $_GET['rs_group_search'] ) ) ) {
+			require_once( 'admin/user_query_rs.php' );
+			exit;	
+		} 
+	}
+	
+	
+	function add_hardway_filters() {
+		$script_name = $_SERVER['SCRIPT_NAME'];
+		
+		// port or low-level query filters to work around limitations in WP core API
+		require_once('hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
+		
+		// buffering of taxonomy children is disabled with non-admin user logged in
+		// But that non-admin user may add cats.  Don't allow unfiltered admin to rely on an old copy of children
+		global $wp_taxonomies;
+		if ( ! empty($wp_taxonomies) ) {
+			foreach ( array_keys($wp_taxonomies) as $taxonomy )
+				add_filter ( "option_{$taxonomy}_children", create_function( '$option_value', "return rs_get_terms_children('$taxonomy', " . '$option_value );') );
+				//add_filter("option_{$taxonomy}_children", create_function( '', "return rs_get_terms_children('$taxonomy');") );
+		}
+
+		if ( is_admin() || defined('XMLRPC_REQUEST') ) {
+            if ( ! strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugin-editor.php' ) && ! strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugins.php' ) ) {
+				// low-level filtering for miscellaneous admin operations which are not well supported by the WP API
+				$hardway_uris = array(
+				'p-admin/index.php',		'p-admin/revision.php',			'admin.php?page=rvy-revisions',
+				'p-admin/post.php', 		'p-admin/post-new.php', 		'p-admin/page.php', 		'p-admin/page-new.php', 
+				'p-admin/link-manager.php', 'p-admin/edit.php', 			'p-admin/edit-pages.php', 	'p-admin/edit-comments.php', 
+				'p-admin/categories.php', 	'p-admin/link-category.php', 	'p-admin/edit-link-categories.php', 'p-admin/upload.php',
+				'p-admin/edit-tags.php', 	'p-admin/profile.php',			'p-admin/link-add.php',	'p-admin/admin-ajax.php' );
+
+				$hardway_uris = apply_filters('scoper_admin_hardway_uris', $hardway_uris);
+
+				$uri = urldecode($_SERVER['REQUEST_URI']);
+				foreach ( $hardway_uris as $uri_sub ) {	// index.php can only be detected by index.php, but 3rd party-defined hooks may include arguments only present in REQUEST_URI
+					if ( defined('XMLRPC_REQUEST') || strpos($script_name, $uri_sub) || strpos($uri, $uri_sub) ) {
+						require_once('hardway/hardway-admin_rs.php');
+						break;
+					}
+				}
+        	}
+		} // endif is_admin or xmlrpc
+	}
+	
+	
+	// add filters which were skipped due to direct file access, but are now needed for the error page display
+	function add_main_filters() {
+		$script_name = $_SERVER['SCRIPT_NAME'];
+		$is_admin = is_admin();
+		$is_administrator = is_content_administrator_rs();
+		$disable_queryfilters = defined('DISABLE_QUERYFILTERS_RS');
+		$frontend_admin = false;
+
+		if ( ! defined('DOING_CRON') ) {
+			if ( $this->is_front() ) {
+				if ( ! $disable_queryfilters )
+					require_once('query-interceptor-front_rs.php');
+	
+				if ( ! $is_administrator ) {
+					require_once('qry-front_non-administrator_rs.php');
+					$this->feed_interceptor = new FeedInterceptor_RS(); // file already required in role-scoper.php
+				}
+	
+				require_once('template-interceptor_rs.php');
+				$this->template_interceptor = new TemplateInterceptor_RS();
+	
+				$frontend_admin = ! scoper_get_option('no_frontend_admin'); // potential performance enhancement	
+			}
+				
+			// ===== Filters which are always loaded (except on plugin scripts), for any access type
+			include_once( 'hardway/wp-patches_agp.php' ); // simple patches for WP
+			
+			if ( $this->is_front() || strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/edit-pages.php') ) {
+				require_once('query-interceptor-base_rs.php');
+				$this->query_interceptor_base = new QueryInterceptorBase_RS();  // listing filter used for role status indication in edit posts/pages and on front end by template functions
+			}
+		}
+		
+		// ===== Filters which support automated role maintenance following content creation/update
+		// Require an explicitly set option to skip these for front end access, just in case other plugins modify content from the front end.
+		if ( ( $is_admin || defined('XMLRPC_REQUEST') || $frontend_admin || defined('DOING_CRON') ) ) {
+			require_once( 'admin/cache_flush_rs.php' );
+			require_once( 'admin/filters-admin_rs.php' );
+			$this->filters_admin = new ScoperAdminFilters();
+		}
+		// =====
+	}
+	
 
 	// Primarily for internal use. Drops some features of WP core get_terms while adding the following versatility:
 	// - supports any RS-defined taxonomy, with or without WP taxonomy schema

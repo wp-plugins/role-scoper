@@ -376,6 +376,8 @@ class ScoperHardwayTaxonomy
 		} else
 			$terms = $results;
 			
+		//dump($terms);
+			
 		if ( 'count' == $fields ) {
 			$term_count = $wpdb->get_var($query);
 			return $term_count;

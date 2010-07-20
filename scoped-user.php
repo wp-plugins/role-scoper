@@ -364,11 +364,13 @@ class WP_Scoped_User extends WP_User {
 		global $scoper;
 					
 		foreach( array_keys($this->assigned_blog_roles[ANY_CONTENT_DATE_RS]) as $role_handle ) {
+			if ( ! is_array($scoper->role_defs->role_caps[$role_handle]) )
+				continue;
 			
 			$role_spec = scoper_explode_role_handle($role_handle);
 
 			if ( ! empty($role_spec->role_type) && ( 'rs' == $role_spec->role_type ) && $scoper->role_defs->is_member($role_handle) )
-				$this->allcaps = array_merge($this->allcaps, $scoper->role_defs->role_caps[$role_handle]);
+				$this->allcaps = ( is_array($this->allcaps) ) ? array_merge($this->allcaps, $scoper->role_defs->role_caps[$role_handle]) : $scoper->role_defs->role_caps[$role_handle];
 		}
 		
 		$this->allcaps['is_scoped_user'] = true; // use this to detect when something tampers with scoped allcaps array

@@ -113,7 +113,9 @@ class ScoperAdminBulkLib {
 	}
 	
 	function taxonomy_scroll_links($tx, $terms, $admin_terms = '') {
-		if ( empty($terms) || ( is_array($admin_terms) && empty($admin_terms) ) )
+		$max_terms = ( defined( 'SCOPER_MAX_TAXONOMY_SCROLL_LINKS' ) ) ? SCOPER_MAX_TAXONOMY_SCROLL_LINKS : 300;
+
+		if ( empty($terms) || ( is_array($admin_terms) && empty($admin_terms) ) || ( count($terms) > $max_terms ) )
 			return;
 		
 		echo '<strong>' . __('Scroll to current settings:','scoper') . '</strong><br />';	

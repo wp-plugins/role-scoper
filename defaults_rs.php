@@ -165,9 +165,41 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 		$post_types = get_post_types();
 		$custom_types = array_diff( $post_types, array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' ) );
 
-		foreach ( $custom_types as $name )
-			$def['use_object_roles']["post:{$name}"] = 0;
-
+		foreach ( $custom_types as $type ) {
+			$def['limit_object_editors']["post:{$type}"] = 0;
+			$def['default_private']["post:{$type}"] = 0;
+			$def['sync_private']["post:{$type}"] = 0;
+			$def['restrictions_column']["post:{$type}"] = 1;
+			$def['term_roles_column']["post:{$type}"] = 1;
+			$def['object_roles_column']["post:{$type}"] = 1;
+			
+			$def['use_teaser'] ["post:{$type}"] = 1;  // use teaser (if enabled) for WP posts.  Note: Use integer because this option is multi-select.  Other valid setting is "excerpt"
+			
+			// TODO: set additional teaser defaults (and all defaults) only as needed?
+			
+			$def['teaser_hide_private']["post:{$type}"] = 0;
+			$def['teaser_logged_only'] ["post:{$type}"] = 0;
+			
+			$def['teaser_replace_content']		["post:{$type}"] = scoper_po_trigger( "Sorry, this content requires additional permissions.  Please contact an administrator for help." );
+			$def['teaser_replace_content_anon']	["post:{$type}"] = scoper_po_trigger( "Sorry, you don't have access to this content.  Please log in or contact a site administrator for help." );
+			$def['teaser_prepend_content']		["post:{$type}"] = '';
+			$def['teaser_prepend_content_anon']	["post:{$type}"] = '';
+			$def['teaser_append_content']		["post:{$type}"] = '';
+			$def['teaser_append_content_anon']	["post:{$type}"] = '';
+			$def['teaser_prepend_name']			["post:{$type}"] = '(';
+			$def['teaser_prepend_name_anon']	["post:{$type}"] = '(';
+			$def['teaser_append_name']			["post:{$type}"] = ')*';
+			$def['teaser_append_name_anon']		["post:{$type}"] = ')*';
+			$def['teaser_replace_excerpt']		["post:{$type}"] = '';
+			$def['teaser_replace_excerpt_anon']	["post:{$type}"] = '';
+			$def['teaser_prepend_excerpt']		["post:{$type}"] = '';
+			$def['teaser_prepend_excerpt_anon']	["post:{$type}"] = '';
+			$def['teaser_append_excerpt']		["post:{$type}"] = "<br /><small>" . scoper_po_trigger( "note: This content requires a higher login level." ) . "</small>";
+			$def['teaser_append_excerpt_anon']	["post:{$type}"] = "<br /><small>" . scoper_po_trigger( "note: This content requires site login." ) . "</small>";
+			
+			$def['use_object_roles']["post:{$type}"] = 0;
+		}
+			
 		// note: WP 3.0 introduced function get_taxonomies
 		global $wp_taxonomies;
 		$core_taxonomies = array( 'category', 'link_category', 'nav_menu', 'ngg_tag' );
@@ -477,7 +509,7 @@ function scoper_core_taxonomies( $include_custom_types = true ) {
 	if ( $is_admin ) {
 		$arr['category']->display_name = __awp('Category');
 		$arr['category']->display_name_plural = __awp('Categories');
-		$arr['category']->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
+		$arr['category']->edit_url = ( awp_ver('3.0') ) ? '%1$s/wp-admin/edit-tags.php?action=edit&taxonomy=category&tag_ID=%2$d' : 'categories.php?action=edit&amp;cat_ID=%d';
 	}
 	
 	// Sample code: use the following syntax to define custom taxonomies which use a custom source (not the wp_term_taxonomy table)
@@ -511,7 +543,7 @@ function scoper_core_taxonomies( $include_custom_types = true ) {
 
 		$arr['link_category']->display_name = __('Link Category', 'scoper');
 		$arr['link_category']->display_name_plural = __awp('Link Categories');
-		$arr['link_category']->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
+		$arr['link_category']->edit_url = ( awp_ver('3.0') ) ? '%1$s/wp-admin/link-category.php?action=edit&taxonomy=category&tag_ID=%2$d' : 'categories.php?action=edit&amp;cat_ID=%d';
 	}
 	
 	if ( $include_custom_types && awp_ver( '2.9' ) ) {

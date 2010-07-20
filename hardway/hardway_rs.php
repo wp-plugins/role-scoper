@@ -49,10 +49,10 @@ class ScoperHardway
 			// avoid redundant filtering (currently replacing parent dropdown on flt_dropdown_pages filter)
 			return $results;
 		}
-		
+
 		if ( ! is_array($results) )
 			$results = (array) $results;
-			
+
 		global $wpdb;
 
 		// === BEGIN Role Scoper ADDITION: global var; various special case exemption checks ===

@@ -175,7 +175,13 @@ class AttachmentFilters_RS {
 			return;
 		}
 		
-		// file access was not granted.  Determine if teaser message should be triggered
+		// File access was not granted.  Since a 404 page will now be displayed, add filters which (for performance) were suppressed on the direct file access request
+		global $scoper;
+		$scoper->direct_file_access = false;
+		$scoper->add_main_filters();
+		$scoper->add_hardway_filters();
+
+		//Determine if teaser message should be triggered
 		if ( file_exists( $uploads['basedir'] . "/$file" ) ) {
 			
 			if ( $matched_published_post && scoper_get_otype_option('do_teaser', 'post') ) {

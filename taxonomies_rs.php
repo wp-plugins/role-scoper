@@ -78,7 +78,7 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 			$tx->cols->term2obj_tid = 'term_taxonomy_id';
 			
 			if ( 'category' == $tx->name )
-				$tx->edit_url = 'categories.php?action=edit&amp;cat_ID=%d';
+				$tx->edit_url = ( awp_ver('3.0') ) ? 'edit-tags.php?action=edit&taxonomy=category&tag_ID=%d' : 'categories.php?action=edit&amp;cat_ID=%d';
 			else {
 				$tx->edit_url = "edit-tags.php?action=edit&taxonomy={$tx->name}&tag_ID=%d";
 				$tx->uri_vars = (object) array( 'id' => $tx->name );

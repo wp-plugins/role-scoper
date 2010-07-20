@@ -136,15 +136,23 @@ class ScoperRewriteMU {
 		foreach ( $blog_ids as $id ) {
 			switch_to_blog( $id );
 
-			// WP-mu content rules are only inserted if uploads path matches this default structure
+			// For WP-mu < 3.0, content rules are only inserted if uploads path matches this default structure
 			$dir = ABSPATH . UPLOADBLOGSDIR . "/$id/files/";
 			$url = trailingslashit( $siteurl ) . UPLOADBLOGSDIR . "/$id/files/";
-			
 			$uploads = apply_filters( 'upload_dir', array( 'path' => $dir, 'url' => $url, 'subdir' => '', 'basedir' => $dir, 'baseurl' => $url, 'error' => false ) );
-
 			$htaccess_path = trailingslashit($uploads['basedir']) . '.htaccess';
 			
-			ScoperRewrite::insert_with_markers( $htaccess_path, 'Role Scoper', '' );
+			if ( file_exists( $htaccess_path ) )
+				ScoperRewrite::insert_with_markers( $htaccess_path, 'Role Scoper', '' );
+
+			// WP 3.0 installation converted to multisite might still be using default wp-content/uploads folder
+			if ( awp_ver( '3.0' ) ) {
+				require_once( 'uploads_rs.php' );
+				$uploads = scoper_get_upload_info();
+				$htaccess_path = trailingslashit($uploads['basedir']) . '.htaccess';
+				if ( file_exists( $htaccess_path ) )
+					ScoperRewrite::insert_with_markers( $htaccess_path, 'Role Scoper', '' );
+			}	
 		}
 		
 		switch_to_blog( $orig_blog_id );

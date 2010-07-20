@@ -256,7 +256,72 @@ class ScoperAdmin
 
 		return $help;
 	}
+		
+	function filter_add_new_content_links() {
+		global $scoper, $submenu;
+	
+		// workaround for WP's universal inclusion of "Add New"
+		if ( awp_ver('2.7') ) {
 			
+			// Posts menu
+			if ( isset($submenu['edit.php']) ) {
+				foreach ( $submenu['edit.php'] as $key => $arr ) {
+					if ( isset($arr['2']) && ( 'post-new.php' == $arr['2'] ) ) {
+						$scoper->cap_interceptor->skip_id_generation = true;
+						$scoper->cap_interceptor->skip_any_object_check = true;	
+	
+						if ( ! current_user_can('edit_posts') )
+							unset( $submenu['edit.php'][$key]);
+							
+						$scoper->cap_interceptor->skip_id_generation = false;
+						$scoper->cap_interceptor->skip_any_object_check = false;
+					}
+				}
+			}
+			
+			if ( awp_ver( '3.0' ) ) {
+				// handle Pages and custom post types
+				$src = $scoper->data_sources->get( 'post' );
+				foreach ( array_keys($src->object_types) as $_post_type ) {
+					if ( $wp_type = get_post_type_object( $_post_type ) ) {
+					
+						if ( isset($submenu["edit.php?post_type=$_post_type"]) ) {
+							foreach ( $submenu["edit.php?post_type=$_post_type"] as $key => $arr ) {
+								if ( isset($arr['2']) && ( "post-new.php?post_type=$_post_type" == $arr['2'] ) ) {
+									$scoper->cap_interceptor->skip_id_generation = true;
+									$scoper->cap_interceptor->skip_any_object_check = true;	
+				
+									if ( ! current_user_can($wp_type->cap->edit_posts) )
+										unset( $submenu["edit.php?post_type=$_post_type"][$key]);
+										
+									$scoper->cap_interceptor->skip_id_generation = false;
+									$scoper->cap_interceptor->skip_any_object_check = false;
+								}
+							}
+						}
+					}
+				}
+				
+			} else {
+				// Pages menu
+				if ( isset($submenu['edit-pages.php']) ) {
+					foreach ( $submenu['edit-pages.php'] as $key => $arr ) {
+						if ( isset($arr['2']) && ( 'page-new.php' == $arr['2'] ) ) {
+							$scoper->cap_interceptor->skip_id_generation = true;
+							$scoper->cap_interceptor->skip_any_object_check = true;	
+		
+							if ( ! current_user_can('edit_pages') )
+								unset( $submenu['edit-pages.php'][$key]);
+								
+							$scoper->cap_interceptor->skip_id_generation = false;
+							$scoper->cap_interceptor->skip_any_object_check = false;
+						}
+					}
+				}
+			}
+		}
+	}
+		
 	function build_menu() {
 		if ( ! defined('USER_ROLES_RS') && isset( $_POST['role_type'] ) )
 			scoper_use_posted_init_options();
@@ -283,6 +348,8 @@ class ScoperAdmin
 		
 		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 
+		$this->filter_add_new_content_links();
+		
 		if ( ! $is_content_administrator && ( 'admin_content' == $require_blogwide_editor ) )
 			if ( ! $is_option_administrator )
 				return;
@@ -290,7 +357,7 @@ class ScoperAdmin
 		if ( ! $is_user_administrator && ( 'admin' == $require_blogwide_editor ) )
 			if ( ! $is_option_administrator )
 				return;
-
+	
 		$can_admin_objects = array();
 		$can_admin_terms = array();
 		
@@ -552,68 +619,6 @@ class ScoperAdmin
 				}
 			}
 		}
-		
-		
-		// workaround for WP's universal inclusion of "Add New"
-		if ( awp_ver('2.7') ) {
-			// Posts menu
-			if ( isset($submenu['edit.php']) ) {
-				foreach ( $submenu['edit.php'] as $key => $arr ) {
-					if ( isset($arr['2']) && ( 'post-new.php' == $arr['2'] ) ) {
-						$scoper->cap_interceptor->skip_id_generation = true;
-						$scoper->cap_interceptor->skip_any_object_check = true;	
-	
-						if ( ! current_user_can('edit_posts') )
-							unset( $submenu['edit.php'][$key]);
-							
-						$scoper->cap_interceptor->skip_id_generation = false;
-						$scoper->cap_interceptor->skip_any_object_check = false;
-					}
-				}
-			}
-			
-			if ( awp_ver( '3.0' ) ) {
-				// handle Pages and custom post types
-				$src = $scoper->data_sources->get( 'post' );
-				foreach ( array_keys($src->object_types) as $_post_type ) {
-					if ( $wp_type = get_post_type_object( $_post_type ) ) {
-					
-						if ( isset($submenu["edit.php?post_type=$_post_type"]) ) {
-							foreach ( $submenu["edit.php?post_type=$_post_type"] as $key => $arr ) {
-								if ( isset($arr['2']) && ( "post-new.php?post_type=$_post_type" == $arr['2'] ) ) {
-									$scoper->cap_interceptor->skip_id_generation = true;
-									$scoper->cap_interceptor->skip_any_object_check = true;	
-				
-									if ( ! current_user_can($wp_type->cap->edit_posts) )
-										unset( $submenu["edit.php?post_type=$_post_type"][$key]);
-										
-									$scoper->cap_interceptor->skip_id_generation = false;
-									$scoper->cap_interceptor->skip_any_object_check = false;
-								}
-							}
-						}
-					}
-				}
-				
-			} else {
-				// Pages menu
-				if ( isset($submenu['edit-pages.php']) ) {
-					foreach ( $submenu['edit-pages.php'] as $key => $arr ) {
-						if ( isset($arr['2']) && ( 'page-new.php' == $arr['2'] ) ) {
-							$scoper->cap_interceptor->skip_id_generation = true;
-							$scoper->cap_interceptor->skip_any_object_check = true;	
-		
-							if ( ! current_user_can('edit_pages') )
-								unset( $submenu['edit-pages.php'][$key]);
-								
-							$scoper->cap_interceptor->skip_id_generation = false;
-							$scoper->cap_interceptor->skip_any_object_check = false;
-						}
-					}
-				}
-			}
-		}
-		
 		
 		// WP MU site options
 		if ( $is_option_administrator && IS_MU_RS )

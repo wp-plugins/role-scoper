@@ -46,7 +46,7 @@ class QueryInterceptor_RS
 		add_filter('objects_request_rs', array(&$this, 'flt_objects_request'), 2, 4);
 		add_filter('objects_results_rs', array(&$this, 'flt_objects_results'), 50, 4);
 		add_filter('objects_teaser_rs', array(&$this, 'flt_objects_teaser'), 50, 4);
-		
+
 		if ( ! $scoper->direct_file_access ) {
 			// Append any limiting clauses to WHERE clause for taxonomy query
 			// args: ($where, $taxonomy, $object_type = '', $reqd_op = '')  e.g. ($where, 'categories', 'post', 'edit')
@@ -83,6 +83,9 @@ class QueryInterceptor_RS
 				//	$rs_hooks[$src->query_hooks->distinct] = 	(object) array( 'name' => 'objects_distinct_rs','rs_args' => '');	
 			} //foreach data_sources
 
+			// use late-firing filter so teaser filtering is also applied to sticky posts
+			add_filter( 'the_posts', array( &$this, 'flt_the_posts' ), 50 );
+			
 			// call our abstract handlers with a lambda function that passes in original hook name
 			foreach ( $rs_hooks as $original_hook => $rs_hook ) {
 				if ( ! $original_hook )
@@ -221,6 +224,8 @@ class QueryInterceptor_RS
 		
 		global $scoper;
 
+		//d_echo( "<br /><br />flt_objects_request: $request" . '<br />' );
+		
 		// Filtering in user_has_cap sufficiently controls revision access; a match here should be for internal, pre-validation purposes
 		if ( strpos( $request, "post_type = 'revision'") )
 			return $request; 
@@ -1389,7 +1394,6 @@ class QueryInterceptor_RS
 		return $where;
 	}
 	
-	// currently only used to conditionally launch teaser filtering
 	function flt_objects_results($results, $src_name, $object_types, $args = '') {
 		if ( ! $object_types || ( is_array($object_types) && count($object_types) > 1 ) )
 			$object_type = awp_post_type_from_uri();
@@ -1403,12 +1407,20 @@ class QueryInterceptor_RS
 			$args = array( 'remap_parents' => false );
 			ScoperHardway::remap_tree( $results, $ancestors, 'ID', 'post_parent', $args );
 		}
-				
-		if ( empty($this->skip_teaser) )
-			// won't do anything unless teaser is enabled for object type(s)
-			$results = apply_filters('objects_teaser_rs', $results, $src_name, $object_types, array('force_teaser' => true));
-		
+
 		return $results;
+	}
+	
+	// currently only used to conditionally launch teaser filtering
+	function flt_the_posts( $results ) {		
+		if ( empty($this->skip_teaser) ) {
+			$object_type = awp_post_type_from_uri();
+			
+			// won't do anything unless teaser is enabled for object type(s)
+			$results = apply_filters('objects_teaser_rs', $results, 'post', $object_type, array('force_teaser' => true));
+		}
+
+		return $results;	
 	}
 	
 	function flt_objects_teaser($results, $src_name, $object_types = '', $args = '') {
