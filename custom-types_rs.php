@@ -178,9 +178,6 @@ function scoper_add_custom_role_caps( &$role_caps ) {
 			$role_caps["rs_{$captype}_reader"] = array(
 				"read" => true
 			);
-			
-			$role_caps['dasf'] = array( 'hi' );
-			
 			$role_caps["rs_private_{$captype}_reader"] = array(
 				"read_private_{$captype}s" => true,
 				"read" => true

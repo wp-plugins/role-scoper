@@ -342,6 +342,11 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	//  * If an unqualified user tries to associate or un-associate a page with Main Page,
 	//	  revert page to previously stored parent if possible. Otherwise set status to "unpublished".
 	function scoper_flt_post_status ($status) {
+		if ( defined('XMLRPC_REQUEST') ) {
+			global $scoper_xmlrpc_post_status;
+			$scoper_xmlrpc_post_status = $status;
+		}
+		
 		if ( isset($_POST['post_type']) && ( $_POST['post_type'] == 'page' ) && ('autosave' != $_POST['action']) ) {
 			global $scoper, $current_user;
 
@@ -461,23 +466,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	function scoper_flt_pre_object_terms ($selected_terms, $taxonomy, $args = '') {
 		// strip out fake term_id -1 (if applied)
 		if ( $selected_terms && is_array($selected_terms) )
-			$selected_terms = array_diff($selected_terms, array(-1, 0, '0', '-1'));
-			
-		// TODO: skip this for content admins?
-		if ( empty($selected_terms) ) {  // not sure who is changing empty $_POST['post_category'] array to an array with nullstring element, but we have to deal with that
-			global $scoper;
-
-			if ( $tx = $scoper->taxonomies->get( $taxonomy ) ) {
-
-				if ( ! empty($tx->default_term_option ) ) {
-					// get_option call sometimes fails here. Todo: why?
-					global $wpdb;
-					$selected_terms = (array) maybe_unserialize( scoper_get_var( "SELECT option_value FROM $wpdb->options WHERE option_name = '$tx->default_term_option'" ) );
-					
-					//$selected_terms = (array) get_option( $tx->default_term_option );
-				}
-			}
-		}
+			$selected_terms = array_diff($selected_terms, array(-1, 0, '0', '-1', ''));  // not sure who is changing empty $_POST['post_category'] array to an array with nullstring element, but we have to deal with that
 
 		if ( is_content_administrator_rs() || defined('DISABLE_QUERYFILTERS_RS') )
 			return $selected_terms;
@@ -506,36 +495,33 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		
 		if ( $object_id = $scoper->data_sources->detect('id', $src) ) {
 			$selected_terms = scoper_reinstate_hidden_terms($taxonomy, $selected_terms);
-			
-			/*
-			if ( ! $selected_terms = scoper_reinstate_hidden_terms($taxonomy, $selected_terms) ) {
-				if ( $orig_selected_terms )
-					return $orig_selected_terms;
-			}
-			*/
 		}
 
+		//rs_errlog( "user terms: " . serialize($user_terms) );
+		//rs_errlog( "selected terms: " . serialize($selected_terms) );
+		
 		if ( empty($selected_terms) ) {
-			// if array empty, insert default term (wp_create_post check is only subverted on updates)
-			if ( $option_name = $scoper->taxonomies->member_property($taxonomy, 'default_term_option') ) {
-				$default_terms = get_option($option_name);
-			} else
-				$default_terms = 0;
+			if ( ! $default_term_option = $scoper->taxonomies->member_property( $taxonomy, 'default_term_option' ) )
+				$default_term_option = "default_{$taxonomy}";
+
+			// avoid recursive filtering.  Todo: use remove_filter so we can call get_option, supporting filtering by other plugins 
+			global $wpdb;
+			$default_terms = (array) maybe_unserialize( scoper_get_var( "SELECT option_value FROM $wpdb->options WHERE option_name = '$default_term_option'" ) );
+			//$selected_terms = (array) get_option( $tx->default_term_option );
+			
+			//rs_errlog( "default terms: " . serialize($default_terms) );
 
 			// but if the default term is not defined or is not in user's subset of usable terms, substitute first available
 			if ( $user_terms ) {
-				if ( ! is_array($default_terms) )
-					$default_terms = (array) $default_terms;
-			
-				$default_terms = array_intersect($default_terms, $user_terms);
-
-				if ( empty($default_terms) )
-					$default_terms = $user_terms[0];
+				if ( ! $default_terms = array_intersect($default_terms, $user_terms) )
+					$default_terms = (array) $user_terms[0];
 			}
 
-			$selected_terms = (array) $default_terms;
+			$selected_terms = $default_terms;
 		}
 
+		//rs_errlog( "returning selected terms: " . serialize($selected_terms) );
+		
 		return $selected_terms;
 	}
 	
@@ -641,10 +627,10 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	// Removes terms for which the user has edit cap, but not edit_[status] cap
 	// If the removed terms are already stored to the post (by a user who does have edit_[status] cap), they will be reinstated by reinstate_hidden_terms
-	function scoper_filter_terms_for_status($taxonomy, $selected_terms, &$user_terms) {
+	function scoper_filter_terms_for_status($taxonomy, $selected_terms, &$user_terms, $status = '') {
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) )
 			return $selected_terms;
-		
+
 		global $scoper;
 			
 		if ( ! $src = $scoper->taxonomies->member_property($taxonomy, 'object_source') )
@@ -652,16 +638,26 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 		if ( ! isset($src->statuses) || (count($src->statuses) < 2) )
 			return $selected_terms;
-		
+
 		$object_id = $scoper->data_sources->detect('id', $src);
 
-		if ( ! $status = $scoper->data_sources->get_from_http_post('status', $src) )
-			if ( $object_id )
-				$status = $scoper->data_sources->get_from_db('status', $src, $object_id);
-		
-		if ( ! $object_type = $scoper->data_sources->detect('type', $src, $object_id) )
-			return $selected_terms;
-
+		// determine current post status
+		if ( defined( 'XMLRPC_REQUEST' ) && ! empty($GLOBALS['scoper_xmlrpc_post_status'] ) ) {
+			$status = $GLOBALS['scoper_xmlrpc_post_status'];
+			if ( 'publish' == $status )
+				$status = 'published';
+		} else {
+			if ( ! $status = $scoper->data_sources->get_from_http_post('status', $src) )
+				if ( $object_id )
+					$status = $scoper->data_sources->get_from_db('status', $src, $object_id);
+		}
+						
+		if ( ! $object_type = $scoper->data_sources->detect('type', $src, $object_id) ) {
+			if ( defined( 'XMLRPC_REQUEST' ) )
+				$object_type = 'post';	// default to post type for new XML-RPC insertions, pending better API 
+			else
+				return $selected_terms;
+		}
 	
 		// make sure _others caps are required only for objects current user doesn't own
 		$base_caps_only = true;
@@ -676,7 +672,6 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			}
 		}
 				
-		
 		if( ! isset( $src->reqd_caps[OP_EDIT_RS][$object_type][$status] ) )
 			return $selected_terms;
 		

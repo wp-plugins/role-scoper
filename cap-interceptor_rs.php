@@ -86,7 +86,8 @@ class CapInterceptor_RS
 		rs_errlog(' ');
 		rs_errlog('flt_user_has_cap');
 		rs_errlog(serialize($orig_reqd_caps));
-		//rs_errlog(serialize($args));
+		rs_errlog(serialize($args));
+		rs_errlog(serialize($wp_blogcaps));
 		rs_errlog(' ');
 		*/
 		
@@ -261,7 +262,7 @@ class CapInterceptor_RS
 						if ( ! $this->skip_any_term_check )
 							if ( $tax_caps = $this->user_can_for_any_term($missing_caps) )
 								$wp_blogcaps = array_merge($wp_blogcaps, $tax_caps);
-								
+									
 					// If we are about to fail the blogcap requirement, credit a missing scoper-defined cap if 
 					// the user has it by object role for ANY object.
 					// (i.e. don't bar user from edit-pages.php if they have edit_pages cap for at least one page)

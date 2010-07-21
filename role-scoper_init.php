@@ -200,14 +200,18 @@ function scoper_init() {
 		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
 		
 		require_once( 'custom-types_rs.php' );
-		scoper_force_distinct_post_caps();
 		
-		$logged_types = (array) scoper_get_option( 'logged_custom_types' );
+		if ( awp_ver( '3.0' ) )
+			scoper_force_distinct_post_caps();
+		
+		//$logged_types = (array) scoper_get_option( 'logged_custom_types' );
 	
+		/* TODO: a way to do this at user discretion
 		if ( array_diff( $custom_types, $logged_types ) ) {
 			require_once( 'admin/sync-custype-caps_rs.php' );
 			scoper_sync_wp_custype_caps();
 		}
+		*/
 	}
 	
 	if ( is_admin() ) {

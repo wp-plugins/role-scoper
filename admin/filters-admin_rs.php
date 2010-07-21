@@ -142,10 +142,10 @@ class ScoperAdminFilters
 
 		add_filter('pre_object_terms_rs', array(&$this, 'flt_pre_object_terms'), 50, 3);
 		
-		// added this with WP 2.7 because QuickPress does not call pre_post_category
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/index.php' ) && ! is_content_administrator_rs() && awp_ver('2.7-dev') ) // this conflicts with filter_terms_for_status if it runs on post save. TODO: why?
-			add_filter('pre_option_default_category', array(&$this, 'flt_default_category') );
-			
+		// added this with WP 2.7 because QuickPress does not call pre_post_category  TODO: "pre_option_default_{$taxonomy}"
+		if ( ( ! strpos($_SERVER['SCRIPT_NAME'], 'p-admin/options-writing.php') ) && ! is_content_administrator_rs() && awp_ver('2.7-dev') )
+			add_filter('pre_option_default_category', array(&$this, 'flt_default_term') );
+
 		// Follow up on role creation / deletion by Role Manager, Capability Manager or other equivalent plugin
 		// Role Manager / Capability Manager don't actually modify the stored role def until after the option update we're hooking on, so defer our maintenance operation
 		global $wpdb;
@@ -605,27 +605,24 @@ class ScoperAdminFilters
 	}
 
 	// added this with WP 2.7 because QuickPress does not call pre_post_category
-	function flt_default_category($default_cat_id) {
+	function flt_default_term( $default_term_id, $taxonomy = 'category' ) {
 		require_once('filters-admin-save_rs.php');
 
 		// support an array of default IDs (but don't require it)
-		$filtered_default_cat_ids = (array) $default_cat_id;
+		$filtered_default_term_ids = (array) $default_term_id;
 		
 		$user_terms = array(); // will be returned by filter_terms_for_status
 		
-		$filtered_default_cat_ids = scoper_filter_terms_for_status('category', $filtered_default_cat_ids, $user_terms);
+		$filtered_default_term_ids = scoper_filter_terms_for_status($taxonomy, $filtered_default_term_ids, $user_terms);
 
-		//rs_errlog( 'flt_default_category' );
-		//rs_errlog( serialize($filtered_default_cat_ids) );
-		
 		// if the default term is not in user's subset of usable terms, substitute first available	
-		if ( ( ! $filtered_default_cat_ids || ! $filtered_default_cat_ids[0] ) && $user_terms )
+		if ( ( ( ! $filtered_default_term_ids ) || ! $filtered_default_term_ids[0] ) && $user_terms )
 			return $user_terms[0];
 		
-		if ( count($filtered_default_cat_ids) > 1 )	// won't return an array unless an array was passed in and more than one of its elements is usable by this user
-			return $filtered_default_cat_ids;
+		if ( count($filtered_default_term_ids) > 1 )	// won't return an array unless an array was passed in and more than one of its elements is usable by this user
+			return $filtered_default_term_ids;
 		else
-			return $filtered_default_cat_ids[0];	// if a single cat ID was passed in and is permitted, it is returned here
+			return $filtered_default_term_ids[0];	// if a single term ID was passed in and is permitted, it is returned here
 	}
 } // end class
 

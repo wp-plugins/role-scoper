@@ -329,7 +329,7 @@ class WP_Scoped_User extends WP_User {
 			
 			$qry = "SELECT uro.obj_or_term_id, uro.role_name, uro.assignment_id, uro.content_date_limited, uro.content_min_date_gmt, uro.content_max_date_gmt $extra_cols FROM $wpdb->user2role2object_rs AS uro ";
 			$qry .= "WHERE uro.scope = 'term' AND uro.assign_for IN ('entity', 'both') AND uro.role_type = '$role_type' AND uro.src_or_tx_name = '$taxonomy' $duration_clause $u_g_clause";
-							
+					
 			if ( $results = scoper_get_results($qry) ) {
 				foreach($results as $termrole) {
 					$date_key = ( $retrieve_content_date_limits && $termrole->content_date_limited ) ? serialize( (object) array( 'content_min_date_gmt' => $termrole->content_min_date_gmt, 'content_max_date_gmt' => $termrole->content_max_date_gmt ) ) : '';

@@ -104,6 +104,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 Beta 3 - 19 July 2010
+* BugFix : Error when using custom post types with WP 2.9 
+* Change : Don't automatically store new capabilities to db-stored WP Role definitions
+
 = 1.2.8 Beta 2 - 19 July 2010 =
 * BugFix : Custom-defined WP Nav menus were not filtered for RS restrictions / roles
 * BugFix : Hidden Content Teaser was not applied to sticky posts
@@ -111,7 +115,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : In admin menus, "Add New" was not properly suppressed in some configurations
 * BugFix : File Attachment Filter was inactive for installations upgraded to WP 3.0 multisite and still using wp-content/uploads folder
 * BugFix : On failed direct file access attempt, any page / term listings on 404 page were not filtered for RS restrictions / roles
+* BugFix : XML-RPC submissions failed for users lacking blog-wide edit_posts capability
 * BugFix : Category Roles, Category Restrictions bulk admin forms had invalid category edit links
+* BugFix : Implicit role ownership (indicated by coloring in role metaboxes) was not indicacted correctly under some configurations
 * Change : Suppress scroll links in Term Roles / Restrictions bulk admin form if terms total over 300
 
 

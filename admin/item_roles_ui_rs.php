@@ -419,6 +419,14 @@ class ScoperItemRolesUI {
 			
 			$args['eligible_ids'] = isset($this->eligible_agent_ids[$role_basis][$agents_reqd_op]) ? $this->eligible_agent_ids[$role_basis][$agents_reqd_op]: '';
 		
+			// don't cause alarm by offering to assign editing capabilities to Anonymous group (though the assignment would be ineffective)
+			if ( defined( 'SCOPER_ANON_METAGROUP' ) && ( ROLE_BASIS_GROUPS == $role_basis ) && ( $agents_reqd_op != OP_READ_RS ) ) {
+				foreach ( array_keys( $this->all_agents[$role_basis] ) as $key ) {
+					if ( 'wp_anon' == $this->all_agents[$role_basis][$key]->meta_id )
+						unset( $this->all_agents[$role_basis][$key] );
+				} 	
+			}
+
 			if ( ! empty($this->current_roles[$role_basis][$role_handle]['assigned']) ) {
 				ScoperAgentsChecklist::agents_checklist( $role_basis, $this->all_agents[$role_basis], $id_prefix, $this->current_roles[$role_basis][$role_handle]['assigned'], $args );
 			} else
