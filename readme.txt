@@ -104,7 +104,13 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.2.8 Beta 3 - 19 July 2010
+= 1.2.8 Beta 4 - 3 Aug 2010 =
+* BugFix : Some RS Options (including custom post type / taxonomy role usage) did not store correctly with WP Multisite
+* BugFix : Roles, Restrictions were not displayed on single term edit form
+* BugFix : Comment listing in wp-admin was not filtered to match post editing access
+* Compat : WPML plugin - category names with @lang suffix did not have suffix filtered off
+
+= 1.2.8 Beta 3 - 19 July 2010 =
 * BugFix : Error when using custom post types with WP 2.9 
 * Change : Don't automatically store new capabilities to db-stored WP Role definitions
 

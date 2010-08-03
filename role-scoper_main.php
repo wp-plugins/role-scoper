@@ -247,7 +247,7 @@ class Scoper
 		
 		if ( ! $disable_queryfilters ) {
 			 if ( ! $is_administrator ) {
-				if ( $direct_file_access ) {
+				if ( $this->direct_file_access ) {
 					require_once('cap-interceptor-basic_rs.php');  // only need to support basic read_post / read_page check for direct file access
 					add_filter('user_has_cap', array('CapInterceptorBasic_RS', 'flt_user_has_cap'), 99, 3);
 				} else {

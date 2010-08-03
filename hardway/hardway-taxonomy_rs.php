@@ -16,7 +16,7 @@ require_once( SCOPER_ABSPATH . '/lib/ancestry_lib_rs.php' );
 // flt_get_pages is required on the front end (even for administrators) to enable the inclusion of private pages
 // flt_get_terms '' so private posts are included in count, as basis for display when hide_empty arg is used
 if ( $scoper->is_front() || ! is_content_administrator_rs() ) {	
-	add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
+	add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
 	
 	// Since the NOT IN subquery is a painful aberration for filtering, replace it with the separate term query used by WP prior to 2.7
 	add_filter('posts_where', array('ScoperHardwayTaxonomy', 'flt_cat_not_in_subquery'), 1);
@@ -199,10 +199,10 @@ class ScoperHardwayTaxonomy
 			
 			if ( ! $no_cache && isset( $cache[ $ckey ] ) ) {
 				// RS Modification: alternate filter name (get_terms filter is already applied by WP)
-				remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
+				remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
 				$terms = apply_filters('get_terms', $cache[ $ckey ], $taxonomies, $args);
 				$terms = apply_filters('get_terms_rs', $terms, $taxonomies, $args);
-				add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
+				add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
 				return $terms;
 			}
 		}
@@ -262,7 +262,7 @@ class ScoperHardwayTaxonomy
 		
 		if ( ! empty( $exclude_tree ) ) {
 			// === BEGIN Role Scoper MODIFICATION: temporarily unhook this filter for unfiltered get_terms calls ===
-			remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
+			remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
 			// === END Role Scoper MODIFICATION ===
 			
 			$excluded_trunks = wp_parse_id_list($exclude_tree);
@@ -279,7 +279,7 @@ class ScoperHardwayTaxonomy
 			}
 			
 			// === BEGIN Role Scoper MODIFICATION: re-hook this filter
-			add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
+			add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
 			// === END Role Scoper MODIFICATION ===
 		}
 
@@ -507,10 +507,10 @@ class ScoperHardwayTaxonomy
 		}
 		
 		// RS Modification: alternate filter name (get_terms filter is already applied by WP)
-		remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
+		remove_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
 		$terms = apply_filters('get_terms', $terms, $taxonomies, $args);
 		$terms = apply_filters('get_terms_rs', $terms, $taxonomies, $args);
-		add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 1, 3);
+		add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
 		
 		// restore buffered term names in case they were filtered previously
 		if ( 'all' == $fields )

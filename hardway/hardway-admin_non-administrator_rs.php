@@ -269,16 +269,18 @@ class ScoperAdminHardway_Ltd {
 		// comment count: SELECT COUNT(*) FROM wp_comments WHERE comment_approved = '0' 
 		// comments: SELECT SQL_CALC_FOUND_ROWS * FROM wp_comments WHERE comment_approved = '0' OR comment_approved = '1' ORDER BY comment_date DESC LIMIT 0, 25 
 		// comment moderation : SELECT * FROM wp_comments WHERE comment_approved = '0' 
-		if ( strpos($query, "ELECT ") && preg_match ("/FROM\s*{$comments}\s*(WHERE|GROUP BY|USE INDEX|ORDER BY)/", $query)
+		if ( strpos($query, "ELECT ") && preg_match ("/FROM\s*{$comments}/", $query)
 		&& ( ! strpos($query, "ELECT COUNT") || empty( $_POST ) )
 		&& ( ! strpos($_SERVER['SCRIPT_FILENAME'], 'p-admin/upload.php') )
 		 )  // don't filter the comment count query prior to DB storage of comment_count to post record
 		{
 			//rs_errlog ("<br /> <strong>caught</strong> $query<br /> ");	
 			
-			// apply DISTINCT clause so we can join on the posts table for RS filtering
-			$query = str_replace( "SELECT *", "SELECT DISTINCT $comments.*", $query);
-			$query = str_replace( "SELECT SQL_CALC_FOUND_ROWS *", "SELECT SQL_CALC_FOUND_ROWS DISTINCT $comments.*", $query);
+			$comment_alias = ( strpos( $query, "$comments c" ) || strpos( $query, "$comments AS c" ) ) ? 'c' : $comments;
+			
+			// apply DISTINCT clause so JOINs don't cause redundant comment count
+			$query = str_replace( "SELECT *", "SELECT DISTINCT $comment_alias.*", $query);
+			$query = str_replace( "SELECT SQL_CALC_FOUND_ROWS *", "SELECT SQL_CALC_FOUND_ROWS DISTINCT $comment_alias.*", $query);
 			
 			if ( ! strpos( $query, ' DISTINCT ' ) )
 				$query = str_replace( "SELECT ", "SELECT DISTINCT ", $query);
@@ -288,9 +290,17 @@ class ScoperAdminHardway_Ltd {
 			$query = preg_replace( "/COUNT(\s*\*\s*)/", " COUNT(DISTINCT $comments.comment_ID)", $query);
 			$query = preg_replace( "/COUNT(\s*comment_ID\s*)/", " COUNT(DISTINCT $comments.comment_ID)", $query);
 
-			$query = str_replace( "user_id ", "$comments.user_id ", $query);
+			$query = str_replace( " user_id ", " $comment_alias.user_id ", $query);
 			
-			$query = preg_replace( "/FROM\s*{$comments}\s*WHERE /", "FROM $comments INNER JOIN $posts ON $posts.ID = $comments.comment_post_ID WHERE ", $query);
+			if ( ! strpos( $query, "JOIN $posts" ) ) {
+				if ( strpos( $query, "$comments c" ) )
+					$query = preg_replace( "/FROM\s*{$comments} c\s*WHERE /", "FROM $comments c INNER JOIN $posts ON $posts.ID = $comment_alias.comment_post_ID WHERE ", $query);
+				else
+					$query = preg_replace( "/FROM\s*{$comments}\s*WHERE /", "FROM $comments INNER JOIN $posts ON $posts.ID = $comment_alias.comment_post_ID WHERE ", $query);
+				
+				if ( strpos( $query, "GROUP BY" ) )
+					$query = preg_replace( "/FROM\s*{$comments}\s*GROUP BY /", "FROM $comments INNER JOIN $posts ON $posts.ID = $comment_alias.comment_post_ID GROUP BY ", $query);
+			}
 			
 			// wp 2.6: also some formatting changes with leading tabs instead of spaces
 			//$query = preg_replace( "/FROM\s*{$comments}\s*USE INDEX\s*(comment_date_gmt)\s*WHERE/", "FROM $comments USE INDEX (comment_date_gmt) INNER JOIN $posts ON $posts.ID = $comments.comment_post_ID WHERE", $query);
@@ -313,10 +323,11 @@ class ScoperAdminHardway_Ltd {
 			$reqd_caps['page']['private'] = array('edit_others_pages', 'edit_private_pages', 'moderate_comments');
 
 			$args = array( 'force_reqd_caps' => $reqd_caps );
-			
-			$object_types = (array) $scoper->data_sources->detect( 'type', 'post' );
-			
-			$query = apply_filters('objects_request_rs', $query, 'post', $object_types, $args);
+
+			if ( strpos( $query, "$posts p" ) || strpos( $query, "$posts AS p" ) )
+				$args['source_alias'] = 'p';
+
+			$query = apply_filters('objects_request_rs', $query, 'post', '', $args);
 			
 			if ( ! strpos($query, "JOIN $posts") )
 				$query = str_replace( " FROM $comments ", " FROM $comments INNER JOIN $posts ON $posts.ID = $comments.comment_post_ID ", $query);

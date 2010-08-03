@@ -23,7 +23,7 @@ class ScoperAdminFiltersUI
 		$this->scoper =& $scoper;
 		
 		$current_script = $_SERVER['SCRIPT_NAME'];
-		$item_edit_scripts = apply_filters( 'item_edit_scripts_rs', array('p-admin/post-new.php', 'p-admin/post.php', 'p-admin/page.php', 'p-admin/page-new.php', 'p-admin/categories.php') );
+		$item_edit_scripts = apply_filters( 'item_edit_scripts_rs', array('p-admin/post-new.php', 'p-admin/post.php', 'p-admin/page.php', 'p-admin/page-new.php', 'p-admin/categories.php', 'p-admin/edit-tags.php') );
 		$item_edit_scripts []= 'p-admin/admin-ajax.php';
 
 		foreach( $item_edit_scripts as $edit_script ) {

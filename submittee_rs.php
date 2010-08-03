@@ -239,18 +239,19 @@ class Scoper_Submittee {
 		
 		// changes to these options will trigger .htaccess regen
 		if ( $sitewide ) {
-			add_action( 'add_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
-			add_action( 'add_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
-			add_action( 'pre_update_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
-			add_action( 'pre_update_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
+			add_filter( 'add_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
+			add_filter( 'add_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
+			add_filter( 'pre_update_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
+			add_filter( 'pre_update_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
 		} else {
-			add_action( 'update_option_scoper_use_term_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
-			add_action( 'update_option_scoper_use_object_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
+			add_filter( 'update_option_scoper_use_term_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
+			add_filter( 'update_option_scoper_use_object_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
 		}
 
 		$default_prefix = ( $customize_defaults ) ? 'default_' : '';
 		
 		$reviewed_otype_options = explode(',', $_POST['all_otype_options']);
+		
 		$otype_option_vals = array();
 		foreach ( $reviewed_otype_options as $option_basename ) {
 			if ( isset( $scoper_default_otype_options[$option_basename] ) ) {
@@ -279,8 +280,10 @@ class Scoper_Submittee {
 			}
 		}
 
-		foreach ( $otype_option_vals as $option_basename => $value )
+		foreach ( $otype_option_vals as $option_basename => $value ) {
+			//echo "update $default_prefix $option_basename : " . serialize($value) . " ($sitewide)<br />";
 			scoper_update_option( $default_prefix . $option_basename , $value, $sitewide);
+		}
 	}
 	
 	function update_rs_role_defs_customize_defaults () {

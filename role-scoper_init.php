@@ -100,7 +100,7 @@ function scoper_clear_all_file_rules() {
 
 
 // forces content rules to be regenerated in every MU blog at next access
-function scoper_expire_file_rules() {
+function scoper_expire_file_rules( $passthru = '' ) {
 	if ( IS_MU_RS )
 		scoper_update_option( 'file_htaccess_min_date', agp_time_gmt(), true );
 	else {
@@ -109,6 +109,8 @@ function scoper_expire_file_rules() {
 		else
 			add_action( 'scoper_init', 'scoper_flush_file_rules' );
 	}
+	
+	return $passthru;
 }
 	
 	
@@ -347,7 +349,7 @@ function scoper_update_option( $option_basename, $option_val, $sitewide = -1 ) {
 		global $scoper_site_options;
 		$scoper_site_options[$option_basename] = $option_val;
 		
-		//d_echo("<br /><br />sitewide: $option_basename, value '$option_val'" );
+		//d_echo("<br /><br />sitewide: $option_basename, value " . serialize($option_val) . '<br /><br />' );
 		update_site_option( "scoper_$option_basename", $option_val );
 	} else {
 		//d_echo("<br />blogwide: $option_basename" );

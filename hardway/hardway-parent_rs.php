@@ -78,9 +78,6 @@ class ScoperHardwayParent {
 	
 	function dropdown_pages($object_id = '', $stored_parent_id = '') {
 		global $scoper, $wpdb;
-		$defaults = array( 'depth' => 0 );
-		$args = array_merge( $defaults, (array) $args );
-		extract($args);
 
 		// buffer titles in case they are filtered on get_pages hook
 		$titles = ScoperHardwayParent::get_page_titles();
@@ -251,7 +248,7 @@ class ScoperHardwayParent {
 
 			$current = ( $id == $default) ? ' selected="selected"' : '';
 			$pad = str_repeat( '&nbsp;', $level * 3 );
-			$output .= "\n\t<option " . $class . 'value="' . $id . '"' . $current . '>' . $pad . wp_specialchars($args['pages'][$key]->post_title) . '</option>';
+			$output .= "\n\t<option " . $class . 'value="' . $id . '"' . $current . '>' . $pad . esc_html($args['pages'][$key]->post_title) . '</option>';
 			
 			ScoperHardwayParent::walk_parent_dropdown( $output, $args, true, $default, $id, $level +1 );
 		}

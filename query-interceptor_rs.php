@@ -297,6 +297,8 @@ class QueryInterceptor_RS
 				$request = substr($request, 0, $pos_where) . ' WHERE 1=1 ' . $rs_where; // any pre-exising join clauses remain in $request
 		}
 
+		//d_echo( "<br />filtered: $request<br /><br />" );
+		
 		return $request;
 	}
 	
@@ -406,6 +408,8 @@ class QueryInterceptor_RS
 
 		// need to allow ambiguous object type for custom cap requirements like comment filtering
 		$object_types = $this->_get_object_types($src, $object_types);
+		
+		//dump($object_types);
 		
 		$tease_otypes = $this->_get_teaser_object_types($src_name, $object_types, $args);
 		$tease_otypes = array_intersect($object_types, $tease_otypes);
@@ -928,6 +932,7 @@ class QueryInterceptor_RS
 				if ( $use_object_roles )
 					$args = array_merge($args, array ('qualifying_object_roles' => $qualifying_object_roles, 'objscope_objects' => $objscope_objects, 'applied_object_roles' => $applied_object_roles, 'ignore_restrictions' => $ignore_restrictions ) );
 				
+				//d_echo( "regular objects_where_scope_clauses for " . serialize( $reqd_caps_arg ) );
 				$where[$cap_name]['user'] = $this->objects_where_scope_clauses($src_name, $reqd_caps_arg, $args );
 			}
 
@@ -948,6 +953,7 @@ class QueryInterceptor_RS
 						if ( $owner_roles ) {
 							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles, 'applied_object_roles' => $applied_object_roles, 'ignore_restrictions' => $ignore_restrictions ) );   //TODO: test whether we should just pass existing $objscope_objects, $applied_object_roles here
 							
+							//d_echo( "regular objects_where_scope_clauses for " . serialize( $owner_reqd_caps ) );
 							$scope_temp = $this->objects_where_scope_clauses($src_name, $owner_reqd_caps, $args );
 
 							if ( ( $scope_temp != $where[$cap_name]['user'] ) && ! is_null($scope_temp) ) // TODO: why is null ever returned?
@@ -970,6 +976,8 @@ class QueryInterceptor_RS
 		if ( ! empty($where) )
 			$where = agp_implode(' ) AND ( ', $where, ' ( ', ' ) ');
 		
+		//dump($where);
+			
 		return $where;
 	}
 	
@@ -1187,6 +1195,9 @@ class QueryInterceptor_RS
 				} // end foreach taxonomy
 			}
 
+			//dump($role_handle);
+			//dump($where);
+			
 			foreach ( array_keys($user_blog_roles) as $date_key ) {
 				if ( ! empty($all_taxonomies_qualified[$date_key]) || ( ! $taxonomies && ! empty($user_blog_roles[$date_key][$role_handle]) ) ) {
 					if ( $date_key || $objscope_clause || ! empty($require_blog_and_obj_role) )
@@ -1249,6 +1260,8 @@ class QueryInterceptor_RS
 		
 		// since object roles are not pre-loaded prior to this call, role date limits are handled via subselect, within the date_key = '' iteration
 		$object_roles_duration_clause = scoper_get_duration_clause();
+		
+		//dump($where);
 		
 		// support mirroring of inconveniently stored 3rd party plugin data into data_rs table (by RS Extension plugins)
 		$rs_data_clause = ( ! empty($src->uses_rs_data_table) ) ? "AND $src_table.topic = 'object' AND $src_table.src_or_tx_name = '$src_name' AND $src_table.object_type IN ('" . implode("', '", $object_types) . "')" : '';
