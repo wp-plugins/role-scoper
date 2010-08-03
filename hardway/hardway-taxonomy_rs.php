@@ -367,7 +367,7 @@ class ScoperHardwayTaxonomy
 			$do_teaser = ( $scoper->is_front() && empty($skip_teaser) && scoper_get_otype_option('do_teaser', 'post') );
 		else
 			$do_teaser = false;
-			
+	
 		$query = apply_filters('terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser));
 
 		// if no filering was applied because the teaser is enabled, prevent a redundant query

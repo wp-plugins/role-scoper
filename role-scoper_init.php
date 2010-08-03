@@ -417,8 +417,8 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 			$sitewide = isset( $scoper_options_sitewide ) && ! empty( $scoper_options_sitewide[$option_basename] );
 		}
 	
-		//dump($scoper_options_sitewide);
-		
+		//d_echo( "retrieving $option_basename (sitewide = $sitewide)<br />" );
+
 		if ( $sitewide ) {
 			// this option is set site-wide
 			global $scoper_site_options;
@@ -428,9 +428,8 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 				
 			if ( isset($scoper_site_options["scoper_{$option_basename}"]) )
 				$optval = $scoper_site_options["scoper_{$option_basename}"];
-			
+				
 		} else {
-			//dump($option_basename);
 			global $scoper_blog_options;
 			
 			if ( ! isset($scoper_blog_options) || is_null($scoper_blog_options) )
@@ -441,9 +440,6 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 		}
 	}
 	
-	//dump($get_default);
-	//dump($scoper_blog_options);
-
 	if ( ! isset( $optval ) ) {
 		global $scoper_default_options;
 	

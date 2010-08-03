@@ -133,6 +133,62 @@ class CapInterceptor_RS
 
 		$script_name = $_SERVER['SCRIPT_NAME'];
 
+		
+		// since WP user_has_cap filter does not provide an object type / data source arg,
+		// we determine data source and object type based on association to required cap(s)
+		$object_types = $scoper->cap_defs->object_types_from_caps($rs_reqd_caps);
+
+		// If an object id was provided, all required caps must share a common data source (object_types array is indexed by src_name)
+		if ( count($object_types) > 1 || ! count($object_types) ) {
+			
+			if ( $object_type = $scoper->data_sources->get_from_uri('type', 'post', $object_id) ) {
+				$object_types = array( 'post' => array( $object_type => true ) );
+			} else {
+				rs_notice ( 'Error: user has_cap call is not valid for specified object_id because required capabilities pertain to more than one data source.' . ' ' . implode(', ', $orig_reqd_caps) );
+				$in_process = false;
+				return array();
+			}
+		}
+		
+		$src_name = key($object_types);
+		if ( ! $src = $scoper->data_sources->get($src_name) ) {
+			rs_notice ( sprintf( 'Role Scoper Config Error (%1$s): Data source (%2$s) is not defined', 'flt_user_has_cap', $src_name ) );  
+			$in_process = false;
+			return array();
+		}
+		
+		// If cap definition(s) did not specify object type (as with "read" cap), enlist help detecting it
+		reset($object_types);
+		if ( (count($object_types[$src_name]) == 1) && key($object_types[$src_name]) )
+			$object_type = key($object_types[$src_name]);
+		else {
+			$object_type = $scoper->data_sources->detect('type', $src, $object_id);
+		}
+		
+		
+		// backports from RS 1.3 pertaining to custom post types under WP 3.0
+		if ( awp_ver('3.0') && ( 'post' != $object_type ) ) {
+			if ( $object_type_obj = get_post_type_object( $object_type ) ) {
+				$doing_admin_menus = is_admin() && did_action( '_admin_menu' ) && ! did_action('admin_notices');
+				
+				// Replace edit_posts requirement with corresponding type-specific requirement, but only after admin menu is drawn, or on a submission before the menu is drawn
+				$replace_post_caps = array( 'edit_posts', 'publish_posts' );
+				
+				if ( strpos($_SERVER['REQUEST_URI'], 'media-upload.php' ) )
+					$replace_post_caps = array_merge( $replace_post_caps, array( 'edit_others_posts', 'edit_published_posts' ) );
+					
+				foreach( $replace_post_caps as $post_cap_name ) {
+					$key = array_search( $post_cap_name, $rs_reqd_caps );
+
+					if ( ( false !== $key ) && ! $doing_admin_menus && ( strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/post.php') || strpos($script_name, 'p-admin/post-new.php') || strpos($_SERVER['REQUEST_URI'], 'p-admin/admin-ajax.php') ) ) {				
+						$rs_reqd_caps[$key] = $object_type_obj->cap->$post_cap_name;
+						$modified_caps = true;
+					}
+				}
+			}
+		} // end backports from RS 1.3
+		
+		
 		if ( defined('RVY_VERSION') ) {
 			global $revisionary;
 			
@@ -190,6 +246,7 @@ class CapInterceptor_RS
 				$rs_reqd_caps[$key] = 'edit_published_pages';
 		}
 		
+		
 		// also short circuit any unnecessary edit_posts checks within page edit form, but only after admin menu is drawn
 		if ( ('edit_posts' == $reqd_caps[0]) && ( strpos($script_name, 'p-admin/page.php') || strpos($script_name, 'p-admin/page-new.php') || ( ! empty( $_GET['post_type'] ) && 'page' == $_GET['post_type'] ) ) && did_action('admin_notices') ) {
 			$key = array_search( 'edit_posts', $rs_reqd_caps );
@@ -204,6 +261,7 @@ class CapInterceptor_RS
 		if ( empty($args[2]) ) {
 			if ( ! $this->skip_id_generation && ! defined('XMLRPC_REQUEST') ) {
 				// Try to generate missing object_id argument for problematic current_user_can calls 
+				/*
 				if ( empty( $scoper->generate_id_caps ) ) {
 					$scoper->generate_id_caps = array('moderate_comments', 'manage_categories', 'edit_published_posts', 'edit_published_pages', 'edit_others_posts', 'edit_others_pages', 'publish_posts', 'publish_pages', 'delete_others_posts', 'delete_others_pages', 'upload_files');
 					$scoper->generate_id_caps = apply_filters( 'caps_to_generate_object_id_rs', $scoper->generate_id_caps );
@@ -226,8 +284,9 @@ class CapInterceptor_RS
 					if ( $add_cap )
 						$scoper->generate_id_caps []= 'edit_pages';
 				}
+				*/
 	
-				if ( in_array( $reqd_caps[0], $scoper->generate_id_caps ) ) {
+				//if ( in_array( $reqd_caps[0], $scoper->generate_id_caps ) ) {
 					//rs_errlog("trying to determine ID for {$reqd_caps[0]}");
 	
 					if ( $gen_id = $this->generate_missing_object_id( $reqd_caps[0]) ) {
@@ -243,7 +302,7 @@ class CapInterceptor_RS
 							}
 						}
 					}
-				}
+				//}
 
 			} else
 				$this->skip_id_generation = false; // too risky to leave this set
@@ -260,8 +319,9 @@ class CapInterceptor_RS
 					// This prevents failing initial UI entrance exams that assume blogroles-only
 					//if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) )
 						if ( ! $this->skip_any_term_check )
-							if ( $tax_caps = $this->user_can_for_any_term($missing_caps) )
+							if ( $tax_caps = $this->user_can_for_any_term($missing_caps) ) {
 								$wp_blogcaps = array_merge($wp_blogcaps, $tax_caps);
+							}
 									
 					// If we are about to fail the blogcap requirement, credit a missing scoper-defined cap if 
 					// the user has it by object role for ANY object.
@@ -286,15 +346,11 @@ class CapInterceptor_RS
 							}
 							
 							if ( ! $skip ) {
-								$any_objrole_caps = array( 'edit_posts', 'edit_pages', 'edit_comments', 'manage_links', 'manage_categories', 'manage_groups', 'recommend_group_membership', 'request_group_membership', 'upload_files' );
-								$any_objrole_caps = apply_filters( 'caps_granted_from_any_objrole_rs', $any_objrole_caps );
-			
-								//dump($any_objrole_caps);
-								
-								$missing_caps = array_intersect($missing_caps, $any_objrole_caps);
+								//$any_objrole_caps = array( 'edit_posts', 'edit_pages', 'edit_comments', 'manage_links', 'manage_categories', 'manage_groups', 'recommend_group_membership', 'request_group_membership', 'upload_files' );
+								//$any_objrole_caps = apply_filters( 'caps_granted_from_any_objrole_rs', $any_objrole_caps );
 
-								//dump($missing_caps);
-								
+								//$missing_caps = array_intersect($missing_caps, $any_objrole_caps);
+
 								$this->skip_any_object_check = true;
 							
 								if ( $object_caps = $this->user_can_for_any_object( $missing_caps ) )
@@ -328,36 +384,6 @@ class CapInterceptor_RS
 		
 		global $wpdb;
 		
-		// since WP user_has_cap filter does not provide an object type / data source arg,
-		// we determine data source and object type based on association to required cap(s)
-		$object_types = $scoper->cap_defs->object_types_from_caps($rs_reqd_caps);
-
-		// If an object id was provided, all required caps must share a common data source (object_types array is indexed by src_name)
-		if ( count($object_types) > 1 || ! count($object_types) ) {
-			
-			if ( $object_type = $scoper->data_sources->get_from_uri('type', 'post', $object_id) ) {
-				$object_types = array( 'post' => array( $object_type => true ) );
-			} else {
-				rs_notice ( 'Error: user has_cap call is not valid for specified object_id because required capabilities pertain to more than one data source.' . ' ' . implode(', ', $orig_reqd_caps) );
-				$in_process = false;
-				return array();
-			}
-		}
-		
-		$src_name = key($object_types);
-		if ( ! $src = $scoper->data_sources->get($src_name) ) {
-			rs_notice ( sprintf( 'Role Scoper Config Error (%1$s): Data source (%2$s) is not defined', 'flt_user_has_cap', $src_name ) );  
-			$in_process = false;
-			return array();
-		}
-		
-		// If cap definition(s) did not specify object type (as with "read" cap), enlist help detecting it
-		reset($object_types);
-		if ( (count($object_types[$src_name]) == 1) && key($object_types[$src_name]) )
-			$object_type = key($object_types[$src_name]);
-		else {
-			$object_type = $scoper->data_sources->detect('type', $src, $object_id);
-		}
 		
 		// if this is a term administration request, route to user_can_admin_terms()
 		if ( ! isset($src->object_types[$object_type]) && $scoper->taxonomies->is_member($object_type) ) {
@@ -722,6 +748,8 @@ class CapInterceptor_RS
 					foreach ($uses_taxonomies as $taxonomy) {
 						if ( ! isset($user->term_roles[$taxonomy]) )
 							$user->term_roles[$taxonomy] = $user->get_term_roles_daterange($taxonomy);				// call daterange function populate term_roles property - possible perf enhancement for subsequent code even though we don't conider content_date-limited roles here
+							
+						//dump($user->term_roles[$taxonomy]);
 							
 						if ( array_intersect_key($roles, agp_array_flatten( $user->term_roles[$taxonomy], false ) ) )	// okay to include all content date ranges because can_for_any_term checks are only preliminary measures to keep the admin UI open
 							$grant_caps = array_merge($grant_caps, $this_op_caps);

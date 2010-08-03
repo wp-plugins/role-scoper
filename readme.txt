@@ -104,6 +104,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 Beta 5 - 3 Aug 2010 =
+* BugFix : Post submission categories not filtered when user had category-specific Post Editor role but a General Role of Page Author / Editor (since 1.2)
+* BugFix : Custom Post Type menus were not displayed based on Object Role assignment
+
 = 1.2.8 Beta 4 - 3 Aug 2010 =
 * BugFix : Some RS Options (including custom post type / taxonomy role usage) did not store correctly with WP Multisite
 * BugFix : Roles, Restrictions were not displayed on single term edit form

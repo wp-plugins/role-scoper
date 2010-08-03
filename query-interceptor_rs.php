@@ -163,14 +163,13 @@ class QueryInterceptor_RS
 		
 			// try to determine context from URI (if taxonomy definition includes such clues)
 			$reqd_caps_by_otype = $scoper->get_terms_reqd_caps($object_src_name);
-			
-			//TODO: can this be safely put right in default_rs.php?
-			if ( $reqd_caps_by_otype == array( 'post' => array('read') ) ) {
-				$page_taxonomy_usage = scoper_get_otype_option('use_term_roles', 'post', 'page');
-				if ( array_intersect( $page_taxonomy_usage, array(1) ) )
+
+			if ( array_intersect( array_intersect_key( scoper_get_otype_option('use_term_roles', 'post', 'page'), array_flip($taxonomies) ), array(1) ) ) {
+				if ( $reqd_caps_by_otype == array( 'post' => array('read') ) )
 					$reqd_caps_by_otype ['page'] = array('read');
-			}
-		
+			} else
+				$reqd_caps_by_otype = array_diff_key( $reqd_caps_by_otype, array( 'page' => true ) );
+
 			// if required operation still unknown, default based on access type
 			if ( ! $reqd_caps_by_otype )
 				return $request;
@@ -194,7 +193,7 @@ class QueryInterceptor_RS
 		$args['skip_owner_clause'] = true;
 		$args['terms_reqd_caps'] = $reqd_caps_by_otype;
 		$args['taxonomies'] = $taxonomies;
-		
+
 		$where = $this->flt_objects_where($where, $src_name, '', $args);
 		
 		if ( $pos_where === false )
