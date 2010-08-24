@@ -77,10 +77,12 @@ class Role_Usage_RS {
 
 				$tx_object_types = $object_types;
 				
-				foreach ( $tx_object_types as $key => $object_type ) // ignore term restrictions / roles for object types which have them disabled
-					if( ! scoper_get_otype_option( 'use_term_roles', $src_name, $object_type ) )
+				foreach ( $tx_object_types as $key => $object_type ) { // ignore term restrictions / roles for object types which have them disabled
+					$_use_term_roles = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );
+					if( empty( $_use_term_roles[$taxonomy] ) )
 						unset( $tx_object_types[$key] );
-					
+				}
+
 				if ( ! $tx_object_types )
 					continue;
 					

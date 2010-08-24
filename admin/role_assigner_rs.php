@@ -16,10 +16,7 @@ class ScoperRoleAssigner
 			global $current_user;
 			$user = $current_user;
 		}
-		
-		if ( ! is_array($role_handles) )
-			$role_handles = array($role_handle => true);
-	
+
 		$role_handles = $this->scoper->role_defs->add_containing_roles( $role_handles, SCOPER_ROLE_TYPE );
 		
 		if ( isset($args['src_name']) && isset($args['object_type']) ) {
@@ -118,11 +115,7 @@ class ScoperRoleAssigner
 			if ( ! empty($role_assignment['assignment_id']) ) {
 				$assignment_id = $role_assignment['assignment_id'];
 				$delete_assignments [$assignment_id] = true;
-				
-				// also remove any propagated roles
-				if ( ! empty($propagated_assignments[$assignment_id]) )
-					$delete_assignments = $delete_assignments + $propagated_assignments[$assignment_id];
-				
+
 				$retval['role_change'] = true;
 			}
 		} else {
@@ -260,10 +253,6 @@ class ScoperRoleAssigner
 					if ( ! isset($agents[$ug_id]) && ! empty($ass['assignment_id']) ) {
 						$assignment_id = $ass['assignment_id'];
 						$delete_assignments [ $assignment_id ] = true;
-						
-						// also remove any propagated roles
-						if ( ! empty($propagated_assignments[$assignment_id]) )
-							$delete_assignments = $delete_assignments + $propagated_assignments[$assignment_id];
 					}
 				}
 			}
@@ -289,11 +278,7 @@ class ScoperRoleAssigner
 
 						foreach ( array_keys($assignment_ids[$role_handle][$ug_id]) as $assignment_id ) {
 							$delete_assignments [$assignment_id] = true;
-							
-							// also remove any propagated roles
-							if ( ! empty($propagated_assignments[$assignment_id]) )
-								$delete_assignments = $delete_assignments + $propagated_assignments[$assignment_id];
-								
+
 							$comparison['role_change'] = true;
 						}
 					}
@@ -697,14 +682,8 @@ class ScoperRoleAssigner
 				foreach ( array_keys($stored_reqs) as $role_handle ) {
 					$max_scope = isset($roles[$role_handle]['max_scope']) ? $roles[$role_handle]['max_scope'] : false;
 					
-					if ( $max_scope != $query_max_scope ) {
+					if ( $max_scope != $query_max_scope )
 						$delete_reqs = $delete_reqs + $req_ids[$role_handle];
-
-						// also remove any propagated restrictions
-						foreach ( array_keys($req_ids[$role_handle]) as $req_id )
-							if ( isset($all_propagated_restrictions[$req_id]) )
-								$delete_reqs = $delete_reqs + $propagated_restrictions[$req_id];
-					}
 				}
 			}
 
@@ -732,7 +711,7 @@ class ScoperRoleAssigner
 				$stored_req = ( isset($stored_reqs[$role_handle]) ) ? $stored_reqs[$role_handle] : array();
 				
 				$unused_byref_arg = '';
-				$comparison = $this->_compare_role_settings($require_for, $stored_req, $propagated_restrictions, $delete_reqs, $update_require_for, $default_strict, $unused_byref_arg, $unused_byref_arg);
+				$comparison = $this->_compare_role_settings($require_for, $stored_req, $propagated_restrictions, $delete_reqs, $update_require_for, $unused_byref_arg, $unused_byref_arg);
 
 				$insert_restriction = ( $comparison['unset'] ) ? false : $require_for;
 				

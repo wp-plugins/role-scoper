@@ -192,7 +192,7 @@ function scoper_maybe_init() {
 
 function scoper_init() {
 	global $scoper;
-	
+
 	if ( IS_MU_RS ) {
 		global $scoper_sitewide_options;
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
@@ -201,25 +201,12 @@ function scoper_init() {
 	if ( is_admin() && awp_ver( '2.9' ) ) {
 		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
 		
-		require_once( 'custom-types_rs.php' );
-		
-		if ( awp_ver( '3.0' ) ) {
-			scoper_force_distinct_post_caps();
-		
-			if ( is_content_administrator_rs() ) {
-				require_once( 'admin/sync-custype-caps_rs.php' );
-				scoper_grant_administrator_custype_caps();
-			}
-		}
-			
-		//$logged_types = (array) scoper_get_option( 'logged_custom_types' );
+		$logged_types = (array) scoper_get_option( 'logged_custom_types' );
 	
-		/* TODO: a way to do this at user discretion
 		if ( array_diff( $custom_types, $logged_types ) ) {
 			require_once( 'admin/sync-custype-caps_rs.php' );
 			scoper_sync_wp_custype_caps();
 		}
-		*/
 	}
 	
 	if ( is_admin() ) {
@@ -355,7 +342,7 @@ function scoper_update_option( $option_basename, $option_val, $sitewide = -1 ) {
 		global $scoper_site_options;
 		$scoper_site_options[$option_basename] = $option_val;
 		
-		//d_echo("<br /><br />sitewide: $option_basename, value " . serialize($option_val) . '<br /><br />' );
+		//d_echo("<br /><br />sitewide: $option_basename, value '$option_val'" );
 		update_site_option( "scoper_$option_basename", $option_val );
 	} else {
 		//d_echo("<br />blogwide: $option_basename" );
@@ -424,7 +411,9 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 		}
 	
 		//d_echo( "retrieving $option_basename (sitewide = $sitewide)<br />" );
-
+		
+		//dump($scoper_options_sitewide);
+		
 		if ( $sitewide ) {
 			// this option is set site-wide
 			global $scoper_site_options;
@@ -434,8 +423,9 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 				
 			if ( isset($scoper_site_options["scoper_{$option_basename}"]) )
 				$optval = $scoper_site_options["scoper_{$option_basename}"];
-				
+			
 		} else {
+			//dump($option_basename);
 			global $scoper_blog_options;
 			
 			if ( ! isset($scoper_blog_options) || is_null($scoper_blog_options) )
@@ -446,6 +436,9 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 		}
 	}
 	
+	//dump($get_default);
+	//dump($scoper_blog_options);
+
 	if ( ! isset( $optval ) ) {
 		global $scoper_default_options;
 	
@@ -532,13 +525,10 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 }
 
 function is_taxonomy_used_rs( $taxonomy ) {
-	global $scoper_default_otype_options;
-
-	$term_roles = array_merge( $scoper_default_otype_options['use_term_roles'], scoper_get_option( 'use_term_roles' ) );
-
-	foreach ( $term_roles as $taxonomies )  // keyed by src_otype
-		if ( ! empty( $taxonomies[$taxonomy] ) )
-			return true;
+	if ( $term_roles = scoper_get_option( 'use_term_roles' ) )
+		foreach ( $term_roles as $taxonomies )  // keyed by src_otype
+			if ( ! empty( $taxonomies[$taxonomy] ) )
+				return true;
 }
 
 function scoper_get_role_handle($role_name, $role_type) {

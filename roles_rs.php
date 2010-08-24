@@ -488,7 +488,7 @@ class WP_Scoped_Roles extends AGP_Config_Items {
 		
 		if ( is_array($role_type) ) {
 			if ( count($role_type) == 1 )
-				$role_type = current($role_type);
+				$role_type = reset($role_type);
 			elseif ( in_array(SCOPER_ROLE_TYPE, $role_type) && in_array('wp', $role_type) )
 				$role_type = '';
 			else
