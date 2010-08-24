@@ -34,6 +34,7 @@ class WP_Scoped_User extends WP_User { // Special skeleton class for ANONYMOUS U
 		//$this->assigned_blog_roles[ANY_CONTENT_DATE_RS] = array();
 		$this->blog_roles[ANY_CONTENT_DATE_RS] = array();
 		
+		/*
 		global $scoper;
 		if ( empty($scoper) || empty($scoper->role_defs) ) {
 			require_once('role-scoper_main.php');
@@ -41,6 +42,7 @@ class WP_Scoped_User extends WP_User { // Special skeleton class for ANONYMOUS U
 			$temp = new Scoper();
 			$scoper =& $temp;
 		}
+		*/
 	
 		if ( defined('DEFINE_GROUPS_RS') && defined( 'SCOPER_ANON_METAGROUP' ) )
 			$this->groups = $this->_get_usergroups();

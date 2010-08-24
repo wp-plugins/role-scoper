@@ -10,6 +10,29 @@ function scoper_version_updated( $prev_version ) {
 
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		// 1.2.8 Beta disabled caps for custom post type roles under some circumstances
+		if ( version_compare( $prev_version, '1.2.7', '>') && version_compare( $prev_version, '1.2.9', '<') ) {
+			if ( $disabled_role_caps = get_option( 'scoper_disabled_role_caps' ) ) {
+				$okay_role_prefix = array( 'rs_post', 'rs_page', 'rs_category', 'rs_link', 'rs_ngg' );
+				foreach ( array_keys($disabled_role_caps) as $role_handle ) {
+					$role_okay = false;
+					foreach( $okay_role_prefix as $pfx ) {
+						if ( 0 === strpos( $role_handle, $pfx ) ) {
+							$role_okay = true;
+							break;
+						}
+					}
+					if ( ! $role_okay ) {
+						unset( $disabled_role_caps[$role_handle] );
+						$_modified = true;
+					}
+				}
+				
+				if ( $_modified )
+					update_option( 'scoper_disabled_role_caps' , $disabled_role_caps );
+			}	
+		}
+
 		// changes to taxonomy options storage in 1.1.8
 		if ( version_compare( $prev_version, '1.1.8', '<') ) {
 			global $wp_taxonomies;

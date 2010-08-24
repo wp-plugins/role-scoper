@@ -59,6 +59,15 @@ class Scoper
 		
 		//log_mem_usage_rs( 'initial Scoper require_once' );
 		
+		if ( awp_ver( '2.9' ) ) {
+			$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
+			
+			require_once( 'custom-types_rs.php' );
+			
+			if ( awp_ver( '3.0' ) )
+				scoper_force_distinct_post_caps();
+		}
+		
 		$this->cap_defs = new WP_Scoped_Capabilities();
 		$this->cap_defs = apply_filters('define_capabilities_rs', $this->cap_defs);
 		$this->cap_defs->add_member_objects( scoper_core_cap_defs() );  // core capdefs (and other core config) are not intended to be altered by other plugins
@@ -110,11 +119,12 @@ class Scoper
 	
 	function load_role_caps() {
 		$this->role_defs->role_caps = apply_filters('define_role_caps_rs', scoper_core_role_caps() );
-		
+
 		//if ( ! is_admin() || ! defined('SCOPER_REALM_ADMIN_RS') ) { // don't remove items if the "disabled" settings are being editied
+		
 		if ( $user_role_caps = scoper_get_option('user_role_caps') )
 			$this->role_defs->add_role_caps( $user_role_caps );
-		
+
 		if ( $disabled_role_caps = scoper_get_option('disabled_role_caps') )
 			$this->role_defs->remove_role_caps( $disabled_role_caps );
 	}
@@ -836,13 +846,13 @@ class Scoper
 		global $current_user;	
 	
 		if ( ! $this->data_sources->is_member($src_name) )
-			return;
+			return array();
 		
 		if ( empty($access_name) )
 			$access_name = ( is_admin() && strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') ) ? 'front' : CURRENT_ACCESS_NAME_RS; // hack to support subscribe2 categories checklist
 			
 		if ( ! $arr = $this->data_sources->member_property($src_name, 'terms_where_reqd_caps', $access_name ) )
-			return;
+			return array();
 
 		if ( ! is_array($arr) )
 			$arr = array($arr);

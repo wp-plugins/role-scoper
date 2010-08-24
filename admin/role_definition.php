@@ -43,7 +43,7 @@ if ( empty( $args['customize_defaults'] ) ) {
 } else {
 	global $scoper_role_types;
 	$rs_role_defs = new WP_Scoped_Roles($scoper->cap_defs, $scoper_role_types);
-	
+
 	//$this->load_role_caps();
 	$rs_role_defs->role_caps = apply_filters('define_role_caps_rs', scoper_core_role_caps() );
 	
@@ -85,8 +85,6 @@ $rs_default_role_defs->add_member_objects( scoper_core_role_defs() );
 $rs_default_role_defs = apply_filters('define_roles_rs', $rs_default_role_defs);
 $rs_default_role_defs->remove_invalid();
 
-
-
 foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	
 	$include_taxonomy_otypes = true;
@@ -99,7 +97,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			$otype_roles[$object_type] = $obj_roles;
 			$otype_display_names[$object_type] = $otype->display_name;
 		}
-		
+
 		if ( $include_taxonomy_otypes ) {
 			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
 			
@@ -167,6 +165,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 						
 						// only display "sync WP role" checkbox if the WP role has missing caps or extra caps
 						$otype_caps = $scoper->cap_defs->get_matching( $src_name, $object_type, '', STATUS_ANY_RS );
+						
 						$wp_defined_caps = array_intersect_key( $wp_roles->role_objects[ $wp_role_sync[$rs_role_handle] ]->capabilities, $otype_caps );
 						$wp_extra_caps = array_diff_key( $wp_defined_caps, $rs_role_defs->role_caps[$rs_role_handle] );
 							

@@ -394,7 +394,8 @@ class CapInterceptor_RS
 						$rs_reqd_caps = array_fill_keys( $rs_reqd_caps, 1 );
 						$undefined_reqd_caps = array_diff_key( $wp_blogcaps, $rs_reqd_caps);
 					
-						if ( $scoper->admin->user_can_admin_terms($object_type, $object_id, $user) ) {
+						require_once( 'admin/permission_lib_rs.php' );
+						if ( user_can_admin_terms_rs($object_type, $object_id, $user) ) {
 							$in_process = false;
 							return array_merge($undefined_reqd_caps, $rs_reqd_caps);
 						} else {

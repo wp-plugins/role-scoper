@@ -3,6 +3,40 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 	
+	// As of WP 3.0, "{$taxonomy}_pre" filter is not applied if none of its terms were selected
+	// * force the filter for all associated taxonomies regardless of term selection
+	// * apply default term(s) if defined
+	function scoper_force_custom_taxonomy_filters( $post_id, $post ) {
+		$post_type_obj = get_post_type_object( $post->post_type );
+		
+		foreach( $post_type_obj->taxonomies as $taxonomy ) {
+			// if terms were selected, WP core already applied the filter and there is no need to apply default terms
+			if ( in_array( $taxonomy, array( 'category', 'post_tag' ) ) || did_action( "pre_post_{$taxonomy}" ) )
+				continue;
+
+			$taxonomy_obj = get_taxonomy($taxonomy);
+
+			if ( is_array($_POST['tax_input'][$taxonomy]) && ( reset($_POST['tax_input'][$taxonomy]) || ( count($_POST['tax_input'][$taxonomy]) > 1 ) ) )  // complication because (as of 3.0) WP always includes a zero-valued first array element
+				$tags = $_POST['tax_input'][$taxonomy];
+			elseif ( 'auto-draft' != $post->post_status )
+				$tags = (array) get_option("default_{$taxonomy}");
+			else
+				$tags = array();
+
+			if ( $tags ) {
+				if ( ! empty($_POST['tax_input']) && is_array($_POST['tax_input'][$taxonomy]) ) // array = hierarchical, string = non-hierarchical.
+					$tags = array_filter($tags);
+
+				if ( current_user_can( $taxonomy_obj->cap->assign_terms ) ) {
+					$tags = apply_filters("pre_post_{$taxonomy}", $tags);
+					$tags = apply_filters("{$taxonomy}_pre", $tags);
+
+					wp_set_post_terms( $post_id, $tags, $taxonomy );
+				}
+			}
+		}
+	}
+	
 	
 	// called by ScoperAdminFilters::mnt_save_object
 	// This handler is meant to fire whenever an object is inserted or updated.
@@ -305,18 +339,29 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		} //endif roles were manually edited by user (and not autosave)
 		
 		
-		if ( $new_restriction_settings )
-			scoper_flush_file_rules();
-		else { 
-			if ( isset( $scoper->filters_admin->last_post_status[$object_id] ) ) {
-				$new_status = ( isset($_POST['post_status']) ) ? $_POST['post_status'] : ''; // assume for now that XML-RPC will not modify post status
-
-				if ( $scoper->filters_admin->last_post_status[$object_id] != $new_status )
-					if ( ( 'private' == $new_status ) || ( 'private' == $scoper->filters_admin->last_post_status[$object_id] ) )
-						scoper_flush_file_rules();
-
-			} elseif ( isset($_POST['post_status']) && ( 'private' == $_POST['post_status'] ) )
-				scoper_flush_file_rules();
+		// if post status has changed to or from private (or is a new private post), flush htaccess file rules for file attachment filtering
+		if ( scoper_get_option( 'file_filtering' ) ) {
+			if ( $new_restriction_settings ) {
+				$maybe_flush_file_rules = true;
+			} else {
+				$maybe_flush_file_rules = false;
+		
+				if ( isset( $scoper->filters_admin->last_post_status[$object_id] ) ) {
+					$new_status = ( isset($_POST['post_status']) ) ? $_POST['post_status'] : ''; // assume for now that XML-RPC will not modify post status
+		
+					if ( $scoper->filters_admin->last_post_status[$object_id] != $new_status )
+						if ( ( 'private' == $new_status ) || ( 'private' == $scoper->filters_admin->last_post_status[$object_id] ) )
+							$maybe_flush_file_rules = true;
+		
+				} elseif ( isset($_POST['post_status']) && ( 'private' == $_POST['post_status'] ) )
+					$maybe_flush_file_rules = true;	
+			}
+			
+			if ( $maybe_flush_file_rules ) {
+				global $wpdb;
+				if ( scoper_get_var( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = '$object_id' LIMIT 1" ) )   // no need to flush file rules unless this post has at least one attachment
+					scoper_flush_file_rules();	
+			}
 		}
 		
 		if ( 'page' == $object_type ) {
@@ -805,30 +850,11 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	}
 	
 	
-function scoper_get_parent_restrictions($obj_or_term_id, $scope, $src_or_tx_name, $parent_id, $object_type = '') {
-	global $wpdb, $scoper;
+function scoper_get_parent_restrictions($obj_or_term_id, $scope, $src_or_tx_name, $parent_id) {
+	global $wpdb;
 	
-	$role_clause = '';
-		
-	if ( ! $parent_id && (OBJECT_SCOPE_RS == $scope) ) {
-		// for default restrictions, need to distinguish between otype-specific roles 
-		// (note: this only works w/ RS role type. Default object restrictions are disabled for WP role type because we'd be stuck setting all default restrictions to both post & page.)
-		$src = $scoper->data_sources->get($src_or_tx_name);
-		if ( ! empty($src->cols->type) ) {
-			if ( ! $object_type )
-				$object_type = scoper_determine_object_type($src_name, $object_id);
-				
-			if ( $object_type ) {
-				$role_type = SCOPER_ROLE_TYPE;
-				$role_defs = $scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_or_tx_name, $object_type);
-				if ( $role_names = scoper_role_handles_to_names( array_keys($role_defs) ) )
-					$role_clause = "AND role_type = '$role_type' AND role_name IN ('" . implode("', '", $role_names) . "')";
-			}
-		}
-	}
-		
 	// Since this is a new object, propagate restrictions from parent (if any are marked for propagation)
-	$qry = "SELECT * FROM $wpdb->role_scope_rs WHERE topic = '$scope' AND require_for IN ('children', 'both') $role_clause AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$parent_id' ORDER BY role_type, role_name";
+	$qry = "SELECT * FROM $wpdb->role_scope_rs WHERE topic = '$scope' AND require_for IN ('children', 'both') AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$parent_id' ORDER BY role_type, role_name";
 	$results = scoper_get_results($qry);
 	return $results;
 }
