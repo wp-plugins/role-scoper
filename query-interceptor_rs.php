@@ -842,7 +842,7 @@ class QueryInterceptor_RS
 			global $current_user;
 			$user = $current_user;
 		}
-		
+
 		if ( ! $src = $scoper->data_sources->get($src_name) ) {
 			rs_notice ( sprintf( 'Role Scoper Config Error (%1$s): Data source (%2$s) is not defined.', 'objects_where_role_clauses', $src_name) );  
 			return ' 1=2 ';
@@ -897,7 +897,6 @@ class QueryInterceptor_RS
 				}
 			} else
 				$exclude_object_types = array();
-
 
 			$qualifying_roles = $scoper->role_defs->qualify_roles($reqd_caps_arg, '', $object_type, array('exclude_object_types' => $exclude_object_types) );   // 'blog' arg: Account for WP blog_roles even if scoping with RS roles  
 			
@@ -991,7 +990,7 @@ class QueryInterceptor_RS
 		extract($args);
 		
 		global $scoper;
-		
+
 		if ( ! $src = $scoper->data_sources->get($src_name) ) {
 			rs_notice ( sprintf( 'Role Scoper Config Error (%1$s): Data source (%2$s) is not defined.', 'objects_where_scope_clauses', $src_name ) );  
 			return ' 1=2 ';
@@ -1006,6 +1005,7 @@ class QueryInterceptor_RS
 
 		if ( ! $object_type )
 			$object_type = $scoper->data_sources->detect('type', $src);
+			
 			
 		// ---- The following default argument generation is included to support potential direct usage of this function 
 		//								(not needed by call from flt_objects_where / objects_where_role_clauses) -----------------
@@ -1100,7 +1100,7 @@ class QueryInterceptor_RS
 				}
 			}
 		}
-
+		
 		//dump($objscope_objects);
 
 		/*

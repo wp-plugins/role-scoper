@@ -7,7 +7,7 @@ function scoper_grant_administrator_custype_caps() {
 		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
 		
 		foreach ( $custom_types as $name )
-			$current_user->assigned_blog_roles['']["rs_{$name}_editor"] = true;
+			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
 			
 		$current_user->merge_scoped_blogcaps();
 	}

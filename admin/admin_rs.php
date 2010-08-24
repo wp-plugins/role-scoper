@@ -380,7 +380,7 @@ class ScoperAdmin
 						$can_admin_objects[$src_name][$object_type] = true;
 			}
 		}
-
+		
 		// which taxonomies does this user have any administration over?
 		foreach ( $scoper->taxonomies->get_all() as $taxonomy => $tx ) {
 			if ( is_taxonomy_used_rs( $taxonomy ) && ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) )

@@ -6,7 +6,7 @@ function scoper_force_distinct_post_caps() {
 	$generic_caps = array();
 	foreach( array( 'post', 'page' ) as $post_type )
 		$generic_caps[$post_type] = array_values( get_object_vars( $wp_post_types[$post_type]->cap ) );
-
+		
 	foreach( array_keys($wp_post_types) as $type ) {	
 		if ( in_array( $type, array( 'attachment', 'revision' ) ) )
 			continue;
@@ -235,14 +235,14 @@ function scoper_add_custom_role_defs( &$role_defs ) {
 			$name = $otype->name;
 			
 			$role_defs["rs_{$name}_reader"] = 			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ),  'object_type' => $name, 'anon_user_blogrole' => true );
-			$role_defs["rs_private_{$name}_reader"] =	(object) array( 'objscope_equivalents' => array("rs_{$name}_reader") );
+			$role_defs["rs_private_{$name}_reader"] =	(object) array( 'objscope_equivalents' => array("rs_{$name}_reader"),  'object_type' => $name );
 		
-			$role_defs["rs_{$name}_contributor"] =		(object) array( 'objscope_equivalents' => array("rs_{$name}_revisor") );
-			$role_defs["rs_{$name}_author"] =			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ) );
-			$role_defs["rs_{$name}_revisor"] = 			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ) );
-			$role_defs["rs_{$name}_editor"] = 			(object) array( 'objscope_equivalents' => array("rs_{$name}_author") );
+			$role_defs["rs_{$name}_contributor"] =		(object) array( 'objscope_equivalents' => array("rs_{$name}_revisor"),  'object_type' => $name );
+			$role_defs["rs_{$name}_author"] =			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true,  'object_type' => $name ) );
+			$role_defs["rs_{$name}_revisor"] = 			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true,  'object_type' => $name ) );
+			$role_defs["rs_{$name}_editor"] = 			(object) array( 'objscope_equivalents' => array("rs_{$name}_author"),  'object_type' => $name );
 			
-			$role_defs["rs_private_{$name}_reader"]->other_scopes_check_role = array( 'private' => "rs_private_{$name}_reader", '' => "rs_{$name}_reader" );
+			$role_defs["rs_private_{$name}_reader"]->other_scopes_check_role = array( 'private' => "rs_private_{$name}_reader", '' => "rs_{$name}_reader",  'object_type' => $name );
 		}
 	}
 }

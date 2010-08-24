@@ -198,30 +198,6 @@ function scoper_init() {
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
 	}
 	
-	if ( is_admin() && awp_ver( '2.9' ) ) {
-		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
-		
-		require_once( 'custom-types_rs.php' );
-		
-		if ( awp_ver( '3.0' ) ) {
-			scoper_force_distinct_post_caps();
-		
-			if ( is_content_administrator_rs() ) {
-				require_once( 'admin/sync-custype-caps_rs.php' );
-				scoper_grant_administrator_custype_caps();
-			}
-		}
-			
-		//$logged_types = (array) scoper_get_option( 'logged_custom_types' );
-	
-		/* TODO: a way to do this at user discretion
-		if ( array_diff( $custom_types, $logged_types ) ) {
-			require_once( 'admin/sync-custype-caps_rs.php' );
-			scoper_sync_wp_custype_caps();
-		}
-		*/
-	}
-	
 	if ( is_admin() ) {
 		require_once( 'admin/admin-init_rs.php' );
 		
@@ -238,7 +214,7 @@ function scoper_init() {
 	
 	if ( empty($scoper) )		// set_current_user may have already triggered scoper creation and role_cap load
 		$scoper = new Scoper();
-
+		
 	global $current_user;
 	
 	if ( ! empty( $current_user ) && isset($current_user->assigned_blog_roles) ) {
@@ -252,6 +228,11 @@ function scoper_init() {
 	//log_mem_usage_rs( 'new Scoper done' );
 	
 	$scoper->init();
+	
+	if ( is_content_administrator_rs() ) {
+		require_once( 'admin/sync-custype-caps_rs.php' );
+		scoper_grant_administrator_custype_caps();	
+	}
 	
 	//log_mem_usage_rs( 'scoper->init() done' );
 }

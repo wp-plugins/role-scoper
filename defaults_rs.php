@@ -722,7 +722,7 @@ function scoper_core_role_caps( $include_custom_types = true ) {
 			'request_group_membership' => true
 		)
 	); // end role_caps array
-	
+
 	//if ( defined( 'USER_QUERY_RS' ) ) {
 		$arr['rs_group_moderator'] = array(
 			'recommend_group_membership' => true,
@@ -737,9 +737,10 @@ function scoper_core_role_caps( $include_custom_types = true ) {
 	
 	if ( ! defined( 'RVY_VERSION' ) )
 		$arr = array_diff_key( $arr, array( 'rs_post_revisor' => 1, 'rs_page_revisor' => 1 ) );
-	
-	if ( $include_custom_types && awp_ver( '2.9' ) )
+		
+	if ( $include_custom_types && awp_ver( '2.9' ) ) {
 		scoper_add_custom_role_caps( $arr );
+	}
 		
 	return $arr;
 }

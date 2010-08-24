@@ -104,13 +104,14 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.2.8 RC1 - 24 Aug 2010 =
+= 1.2.8 RC - 24 Aug 2010 =
 * BugFix : Fatal error when manage_categories capability is checked from the front end by template or plugin code
 * Lang : Removed ASCII HTML character codes from Spanish translation (David Gómez Becerril - www.desarrollowebdequeretaro.com)
 * Compat : Role Scoping for NextGEN Gallery - Bulk Role Admin form was not usable for assigning Gallery Roles (listed posts instead of galleries)
 * Compat : Role Scoping for NextGEN Gallery - Album Roles were not available until RS Options re-saved
 * Compat : Revisionary - non-administrators could not edit their own Pending Revisions
 * BugFix : Administrators could not add/edit items of custom post type (since 1.2.8 Beta 3) unless WP Role defs modified to include new type-specific capabilities
+* BugFix : Unlogged (anonymous) readers could not view any custom post types (since 1.2.8 Beta 1)
 
 = 1.2.8 Beta 5 - 3 Aug 2010 =
 * BugFix : Post submission categories not filtered when user had category-specific Post Editor role but a General Role of Page Author / Editor (since 1.2)
