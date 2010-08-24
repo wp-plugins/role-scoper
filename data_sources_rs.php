@@ -400,9 +400,10 @@ class WP_Scoped_Data_Sources extends AGP_Config_Items {
 		
 		// Our value should match a value in the Data_Source::$collection_property array
 		// ... but if that array contains objects, our value should match the "val" property of one of those objects.  Blah; this is not fit for human consumption.
-		if ( is_object( reset($src->$collection_property) ) ) {
-			if ( $it = array_search($val, (array) $src->$collection_property) )
-				return $it;
+		if ( is_object( current($src->$collection_property) ) ) {
+			foreach( array_keys($src->$collection_property) as $it )
+				if ( $src->$collection_property[$it]->val == $val )
+					return $it;
 		} else
 			if ( $it = array_search($val, $src->$collection_property) )
 				return $it;

@@ -203,15 +203,9 @@ function scoper_init() {
 		
 		require_once( 'custom-types_rs.php' );
 		
-		if ( awp_ver( '3.0' ) ) {
+		if ( awp_ver( '3.0' ) )
 			scoper_force_distinct_post_caps();
 		
-			if ( is_content_administrator_rs() ) {
-				require_once( 'admin/sync-custype-caps_rs.php' );
-				scoper_grant_administrator_custype_caps();
-			}
-		}
-			
 		//$logged_types = (array) scoper_get_option( 'logged_custom_types' );
 	
 		/* TODO: a way to do this at user discretion
@@ -529,16 +523,6 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 		
 	$otype_options[$key] = $retval;
 	return $retval;
-}
-
-function is_taxonomy_used_rs( $taxonomy ) {
-	global $scoper_default_otype_options;
-
-	$term_roles = array_merge( $scoper_default_otype_options['use_term_roles'], scoper_get_option( 'use_term_roles' ) );
-
-	foreach ( $term_roles as $taxonomies )  // keyed by src_otype
-		if ( ! empty( $taxonomies[$taxonomy] ) )
-			return true;
 }
 
 function scoper_get_role_handle($role_name, $role_type) {

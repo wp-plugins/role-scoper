@@ -336,7 +336,7 @@ if ( ! empty($this->list_ids) ) :
 	</td>
 	
 	<td>
-	<button id="to2_0" type="button" class="rs_remove"><?php echo ( esc_html($this->remove_button[0]) ) ?></button> <button id="allTo2_0" type="button" class="rs_remove"><?php echo ( esc_html($this->remove_all_button[0]) ) ?></button> <br /><br /> <button id="allTo1_0" type="button"><?php echo( esc_html($this->restore_all_button[0]) ) ?></button>  <button id="to1_0" type="button"><?php echo( esc_html($this->restore_button[0]) )?></button></td>
+	<button id="to2_0" type="button" class="rs_remove"><?php echo $this->remove_button[0]?></button> <button id="allTo2_0" type="button" class="rs_remove"><?php echo $this->remove_all_button[0]?></button> <br /><br /> <button id="allTo1_0" type="button"><?php echo $this->restore_all_button[0]?></button>  <button id="to1_0" type="button"><?php echo $this->restore_button[0]?></button></td>
 	<td>
 	<?php
 	echo $this->removal_captions[0];

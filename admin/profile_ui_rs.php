@@ -161,19 +161,19 @@ class ScoperProfileUI {
 			if ( ! $terms = $this->scoper->get_terms($taxonomy, UNFILTERED_RS, COLS_ALL_RS, 0, $args) )
 				continue;
 
+			if ( ! scoper_get_otype_option('use_term_roles', $tx->object_source->name) )
+				continue;
+
+			$admin_terms = ( $disable_role_admin ) ? array() : $this->scoper->get_terms($taxonomy, ADMIN_TERMS_FILTER_RS, COL_ID_RS);
+
+			$strict_terms = $this->scoper->get_restrictions(TERM_SCOPE_RS, $taxonomy);
+
 			$object_types = array();
 			foreach ( array_keys($tx->object_source->object_types) as $object_type)
 				if ( scoper_get_otype_option('use_term_roles', $tx->object_source->name, $object_type) )
 					$object_types []= $object_type;
-				
-			if ( ! $object_types )
-				continue;
-
+			
 			$object_types []= $taxonomy;
-				
-			$admin_terms = ( $disable_role_admin ) ? array() : $this->scoper->get_terms($taxonomy, ADMIN_TERMS_FILTER_RS, COL_ID_RS);
-
-			$strict_terms = $this->scoper->get_restrictions(TERM_SCOPE_RS, $taxonomy);
 
 			$role_defs = $this->scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $tx->object_source->name, $object_types);
 
@@ -275,6 +275,7 @@ class ScoperProfileUI {
 			}
 				//echo '<p>' . __('No roles are assigned to this group.', 'scoper'), '</p>';
 		} else {
+			echo '<div>';
 			echo $html;
 			echo '</div>';
 		}
@@ -399,7 +400,7 @@ class ScoperProfileUI {
 			echo '</fieldset>';
 		}
 
-		echo '</div><br />';
+		echo '</div>';
 		
 		echo "<input type='hidden' name='rs_editing_user_groups' value='1' />";
 	}

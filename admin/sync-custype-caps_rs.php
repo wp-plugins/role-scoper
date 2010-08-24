@@ -1,19 +1,5 @@
 <?php
 
-function scoper_grant_administrator_custype_caps() {
-	if ( is_content_administrator_rs() ) {
-		global $current_user;
-		
-		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
-		
-		foreach ( $custom_types as $name )
-			$current_user->assigned_blog_roles['']["rs_{$name}_editor"] = true;
-			
-		$current_user->merge_scoped_blogcaps();
-	}
-}
-
-
 // If custom post types are defined, add their corresponding capabilities to default WP roles
 function scoper_sync_wp_custype_caps( $requested_blog_id = '' ) {
 	global $wp_roles;

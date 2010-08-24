@@ -63,7 +63,7 @@ if ( scoper_get_option('display_hints') ) {
 	$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
 
 	if ( $uses_taxonomies && (1 == count($uses_taxonomies) ) ) {
-		$tx_display = $scoper->taxonomies->member_property( reset($uses_taxonomies), 'display_name' );
+		$tx_display = $scoper->taxonomies->member_property( current($uses_taxonomies), 'display_name' );
 		printf(__('Reduce access to a specific %1$s by requiring some role(s) to be %2$s%3$s-assigned%4$s. Corresponding WP-assigned Roles and RS-assigned General and %5$s Role assignments are ignored.', 'scoper'), $display_name, $link_open, $display_name, '</a>', $tx_display);
 	} elseif ( count($tx_names) > 1 )
 		printf(__('Reduce access to a specific %1$s by requiring some role(s) to be %2$s%3$s-assigned%4$s. Corresponding WP-assigned Roles and RS-assigned General and Section Role assignments are ignored.', 'scoper'), $display_name, $link_open, $display_name, '</a>');

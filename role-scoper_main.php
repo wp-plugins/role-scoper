@@ -836,13 +836,13 @@ class Scoper
 		global $current_user;	
 	
 		if ( ! $this->data_sources->is_member($src_name) )
-			return array();
+			return;
 		
 		if ( empty($access_name) )
 			$access_name = ( is_admin() && strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') ) ? 'front' : CURRENT_ACCESS_NAME_RS; // hack to support subscribe2 categories checklist
 			
 		if ( ! $arr = $this->data_sources->member_property($src_name, 'terms_where_reqd_caps', $access_name ) )
-			return array();
+			return;
 
 		if ( ! is_array($arr) )
 			$arr = array($arr);

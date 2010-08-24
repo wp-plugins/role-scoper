@@ -106,19 +106,13 @@ class ScoperAdmin
 			if ( ! empty($topic) ) {
 				$matches = array();
 				if ( preg_match( "/rs-(.*)-$topic(.*)/", $rs_page, $matches ) ) {
-
 					if ( strpos( $rs_page, "{$topic}_t" ) ) {
 						include_once( SCOPER_ABSPATH . "/admin/section_{$topic}.php" );
 						call_user_func( "scoper_admin_section_{$topic}", $matches[1] ); 
 					} else {
-						if ( ! $matches[2] ) {
-							global $scoper;
-							if ( $scoper->data_sources->member_property( 'post', 'object_types', $matches[1] ) )
-								$matches[2] = 'post';
-							else
-								$matches[2] = $matches[1];
-						}
-
+						if ( ! $matches[2] )
+							$matches[2] = 'post';
+	
 						include_once( SCOPER_ABSPATH . "/admin/object_{$topic}.php" );
 						call_user_func( "scoper_admin_object_{$topic}", $matches[2], $matches[1] ); 
 					}
@@ -383,8 +377,11 @@ class ScoperAdmin
 
 		// which taxonomies does this user have any administration over?
 		foreach ( $scoper->taxonomies->get_all() as $taxonomy => $tx ) {
-			if ( is_taxonomy_used_rs( $taxonomy ) && ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) )
-				$can_admin_terms[$taxonomy] = true;
+			if ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) {
+				if ( scoper_get_otype_option('use_term_roles', $tx->object_source->name) ) {
+					$can_admin_terms[$taxonomy] = true;
+				}
+			}
 		}
 
 		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );

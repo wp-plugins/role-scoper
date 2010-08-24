@@ -142,9 +142,6 @@ class ScoperAdminFilters
 
 		add_filter('pre_object_terms_rs', array(&$this, 'flt_pre_object_terms'), 50, 3);
 		
-		if ( awp_ver( '3.0' ) )
-			add_filter( 'save_post', array(&$this, 'custom_taxonomies_helper'), 5, 2); 
-		
 		// added this with WP 2.7 because QuickPress does not call pre_post_category  TODO: "pre_option_default_{$taxonomy}"
 		if ( ( ! strpos($_SERVER['SCRIPT_NAME'], 'p-admin/options-writing.php') ) && ! is_content_administrator_rs() && awp_ver('2.7-dev') )
 			add_filter('pre_option_default_category', array(&$this, 'flt_default_term') );
@@ -169,12 +166,6 @@ class ScoperAdminFilters
 				$wp_taxonomies[$key]->update_count_callback = 'scoper_update_post_term_count';
 		}
 	}
-	
-	// make sure pre filter is applied for all custom taxonomies regardless of term selection
-	function custom_taxonomies_helper( $post_id, $post ) {
-		require_once( 'filters-admin-save_rs.php' );
-		scoper_force_custom_taxonomy_filters( $post_id, $post );	
-	}	
 	
 	function act_log_post_status( $post_id ) {
 		if ( $post = get_post( $post_id ) )

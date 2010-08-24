@@ -8,9 +8,6 @@ function scoper_force_distinct_post_caps() {
 		$generic_caps[$post_type] = array_values( get_object_vars( $wp_post_types[$post_type]->cap ) );
 
 	foreach( array_keys($wp_post_types) as $type ) {	
-		if ( in_array( $type, array( 'attachment', 'revision' ) ) )
-			continue;
-		
 		$wp_post_types[$type]->capability_type = $type;
 			
 		// don't allow any capability defined for this type to match any capability defined for post or page (unless this IS post or page type)

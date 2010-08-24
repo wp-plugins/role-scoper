@@ -48,9 +48,7 @@ class WP_Scoped_Taxonomies extends AGP_Config_Items {
 			if ( in_array( $tx->name, array( 'category', 'post_tag' ) ) )	// this should not be necessary, but leave as extra failsafe for now
 				$object_src_name = 'post';
 			else {
-				scoper_refresh_default_otype_options();
-				global $scoper_default_otype_options;
-				$use_term_roles = array_merge( $scoper_default_otype_options['use_term_roles'], scoper_get_option( 'use_term_roles' ) );
+				$use_term_roles = scoper_get_option( 'use_term_roles' );
 
 				if ( is_array( $use_term_roles ) ) {
 					foreach( array_keys($use_term_roles) as $src_otype ) {

@@ -218,11 +218,9 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			. "	<th>" . __awp('Name') . "</th>"
 			. "	<th>" . __('Role Assignments', 'scoper') . "</th>"
 			. "</tr>"
-			. "</thead>";
+			. "</thead>"
+			. "<tbody id='roles-{$role_codes[$role_handle]}'>";
 			
-			$id_clause = ( isset( $role_codes[$role_handle] ) ) ? "id='roles-{$role_codes[$role_handle]}'" : '';
-			$html .= "<tbody $id_clause>";
-
 			$style = ' class="rs-backwhite"';
 	
 			//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), agp_strtolower($otype->display_name) );
