@@ -141,29 +141,27 @@ function scoper_add_custom_data_sources(&$data_sources) {
 	}
 }
 
-function scoper_add_custom_cap_defs( &$cap_defs ) {
-	if ( awp_ver( '2.9' ) ) {
-		$custom_types = get_post_types( array(), 'object' );
+function scoper_add_custom_cap_defs( &$cap_defs ) {	
+	$custom_types = get_post_types( array(), 'object' );
 
-		$core_types = array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' );
-		
-		foreach ( $custom_types as $otype ) {
-			if ( ! in_array( $otype->name, $core_types ) ) {
-				$name = $otype->name;
-				$captype = $otype->capability_type;
+	$core_types = array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' );
+	
+	foreach ( $custom_types as $otype ) {
+		if ( ! in_array( $otype->name, $core_types ) ) {
+			$name = $otype->name;
+			$captype = $otype->capability_type;
 
-				if ( $captype && ( 'post' != $captype ) ) {
-					$cap_defs["read_private_{$captype}s"] =		(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_READ_RS, 		'owner_privilege' => true, 			'status' => 'private' );
-					$cap_defs["edit_{$captype}s"] = 			(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 			'no_custom_remove' => true );
-					$cap_defs["edit_others_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS, 		'attributes' => array('others'), 	'base_cap' => "edit_{$captype}s", 		'no_custom_remove' => true  );
-					$cap_defs["edit_private_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 			'status' => 'private' );
-					$cap_defs["edit_published_{$captype}s"] = 	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS,		'status' => 'published' );
-					$cap_defs["delete_{$captype}s"] =  			(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS,	'owner_privilege' => true );
-					$cap_defs["delete_others_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS, 	'attributes' => array('others'),	'base_cap' => "delete_{$captype}s" );
-					$cap_defs["delete_private_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS,	'status' => 'private' );
-					$cap_defs["delete_published_{$captype}s"] = (object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS,	'status' => 'published' );
-					$cap_defs["publish_{$captype}s"] = 			(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_PUBLISH_RS );
-				}
+			if ( $captype && ( 'post' != $captype ) ) {
+				$cap_defs["read_private_{$captype}s"] =		(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_READ_RS, 		'owner_privilege' => true, 			'status' => 'private' );
+				$cap_defs["edit_{$captype}s"] = 			(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 			'no_custom_remove' => true );
+				$cap_defs["edit_others_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS, 		'attributes' => array('others'), 	'base_cap' => "edit_{$captype}s", 		'no_custom_remove' => true  );
+				$cap_defs["edit_private_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS,		'owner_privilege' => true, 			'status' => 'private' );
+				$cap_defs["edit_published_{$captype}s"] = 	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_EDIT_RS,		'status' => 'published' );
+				$cap_defs["delete_{$captype}s"] =  			(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS,	'owner_privilege' => true );
+				$cap_defs["delete_others_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS, 	'attributes' => array('others'),	'base_cap' => "delete_{$captype}s" );
+				$cap_defs["delete_private_{$captype}s"] =  	(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS,	'status' => 'private' );
+				$cap_defs["delete_published_{$captype}s"] = (object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_DELETE_RS,	'status' => 'published' );
+				$cap_defs["publish_{$captype}s"] = 			(object) array( 'src_name' => 'post', 'object_type' => $name, 'op_type' => OP_PUBLISH_RS );
 			}
 		}
 	}

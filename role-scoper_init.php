@@ -229,9 +229,13 @@ function scoper_init() {
 	
 	$scoper->init();
 	
-	if ( is_content_administrator_rs() ) {
-		require_once( 'admin/sync-custype-caps_rs.php' );
-		scoper_grant_administrator_custype_caps();	
+	if ( is_content_administrator_rs() && awp_ver('2.9') ) {
+		global $current_user;
+
+		foreach ( get_post_types( array('public' => true, '_builtin' => false) ) as $name )
+			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
+
+		$current_user->merge_scoped_blogcaps();
 	}
 	
 	//log_mem_usage_rs( 'scoper->init() done' );

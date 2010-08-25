@@ -88,8 +88,11 @@ jQuery(document).ready( function($) {
 		// ========= register WP-rendered metaboxes ============
 		$src_name = 'post';
 		
-		$box_object_types = array_diff( get_post_types( array( 'public' => true ) ), array('attachment') );
-
+		if ( awp_ver( '2.9' ) )
+			$box_object_types = array_diff( get_post_types( array( 'public' => true ) ), array('attachment') );
+		else
+			$box_object_types = array( 'post', 'page' );
+			
 		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 
 		if ( ( 'admin' == $require_blogwide_editor ) && ! is_user_administrator_rs() )

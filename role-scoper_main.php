@@ -60,8 +60,6 @@ class Scoper
 		//log_mem_usage_rs( 'initial Scoper require_once' );
 		
 		if ( awp_ver( '2.9' ) ) {
-			$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) );
-			
 			require_once( 'custom-types_rs.php' );
 			
 			if ( awp_ver( '3.0' ) )
