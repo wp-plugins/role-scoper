@@ -62,8 +62,11 @@ class Scoper
 		if ( awp_ver( '2.9' ) ) {
 			require_once( 'custom-types_rs.php' );
 			
-			if ( awp_ver( '3.0' ) )
+			if ( awp_ver( '3.0' ) ) {
+				scoper_establish_status_caps();
 				scoper_force_distinct_post_caps();
+				scoper_force_distinct_taxonomy_caps();	
+			}
 		}
 		
 		$this->cap_defs = new WP_Scoped_Capabilities();
@@ -270,7 +273,7 @@ class Scoper
 				$this->query_interceptor = new QueryInterceptor_RS();
 			}
 
-			if ( ! $this->direct_file_access )
+			if ( ( ! $this->direct_file_access ) && ( ! $is_administrator || ! defined('XMLRPC_REQUEST') ) )
 				$this->add_hardway_filters();
 
 		} // endif query filtering not disabled for this access type
@@ -946,6 +949,14 @@ class Scoper
 	
 	function is_front() {
 		return ( defined('CURRENT_ACCESS_NAME_RS') && ( 'front' == CURRENT_ACCESS_NAME_RS ) );
+	}
+	
+	function user_can_edit_blogwide( $src_name = '', $object_type = '', $args = '' ) {
+		if ( is_administrator_rs($src_name) )
+			return true;
+	
+		require_once( 'admin/permission_lib_rs.php' );
+		return user_can_edit_blogwide_rs($src_name, $object_type, $args);
 	}
 } // end Scoper class
 ?>

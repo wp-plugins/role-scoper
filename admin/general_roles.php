@@ -328,8 +328,6 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			foreach ( $uses_taxonomies as $taxonomy)
 				if ( $tx_roles = $scoper->role_defs->get_matching( SCOPER_ROLE_TYPE, $src_name, $taxonomy ) )
 					$otype_roles[$taxonomy] = $tx_roles;
-				
-			$include_taxonomy_otypes = false;
 		}
 		
 		if ( ! $otype_roles )

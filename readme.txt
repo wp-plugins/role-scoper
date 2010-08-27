@@ -104,6 +104,13 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 RC3 - 27 Aug 2010 =
+* BugFix : Invalid Roles > Roles submenu displayed if logged user has edit_users capability but not manage_settings capability
+* Compat : Revisionary - Images attached to published content were not listed in Media Library based on Contributor / Revisor role
+* Feature : Media Library option, for non-Editors, to prevent the inclusion of files uploaded by other users (even if logged user can edit the related post)
+* Change : (with Revisionary plugin) Revisor role does not satisfy "Roles and Restrictions can be set" requirement of "site-wide Editor"
+* BugFix : Several issues with custom post type / custom taxonomy usage and role assignment
+
 = 1.2.8 RC2 - 25 Aug 2010 =
 * BugFix : Fatal Errors on WordPress 2.8 and older (since 1.2.8 Beta 1)
 

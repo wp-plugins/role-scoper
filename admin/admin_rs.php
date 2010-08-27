@@ -462,10 +462,10 @@ class ScoperAdmin
 		if ( $general_roles )
 			$roles_menu = 'rs-general_roles';
 
+		if ( $is_option_administrator )
+			$roles_menu = 'rs-options';  // option administrators always have RS Options as top level roles submenu
 
 		if ( $is_user_administrator ) { 
-			$roles_menu = 'rs-options';  // user administrators always have RS Options as top level roles submenu
-			
 			if ( empty( $restrictions_menu ) )
 				$restrictions_menu =  'rs-category-restrictions_t';  // If RS Realms are customized, the can_admin_terms / can_admin_objects result can override this default, even for user administrators
 		}
@@ -525,11 +525,10 @@ class ScoperAdmin
 							continue;
 						
 						if ( $require_blogwide_editor ) {
-							global $current_user;
-							if ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) && empty( $current_user->allcaps['manage_categories'] ) )
+							if ( ! $this->scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) )
 								continue;
 						}
-						
+
 						$show_roles_menu = true;
 
 						add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-roles_t", array( &$this, 'menu_handler' ) );
@@ -537,7 +536,7 @@ class ScoperAdmin
 						if ( ! empty($tx->requires_term) ) {
 							$show_restrictions_menu = true;
 
-							add_submenu_page($restrictions_menu, sprintf(__('%s restrictions', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-restrictions_t", array( &$this, 'menu_handler' ) );
+							add_submenu_page($restrictions_menu, sprintf(__('%s Restrictions', 'scoper'), $tx->display_name), $tx->display_name_plural, 'read', "rs-$taxonomy-restrictions_t", array( &$this, 'menu_handler' ) );
 						}
 					} // end foreach taxonomy
 				} // endif can admin terms
@@ -675,15 +674,6 @@ class ScoperAdmin
 		
 		require_once( 'permission_lib_rs.php' );
 		return user_can_admin_terms_rs($taxonomy, $term_id, $user);
-	}
-	
-	
-	function user_can_edit_blogwide( $src_name = '', $object_type = '', $args = '' ) {
-		if ( is_administrator_rs($src_name) )
-			return true;
-
-		require_once( 'permission_lib_rs.php' );
-		return user_can_edit_blogwide_rs($src_name, $object_type, $args);
 	}
 	
 	// primary use is to account for different contexts of users query

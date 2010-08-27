@@ -103,26 +103,6 @@ class ScoperAdminHardway_Ltd {
 		if ( scoper_querying_db() )
 			return $query;
 
-		// Media Library - unattached (as of WP 2.8, not filterable via posts_request)
-		//
-		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
-		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
-		if ( strpos($query, "post_type = 'attachment'") && strpos($query, "post_parent < 1") && strpos($query, '* FROM') ) {
-
-			if ( $where_pos = strpos($query, 'WHERE ') ) {
-				// optionally hide other users' unattached uploads, but not from blog-wide Editors
-				global $current_user;
-				if ( ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) ) && ! scoper_get_option( 'admin_others_unattached_files' ) )
-					$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-
-				if ( $author_clause ) {
-					$query = str_replace( "post_type = 'attachment'", "post_type = 'attachment' $author_clause", $query);
-
-					return $query;
-				}
-			}
-		}
-			
 		
 		// Search on query portions to make this as forward-compatible as possible.
 		// Important to include " FROM table WHERE " as a strpos requirement because scoped queries (which should not be further altered here) will insert a JOIN clause
@@ -369,25 +349,62 @@ class ScoperAdminHardway_Ltd {
 			}
 		}
 		
+		
 		// attachment count
 		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
 		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
 		if ( strpos($query, 'ELECT post_mime_type') ) {
 			if ( $where_pos = strpos($query, 'WHERE ') ) {
+				$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
+				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
+				
+				if ( ( ! $admin_others_attached ) || ! $admin_others_unattached )
+					$can_edit_others_blogwide = $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
+
+				global $wpdb, $current_user;
+				
+				// optionally hide other users' unattached uploads, but not from blog-wide Editors
+				if ( $admin_others_unattached || $can_edit_others_blogwide )
+					$author_clause = '';
+				else
+					$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+				
+				if ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS )
+					$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
+				else
+					$unattached_clause = '';
+
+				$attached_clause = ( $admin_others_attached || $can_edit_others_blogwide ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+
 				$parent_query = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1";
 				$parent_query = apply_filters('objects_request_rs', $parent_query, 'post', array('post', 'page') );
 
-				global $current_user;
-				
-				$author_clause = ( ! empty( $current_user->allcaps['edit_others_posts'] ) || ! empty( $current_user->allcaps['edit_others_pages'] ) || scoper_get_option( 'admin_others_unattached_files' ) ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-				
-				$unattached_clause = ( ! empty( $current_user->allcaps['upload_files'] ) ) ? "( $wpdb->posts.post_parent = '0' $author_clause )  OR " : '';
-
-				$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) ) ) AND ";
+				$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) $attached_clause ) ) AND ";
 				
 				$query = substr( $query, 0, $where_pos + strlen('WHERE ') ) . $where_insert . substr($query, $where_pos + strlen('WHERE ') );
-				
+
 				return $query;
+			}
+		}
+		
+
+		// Media Library - unattached (as of WP 2.8, not filterable via posts_request)
+		//
+		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
+		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
+		if ( strpos($query, "post_type = 'attachment'") && strpos($query, "post_parent < 1") && strpos($query, 'COUNT( * ) FROM') ) {
+
+			if ( $where_pos = strpos($query, 'WHERE ') ) {
+				// optionally hide other users' unattached uploads, but not from blog-wide Editors
+				if ( ( ! scoper_get_option( 'admin_others_unattached_files' ) ) && ! $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) ) {
+					global $current_user;
+					
+					$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+
+					$query = str_replace( "post_type = 'attachment'", "post_type = 'attachment' $author_clause", $query);
+
+					return $query;
+				}
 			}
 		}
 		

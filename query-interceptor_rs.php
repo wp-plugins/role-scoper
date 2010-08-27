@@ -262,26 +262,32 @@ class QueryInterceptor_RS
 		if ( strpos( $request, "post_type = 'attachment'" ) ) {
 			if ( ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {
 				// The listed objects are attachments, so query filter is based on objects they inherit from
-				global $wpdb;
-				// filter attachments on upload page by inserting a scoped subquery based on user roles on the post/page attachment is tied to
-				$rs_where = $this->flt_objects_where('', $src_name, $object_types, $args);
-				$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
+				$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
+				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
 				
-				if ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS ) {
+				if ( ( ! $admin_others_attached ) || ! $admin_others_unattached )
+					$can_edit_others_blogwide = $this->scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
+
+				global $wpdb, $current_user;
+				
+				// optionally hide other users' unattached uploads, but not from blog-wide Editors
+				if ( $admin_others_unattached || $can_edit_others_blogwide )
 					$author_clause = '';
-	
-					if ( is_admin() ) {
-						// optionally hide other users' unattached uploads, but not from blog-wide Editors
-						global $current_user;
-						if ( ( empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] ) ) && ! scoper_get_option( 'admin_others_unattached_files' ) )
-							$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-					}
-					
-					$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
-				} else
-					$unattached_clause = '';
+				else
+					$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
 				
-				$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( $wpdb->posts.post_type = 'attachment' AND ( $unattached_clause $wpdb->posts.post_parent IN ($subqry) ) )", $request);
+				if ( is_admin() && ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS ) )
+					$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
+				else
+					$unattached_clause = '';
+
+				$attached_clause = ( $admin_others_attached || $can_edit_others_blogwide ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+
+				// filter attachments on upload page by inserting a scoped subquery based on user roles on the post/page attachment is tied to
+				$rs_where = $this->flt_objects_where( '', $src_name, $object_types, $args );
+				$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
+
+				$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( $wpdb->posts.post_type = 'attachment' AND ( $unattached_clause ( $wpdb->posts.post_parent IN ($subqry) $attached_clause ) ) )", $request );
 			}
 		} else {
 			// used by objects_where_scope_clauses() to determine whether to add a subselect or make use of existing JOIN	
@@ -441,7 +447,7 @@ class QueryInterceptor_RS
 
 		// accomodate editing of published posts/pages to revision
 		$script_name = $_SERVER['SCRIPT_NAME'];
-		$revision_uris = apply_filters( 'scoper_revision_uris', array( 'p-admin/edit.php', 'p-admin/edit-pages.php', 'p-admin/widgets.php' ) );
+		$revision_uris = apply_filters( 'scoper_revision_uris', array( 'p-admin/edit.php', 'p-admin/edit-pages.php', 'p-admin/upload.php', 'p-admin/widgets.php' ) );
 				
 		if ( strpos($script_name, 'p-admin/index.php') || agp_strpos_any($script_name, $revision_uris) ) {
 			if ( defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {

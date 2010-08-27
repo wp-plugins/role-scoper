@@ -146,9 +146,8 @@ class ScoperProfileUI {
 					
 				if ( ( 'admin_content' == $require_blogwide_editor ) && ! is_content_administrator_rs() )
 					return false;
-		
-				global $current_user;
-				$disable_role_admin = empty( $current_user->allcaps['edit_others_posts'] ) && empty( $current_user->allcaps['edit_others_pages'] );
+
+				$disable_role_admin = ! $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
 			}
 		}
 

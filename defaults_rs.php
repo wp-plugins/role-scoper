@@ -62,6 +62,7 @@ function scoper_default_options() {
 		'display_user_profile_roles' => 1,
 		'user_role_assignment_csv' => 0,
 		'admin_others_unattached_files' => 0,
+		'admin_others_attached_files' => 1,
 		'remap_page_parents' => 0,
 		'enforce_actual_page_depth' => 1,
 		'remap_thru_excluded_page_parent' => 0,
@@ -603,8 +604,10 @@ function scoper_core_cap_defs( $include_custom_types = true ) {
 	$arr['create_child_pages']->defining_module_name = 'role-scoper';
 	$arr['manage_groups']->defining_module_name = 'role-scoper';
 	
-	if ( $include_custom_types && awp_ver( '2.9' ) )
-		scoper_add_custom_cap_defs( $arr );
+	if ( $include_custom_types && awp_ver( '2.9' ) ) {
+		scoper_add_custom_post_cap_defs( $arr );
+		scoper_add_custom_taxonomy_cap_defs( $arr );
+	}
 
 	return $arr;
 }
@@ -739,7 +742,8 @@ function scoper_core_role_caps( $include_custom_types = true ) {
 		$arr = array_diff_key( $arr, array( 'rs_post_revisor' => 1, 'rs_page_revisor' => 1 ) );
 		
 	if ( $include_custom_types && awp_ver( '2.9' ) ) {
-		scoper_add_custom_role_caps( $arr );
+		scoper_add_custom_post_role_caps( $arr );
+		scoper_add_custom_taxonomy_role_caps( $arr );
 	}
 		
 	return $arr;
@@ -814,8 +818,10 @@ function scoper_core_role_defs( $include_custom_types = true ) {
 		$arr['rs_private_page_reader']->other_scopes_check_role = array( 'private' => 'rs_private_page_reader', '' => 'rs_page_reader' );
 	}
 	
-	if ( $include_custom_types && awp_ver( '2.9' ) )
-		scoper_add_custom_role_defs( $arr );
+	if ( $include_custom_types && awp_ver( '2.9' ) ) {
+		scoper_add_custom_post_role_defs( $arr );
+		scoper_add_custom_taxonomy_role_defs( $arr );
+	}
 	
 	foreach ( array_keys($arr) as $key )
 		$arr[$key]->role_type = 'rs';

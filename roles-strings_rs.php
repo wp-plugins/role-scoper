@@ -90,6 +90,16 @@ class ScoperRoleStrings {
 							$str = sprintf( __( '%s Reader', 'scoper' ), $label );
 					}
 				}
+				
+				$taxonomies = get_taxonomies( array( '_builtin' => false, 'public' => true ), 'object' );
+				
+				foreach( $taxonomies as $name => $tx_obj ) {
+					if ( strpos( $role_handle, "_{$name}_" ) ) {
+						if ( strpos( $role_handle, '_manager' ) )
+							$str = sprintf( __( '%s Manager', 'scoper' ), $tx_obj->labels->singular_name );
+					}
+				}
+				
 		} // end switch
 		
 		return apply_filters( 'role_display_name_rs', $str, $role_handle );			

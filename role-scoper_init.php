@@ -769,4 +769,5 @@ function scoper_get_taxonomy_usage( $src_name, $object_types = '' ) {
 	else
 		return array();
 }
+
 ?>

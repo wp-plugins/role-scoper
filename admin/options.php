@@ -235,6 +235,7 @@ $ui->option_captions = array(
 	'display_user_profile_groups' => __('Display User Groups', 'scoper'),
 	'display_user_profile_roles' => __('Display User Roles', 'scoper'),
 	'user_role_assignment_csv' => __('Users CSV Entry', 'scoper'),
+	'admin_others_attached_files' => __('Non-editors see other users\' attached uploads', 'scoper'),
 	'admin_others_unattached_files' => __('Non-editors see other users\' unattached uploads', 'scoper'),
 	'remap_page_parents' => __('Remap pages to visible ancestor', 'scoper'),
 	'enforce_actual_page_depth' => __('Enforce actual page depth', 'scoper'),
@@ -269,7 +270,7 @@ $ui->form_options = array(
 	'front_end' 	=> 		array( 'strip_private_caption', 'no_frontend_admin' ),
 	'pages_listing' => 		array( 'private_items_listable', 'remap_page_parents', 'enforce_actual_page_depth', 'remap_thru_excluded_page_parent' ),
 	'categories_listing' =>	array( 'remap_term_parents', 'enforce_actual_term_depth', 'remap_thru_excluded_term_parent' ),
-	'content_maintenance'=> array( 'default_private', 'sync_private', 'role_admin_blogwide_editor_only', 'admin_others_unattached_files', 'filter_users_dropdown' ),
+	'content_maintenance'=> array( 'default_private', 'sync_private', 'role_admin_blogwide_editor_only', 'admin_others_attached_files', 'admin_others_unattached_files', 'filter_users_dropdown' ),
 	'file_filtering' =>		array( 'file_filtering' ),
 	'date_limits' =>		array( 'role_duration_limits', 'role_content_date_limits' ),
 	'internal_cache' =>		array( 'persistent_cache' ),
@@ -693,8 +694,13 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	<?php 
 	} // endif role_admin_blogwide_editor_only controlled in this option scope
 		
-	$hint = awp_ver( '3.0-dev' ) ? __('If enabled, users who are not site-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper') : __('If enabled, users who are not blog-wide Editors will see only their own unattached uploads in the Media Library.', 'scoper');
+	$hint = awp_ver( '3.0-dev' ) ? __('For users who are not site-wide Editors, determines Media Library visibility of files uploaded by another user and now attached to a post which the logged user can edit.', 'scoper') : __('For users who are not blog-wide Editors, determines Media Library visibility of files uploaded by another user and now attached to a post which the logged user can edit.', 'scoper');
+	$ret = $ui->option_checkbox( 'admin_others_attached_files', $tab, $section, $hint, '' );	
+	
+	$hint = awp_ver( '3.0-dev' ) ? __('For users who are not site-wide Editors, determines Media Library visibility of unattached files which were uploaded by another user.', 'scoper') : __('For users who are not blog-wide Editors, determines Media Library visibility of unattached files which were uploaded by another user.', 'scoper');
 	$ret = $ui->option_checkbox( 'admin_others_unattached_files', $tab, $section, $hint, '' );	
+	
+	echo '<br />';
 	
 	$hint = __('If enabled, Post Author and Page Author selection dropdowns will be filtered based on scoped roles.', 'scoper');
 	$ret = $ui->option_checkbox( 'filter_users_dropdown', $tab, $section, $hint, '' );	
@@ -1715,7 +1721,15 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 					if ( ! $opt_vals = scoper_get_option( $option_name, $sitewide, $customize_defaults ) )
 						$opt_vals = array();
 							
-					$opt_vals = array_merge($ui->def_otype_options[$option_name], $opt_vals);
+					if ( 'use_term_roles' == $option_name ) {
+						foreach( array_keys( $ui->def_otype_options[$option_name] ) as $src_otype ) {
+							if ( isset( $opt_vals[$src_otype] ) )
+								$opt_vals[$src_otype] = array_merge( $ui->def_otype_options[$option_name][$src_otype], $opt_vals[$src_otype] );
+							else
+								$opt_vals[$src_otype] = $ui->def_otype_options[$option_name][$src_otype];
+						}
+					} else 
+						$opt_vals = array_merge($ui->def_otype_options[$option_name], $opt_vals);
 
 					foreach ( $opt_vals as $src_otype => $val ) {
 						if ( TERM_SCOPE_RS == $scope ) {
@@ -1727,6 +1741,8 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 								<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val[$taxonomy]);?> />
 								<?php 
 								if ( TERM_SCOPE_RS == $scope ) {
+									
+									
 									$tx_display = $scoper->taxonomies->member_property( $taxonomy, 'display_name' );
 	
 									if ( ! $tx_display )

@@ -100,7 +100,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 
 		if ( $include_taxonomy_otypes ) {
 			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
-			
+
 			foreach ( $uses_taxonomies as $taxonomy) {
 				$tx_display_name = $scoper->taxonomies->member_property($taxonomy, 'display_name');
 			
@@ -109,7 +109,6 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 					$otype_display_names[$taxonomy] = $tx_display_name;
 				}
 			}	
-			$include_taxonomy_otypes = false;
 		}
 		
 		if ( ! $otype_roles )
