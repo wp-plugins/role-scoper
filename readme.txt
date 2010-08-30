@@ -104,6 +104,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 RC5 - 30 Aug 2010 =
+* BugFix : After a custom taxonomy was enabled for RS roles & restrictions, Administrators could not manage it by default
+
 = 1.2.8 RC4 - 30 Aug 2010 =
 * BugFix : Fatal error if "Roles and Restrictions can be set" is set to require Editor or Administrator role (since 1.2.8.RC3)
 
