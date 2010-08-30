@@ -525,7 +525,7 @@ class ScoperAdmin
 							continue;
 						
 						if ( $require_blogwide_editor ) {
-							if ( ! $this->scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) )
+							if ( ! $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) )
 								continue;
 						}
 

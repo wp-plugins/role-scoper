@@ -104,6 +104,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 RC4 - 30 Aug 2010 =
+* BugFix : Fatal error if "Roles and Restrictions can be set" is set to require Editor or Administrator role (since 1.2.8.RC3)
+
 = 1.2.8 RC3 - 27 Aug 2010 =
 * BugFix : Invalid Roles > Roles submenu displayed if logged user has edit_users capability but not manage_settings capability
 * Compat : Revisionary - Images attached to published content were not listed in Media Library based on Contributor / Revisor role
@@ -717,8 +720,10 @@ no changes from 1.2 RC
 * Quick Cache : not compatible as of QC 2.1.7 due to conflicting use of wp-content/cache folder
 * WPML Multilingual CMS : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  
 * QTranslate : Role Scoper ensures compatibility by disabling the caching of page and category listings.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
-* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget or Snazzy Archives instead.
+* More Types : not compatible unless modified to register post types earlier: add_action('init', array(&$this, 'init_post_types'), 1);
+* More Taxonomies : not compatible unless modified to register taxonomies earlier: add_action('init', array(&$this, 'load_taxonomies'), 1);
 * Maintenance Mode : not compatible due to early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Insert the following line at the top of function current_user_can_access_on_maintenance in maintenance-mode.php: `return false;`
+* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget or Snazzy Archives instead.
 * Flutter : As of Nov 2009, RS filtering of Flutter categories requires that the Flutter function GetCustomWritePanels (in the RCCWP_CustomWritePanel class, file plugins/fresh-page/RCCWP_CustomWritePanel.php) be modified to the following:
 
     function GetCustomWritePanels() 
