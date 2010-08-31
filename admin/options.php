@@ -189,6 +189,8 @@ $ui->section_captions = array(
 ), 
 'realm' => array(
 	'term_object_scopes' =>	__('Term / Object Scope', 'scoper'),
+	'taxonomy_usage' =>		__('Taxonomy Usage', 'scoper'),
+	'post_type_usage' =>	__('Post Type Usage', 'scoper'),
 	'term_scope' =>			__('Term Scope', 'scoper'),
 	'object_scope' =>		__('Object Scope', 'scoper'),
 	'access_types' =>		__('Access Types', 'scoper')
@@ -1676,13 +1678,90 @@ if ( $ui->display_hints ) {
 <table class="<?php echo($table_class);?>" id="rs-realm_table">
 
 <?php
-$section = 'term_scope';
 $section_alias = 'term_object_scopes';
 
 if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
+
+
+	<tr valign="top">
+	<th scope="row"><?php 
+									// --- TAXONOMY / OBJECT TYPE USAGE SECTION ---
+	$section = 'taxonomy_usage';
+	echo $ui->section_captions[$tab][$section];
+	echo '<br /><span style="font-size: 0.9em; font-style: normal; font-weight: normal">(&nbsp;<a href="#scoper_notes">' . __('see notes', 'scoper') . '</a>&nbsp;)</span>';
+	?></th><td>
+	<?php
+		// note: update_wp_taxonomies gets special handling in submitee.php, doesn't need to be included in $ui->all_options array
+		
+		global $wp_taxonomies;
+		global $scoper_default_options;
+		
+		_e('Specify which WordPress Taxonomies can have Restrictions and Roles:', 'scoper');
+		echo '<br />';
+		
+	
+		$scopes = array( 'term', 'object');
+		foreach ( $scopes as $scope ) {
+			if ( 'object' == $scope ) {
+?></td></tr>
+<?php
+				$section = 'post_type_usage';
+				$option_name = 'use_post_types';
+?>	<tr valign="top">
+	<th scope="row">
+<?php 				
+				echo $ui->section_captions[$tab][$section];
+?></th><td>
+<?php 		
+				_e('Specify which Post Types can have Restrictions and Roles:', 'scoper');
+			} else { // end if loop iteration is for object scope
+				$option_name = 'use_taxonomies';
+			}
+			
+			if ( in_array( 'use_term_roles', $ui->form_options[$tab][$section_alias] ) ) {	// use_object_types follow option scope of use_term_roles
+				$ui->all_options []= $option_name;
+				
+				if ( isset($scoper_default_options[$option_name]) ) {
+					if ( ! $opt_vals = scoper_get_option( $option_name, $sitewide, $customize_defaults ) )
+						$opt_vals = array();
+							
+					$opt_vals = array_merge($scoper_default_options[$option_name], $opt_vals);
+
+					foreach ( $opt_vals as $key => $val ) {
+						$id = $option_name . '-' . $key;
+						?>
+						<div class="agp-vspaced_input">
+						<label for="<?php echo($id);?>" title="<?php echo($key);?>">
+						<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
+						<?php 
+						if ( TERM_SCOPE_RS == $scope ) {
+							$tx = get_taxonomy( $key, 'object' );
+							$display_name = $tx->labels->name;
+						} else {
+							$type_obj = get_post_type_object( $key );
+							$display_name = $type_obj->labels->name;
+						}
+							
+						if ( ! $display_name )
+							$display_name = $key;
+								
+						echo $display_name;
+
+						echo ('</label></div>');
+					} // end foreach src_otype
+				} // endif default option isset
+				
+			} // endif displaying this option in form
+		} // end foreach scope
+	?>
+	</td>
+	</tr>
+
+
 	<tr valign="top">
 	<th scope="row"><?php 
 									// --- TERM SCOPE SECTION ---
+	$section = 'term_scope';
 	echo $ui->section_captions[$tab][$section];
 	echo '<br /><span style="font-size: 0.9em; font-style: normal; font-weight: normal">(&nbsp;<a href="#scoper_notes">' . __('see notes', 'scoper') . '</a>&nbsp;)</span>';
 	?></th><td>
@@ -1691,9 +1770,10 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 		
 		global $wp_taxonomies;
 	
-		_e('Specify which WordPress taxonomies can have Restrictions and Roles:', 'scoper');
+		_e('Specify available Term Restrictions and Roles, for each object type and taxonomy:', 'scoper');
+		echo '<br />&nbsp;&nbsp;&nbsp;&nbsp;';
+		_e('<b>Note:</b> Taxonomy Usage must also be enabled above', 'scoper');
 		echo '<br />';
-		
 	
 		$scopes = array( 'term', 'object');
 		foreach ( $scopes as $scope ) {
@@ -1709,8 +1789,11 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 ?></th><td>
 <?php 		
 				_e('Specify whether Restrictions and Roles can be set for individual Objects:', 'scoper');
-			} // end if loop iteration is for object scope
-
+				echo '<br />&nbsp;&nbsp;&nbsp;&nbsp;';
+				_e('<b>Note:</b> Post Type Usage must also be enabled above', 'scoper');
+			} else // end if loop iteration is for object scope
+				$section = 'term_scope';
+			
 			$option_name = "use_{$scope}_roles";
 			
 			if ( in_array( 'use_term_roles', $ui->form_options[$tab][$section_alias] ) ) {	// use_object_roles follow option scope of use_term_roles
@@ -1737,28 +1820,23 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 								$id = str_replace( ':', '_', $option_name . '-' . $src_otype . '-' . $taxonomy );
 								?>
 								<div class="agp-vspaced_input">
-								<label for="<?php echo($id);?>">
+								<label for="<?php echo($id);?>" title="<?php echo($taxonomy);?>">
 								<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val[$taxonomy]);?> />
 								<?php 
-								if ( TERM_SCOPE_RS == $scope ) {
-									
-									
-									$tx_display = $scoper->taxonomies->member_property( $taxonomy, 'display_name' );
-	
-									if ( ! $tx_display )
-										$tx_display = $taxonomy;
-									
-									$display_name_plural = $scoper->admin->interpret_src_otype($src_otype);
+								$tx_display = $scoper->taxonomies->member_property( $taxonomy, 'display_name' );
 
-									//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
-									printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
-									
-									if ( ! $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
-										echo '* ';
-										$any_loose_taxonomy = true;
-									}
-								} else
-									echo $scoper->admin->interpret_src_otype($src_otype, true);
+								if ( ! $tx_display )
+									$tx_display = $taxonomy;
+								
+								$display_name_plural = $scoper->admin->interpret_src_otype($src_otype);
+
+								//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
+								printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
+								
+								if ( ! $scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
+									echo '* ';
+									$any_loose_taxonomy = true;
+								}
 									
 								echo ('</label></div>');
 							}
@@ -1766,7 +1844,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 							$id = str_replace( ':', '_', $option_name . '-' . $src_otype );
 							?>
 							<div class="agp-vspaced_input">
-							<label for="<?php echo($id);?>">
+							<label for="<?php echo($id);?>" title="<?php echo($src_otype);?>">
 							<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
 							<?php 
 							echo $scoper->admin->interpret_src_otype($src_otype, true);

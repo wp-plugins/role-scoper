@@ -190,7 +190,8 @@ class Scoper_Submittee {
 	
 	function update_page_options( $sitewide = false, $customize_defaults = false ) {
 		global $scoper_role_types;
-
+		global $scoper_default_options;
+		
 		// changes to these options will trigger .htaccess regen
 		if ( $sitewide ) {
 			add_action( 'update_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
@@ -205,11 +206,18 @@ class Scoper_Submittee {
 		$default_prefix = ( $customize_defaults ) ? 'default_' : '';
 		
 		$reviewed_options = explode(',', $_POST['all_options']);
-		
+
 		foreach ( $reviewed_options as $option_basename ) {
 			$value = isset($_POST[$option_basename]) ? $_POST[$option_basename] : '';
-			
-			if ( 'role_type' == $option_basename )
+
+			if ( ( 'use_post_types' == $option_basename ) || ( 'use_taxonomies' == $option_basename ) ) {
+				$value = array();
+				foreach ( array_keys($scoper_default_options[$option_basename]) as $key ) {
+					$postvar = $option_basename . '-' . $key;
+					$value[$key] = isset($_POST[$postvar]) ? $_POST[$postvar] : '';
+				}	
+			}
+			elseif ( 'role_type' == $option_basename )
 				$value = $scoper_role_types[$value];
 			elseif ( 'mu_sitewide_groups' == $option_basename ) {
 				$current_setting = get_site_option( 'scoper_mu_sitewide_groups' );
@@ -225,6 +233,7 @@ class Scoper_Submittee {
 
 			if ( ! is_array($value) )
 				$value = trim($value);
+
 			$value = stripslashes_deep($value);
 	
 			scoper_update_option( $default_prefix . $option_basename, $value, $sitewide );
@@ -308,13 +317,18 @@ class Scoper_Submittee {
 		$role_defs->add_member_objects( scoper_core_role_defs() );
 		$role_defs = apply_filters('define_roles_rs', $role_defs);
 
+		$reviewed_roles = explode(',', $_POST['reviewed_roles']);
+		
 		$disable_caps = array();
 		$add_caps = array();
 		
 		foreach ( $default_role_caps as $role_handle => $default_caps ) {
+			if ( ! in_array( $role_handle, $reviewed_roles ) )
+				continue;
+			
 			if ( $role_defs->member_property($role_handle, 'no_custom_caps') || $role_defs->member_property($role_handle, 'anon_user_blogrole') )
 				continue;
-
+				
 			$posted_set_caps = ( empty($_POST["{$role_handle}_caps"]) ) ? array() : $_POST["{$role_handle}_caps"];
 
 			// html IDs have any spaces stripped out of cap names.  Replace them for processing.

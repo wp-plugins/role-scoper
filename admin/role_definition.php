@@ -85,31 +85,31 @@ $rs_default_role_defs->add_member_objects( scoper_core_role_defs() );
 $rs_default_role_defs = apply_filters('define_roles_rs', $rs_default_role_defs);
 $rs_default_role_defs->remove_invalid();
 
+$reviewed_roles = array();
+
 foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	
-	$include_taxonomy_otypes = true;
+	$object_types = $src->object_types;
 
-	foreach ( $src->object_types as $object_type => $otype ) {
+	if ( 'post' == $src_name ) {
+		global $wp_taxonomies;
+		foreach ( $wp_taxonomies as $tx )
+			$object_types [$tx->name]= $tx; 	
+	}
+
+	foreach ( $object_types as $object_type => $otype ) {
 		$otype_roles = array();
 		$otype_display_names = array();
 		
 		if ( $obj_roles = $rs_default_role_defs->get_matching( 'rs', $src_name, $object_type ) ) {
 			$otype_roles[$object_type] = $obj_roles;
+		}
+		
+		if ( ! empty( $otype->labels->name ) )
+			$otype_display_names[$object_type] = $otype->labels->singular_name;
+		else
 			$otype_display_names[$object_type] = $otype->display_name;
-		}
-
-		if ( $include_taxonomy_otypes ) {
-			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
-
-			foreach ( $uses_taxonomies as $taxonomy) {
-				$tx_display_name = $scoper->taxonomies->member_property($taxonomy, 'display_name');
-			
-				if ( $tx_roles = $rs_role_defs->get_matching( 'rs', $src_name, $taxonomy ) ) {
-					$otype_roles[$taxonomy] = $tx_roles;
-					$otype_display_names[$taxonomy] = $tx_display_name;
-				}
-			}	
-		}
+		
 		
 		if ( ! $otype_roles )
 			continue;
@@ -142,6 +142,8 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			global $wp_roles;
 
 			foreach ( $roles as $rs_role_handle => $role_def ) {
+				$reviewed_roles []= $rs_role_handle;
+				
 				$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';
 
 				echo "\n\t"
@@ -224,6 +226,9 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	} // end foreach object_type
 	
 } // end foreach data source
+
+$reviewed_roles = implode(',', array_unique( $reviewed_roles ) );
+echo "<input type='hidden' name='reviewed_roles' value='$reviewed_roles' />";
 
 echo '<span class="alignright">';
 echo '<label for="rs_role_resync"><input name="rs_role_resync" type="checkbox" id="rs_role_resync" value="1" />';

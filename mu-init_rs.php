@@ -43,6 +43,8 @@ function scoper_default_options_sitewide() {
 		'role_content_date_limits' => true,
 
 		'disabled_access_types' => true,
+		'use_taxonomies' => true,
+		'use_post_types' => true,
 		'use_term_roles' => true,
 		'use_object_roles' => true,
 		'disabled_role_caps' => true,

@@ -3,11 +3,16 @@
 	function scoper_establish_status_caps() {
 		global $wp_post_types;
 	
+		$use_post_types = scoper_get_option( 'use_post_types' );
+		
 		$post_types = array_diff_key( get_post_types( array( 'public' => true ), 'object' ), array( 'attachment' => true ) );
 		
 		$front_end_statuses = get_post_stati( array( 'internal' => null, 'protected' => null ), 'object' );
 
 		foreach( $post_types as $post_type => $post_type_obj ) {
+			if ( empty( $use_post_types[$post_type] ) )
+				continue;
+			
 			// force edit_published, edit_private, delete_published, delete_private cap definitions
 			foreach ( $front_end_statuses as $status => $status_obj ) {	
 				foreach( array( 'read', 'edit', 'delete' ) as $op ) {		
@@ -56,19 +61,19 @@
 		} // end foreach post type
 	}
 
-function scoper_force_distinct_post_caps() {
+function scoper_force_distinct_post_caps() {  // but only if the post type has RS usage enabled
 	global $wp_post_types;
 	
 	//scoper_refresh_default_otype_options();
 	
-	$use_object_roles = scoper_get_option( 'use_object_roles' );
+	$use_post_types = scoper_get_option( 'use_post_types' );
 	
 	$generic_caps = array();
 	foreach( array( 'post', 'page' ) as $post_type )
 		$generic_caps[$post_type] = array_values( get_object_vars( $wp_post_types[$post_type]->cap ) );
 		
 	foreach( array_keys($wp_post_types) as $type ) {
-		if ( empty( $use_object_roles["post:{$type}"] ) )
+		if ( empty( $use_post_types[$type] ) )
 			continue;
 
 		$wp_post_types[$type]->capability_type = $type;
@@ -77,14 +82,14 @@ function scoper_force_distinct_post_caps() {
 		foreach( get_object_vars( $wp_post_types[$type]->cap ) as $cap_property => $type_cap )
 			foreach( array( 'post', 'page' ) as $generic_type )
 				if ( ( $type != $generic_type ) & in_array( $type_cap, $generic_caps[$generic_type] ) )
-					$wp_post_types[$type]->cap->$cap_property = str_replace( 'post', $type, $cap_property );		
+					$wp_post_types[$type]->cap->$cap_property = str_replace( 'post', $type, $cap_property );	
 	}
 }
 
-function scoper_force_distinct_taxonomy_caps() {
+function scoper_force_distinct_taxonomy_caps() { // but only if the taxonomy has RS usage enabled
 	global $wp_taxonomies;
 
-	$use_term_roles = scoper_get_option( 'use_term_roles' );
+	$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	
 	// note: we are allowing the 'assign_terms' property to retain its default value of 'edit_posts'.  The RS user_has_cap filter will convert it to the corresponding type-specific cap as needed.
 	$type_specific_caps = array( 'edit_terms' => 'manage_terms', 'manage_terms' => 'manage_terms', 'delete_terms' => 'manage_terms' );
@@ -99,16 +104,9 @@ function scoper_force_distinct_taxonomy_caps() {
 	$used_values = array_unique( $used_values );
 
 	foreach( $wp_taxonomies as $taxonomy => $taxonomy_obj ) {
-		$enabled = false;
-		foreach ( array_keys($use_term_roles) as $src_otype ) 
-			if ( ! empty( $use_term_roles[$src_otype][$taxonomy] ) ) {
-				$enabled = true;
-				break;	
-			}
-			
-		if ( ! $enabled )
+		if ( empty( $use_taxonomies[$taxonomy] ) )
 			continue;
-		
+
 		if ( empty( $taxonomy_obj->public ) || in_array( $taxonomy, $core_taxonomies ) )
 			continue;
 		elseif( 'yes' == $taxonomy_obj->public )	// clean up a GD Taxonomies quirk (otherwise wp_get_taxonomy_object will fail when filtering for public => true)
@@ -129,26 +127,13 @@ function scoper_add_custom_taxonomies(&$taxonomies) {
 	//$taxonomies =& $scoper->taxonomies->members;
 	
 	// note: use_term_roles elements are auto-created (and thus eligible for scoping activation via Roles > Realm) based on registered WP taxonomies
-	$arr_use_wp_taxonomies = array();
-
-	if ( ! $use_term_roles = get_option( 'scoper_use_term_roles' ) ) {  // TODO: why does scoper_get_option not reflect values updated via scoper_update_option in version update function earlier in same request?
-		global $scoper_default_otype_options;		// TODO: is this necessary?
-		
-		scoper_refresh_default_otype_options();
-		$use_term_roles = $scoper_default_otype_options['use_term_roles'];
-	}	
+	$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 
 	$core_taxonomies = array( 'category', 'link_category', 'nav_menu' );
 
-	foreach( array_keys($use_term_roles) as $src_otype ) 
-		if ( is_array( $use_term_roles[$src_otype] ) ) {
-			foreach ( array_keys($use_term_roles[$src_otype]) as $taxonomy )
-				if ( $use_term_roles[$src_otype][$taxonomy] && ! in_array( $taxonomy, $core_taxonomies ) )
-					$arr_use_wp_taxonomies[$taxonomy] = true;
-		}
 
 	// Detect and support additional WP taxonomies (just require activation via Role Scoper options panel)
-	if ( ! empty($arr_use_wp_taxonomies) || strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-options' ) ) {
+	if ( ! empty($use_taxonomies) || strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-options' ) ) {
 		global $scoper, $wp_taxonomies, $wp_post_types;
 		
 		if ( defined( 'CUSTAX_DB_VERSION' ) ) {	// Extra support for Custom Taxonomies plugin
@@ -167,7 +152,7 @@ function scoper_add_custom_taxonomies(&$taxonomies) {
 				continue;
 			
 			// taxonomy must be approved for scoping and have a Scoper-defined object type
-			if ( isset($arr_use_wp_taxonomies[$taxonomy]) || strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-options' ) ) { // always load taxonomy ID data for Realm Options display
+			if ( ! empty($use_taxonomies[$taxonomy]) || strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-options' ) ) { // always load taxonomy ID data for Realm Options display
 				$tx_otypes = (array) $wp_tax->object_type;
 
 				foreach ( $tx_otypes as $wp_tax_object_type ) {
@@ -218,7 +203,6 @@ function scoper_add_custom_data_sources(&$data_sources) {
 	
 	foreach ( $custom_types as $name => $otype ) {
 		if ( ! in_array( $name, $core_types ) ) {
-			$wp_post_types[$name]->capability_type = $name;
 			$captype = $name;
 			
 			$singular_label = ( ! empty($otype->labels->singular_name) ) ? $otype->labels->singular_name : $otype->singular_label;
@@ -245,8 +229,12 @@ function scoper_add_custom_data_sources(&$data_sources) {
 
 function scoper_add_custom_post_cap_defs( &$cap_defs ) {	
 	$post_types = get_post_types( array( 'public' => true, '_builtin' => false ), 'object' );
+	$use_post_types = scoper_get_option( 'use_post_types' );
 	
 	foreach ( $post_types as $name => $post_type_obj ) {
+		if ( empty( $use_post_types[$name] ) )
+			continue;
+		
 		$cap = $post_type_obj->cap;
 
 		if ( ! isset( $cap_defs[$cap->read_private_posts] ) )
@@ -287,8 +275,12 @@ function scoper_add_custom_post_cap_defs( &$cap_defs ) {
 
 function scoper_add_custom_taxonomy_cap_defs( &$cap_defs ) {	
 	$taxonomies = get_taxonomies( array( 'public' => true, '_builtin' => false ), 'object' );
+	$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	
 	foreach ( $taxonomies as $name => $tx_obj ) {
+		if ( empty( $use_taxonomies[$name] ) )
+			continue;
+		
 		$cap = $tx_obj->cap;
 		
 		if ( ! isset( $cap_defs[$cap->manage_terms] ) )
@@ -305,8 +297,12 @@ function scoper_add_custom_taxonomy_cap_defs( &$cap_defs ) {
 
 function scoper_add_custom_post_role_caps( &$role_caps ) {
 	$post_types = get_post_types( array( 'public' => true, '_builtin' => false ), 'object' );
+	$use_post_types = scoper_get_option( 'use_post_types' );
 	
 	foreach ( $post_types as $name => $post_type_obj ) {
+		if ( empty( $use_post_types[$name] ) )
+			continue;
+		
 		$cap = $post_type_obj->cap;
 		
 		$role_caps["rs_{$name}_reader"] = array(
@@ -367,8 +363,12 @@ function scoper_add_custom_post_role_caps( &$role_caps ) {
 
 function scoper_add_custom_taxonomy_role_caps( &$role_caps ) {
 	$taxonomies = get_taxonomies( array( 'public' => true, '_builtin' => false ), 'object' );
+	$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	
 	foreach ( $taxonomies as $name => $tx_obj ) {
+		if ( empty( $use_taxonomies[$name] ) )
+			continue;
+		
 		$cap = $tx_obj->cap;
 		
 		$role_caps["rs_{$name}_manager"] = array(
@@ -382,8 +382,12 @@ function scoper_add_custom_taxonomy_role_caps( &$role_caps ) {
 
 function scoper_add_custom_post_role_defs( &$role_defs ) {
 	$post_types = get_post_types( array( 'public' => true, '_builtin' => false ), 'object' );
+	$use_post_types = scoper_get_option( 'use_post_types' );
 	
 	foreach ( $post_types as $name => $post_type_obj ) {
+		if ( empty( $use_post_types[$name] ) )
+			continue;
+		
 		$role_defs["rs_{$name}_reader"] = 			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true ),  'object_type' => $name, 'anon_user_blogrole' => true );
 		$role_defs["rs_private_{$name}_reader"] =	(object) array( 'objscope_equivalents' => array("rs_{$name}_reader"),  'object_type' => $name );
 	
@@ -406,8 +410,12 @@ function scoper_add_custom_post_role_defs( &$role_defs ) {
 
 function scoper_add_custom_taxonomy_role_defs( &$role_defs ) {
 	$taxonomies = get_taxonomies( array( 'public' => true, '_builtin' => false ), 'object' );
+	$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	
 	foreach ( $taxonomies as $name => $tx_obj ) {
+		if ( empty( $use_taxonomies[$name] ) )
+			continue;
+		
 		$role_defs["rs_{$name}_manager"] = (object) array( 'src_name' => 'post', 'object_type' => $name, 'no_custom_caps' => true );
 	}
 }

@@ -316,8 +316,14 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	if ( ! empty($src->taxonomy_only) )
 		continue;
 
+	if ( 'post' == $src_name )
+		$use_post_types = scoper_get_option( 'use_post_types' );
+		
 	$include_taxonomy_otypes = true;
 	foreach ( $src->object_types as $object_type => $otype ) {
+		if ( ( 'post' == $src_name ) && ( empty( $use_post_types[$object_type] ) ) )
+			continue;
+		
 		$otype_roles = array();
 		$otype_roles[$object_type] = $scoper->role_defs->get_matching( SCOPER_ROLE_TYPE, $src_name, $object_type );
 		$otype_source[$object_type] = $src_name;

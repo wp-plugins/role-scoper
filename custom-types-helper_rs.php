@@ -1,6 +1,8 @@
 <?php
 add_filter( 'map_meta_cap', 'scoper_map_custom_meta_cap', 99, 2 );
 
+// NOTE: as of 1.2.8, RS does not rely on this internally
+// TODO: less code by just forcing the meta cap back to edit_post for custom types
 function scoper_map_custom_meta_cap( $cap, $user_id ) {
 	if ( count($cap) > 1 )
 		return $cap;
@@ -8,7 +10,7 @@ function scoper_map_custom_meta_cap( $cap, $user_id ) {
 	if ( $custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) ) ) {
 		$args = array_slice( func_get_args(), 2 );
 		$caps = array();
-		
+
 		//print_r( $cap );
 		
 		foreach ( $custom_types as $type ) {

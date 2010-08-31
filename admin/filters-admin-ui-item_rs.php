@@ -10,7 +10,7 @@ class ScoperAdminFiltersItemUI {
 	function ScoperAdminFiltersItemUI () {
 		global $scoper;
 		$this->scoper =& $scoper;
-	
+
 		add_action('admin_menu', array(&$this, 'add_meta_boxes'));
 		add_action('do_meta_boxes', array(&$this, 'act_tweak_metaboxes') );
 		

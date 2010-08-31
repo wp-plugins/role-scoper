@@ -77,7 +77,28 @@ function scoper_default_options() {
 		'filter_users_dropdown' => 1,
 		'auto_private' => 1
 	);
+	
+	$def['use_taxonomies']['category'] = 1;
+	$def['use_taxonomies']['post_tag'] = 0;
+	
+	$def['use_post_types']['post'] = 1;
+	$def['use_post_types']['page'] = 1;
 
+	if ( awp_ver( '2.9' ) ) {
+		$custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' ) );
+		foreach ( $custom_types as $type )
+			$def['use_post_types'][$type] = 0;
+			
+		// note: WP 3.0 introduced function get_taxonomies
+		global $wp_taxonomies;
+		$core_taxonomies = array( 'category', 'link_category', 'nav_menu', 'ngg_tag' );
+		
+		foreach ( $wp_taxonomies as $wtx ) {
+			if ( ! in_array( $wtx->name, $core_taxonomies ) )
+				$def['use_taxonomies'][$wtx->name] = 1;
+		}
+	}
+		
 	return $def;
 }
 
@@ -138,7 +159,7 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 	$def['use_term_roles']['post:post']['category'] = 1;
 	$def['use_term_roles']['post:page']['category'] = 0;  // Wordpress core does not categorize pages by default
 	$def['use_term_roles']['link:link']['link_category'] = 1;
-	
+
 	$def['use_object_roles']['post:post'] = 1;
 	$def['use_object_roles']['post:page'] = 1;
 	
@@ -161,8 +182,8 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 	
 	$def['object_roles_column']['post:post'] = 1;
 	$def['object_roles_column']['post:page'] = 1;
-
-	if ( $include_custom_types && awp_ver( '2.9' ) ) {
+	
+	if ( $include_custom_types && awp_ver( '2.9' ) ) {	
 		$post_types = get_post_types();
 		$custom_types = array_diff( $post_types, array( 'post', 'page', 'attachment', 'revision', 'nav_menu_item' ) );
 
@@ -198,7 +219,7 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 			$def['teaser_append_excerpt']		["post:{$type}"] = "<br /><small>" . scoper_po_trigger( "note: This content requires a higher login level." ) . "</small>";
 			$def['teaser_append_excerpt_anon']	["post:{$type}"] = "<br /><small>" . scoper_po_trigger( "note: This content requires site login." ) . "</small>";
 			
-			$def['use_object_roles']["post:{$type}"] = 0;
+			$def['use_object_roles']["post:{$type}"] = 1;
 		}
 			
 		// note: WP 3.0 introduced function get_taxonomies
@@ -214,8 +235,10 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 					else
 						$src_name = $object_type;
 
-					$def['use_term_roles']["{$src_name}:{$object_type}"][$wtx->name] = 0;
+					$def['use_term_roles']["{$src_name}:{$object_type}"][$wtx->name] = 1;
 				}
+
+				$def['use_taxonomies'][$type] = 0;
 			}
 		}
 	}

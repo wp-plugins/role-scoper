@@ -237,10 +237,10 @@ function scoper_init() {
 
 		foreach ( get_taxonomies( array('public' => true, '_builtin' => false) ) as $name )
 			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
-
+			
 		$current_user->merge_scoped_blogcaps();
 	}
-	
+
 	//log_mem_usage_rs( 'scoper->init() done' );
 }
 
@@ -481,6 +481,15 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 function scoper_get_otype_option( $option_main_key, $src_name, $object_type = '', $access_name = '')  {
 	static $otype_options;
 	
+	// make sure we indicate object roles disabled if object type usage is completely disabled
+	if ( 'use_object_roles' == $option_main_key ) {
+		if ( ( 'post' == $src_name ) && $object_type ) {
+			$use_object_types = scoper_get_option( 'use_object_types' );
+			if ( empty( $use_object_types[$object_type] ) )
+				return false;
+		}
+	}
+		
 	$key = "$option_main_key,$src_name,$object_type,$access_name";
 
 	if ( empty($otype_options) )
@@ -767,9 +776,15 @@ function scoper_get_taxonomy_usage( $src_name, $object_types = '' ) {
 		}
 	}
 	
-	if ( $taxonomies )
+	if ( $taxonomies ) {
+		// make sure we indicate non-usage of term roles for taxonomies that are completely disabled for RS
+		if ( 'post' == $src_name ) {
+			$use_taxonomies = scoper_get_option( 'use_taxonomies' );
+			$taxonomies = array_intersect_key( $taxonomies, array_intersect( $use_taxonomies, array( 1 ) ) );
+		}
+		
 		return array_keys($taxonomies);
-	else
+	} else
 		return array();
 }
 
