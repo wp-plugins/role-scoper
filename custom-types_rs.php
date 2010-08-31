@@ -317,13 +317,16 @@ function scoper_add_custom_post_role_caps( &$role_caps ) {
 			$cap->delete_posts => true,
 			"read" => true
 		);
-		$role_caps["rs_{$name}_revisor"] = array(
-			$cap->edit_posts => true,
-			$cap->delete_posts => true,
-			"read" => true,
-			$cap->read_private_posts => true,
-			$cap->edit_others_posts => true
-		);
+		
+		if ( defined( 'RVY_VERSION' ) )
+			$role_caps["rs_{$name}_revisor"] = array(
+				$cap->edit_posts => true,
+				$cap->delete_posts => true,
+				"read" => true,
+				$cap->read_private_posts => true,
+				$cap->edit_others_posts => true
+			);
+		
 		$role_caps["rs_{$name}_author"] = array(
 			"upload_files" => true,
 			$cap->publish_posts => true,
@@ -393,7 +396,10 @@ function scoper_add_custom_post_role_defs( &$role_defs ) {
 	
 		$role_defs["rs_{$name}_contributor"] =		(object) array( 'objscope_equivalents' => array("rs_{$name}_revisor"),  'object_type' => $name );
 		$role_defs["rs_{$name}_author"] =			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true,  'object_type' => $name ) );
-		$role_defs["rs_{$name}_revisor"] = 			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true,  'object_type' => $name ) );
+		
+		if ( defined( 'RVY_VERSION' ) )
+			$role_defs["rs_{$name}_revisor"] = 			(object) array( 'valid_scopes' => array( 'blog' => true, 'term' => true,  'object_type' => $name ) );
+		
 		$role_defs["rs_{$name}_editor"] = 			(object) array( 'objscope_equivalents' => array("rs_{$name}_author"),  'object_type' => $name );
 		
 		if ( $post_type_obj->hierarchical ) {												
