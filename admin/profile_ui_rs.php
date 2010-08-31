@@ -14,6 +14,13 @@ class ScoperProfileUI {
 
 		$blog_roles = $user->get_blog_roles_daterange( SCOPER_ROLE_TYPE, array( 'include_role_duration_key' => true, 'enforce_duration_limits' => false ) );	// arg: return array with additional key dimension for role duration 
 		
+		// for Administrators, display any custom post General Roles which were auto-assigned to maintain default editing rights
+		global $current_user;
+		if ( $current_user == $user ) {
+			if ( is_content_administrator_rs() )
+				$blog_roles[''][''] = ( isset($blog_roles['']['']) ) ? array_merge( $current_user->assigned_blog_roles[''] ) : $current_user->assigned_blog_roles[''];
+		}
+		
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx )	
 			$term_roles[$taxonomy] = $user->get_term_roles_daterange( $taxonomy, SCOPER_ROLE_TYPE, array( 'include_role_duration_key' => true, 'enforce_duration_limits' => false ) );	// arg: return array with additional key dimension for role duration
 

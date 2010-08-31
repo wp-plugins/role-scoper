@@ -104,6 +104,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 RC7 - 31 Aug 2010 =
+* BugFix : Post Types and Taxonomies disabled via new option checkboxes were not removed from Roles, Restrictions menus
+
 = 1.2.8 RC6 - 31 Aug 2010 =
 * BugFix : Newly enabled custom roles were not handled correctly by RS because initial save following activation de-associated their role capabilities (under RS Role Defs tab)
 * Compat : Verve Metaboxes - Internal server error when Administrator attempted to add a new custom post type

@@ -367,6 +367,9 @@ class ScoperAdmin
 		$can_admin_objects = array();
 		$can_admin_terms = array();
 		
+		$use_post_types = scoper_get_option( 'use_post_types' );
+		$use_taxonomies = scoper_get_option( 'use_taxonomies' );
+
 		// which object types does this user have any administration over?
 		foreach ( $scoper->data_sources->get_all() as $src_name => $src ) {
 			if ( ! empty($src->no_object_roles) || ! empty($src->taxonomy_only) || ('group' == $src_name) )
@@ -375,6 +378,9 @@ class ScoperAdmin
 			$object_types = ( isset($src->object_types) ) ? $src->object_types : array( $src_name => true );
 
 			foreach ( array_keys($object_types) as $object_type ) {
+				if ( ( 'post' == $src_name ) && empty( $use_post_types[$object_type] ) )
+					continue;
+
 				if ( is_administrator_rs($src, 'user') || $this->user_can_admin_object($src_name, $object_type, 0, true) )
 					if ( scoper_get_otype_option('use_object_roles', "$src_name:$object_type") )
 						$can_admin_objects[$src_name][$object_type] = true;
@@ -383,6 +389,9 @@ class ScoperAdmin
 		
 		// which taxonomies does this user have any administration over?
 		foreach ( $scoper->taxonomies->get_all() as $taxonomy => $tx ) {
+			if ( taxonomy_exists($taxonomy) && empty( $use_taxonomies[$taxonomy] ) )
+				continue;
+
 			if ( is_taxonomy_used_rs( $taxonomy ) && ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) )
 				$can_admin_terms[$taxonomy] = true;
 		}
