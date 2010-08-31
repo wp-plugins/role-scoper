@@ -253,9 +253,12 @@ class Scoper
 			}
 		}
 		
-		if ( awp_ver( '2.9' ) )
+		// instead of handling customized post meta caps, just force definitions to standard meta caps for each post type 
+		if ( awp_ver( '3.0' ) )
 			require_once('custom-types-helper_rs.php');
-		
+		elseif ( awp_ver( '2.9' ) )
+			require_once('custom-types-helper_29_rs.php');
+
 		if ( ! $disable_queryfilters ) {
 			 if ( ! $is_administrator ) {
 				if ( $this->direct_file_access ) {

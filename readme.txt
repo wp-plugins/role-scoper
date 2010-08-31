@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 RC8 - 31 Aug 2010 =
+* Change : Enable new Post Types and Taxonomies for RS Roles & Restrictions by default
+* BugFix : Fatal errors in wp-admin for non-Administrators under some configurations (call to undefined function user_can_edit_blogwide)
+* BugFix : Category Role usage was not available for custom post types
+
 = 1.2.8 RC7 - 31 Aug 2010 =
 * BugFix : Post Types and Taxonomies disabled via new option checkboxes were not removed from Roles, Restrictions menus
 

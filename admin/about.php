@@ -41,7 +41,7 @@ echo '</p><p>';
 printf( __('Role Scoper is currently available in the following languages, thanks to volunteer translators:', 'scoper') );
 echo '</p><ul class="rs-notes" style="margin-left: 1em">';
 echo '<li>';
-printf(__('Spanish by %1$s, technical revision by %2$s', 'scoper'), "<a href='http://www.rafo.cl/' target='_blank'>Rafo&copy; Computaci&oacute;n & Web</a>", , "<a href='www.desarrollowebdequeretaro.com' target='_blank'>David G&oacute;mez Becerril</a>" );
+printf(__('Spanish by %1$s, technical revision by %2$s', 'scoper'), "<a href='http://www.rafo.cl/' target='_blank'>Rafo&copy; Computaci&oacute;n & Web</a>", "<a href='www.desarrollowebdequeretaro.com' target='_blank'>David G&oacute;mez Becerril</a>" );
 echo '</li><li>';
 printf(__('French by %s', 'scoper'), "<a href='http://chryjs.free.fr' target='_blank'>Chryjs</a>");
 echo '</li><li>';

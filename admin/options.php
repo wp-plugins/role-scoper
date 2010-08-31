@@ -1827,7 +1827,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 
 								if ( ! $tx_display )
 									$tx_display = $taxonomy;
-								
+
 								$display_name_plural = $scoper->admin->interpret_src_otype($src_otype);
 
 								//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );

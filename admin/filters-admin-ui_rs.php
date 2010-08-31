@@ -137,10 +137,10 @@ class ScoperAdminFiltersUI
 			$blogwide_requirement_met = is_content_administrator_rs();
 			
 		elseif ( 'editor' == $blogwide_requirement )
-			$blogwide_requirement_met = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'published', 'require_others_cap' => true ) );
+			$blogwide_requirement_met = $this->scoper->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'published', 'require_others_cap' => true ) );
 		
 		elseif ( 'author' == $blogwide_requirement )
-			$blogwide_requirement_met = $this->scoper->admin->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'published' ) );
+			$blogwide_requirement_met = $this->scoper->user_can_edit_blogwide($src_name, $object_type, array( 'status' => 'published' ) );
 		
 		elseif ( $blogwide_requirement )
 			$blogwide_requirement_met = $can_edit_blogwide;

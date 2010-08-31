@@ -266,7 +266,7 @@ class QueryInterceptor_RS
 				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
 				
 				if ( ( ! $admin_others_attached ) || ! $admin_others_unattached )
-					$can_edit_others_blogwide = $this->scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
+					$can_edit_others_blogwide = $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
 
 				global $wpdb, $current_user;
 				

@@ -473,9 +473,22 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 		}
 	}
 
-	if ( isset($optval) )
-		return maybe_unserialize($optval);
-	else
+	if ( isset($optval) ) {
+		$optval = maybe_unserialize($optval);
+
+		// merge defaults into stored option array
+		if ( is_array($optval) ) {
+			global $scoper_default_options;
+			
+			if ( ! isset($scoper_default_options) )
+				scoper_refresh_default_options();
+			
+			if ( ! empty($scoper_default_options[$option_basename]) )
+				$optval = array_merge( $scoper_default_options[$option_basename], $optval );
+		}
+			
+		return $optval;
+	} else
 		return '';
 }
 

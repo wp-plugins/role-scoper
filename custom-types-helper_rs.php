@@ -1,115 +1,155 @@
 <?php
-add_filter( 'map_meta_cap', 'scoper_map_custom_meta_cap', 99, 2 );
+add_filter( 'map_meta_cap', '_map_meta_cap_rs', 99, 4 );
 
-// NOTE: as of 1.2.8, RS does not rely on this internally
-// TODO: less code by just forcing the meta cap back to edit_post for custom types
-function scoper_map_custom_meta_cap( $cap, $user_id ) {
-	if ( count($cap) > 1 )
-		return $cap;
+// (not currently intended as a replacement except for internal use with post, page, user)
+function _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
+	static $meta_caps;
+
+	$caps = (array) $caps;
 	
-	if ( $custom_types = array_diff( get_post_types(), array( 'post', 'page', 'attachment', 'revision' ) ) ) {
-		$args = array_slice( func_get_args(), 2 );
-		$caps = array();
-
-		//print_r( $cap );
-		
-		foreach ( $custom_types as $type ) {
+	if ( count($meta_cap) > 1 )
+		return $caps;
 	
-			if ( "delete_{$type}" == $cap[0] ) {
-				$author_data = get_userdata( $user_id );
-				
-				$post = get_post( $args[0] );
-				$post_type = get_post_type_object( $post->post_type );
-		
-				if ( '' != $post->post_author ) {
-					$post_author_data = get_userdata( $post->post_author );
-				} else {
-					//No author set yet so default to current user for cap checks
-					$post_author_data = $author_data;
-				}
-		
-				// If the user is the author...
-				if ( $user_id == $post_author_data->ID ) {
-					// If the post is published...
-					if ( 'publish' == $post->post_status ) {
-						$caps[] = "delete_published_{$type}s";
-					} elseif ( 'trash' == $post->post_status ) {
-						if ('publish' == get_post_meta($post->ID, '_wp_trash_meta_status', true) )
-							$caps[] = "delete_published_{$type}s";
-					} else {
-						// If the post is draft...
-						$caps[] = "delete_{$type}s";
-					}
-				} else {
-					// The user is trying to edit someone else's post.
-					$caps[] = "delete_others_{$type}s";
-					// The post is published, extra cap required.
-					if ( 'publish' == $post->post_status )
-						$caps[] = "delete_published_{$type}s";
-					elseif ( 'private' == $post->post_status )
-						$caps[] = "delete_private_{$type}s";
-				}
-				break;
-				
-			} elseif ( "edit_{$type}" == $cap[0] ) {
-				$author_data = get_userdata( $user_id );
-				
-				$post = get_post( $args[0] );
-				$post_type = get_post_type_object( $post->post_type );
+	// support usage by RS users_who_can function, which needs to remap meta caps to simple equivalent but builds owner cap adjustment into DB query
+	$adjust_for_user = ( -1 !== $user_id );
 
-				$post_author_data = get_userdata( $post->post_author );
-				//echo "current user id : $user_id, post author id: " . $post_author_data->ID . "<br />";
-				// If the user is the author...
-				if ( $user_id == $post_author_data->ID ) {
-					// If the post is published...
-					if ( 'publish' == $post->post_status ) {
-						$caps[] = "edit_published_{$type}s";
-					} elseif ( 'trash' == $post->post_status ) {
-						if ('publish' == get_post_meta($post->ID, '_wp_trash_meta_status', true) )
-							$caps[] = "edit_published_{$type}s";
-					} else {
-						// If the post is draft...
-						$caps[] = "edit_{$type}s";;
-					}
-				} else {
-					// The user is trying to edit someone else's post.
-					$caps[] = "edit_others_{$type}s";;
-					// The post is published, extra cap required.
-					if ( 'publish' == $post->post_status )
-						$caps[] = "edit_published_{$type}s";
-					elseif ( 'private' == $post->post_status )
-						$caps[] = "edit_private_{$type}s";
-				}
-				break;	
+	if ( ! $caps ) {
+		// note: user metacap conversion for internal use with users_who_can filtering; not intended as a replacement for WP core map_meta_cap
+		switch ( $meta_cap ) {
+			case 'edit_user' :
+				if ( isset( $args[0] ) && $user_id == $args[0] )
+					return array();
+				else
+					return array( 'edit_users' );
+					
+			case 'delete_user' :
+				return array( 'delete_users' );
 				
+			case 'remove_user' :
+				return array( 'remove_users' );
 				
-			} elseif ( "read_{$type}" == $cap[0] ) {
-				$post = get_post( $args[0] );
-				$post_type = get_post_type_object( $post->post_type );
-		
-				if ( 'private' != $post->post_status ) {
-					$caps[] = 'read';
-					break;
-				}
-		
-				$author_data = get_userdata( $user_id );
-				$post_author_data = get_userdata( $post->post_author );
-				if ( $user_id == $post_author_data->ID )
+			case 'promote_user':
+				return array( 'promote_users' );
+		} // end switch
+	}
+	
+	if ( ! isset( $meta_caps ) ) {
+		$meta_caps = array();
+
+		$post_types = array_diff_key( get_post_types( array( 'public' => true ), 'object' ), array( 'attachment' => true ) );
+
+		foreach( $post_types as $type => $post_type_obj ) {
+			$meta_caps ['read'] []= $post_type_obj->cap->read_post;
+			$meta_caps ['edit'] []= $post_type_obj->cap->edit_post;
+			$meta_caps ['delete'] []= $post_type_obj->cap->delete_post;
+		}
+	}
+
+	$matched_op = false;
+	foreach( array_keys($meta_caps) as $op ) {
+		if ( in_array( reset($caps), $meta_caps[$op] ) ) {
+			$caps = array_diff( $caps, $meta_caps[$op] );
+			$matched_op = $op;
+			break;	
+		}
+	}
+	
+	
+	if ( $matched_op ) {
+		if ( ! $post = get_post( $args[0] ) )
+			return $caps;
+
+		if ( ! $post_type_obj = get_post_type_object( $post->post_type ) )
+			return $caps;
+			
+		if ( ! $post_status_obj = get_post_status_object( $post->post_status ) )
+			return $caps;
+			
+		// no need to modify meta caps for post/page checks with built-in status
+		if ( in_array( $post->post_type, array( 'post', 'page' ) ) && $post_status_obj->_builtin && $adjust_for_user && $caps )
+			return $caps;
+
+		if ( ! $adjust_for_user ) {
+			$is_post_author = true;
+
+		} elseif ( ! $post->post_author ) {
+			$is_post_author = true;	//No author set yet so treat current user as author for cap checks
+			//$require_all_status_caps = true;
+		} else {
+			$post_author_data = get_userdata( $post->post_author );
+			$is_post_author = ( $user_id == $post_author_data->ID );
+			//$require_all_status_caps = ! defined( 'SCOPER_LEGACY_META_CAPS' );
+		}
+
+		switch ( $op ) {
+		case 'read':
+			if ( ! empty($post_status_obj->private) ) {
+				if ( $is_post_author )
 					$caps[] = 'read';
 				else
-					$caps[] = "read_private_{$type}s";
-				break;
-			}		
-		} // end foreach custom types
+					$caps[] = $post_type_obj->cap->read_private_posts;
+			} else
+				$caps[] = 'read';
+
+			break;
+			
+		case 'edit' :
+			$caps[] = $post_type_obj->cap->edit_posts;
 		
-		// If no meta caps match, return the original cap.
-		if( ! $caps )
-			$caps = $cap;	
+			// The post is public, extra cap required.
+			if ( ! empty($post_status_obj->public) ) {
+				$caps[] = $post_type_obj->cap->edit_published_posts;
+			
+			} elseif ( 'trash' == $post->post_status ) {
+				if ('publish' == get_post_meta($post->ID, '_wp_trash_meta_status', true) )
+					$caps[] = $post_type_obj->cap->edit_published_posts;
+			}
+				
+			// note: as of 3.0, WP core requires edit_published_posts, but not edit_private_posts, when logged user is the post author.  That's inconsistent when used in conjunction with custom statuses
+			if ( ! empty($post_status_obj->private) && ! $is_post_author )
+				$caps[] = $post_type_obj->cap->edit_private_posts;
+				
+			if ( ! $is_post_author )
+				$caps[] = $post_type_obj->cap->edit_others_posts;	// The user is trying to edit someone else's post.
+
+			break;
+			
+		case 'delete' :
+			$caps[] = $post_type_obj->cap->delete_posts;
 		
-		//dump($caps);
-		return $caps;
-	} else {
-		return $cap;
+			// The post is public, extra cap required.
+			if ( ! empty($post_status_obj->public) ) {
+				$caps[] = $post_type_obj->cap->delete_published_posts;
+			
+			} elseif ( 'trash' == $post->post_status ) {
+				if ('publish' == get_post_meta($post->ID, '_wp_trash_meta_status', true) )
+					$caps[] = $post_type_obj->cap->delete_published_posts;
+			}
+				
+			// note: as of 3.0, WP core requires delete_published_posts, but not delete_private_posts, when logged user is the post author.  That's inconsistent when used in conjunction with custom statuses
+			if ( ! empty($post_status_obj->private) && ! $is_post_author )
+				$caps[] = $post_type_obj->cap->delete_private_posts;
+				
+			if ( ! $is_post_author )
+				$caps[] = $post_type_obj->cap->delete_others_posts;	// The user is trying to delete someone else's post.
+
+			break;
+		} // end switch
+		
+		// if a capability is defined for this custom status, require it also
+		//if ( $require_all_status_caps ) {
+			if ( empty($post_status_obj->_builtin) ) {
+				$status_cap_name = "{$op}_{$post->post_status}_posts";
+				if ( ! empty( $post_type_obj->cap->$status_cap_name ) )
+					$caps []= $post_type_obj->cap->$status_cap_name;
+			}
+		//}
+			
+		$caps = array_unique( $caps );
+		
+		//print_r($caps);
 	}
+			
+	return apply_filters( 'map_meta_cap_rs', $caps, $meta_cap, $user_id, $args );
 }
 ?>
