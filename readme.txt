@@ -108,7 +108,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Newly enabled custom roles were not handled correctly by RS because initial save following activation de-associated their role capabilities (under RS Role Defs tab)
 * Compat : Verve Metaboxes - Internal server error when Administrator attempted to add a new custom post type
 * Feature : New simple checklist enables/disables RS usage of each defined post type and taxonomy 
-* Change : Default-enable RS roles, restrictions for each public post type and taxonomy
 
 = 1.2.8 RC5 - 30 Aug 2010 =
 * BugFix : After a custom taxonomy was enabled for RS roles & restrictions, Administrators could not manage it by default
