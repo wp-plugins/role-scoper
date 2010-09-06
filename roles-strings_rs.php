@@ -68,8 +68,6 @@ class ScoperRoleStrings {
 				return __('Group Applicant', 'scoper');
 				
 			default :
-				return '';
-
 				if ( awp_ver( '2.9' ) ) {
 					$custom_types = get_post_types( array( '_builtin' => false, 'public' => true ), 'object' );
 					
