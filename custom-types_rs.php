@@ -208,21 +208,23 @@ function scoper_add_custom_data_sources(&$data_sources) {
 			$singular_label = ( ! empty($otype->labels->singular_name) ) ? $otype->labels->singular_name : $otype->singular_label;
 			$data_sources['post']->object_types[$name] = (object) array( 'val' => $name, 'uri' => array( "wp-admin/add-{$name}.php", "wp-admin/manage-{$name}.php" ), 'display_name' => $singular_label, 'display_name_plural' => $otype->label, 'ignore_object_hierarchy' => true, 'admin_default_hide_empty' => true, 'admin_max_unroled_objects' => 100 );
 			
-			$data_sources['post']->reqd_caps['read'][$name] = array(
-				"published" => 	array( "read" ), 	
-				"private" => 	array( "read", "read_private_{$captype}s" )
-			);
-
-			$data_sources['post']->reqd_caps['edit'][$name] = array(
-				"published" =>	array( "edit_others_{$captype}s", "edit_published_{$captype}s" ),
-				"private" => 	array( "edit_others_{$captype}s", "edit_published_{$captype}s", "edit_private_{$captype}s" ), 
-				"draft" => 		array( "edit_others_{$captype}s" ),
-				"pending" => 	array( "edit_others_{$captype}s" ),
-				"future" => 	array( "edit_others_{$captype}s" ),
-				"trash" => 		array( "edit_others_{$captype}s" )
-			);	
+			if ( ! awp_ver( '3.0' ) ) {
+				$data_sources['post']->reqd_caps['read'][$name] = array(
+					"published" => 	array( "read" ), 	
+					"private" => 	array( "read", "read_private_{$captype}s" )
+				);
 	
-			$data_sources['post']->reqd_caps['admin'] = $data_sources['post']->reqd_caps['edit'];
+				$data_sources['post']->reqd_caps['edit'][$name] = array(
+					"published" =>	array( "edit_others_{$captype}s", "edit_published_{$captype}s" ),
+					"private" => 	array( "edit_others_{$captype}s", "edit_published_{$captype}s", "edit_private_{$captype}s" ), 
+					"draft" => 		array( "edit_others_{$captype}s" ),
+					"pending" => 	array( "edit_others_{$captype}s" ),
+					"future" => 	array( "edit_others_{$captype}s" ),
+					"trash" => 		array( "edit_others_{$captype}s" )
+				);	
+		
+				$data_sources['post']->reqd_caps['admin'] = $data_sources['post']->reqd_caps['edit'];
+			}
 		}
 	}
 }

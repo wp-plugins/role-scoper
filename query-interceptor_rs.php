@@ -160,10 +160,10 @@ class QueryInterceptor_RS
 		// if the filter call did not specify required caps...
 		if ( ! $reqd_caps_by_otype ) {
 			$object_src_name = $scoper->taxonomies->member_property($taxonomy, 'object_source', 'name');
-		
-			// try to determine context from URI (if taxonomy definition includes such clues)
-			$reqd_caps_by_otype = $scoper->get_terms_reqd_caps($object_src_name);
 
+			// try to determine context from URI (if taxonomy definition includes such clues)
+			$reqd_caps_by_otype = $scoper->get_terms_reqd_caps($taxonomy, $object_src_name);
+			
 			if ( array_intersect( array_intersect_key( scoper_get_otype_option('use_term_roles', 'post', 'page'), array_flip($taxonomies) ), array(1) ) ) {
 				if ( $reqd_caps_by_otype == array( 'post' => array('read') ) )
 					$reqd_caps_by_otype ['page'] = array('read');
@@ -195,7 +195,7 @@ class QueryInterceptor_RS
 		$args['taxonomies'] = $taxonomies;
 
 		$where = $this->flt_objects_where($where, $src_name, '', $args);
-		
+
 		if ( $pos_where === false )
 			$request = $request . ' WHERE 1=1 ' . $where;
 		else
@@ -436,9 +436,16 @@ class QueryInterceptor_RS
 				if ( ! $required_operation )
 					$required_operation = ( 'front' == CURRENT_ACCESS_NAME_RS ) ? OP_READ_RS : OP_EDIT_RS;
 
-				if ( isset( $src->reqd_caps[$required_operation] ) )
-					$otype_status_reqd_caps = $src->reqd_caps[$required_operation];
-				else
+				if ( awp_ver( '3.0' ) )
+					$otype_status_reqd_caps = cr_get_reqd_caps( $src_name, $required_operation );
+				else {
+					if ( isset( $src->reqd_caps[$required_operation] ) )
+						$otype_status_reqd_caps = $src->reqd_caps[$required_operation];
+				}
+
+				//dump($otype_status_reqd_caps);
+				
+				if ( empty($otype_status_reqd_caps) )
 					return $where;
 			}
 
@@ -833,7 +840,7 @@ class QueryInterceptor_RS
 
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
-		
+
 		global $scoper;
 
 		if ( '' === $custom_user_blogcaps )

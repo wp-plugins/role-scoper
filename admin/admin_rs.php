@@ -715,6 +715,13 @@ class ScoperAdmin
 				break;
 		} // data sources loop
 		
+		// if running WP 3.0, return type-specific edit_posts capability
+		if ( awp_ver( '3.0' ) && $matched && ( 'edit_posts' == $matched['reqd_caps'] ) ) {
+			$post_type = awp_post_type_from_uri();
+			if ( $post_type_obj = get_post_type_object( $post_type ) )
+				$matched['reqd_caps'] = array( $post_type_obj->cap->edit_posts );
+		}
+		
 		if ( $matched && ! $reqd_caps_only ) {
 			if ( isset($matched['source']->object_types) ) {
 				// if this data source has more than one object type defined, 

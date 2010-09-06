@@ -123,7 +123,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 <thead>
 <tr class="thead">
 	<th width="15%"><?php echo __awp('Role') ?></th>
-	<th><?php _e('Capabilities (defaults are bolded)', 'scoper');?></th>
+	<th><?php _e('Capabilities (abbreviated, defaults are bolded)', 'scoper');?></th>
 </tr>
 </thead>
 <tbody>
@@ -203,7 +203,20 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 					sort($available_cap_names);
 				}
 
+				// abbreviate type caps and reorder display
+				$show_cap_names = array();
 				foreach($available_cap_names as $cap_name) {
+					if ( strpos( $cap_name, "_{$object_type}s" ) ) {
+						$display = str_replace( "_{$object_type}s", '', $cap_name );
+						$display = sprintf( __( '%s...', 'scoper' ), $display );
+					} else
+						$display = $cap_name;
+						
+					$show_cap_names[$display] = $cap_name;
+				}
+				ksort( $show_cap_names );
+
+				foreach($show_cap_names as $display => $cap_name) {
 					$checked = ( in_array($cap_name, $active_cap_names) ) ? 'checked="checked"' : '';
 					$is_default = ! empty($rs_default_role_defs->role_caps[$rs_role_handle][$cap_name]);
 					$disabled_cap = $disabled_role || ( $is_default && ! empty($available_caps[$cap_name]->no_custom_remove) ) || ( ! $is_default && ! empty($available_caps[$cap_name]->no_custom_add) );
@@ -212,9 +225,9 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 					$style = ( $is_default ) ? "style='font-weight: bold'" : '';
 
 					$cap_safename = str_replace( ' ', '_', $cap_name );
-					
+
 					echo "<li><input type='checkbox' name='{$rs_role_handle}_caps[]' id='{$rs_role_handle}_{$cap_safename}' value='$cap_name' $checked $disabled />"
-						. "<label for='{$rs_role_handle}_{$cap_safename}' $style>" . str_replace( ' ', '&nbsp;', ucwords( str_replace('_', ' ', $cap_name) ) ) . '</label></li>';
+						. "<label for='{$rs_role_handle}_{$cap_safename}' title='$cap_name' $style>" . str_replace( ' ', '&nbsp;', ucwords( str_replace('_', ' ', $display) ) ) . '</label></li>';
 				}
 
 				echo '</ul></td></tr>';

@@ -104,7 +104,7 @@ class ScoperRoleAssigner
 		return $user_has_role;
 	}
 	
-	function _compare_role_settings($assign_for, $role_assignment, $propagated_assignments, &$delete_assignments, &$update_assign_for, &$update_role_duration, &$update_content_date_limits, $set_role_duration = '', $set_content_date_limits = '', $skip_assignfor_comparison = false ) {
+	function _compare_role_settings($assign_for, $role_assignment, &$delete_assignments, &$update_assign_for, &$update_role_duration, &$update_content_date_limits, $set_role_duration = '', $set_content_date_limits = '', $skip_assignfor_comparison = false ) {
 		$retval = array( 'role_change' => false, 'unset' => false );
 		$assignment_id = 0;
 		
@@ -132,10 +132,6 @@ class ScoperRoleAssigner
 					if ( ($role_assignment['assign_for'] != $assign_for) || ($role_assignment['inherited_from'] != '0') ) {
 						$update_assign_for[$assign_for] []= $role_assignment['assignment_id'];
 						$retval['role_change'] = true;
-						
-						// if propagated roles exist, but the role is now set for entity only, delete the propagated assignments
-						if ( (ASSIGN_FOR_ENTITY_RS == $assign_for) && ! empty($propagated_assignments[$assignment_id]) )
-							$delete_assignments = $delete_assignments + $propagated_assignments[$assignment_id];
 					} //endif assign_for changed
 				}
 					
@@ -183,7 +179,6 @@ class ScoperRoleAssigner
 		$role_change_agent_ids = array();
 		$delete_assignments = array();
 		$propagate_agents = array();
-		$propagated_assignments = array();
 		
 		// make sure end date is never accidentally set to zero
 		if ( $set_role_duration && ! $set_role_duration->end_date_gmt )
@@ -194,9 +189,10 @@ class ScoperRoleAssigner
 			
 		$ug_clause = ( ROLE_BASIS_USER == $role_basis ) ? "AND user_id > 0" : "AND group_id > 0";
 				
+		// note: default roles are stored with assignment id zero, but accounted for elsewhere
 		$qry = "SELECT $col_ug_id, assignment_id, assign_for, inherited_from, role_name, date_limited, start_date_gmt, end_date_gmt, content_date_limited, content_min_date_gmt, content_max_date_gmt FROM $wpdb->user2role2object_rs WHERE scope = '$scope' $ug_clause"
 			. " AND role_type = '$SCOPER_ROLE_TYPE' AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$item_id'";
-			
+
 		$results = scoper_get_results($qry);
 
 		$stored_assignments = array();
@@ -232,20 +228,6 @@ class ScoperRoleAssigner
 			$update_assign_for = array( ASSIGN_FOR_ENTITY_RS => array(), ASSIGN_FOR_CHILDREN_RS => array(), ASSIGN_FOR_BOTH_RS => array() );
 			$update_role_duration = array();
 			$update_content_date_limits = array();
-			
-			if ( ! empty($assignment_ids[$role_handle]) && ( BLOG_SCOPE_RS != $scope ) ) {
-				$propagated_assignments[$role_handle] = array();
-			
-				foreach ( array_keys($assignment_ids[$role_handle]) as $ug_id )
-					$propagated_assignments[$role_handle] = $propagated_assignments[$role_handle] + array_keys($assignment_ids[$role_handle][$ug_id]);
-
-				$id_in = "'" . implode("', '", array_keys($propagated_assignments) ) . "'";
-				$qry = "SELECT assignment_id, inherited_from FROM $wpdb->user2role2object_rs WHERE inherited_from IN ($id_in)";
-				
-				if ( $results = scoper_get_results($qry) )
-					foreach ($results as $key => $ass)
-						$propagated_assignments[$ass->inherited_from] [$ass->assignment_id] = true;
-			}
 			
 			if ( $implicit_removal && isset($stored_assignments[$role_handle]) ) {
 				// Stored assignments which are not included in $agents will be deleted (along with their prodigy)
@@ -284,7 +266,7 @@ class ScoperRoleAssigner
 					}
 				} else {
 					$stored_assignment = ( isset($stored_assignments[$role_handle][$ug_id]) ) ? $stored_assignments[$role_handle][$ug_id] : array();					
-					$comparison = $this->_compare_role_settings($assign_for, $stored_assignment, $propagated_assignments, $delete_assignments, $update_assign_for, $update_role_duration, $update_content_date_limits, $set_role_duration, $set_content_date_limits);
+					$comparison = $this->_compare_role_settings($assign_for, $stored_assignment, $delete_assignments, $update_assign_for, $update_role_duration, $update_content_date_limits, $set_role_duration, $set_content_date_limits);
 
 					// Mark assignment for propagation to child items (But don't do so on storage of default role to root item. Default roles are only applied at item creation.)
 					if ( $item_id && isset($comparison['new_propagation']) )
@@ -317,7 +299,7 @@ class ScoperRoleAssigner
 				if ( -1 != $set_role_duration->end_date_gmt )
 					$qry .= ", end_date_gmt = '$set_role_duration->end_date_gmt'";
 					
-				$qry .= " WHERE assignment_id IN ($id_in)";
+				$qry .= " WHERE assignment_id IN ($id_in) OR (inherited_from IN ($id_in) AND inherited_from != '0')";
 				scoper_query($qry);
 			}
 			
@@ -331,7 +313,7 @@ class ScoperRoleAssigner
 				if ( -1 != $set_content_date_limits->content_max_date_gmt )
 					$qry .= ", content_max_date_gmt = '$set_content_date_limits->content_max_date_gmt'";
 					
-				$qry .= " WHERE assignment_id IN ($id_in)";
+				$qry .= " WHERE WHERE assignment_id IN ($id_in) OR (inherited_from IN ($id_in) AND inherited_from != '0')";
 
 				scoper_query($qry);
 			}
@@ -603,7 +585,6 @@ class ScoperRoleAssigner
 		$is_administrator = is_administrator_rs($src_or_tx_name, 'user');
 		
 		$delete_reqs = array();
-		$propagated_restrictions = array();
 		$role_change = false;
 		$default_strict_modes = array( false );
 		$strict_role_in = '';
@@ -661,18 +642,6 @@ class ScoperRoleAssigner
 					$req_ids[$role_handle][$req->assignment_id] = array();
 				}
 			}
-			
-			foreach( array_keys($req_ids) as $role_handle ) {
-				if ( ! empty($req_ids[$role_handle]) ) {
-					// log propagated restrictions
-					$id_in = "'" . implode("', '", array_keys($req_ids[$role_handle]) ) . "'";
-					$qry = "SELECT requirement_id AS assignment_id, inherited_from FROM $wpdb->role_scope_rs WHERE inherited_from IN ($id_in)";
-			
-					if ( $results = scoper_get_results($qry) )
-						foreach ( $results as $row )
-							$propagated_restrictions[$row->inherited_from][$row->assignment_id] = true;
-				}
-			}
 					
 			if ( ! $is_administrator )
 				$user_has_role = $this->_validate_assigner_roles($scope, $src_or_tx_name, $item_id, $roles);
@@ -711,7 +680,7 @@ class ScoperRoleAssigner
 				$stored_req = ( isset($stored_reqs[$role_handle]) ) ? $stored_reqs[$role_handle] : array();
 				
 				$unused_byref_arg = '';
-				$comparison = $this->_compare_role_settings($require_for, $stored_req, $propagated_restrictions, $delete_reqs, $update_require_for, $unused_byref_arg, $unused_byref_arg);
+				$comparison = $this->_compare_role_settings($require_for, $stored_req, $delete_reqs, $update_require_for, $unused_byref_arg, $unused_byref_arg);
 
 				$insert_restriction = ( $comparison['unset'] ) ? false : $require_for;
 				

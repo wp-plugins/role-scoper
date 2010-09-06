@@ -25,31 +25,33 @@ if ( $scoper->is_front() || ! is_content_administrator_rs() )
 // flt_get_terms '' so private posts are included in count, as basis for display when hide_empty arg is used
 
 
-add_filter('get_pages', array('ScoperHardway', 'flt_get_pages'), 1, 2);
+if ( $scoper->data_sources->member_property('post', 'object_types', 'page') )
+	add_filter('get_pages', array('ScoperHardway', 'flt_get_pages'), 1, 2);
 
 /**
  * ScoperHardway PHP class for the WordPress plugin Role Scoper
  * hardway_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2009
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
  *
  */	
 class ScoperHardway
 {	
-	//  Scoped equivalent to WP 3.0 core get_pages
+	//  Scoped equivalent to WP 2.8.3 core get_pages
 	//	Currently, scoped roles cannot be enforced without replicating the whole function  
 	//
-	//	Enforces cap requirements as specified in cr_get_reqd_caps
-	function flt_get_pages($results, $args = array()) {
+	//	Enforces cap requirements as specified in WP_Scoped_Data_Source::reqd_caps
+	function flt_get_pages($results, $args = '') {
 		if ( isset( $args['show_option_none'] ) && ( __('Main Page (no parent)') == $args['show_option_none'] ) ) {
 			// avoid redundant filtering (currently replacing parent dropdown on flt_dropdown_pages filter)
 			return $results;
 		}
 
-		$results = (array) $results;
+		if ( ! is_array($results) )
+			$results = (array) $results;
 
 		global $wpdb;
 
@@ -63,6 +65,9 @@ class ScoperHardway
 		// buffer titles in case they were filtered previously
 		$titles = scoper_get_property_array( $results, 'ID', 'post_title' );
 
+		if ( ! scoper_get_otype_option( 'use_object_roles', 'post', 'page' ) )
+			return $results;
+
 		// depth is not really a get_pages arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
 		if ( ! empty($args['exclude']) && empty($args['exclude_tree']) && ! empty($args['depth']) && ( 1 == $args['depth'] ) )
 			if ( 0 !== strpos( $args['exclude'], ',' ) ) // work around wp_list_pages() bug of attaching leading comma if a plugin uses wp_list_pages_excludes filter
@@ -74,21 +79,18 @@ class ScoperHardway
 		$defaults = array(
 			'child_of' => 0, 'sort_order' => 'ASC',
 			'sort_column' => 'post_title', 'hierarchical' => 1,
-			'exclude' => array(), 'include' => array(),
+			'exclude' => '', 'include' => '',
 			'meta_key' => '', 'meta_value' => '',
 			'authors' => '', 'parent' => -1, 'exclude_tree' => '',
 			'number' => '', 'offset' => 0,
-			'post_type' => 'page', 'post_status' => 'publish',
 			
 			'depth' => 0, 'suppress_filters' => 0,
 			'remap_parents' => -1,	'enforce_actual_depth' => -1,	'remap_thru_excluded_parent' => -1
 		);		// Role Scoper arguments added above
 		
 		// === BEGIN Role Scoper ADDITION: support front-end optimization
-		$post_type = ( isset( $args['post_type'] ) ) ? $args['post_type'] : $defaults['post_type'];
-		
 		if ( $scoper->is_front() ) {
-			if ( ( 'page' == $post_type ) && defined( 'SCOPER_GET_PAGES_LEAN' ) ) // custom types are likely to have custom fields
+			if ( defined( 'SCOPER_GET_PAGES_LEAN' ) )
 				$defaults['fields'] = "$wpdb->posts.ID, $wpdb->posts.post_title, $wpdb->posts.post_parent, $wpdb->posts.post_date, $wpdb->posts.post_date_gmt, $wpdb->posts.post_status, $wpdb->posts.post_name, $wpdb->posts.post_modified, $wpdb->posts.post_modified_gmt, $wpdb->posts.guid, $wpdb->posts.menu_order, $wpdb->posts.comment_count";
 			else {
 				$defaults['fields'] = "$wpdb->posts.*";
@@ -112,16 +114,7 @@ class ScoperHardway
 		$offset = (int) $offset;
 
 		$child_of = (int) $child_of;  // Role Scoper modification: null value will confuse children array check
-
-		// Make sure the post type is hierarchical
-		$hierarchical_post_types = get_post_types( array( 'hierarchical' => true ) );
-		if ( !in_array( $post_type, $hierarchical_post_types ) )
-			return false;
-	
-		// Make sure we have a valid post status
-		if ( !in_array($post_status, get_post_stati()) )
-			return false;
-				
+		
 		//$scoper->last_get_pages_args = $r; // don't copy entire args array unless it proves necessary
 		$scoper->last_get_pages_depth = $depth;
 		$scoper->last_get_pages_suppress_filters = $suppress_filters;
@@ -131,14 +124,11 @@ class ScoperHardway
 		
 		// === BEGIN Role Scoper MODIFICATION: wp-cache key and flag specific to access type and user/groups
 		//
-		if ( ! scoper_get_otype_option( 'use_object_roles', 'post', $post_type ) )
-			return $results;
-
 		$key = md5( serialize( compact(array_keys($defaults)) ) );
 		$ckey = md5 ( $key . CURRENT_ACCESS_NAME_RS );
 		
 		global $current_user;
-		$cache_flag = 'rs_get_pages';
+		$cache_flag = SCOPER_ROLE_TYPE . '_get_pages';
 
 		$cache = $current_user->cache_get($cache_flag);
 		
@@ -164,7 +154,7 @@ class ScoperHardway
 			$meta_value = '';
 			$hierarchical = false;
 			$incpages = wp_parse_id_list($include);
-			if ( ! empty( $incpages ) ) {
+			if ( count($incpages) ) {
 				foreach ( $incpages as $incpage ) {
 					if (empty($inclusions))
 						$inclusions = ' AND ( ID = ' . intval($incpage) . ' ';
@@ -179,7 +169,7 @@ class ScoperHardway
 		$exclusions = '';
 		if ( !empty($exclude) ) {
 			$expages = wp_parse_id_list($exclude);
-			if ( ! empty( $expages) ) {
+			if ( count($expages) ) {
 				foreach ( $expages as $expage ) {
 					if (empty($exclusions))
 						$exclusions = ' AND ( ID <> ' . intval($expage) . ' ';
@@ -195,7 +185,7 @@ class ScoperHardway
 		if (!empty($authors)) {
 			$post_authors = wp_parse_id_list($authors);
 	
-			if ( ! empty( $post_authors ) ) {
+			if ( count($post_authors) ) {
 				foreach ( $post_authors as $post_author ) {
 					//Do we have an author id or an author login?
 					if ( 0 == intval($post_author) ) {
@@ -217,72 +207,65 @@ class ScoperHardway
 			}
 		}
 	
-		$join = '';
-		$where = "$exclusions $inclusions ";
+		
+		// === BEGIN Role Scoper MODIFICATION: split query into join, where clause for filtering
+		//
+		$where_base = " AND post_type = 'page' AND post_status='publish' $exclusions $inclusions $author_query ";
+		
+		if ( $parent >= 0 )
+			$where_base .= $wpdb->prepare(' AND post_parent = %d ', $parent);
 
 		if ( ! empty( $meta_key ) && ! empty($meta_value) ) {
-			$join = " INNER JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id";   // Role Scoper modification: was LEFT JOIN in WP 3.0 core (TODO: would that botch uro join results?
-			
 			// meta_key and meta_value might be slashed
 			$meta_key = stripslashes($meta_key);
 			$meta_value = stripslashes($meta_value);
-			
-			if ( ! empty( $meta_key ) )
-				$where .= $wpdb->prepare(" AND $wpdb->postmeta.meta_key = %s", $meta_key);
-			if ( ! empty( $meta_value ) )
-				$where .= $wpdb->prepare(" AND $wpdb->postmeta.meta_value = %s", $meta_value);
-		}
-	
-		if ( $parent >= 0 )
-			$where .= $wpdb->prepare(' AND post_parent = %d ', $parent);
-			
-		// === BEGIN Role Scoper MODIFICATION:
-		//
-		
-		global $current_user;
-		if ( ! empty($current_user->ID) )
-			$list_private_pages = scoper_get_otype_option('private_items_listable', 'post', 'page');  // currently using Page option for all hierarchical types
-		else
-			$list_private_pages = false;
-		
-		if ( ( 'publish' == $post_status ) && $list_private_pages ) {
-			// WP core does not include private pages in query.  Include private status clause in anticipation of user-specific filtering
-			$where_post_type = $wpdb->prepare( "post_type = '%s' AND ( post_status IN ('publish','private') )", $post_type );
+			$join_base = " INNER JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id";
+			$where_base .= " AND $wpdb->postmeta.meta_key = '$meta_key' AND $wpdb->postmeta.meta_value = '$meta_value'";
 		} else
-			$where_post_type = $wpdb->prepare( "post_type = '%s' AND post_status = '%s'", $post_type, $post_status );
-			
-		/* // WP 3.0 core
-		$query = "SELECT * FROM $wpdb->posts $join WHERE ($where_post_type) $where ";
-		$query .= $author_query;
-		$query .= " ORDER BY " . $sort_column . " " . $sort_order ;
-		*/
-		
-		$query = "SELECT $fields FROM $wpdb->posts $join WHERE 1=1 AND ($where_post_type) $where $author_query ORDER BY $sort_column $sort_order";
+			$join_base = '';
+	
+		$request = "SELECT $fields FROM $wpdb->posts $join_base WHERE 1=1 $where_base ORDER BY $sort_column $sort_order ";
 
-		if ( !empty($number) )
-			$query .= ' LIMIT ' . $offset . ',' . $number;
+		$list_private_pages = scoper_get_otype_option('private_items_listable', 'post', 'page');
+
+		$def_caps = $scoper->data_sources->members['post']->reqd_caps['read']['page']['private'];
 		
-		if ( $scoper->is_front() && scoper_get_otype_option('do_teaser', 'post') && scoper_get_otype_option('use_teaser', 'post', $post_type) && ! defined('SCOPER_TEASER_HIDE_PAGE_LISTING') ) {
+		if ( ! is_admin() && ! $list_private_pages ) {
+			// As an extra precaution to make sure we can PREVENT private page listing even if private status is included in query,
+			// temporarily set the required cap for reading private pages to a nonstandard cap name (which is probably not owned by any user)
+			$scoper->data_sources->members['post']->reqd_caps['read']['page']['private'] = array('list_private_pages');
+		} else {
+			// WP core does not include private pages in query.  Include private status clause in anticipation of user-specific filtering
+			$request = str_replace("AND post_status='publish'", "AND ( post_status IN ('publish','private') )", $request);
+		}
+		
+		if ( $scoper->is_front() && scoper_get_otype_option('do_teaser', 'post') && scoper_get_otype_option('use_teaser', 'post', 'page') && ! defined('SCOPER_TEASER_HIDE_PAGE_LISTING') ) {
 			// We are in the front end and the teaser is enabled for pages	
 
-			$pages = scoper_get_results($query);			// execute unfiltered query
+			$pages = scoper_get_results($request);			// execute unfiltered query
 			
 			// Pass results of unfiltered query through the teaser filter.
 			// If listing private pages is disabled, they will be omitted completely, but restricted published pages
 			// will still be teased.  This is a slight design compromise to satisfy potentially conflicting user goals without yet another option
-			$pages = apply_filters('objects_teaser_rs', $pages, 'post', $post_type, array('request' => $query, 'force_teaser' => true) );
+			$pages = apply_filters('objects_teaser_rs', $pages, 'post', 'page', array('request' => $request, 'force_teaser' => true) );
 			
 			if ( $list_private_pages ) {
-				if ( ! scoper_get_otype_option('teaser_hide_private', 'post', $post_type) )
+				if ( ! scoper_get_otype_option('teaser_hide_private', 'post', 'page') )
 					$tease_all = true;
-			}
+			} else
+				// now that the teaser filter has been applied, restore reqd_caps value to normal
+				$scoper->data_sources->members['post']->reqd_caps['read']['page']['private'] = $def_caps;
 	
 		} else {
 			// Pass query through the request filter
-			$query = apply_filters('objects_request_rs', $query, 'post', $post_type, array( 'skip_teaser' => true ) );
+			$request = apply_filters('objects_request_rs', $request, 'post', 'page', array( 'skip_teaser' => true ) );
+			
+			// now that the request filter has been applied, restore reqd_caps value to normal
+			if ( ! $list_private_pages )
+				$scoper->data_sources->members['post']->reqd_caps['read']['page']['private'] = $def_caps;
 
 			// Execute the filtered query
-			$pages = scoper_get_results($query);
+			$pages = scoper_get_results($request);
 		}
 
 		if ( empty($pages) )

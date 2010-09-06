@@ -198,7 +198,7 @@ class ScoperAdminHardway_Ltd {
 					$src_name = $scoper->taxonomies->member_property($taxonomy, 'object_source', 'name');
 					$args = array();
 					$args['use_object_roles'] = false;
-					$args['reqd_caps_by_otype'] = $scoper->get_terms_reqd_caps($src_name, 'admin');
+					$args['reqd_caps_by_otype'] = $scoper->get_terms_reqd_caps($taxonomy, $src_name, 'admin');
 					$query = apply_filters( 'terms_request_rs', $query, $taxonomy, '', $args );
 
 					/*	// object source join, filtering was unnecessary for category count on dashboard

@@ -104,6 +104,13 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.2.8 RC9 - 6 Sep 2010 =
+* BugFix : Unnecessary DB query on post save added needless overhead, caused out of memory error on some configurations (since 1.2)
+* BugFix : Was not requiring type-specific editing capabilities for term selection in post edit form for custom types
+* BugFix : Object Roles were not correctly enabled by default (since 1.2.8.RC8)
+* Change : Better support for nonstandard capabilities in custom post type definitions
+* Change : Support get_pages / list_pages filtering of hierarchical custom post types
+
 = 1.2.8 RC8 - 31 Aug 2010 =
 * Change : Enable new Post Types and Taxonomies for RS Roles & Restrictions by default
 * BugFix : Fatal errors in wp-admin for non-Administrators under some configurations (call to undefined function user_can_edit_blogwide)

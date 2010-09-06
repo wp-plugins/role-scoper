@@ -186,7 +186,7 @@ class ScoperHardwayTaxonomy
 		// === BEGIN Role Scoper MODIFICATION: cache key specific to access type and user/groups ===
 		//
 		$object_src_name = $scoper->taxonomies->member_property($taxonomies[0], 'object_source', 'name');
-		$ckey = md5( $key . serialize($scoper->get_terms_reqd_caps($object_src_name)) );
+		$ckey = md5( $key . serialize($scoper->get_terms_reqd_caps($taxonomies[0], $object_src_name)) );
 		
 		global $current_user;
 		$cache_flag = SCOPER_ROLE_TYPE . '_get_terms';

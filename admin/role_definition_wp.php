@@ -102,8 +102,10 @@ if ( 'rs' == SCOPER_ROLE_TYPE ) {
 
 		$list = "<li>" . implode("</li><li>", $display_names) . "</li>";
 
+		$note = ( 'administrator' == $wp_role_name ) ? '<br /><br />' . __( '<strong>note</strong>: Role Scoper also implicitly grants Administrators the Editor role for each enabled custom post type, and the Manager role for each enabled taxonomy.', 'scoper' ) : '';
+		
 		echo "\n\t"
-			. "<tr$style><td>" . $scoper->role_defs->get_display_name($role_handle) . "</td><td><ul class='rs-cap_list'>$list</ul></td></tr>";
+			. "<tr$style><td>" . $scoper->role_defs->get_display_name($role_handle) . $note . "</td><td><ul class='rs-cap_list'>$list</ul></td></tr>";
 	} // end foreach role
 		
 	echo '</tbody></table>';

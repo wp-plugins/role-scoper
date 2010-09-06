@@ -325,9 +325,11 @@ if ( ! empty($this->list_ids) ) :
 	<br />
 	<select name="<?php echo $this->list_ids[0]?>[]" id="<?php echo $this->list_ids[0]?>" multiple="multiple" style="height:100px;width:200px;">
 	<?php
-	foreach ( $agents[ $this->status[0] ] as $value => $caption )
-		if ( ( 'users' == $agent_type ) || ( in_array( $value, $editable_group_ids ) ) )
-			echo "<option value='$value'>$caption</option>";
+	if ( ! empty($agents[ $this->status[0] ]) ) {
+		foreach ( $agents[ $this->status[0] ] as $value => $caption )
+			if ( ( 'users' == $agent_type ) || ( in_array( $value, $editable_group_ids ) ) )
+				echo "<option value='$value'>$caption</option>";
+	}
 	?>
 	</select>
 	<br /> 

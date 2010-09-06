@@ -236,8 +236,13 @@ function scoper_init() {
 			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
 		}
 			
-		foreach ( get_taxonomies( array('public' => true, '_builtin' => false) ) as $name )
-			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
+		global $wp_taxonomies; // WP 2.9 does not support get_taxonomies function
+		foreach ( $wp_taxonomies as $tx ) {
+			if ( empty( $tx->public ) || ! empty( $tx->_builtin ) )
+				continue;
+			
+			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$tx->name}_manager"] = true;
+		}
 			
 		$current_user->merge_scoped_blogcaps();
 	}
@@ -499,7 +504,7 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 	if ( 'use_object_roles' == $option_main_key ) {
 		if ( ( 'post' == $src_name ) && $object_type ) {
 			$use_object_types = scoper_get_option( 'use_object_types' );
-			if ( empty( $use_object_types[$object_type] ) )
+			if ( ( ! empty($use_object_types) ) && empty( $use_object_types[$object_type] ) )	// since default is to enable all object types, don't interfere if no use_object_types option is stored
 				return false;
 		}
 	}
@@ -626,7 +631,7 @@ function scoper_db_method($method_name, $query) {
 				return $buffer[$key];
 		}
 		*/
-
+		
 		$scoper_status->querying_db = true;
 		$results = call_user_func( array(&$wpdb, $method_name), $query );
 		$scoper_status->querying_db = false;

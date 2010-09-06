@@ -30,12 +30,6 @@ class CapInterceptorBasic_RS
 		// Disregard caps which are not defined in Role Scoper config
 		if ( ! $rs_reqd_caps = array_intersect( $orig_reqd_caps, $scoper->cap_defs->get_all_keys() ) )
 			return $wp_blogcaps;
-
-		static $in_process;			// prevent recursion
-		if ( ! empty($in_process) )
-			return $wp_blogcaps;
-			
-		$in_process = true;
 			
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 
@@ -54,15 +48,13 @@ class CapInterceptorBasic_RS
 
 		// If an object id was provided, all required caps must share a common data source (object_types array is indexed by src_name)
 		if ( count($object_types) > 1 || ! count($object_types) ) {
-			$in_process = false;
 			return array();
-		}
+	    }
 
 		$src_name = key($object_types);
-		if ( ! $src = $scoper->data_sources->get($src_name) ) { 
-			$in_process = false;
+		if ( ! $src = $scoper->data_sources->get($src_name) ) {
 			return array();
-		}
+	    }
 
 		// If cap definition(s) did not specify object type (as with "read" cap), enlist help detecting it
 		reset($object_types);
@@ -102,7 +94,6 @@ class CapInterceptorBasic_RS
 			//d_echo("object_id $object_id not okay!" );
 			//rs_errlog( "object_id $object_id not okay!" );
 			
-			$in_process = false;
 			return array_diff_key( $wp_blogcaps, $rs_reqd_caps);	// required caps we scrutinized are excluded from this array
 		} else {
 			if ( $restore_caps = array_diff($orig_reqd_caps, array_keys($rs_reqd_caps) ) )
@@ -111,7 +102,6 @@ class CapInterceptorBasic_RS
 			//rs_errlog( 'RETURNING:' );
 			//rs_errlog( serialize(array_merge($wp_blogcaps, $rs_reqd_caps)) );
 
-			$in_process = false;
 			return array_merge($wp_blogcaps, $rs_reqd_caps);
 		}
 	}

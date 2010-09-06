@@ -11,7 +11,7 @@ function scoper_version_updated( $prev_version ) {
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
 		// 1.2.8 Beta disabled caps for custom post type roles under some circumstances
-		if ( version_compare( $prev_version, '1.2.7', '>') && version_compare( $prev_version, '1.2.9', '<') ) {
+		if ( version_compare( $prev_version, '1.2.7', '>') && version_compare( $prev_version, '1.2.8', '<') ) {
 			if ( $disabled_role_caps = get_option( 'scoper_disabled_role_caps' ) ) {
 				$okay_role_prefix = array( 'rs_post', 'rs_page', 'rs_category', 'rs_link', 'rs_ngg' );
 				foreach ( array_keys($disabled_role_caps) as $role_handle ) {

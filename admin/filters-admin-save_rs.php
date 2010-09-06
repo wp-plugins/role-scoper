@@ -717,27 +717,33 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			}
 		}
 				
-		if( ! isset( $src->reqd_caps[OP_EDIT_RS][$object_type][$status] ) )
-			return $selected_terms;
+		if ( awp_ver( '3.0' ) ) {
+			$reqd_caps = cr_get_reqd_caps( $src->name, OP_EDIT_RS, $object_type, $status, $base_caps_only );
+		} else {
+			if( isset( $src->reqd_caps[OP_EDIT_RS][$object_type][$status] ) ) {
+				$reqd_caps = $src->reqd_caps[OP_EDIT_RS][$object_type][$status];
+				
+				if ( $base_caps_only ) {
+					foreach( $reqd_caps as $key => $cap_name ) {
+						if ( $cap_def = $scoper->cap_defs->get( $cap_name ) )
+							if ( ! empty($cap_def->base_cap ) ) {
+								unset( $reqd_caps[$key] );
 		
-		$reqd_caps = $src->reqd_caps[OP_EDIT_RS][$object_type][$status];
-
-		if ( $base_caps_only ) {
-			foreach( $reqd_caps as $key => $cap_name ) {
-				if ( $cap_def = $scoper->cap_defs->get( $cap_name ) )
-					if ( ! empty($cap_def->base_cap ) ) {
-						unset( $reqd_caps[$key] );
-
-						if ( ! in_array($cap_def->base_cap, $reqd_caps) )
-							$reqd_caps[] = $cap_def->base_cap;
-						
-					} elseif ( ! empty($cap_def->owner_privilege) && ! empty($cap_def->status) )  // don't remove edit_posts / edit_pages
-						unset( $reqd_caps[$key] );			
+								if ( ! in_array($cap_def->base_cap, $reqd_caps) )
+									$reqd_caps[] = $cap_def->base_cap;
+								
+							} elseif ( ! empty($cap_def->owner_privilege) && ! empty($cap_def->status) )  // don't remove edit_posts / edit_pages
+								unset( $reqd_caps[$key] );			
+					}
+					
+					if ( empty( $reqd_caps ) )
+						return $selected_terms;
+				}
 			}
-			
-			if ( empty( $reqd_caps ) )
-				return $selected_terms;
 		}
+				
+		if ( empty($reqd_caps) )
+			return $selected_terms;
 		
 		// now using $src->reqd_caps array instead
 		//if ( $reqd_caps = $scoper->cap_defs->get_matching($src->name, $object_type, OP_EDIT_RS, $status, $base_caps_only) ) {

@@ -795,4 +795,11 @@ function scoper_core_role_defs( $include_custom_types = true ) {
 
 	return $arr;
 }
+
+// requires WP 3.0
+function cr_get_reqd_caps( $src_name, $op, $object_type = -1, $status = -1, $base_caps_only = false ) {
+	require_once( 'reqd_caps_cr.php' );
+	return _cr_get_reqd_caps( $src_name, $op, $object_type, $status, $base_caps_only );
+}
+
 ?>

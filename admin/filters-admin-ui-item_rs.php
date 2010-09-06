@@ -102,19 +102,23 @@ jQuery(document).ready( function($) {
 			return;
 			
 		foreach ( $box_object_types as $object_type ) {
-			if ( ! scoper_get_otype_option('use_object_roles', $src_name, $object_type) )
+			if ( ! scoper_get_otype_option( 'use_object_roles', 'post', $object_type ) )
 				continue;
 		
 			if ( $require_blogwide_editor ) {
-				$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
+				if ( awp_ver( '3.0' ) ) {
+					$post_type_object = get_post_type_object( $object_type );
+					$required_cap = $post_type_object->cap->edit_others_posts;	
+				} else
+					$required_cap = ( 'page' == $object_type ) ? 'edit_others_pages' : 'edit_others_posts';
 
 				global $current_user;
 				if ( empty( $current_user->allcaps[$required_cap] ) )
 					continue;
 			}
-			
-			$role_defs = $this->scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_name, $object_type);
 
+			$role_defs = $this->scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $src_name, $object_type);
+			
 			foreach ( $role_defs as $role_handle => $role_def ) {
 				if ( ! isset($role_def->valid_scopes[OBJECT_SCOPE_RS]) )
 					continue;

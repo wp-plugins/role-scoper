@@ -253,7 +253,7 @@ class Scoper
 			}
 		}
 		
-		// instead of handling customized post meta caps, just force definitions to standard meta caps for each post type 
+		// register a map_meta_cap filter to handle the type-specific meta caps we are forcing
 		if ( awp_ver( '3.0' ) )
 			require_once('custom-types-helper_rs.php');
 		elseif ( awp_ver( '2.9' ) )
@@ -276,7 +276,7 @@ class Scoper
 				$this->query_interceptor = new QueryInterceptor_RS();
 			}
 
-			if ( ( ! $this->direct_file_access ) && ( ! $is_administrator || ! defined('XMLRPC_REQUEST') ) )
+			if ( ( ! $this->direct_file_access ) && ( ! $is_administrator || ! defined('XMLRPC_REQUEST') ) ) // don't tempt trouble by adding hardway filters on XMLRPC for logged administrator
 				$this->add_hardway_filters();
 
 		} // endif query filtering not disabled for this access type
@@ -325,8 +325,11 @@ class Scoper
 		$script_name = $_SERVER['SCRIPT_NAME'];
 		
 		// port or low-level query filters to work around limitations in WP core API
-		require_once('hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
-		
+		if ( awp_ver( '3.0' ) )
+			require_once('hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
+		else
+			require_once('hardway/hardway-legacy_rs.php');
+			
 		// buffering of taxonomy children is disabled with non-admin user logged in
 		// But that non-admin user may add cats.  Don't allow unfiltered admin to rely on an old copy of children
 		global $wp_taxonomies;
@@ -435,7 +438,7 @@ class Scoper
 					$args['reqd_caps_by_otype'][$src_name] = array_keys($reqd_caps);
 				}
 			} else {
-				$args['reqd_caps_by_otype'] = $this->get_terms_reqd_caps($src_name, $access_name);
+				$args['reqd_caps_by_otype'] = $this->get_terms_reqd_caps($taxonomy, $src_name, $access_name);
 			}
 
 			$ckey = md5( $ckey . serialize($reqd_caps) ); ; // can vary based on request URI
@@ -846,52 +849,14 @@ class Scoper
 	
 	// account for different contexts of get_terms calls 
 	// (Scoped roles can dictate different results for front end, edit page/post, manage categories)
-	function get_terms_reqd_caps($src_name, $access_name = '') {
-		global $current_user;	
-	
-		if ( ! $this->data_sources->is_member($src_name) )
-			return array();
-		
-		if ( empty($access_name) )
-			$access_name = ( is_admin() && strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') ) ? 'front' : CURRENT_ACCESS_NAME_RS; // hack to support subscribe2 categories checklist
-			
-		if ( ! $arr = $this->data_sources->member_property($src_name, 'terms_where_reqd_caps', $access_name ) )
-			return array();
-
-		if ( ! is_array($arr) )
-			$arr = array($arr);
-		
-		$full_uri = urldecode($_SERVER['REQUEST_URI']);
-		
-		$matched = array();
-		foreach ( $arr as $uri_sub => $reqd_caps )	// if no uri substrings match, use default (nullstring key)
-			if ( ( $uri_sub && strpos($full_uri, $uri_sub) ) || ( ! $uri_sub && ! $matched ) )
-				$matched = $reqd_caps;
-		
-		// replace matched caps with status-specific equivalent if applicable
-		if ( $matched ) {
-			if ( $object_id = $this->data_sources->detect('id', $src_name) ) {
-				$owner_id = $this->data_sources->get_from_db('owner', $src_name, $object_id);
-				$cap_attribs = ( $owner_id == $current_user->ID ) ? '' : array('others'); 
-				
-				$status = $this->data_sources->detect('status', $src_name, $object_id);
-
-				if ( $status || $cap_attribs )
-					foreach ( $matched as $object_type => $otype_caps )
-						foreach ( $otype_caps as $cap_name )
-							if ( $cap_def = $this->cap_defs->get($cap_name) )
-								if ( $other_defs = $this->cap_defs->get_matching($src_name, $cap_def->object_type, $cap_def->op_type, STATUS_ANY_RS) )
-									
-									foreach ( $other_defs as $other_cap_name => $other_def )
-										if ( $other_cap_name != $cap_name )
-										
-											if ( ( ! $other_def->status || ( $other_def->status == $status ) )
-											&& ( empty($other_def->attributes) || ( $other_def->attributes == $cap_attribs ) ) )
-												$matched[] = $other_cap_name;
-			}
+	function get_terms_reqd_caps( $taxonomy, $src_name, $access_name = '' ) {
+		if ( awp_ver( '3.0' ) ) {
+			require_once( 'reqd_caps_cr.php' );
+			return _cr_get_terms_reqd_caps( $taxonomy, $access_name );
+		} else {
+			require_once( 'reqd_caps-legacy_rs.php' );
+			return ScoperReqdCapsLegacy::get_terms_reqd_caps( $src_name, $access_name );	
 		}
-		
-		return $matched;
 	}
 	
 	function users_who_can($reqd_caps, $cols = COLS_ALL_RS, $object_src_name = '', $object_id = 0, $args = '' ) {
