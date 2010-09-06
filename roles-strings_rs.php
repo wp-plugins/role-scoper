@@ -70,7 +70,7 @@ class ScoperRoleStrings {
 			default :
 				if ( awp_ver( '2.9' ) ) {
 					$custom_types = get_post_types( array( '_builtin' => false, 'public' => true ), 'object' );
-					
+
 					foreach( $custom_types as $custype ) {
 						if ( strpos( $role_handle, "_{$custype->name}_" ) ) {
 							$label = $custype->labels->singular_name;

@@ -108,6 +108,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Unnecessary DB query on post save added needless overhead, caused out of memory error on some configurations (since 1.2)
 * BugFix : Was not requiring type-specific editing capabilities for term selection in post edit form for custom types
 * BugFix : Object Roles were not correctly enabled by default (since 1.2.8.RC8)
+* BugFix : page widget / dropdown did not include non-published pages where appropriate (since 1.2.8.RC8)
 * Change : Better support for nonstandard capabilities in custom post type definitions
 * Change : Support get_pages / list_pages filtering of hierarchical custom post types
 

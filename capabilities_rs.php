@@ -115,8 +115,7 @@ class WP_Scoped_Capabilities extends AGP_Config_Items {
 			if ( isset($this->members[$cap_name]) ) {
 				$capdef = $this->members[$cap_name];
 				if ( isset($capdef->base_cap) && ( ! $require_owner_privilege || ! empty($this->members[$capdef->base_cap]->owner_privilege) ) ) {
-					unset($caps[$key]);
-					$caps []= $capdef->base_cap;
+					$caps [$key] = $capdef->base_cap;
 				}
 			}
 		}

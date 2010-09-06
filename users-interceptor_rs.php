@@ -260,7 +260,7 @@ class UsersInterceptor_RS
 					
 					// potentially, a separate set of role clauses for object owner
 					if ( $this_src_object_id && $src->cols->owner ) {
-						$owner_needs_caps = $this->scoper->cap_defs->remove_owner_caps($reqd_caps_arg);  //returns array of caps the owner needs, after removing which are credited to owners automatically
+						$owner_needs_caps = $this->scoper->cap_defs->get_base_caps($reqd_caps_arg);  //returns array of caps the owner needs, after removing which are credited to owners automatically
 						
 						if ( $owner_needs_caps )
 							$owner_has_all_caps = false;

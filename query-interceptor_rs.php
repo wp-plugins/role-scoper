@@ -951,16 +951,17 @@ class QueryInterceptor_RS
 				if ( ! $require_full_object_role && ! $this->require_full_object_role ) {
 			
 					// if owner qualifies for the operation by any different roles than other users, add separate owner clause
-					$owner_reqd_caps = $scoper->cap_defs->remove_owner_caps($reqd_caps_arg);
+					$owner_reqd_caps = $scoper->cap_defs->get_base_caps($reqd_caps_arg);
 
 					$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
 				
 					if ( ! $owner_reqd_caps ) {
 						// all reqd_caps are granted to owner automatically
 						$where[$cap_name]['owner'] = "$src_table.{$src->cols->owner} = '$user->ID'";
+
 					} elseif ( $owner_reqd_caps != $reqd_caps_arg ) {
 						$owner_roles = $scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
-	
+
 						if ( $owner_roles ) {
 							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles, 'applied_object_roles' => $applied_object_roles, 'ignore_restrictions' => $ignore_restrictions ) );   //TODO: test whether we should just pass existing $objscope_objects, $applied_object_roles here
 							

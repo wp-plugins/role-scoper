@@ -237,27 +237,37 @@ class ScoperHardway
 			$where .= $wpdb->prepare(' AND post_parent = %d ', $parent);
 			
 		// === BEGIN Role Scoper MODIFICATION:
+		// allow pages of multiple statuses to be displayed (requires default status=publish to be ignored)
 		//
+		$where_post_type = $wpdb->prepare( "post_type = '%s'", $post_type );
+		$where_status = '';
 		
 		global $current_user;
-		if ( ! empty($current_user->ID) )
-			$list_private_pages = scoper_get_otype_option('private_items_listable', 'post', 'page');  // currently using Page option for all hierarchical types
+		
+		$is_front = $scoper->is_front();
+		if ( $is_front && ! empty($current_user->ID) )
+			$frontend_list_private = scoper_get_otype_option('private_items_listable', 'post', 'page');  // currently using Page option for all hierarchical types
 		else
-			$list_private_pages = false;
-		
-		if ( ( 'publish' == $post_status ) && $list_private_pages ) {
-			// WP core does not include private pages in query.  Include private status clause in anticipation of user-specific filtering
-			$where_post_type = $wpdb->prepare( "post_type = '%s' AND ( post_status IN ('publish','private') )", $post_type );
-		} else
-			$where_post_type = $wpdb->prepare( "post_type = '%s' AND post_status = '%s'", $post_type, $post_status );
+			$frontend_list_private = false;
+
+		// WP core does not include private pages in query.  Include private statuses in anticipation of user-specific filtering		
+		if ( $post_status && ( ( 'publish' != $post_status ) || ( $is_front && ! $frontend_list_private ) ) )
+			$where_status = $wpdb->prepare( "AND post_status = '%s'", $post_status );	
+		else {
+			// since we will be applying status clauses based on content-specific roles and restrictions, only a sanity check safeguard is needed when post_status is unspecified or defaulted to "publish"
+			if ( awp_ver( '3.0' ) ) {
+				$safeguard_statuses = array();
+				foreach( get_post_stati( array('internal' => false), 'object' ) as $status_name => $status_obj )
+					if ( ( ! $is_front ) || $status_obj->private || $status_obj->public )
+						$safeguard_statuses []= $status_name;
+			} else {
+				$safeguard_statuses = ( $is_front ) ? array( 'publish', 'private' ) : array( 'publish', 'private', 'draft', 'pending', 'future' );	
+			}
 			
-		/* // WP 3.0 core
-		$query = "SELECT * FROM $wpdb->posts $join WHERE ($where_post_type) $where ";
-		$query .= $author_query;
-		$query .= " ORDER BY " . $sort_column . " " . $sort_order ;
-		*/
-		
-		$query = "SELECT $fields FROM $wpdb->posts $join WHERE 1=1 AND ($where_post_type) $where $author_query ORDER BY $sort_column $sort_order";
+			$where_status = "AND post_status IN ('" . implode("','", $safeguard_statuses ) . "')";
+		}
+
+		$query = "SELECT $fields FROM $wpdb->posts $join WHERE 1=1 AND ($where_post_type $where_status) $where $author_query ORDER BY $sort_column $sort_order";
 
 		if ( !empty($number) )
 			$query .= ' LIMIT ' . $offset . ',' . $number;
@@ -272,7 +282,7 @@ class ScoperHardway
 			// will still be teased.  This is a slight design compromise to satisfy potentially conflicting user goals without yet another option
 			$pages = apply_filters('objects_teaser_rs', $pages, 'post', $post_type, array('request' => $query, 'force_teaser' => true) );
 			
-			if ( $list_private_pages ) {
+			if ( $frontend_list_private ) {
 				if ( ! scoper_get_otype_option('teaser_hide_private', 'post', $post_type) )
 					$tease_all = true;
 			}
@@ -284,7 +294,7 @@ class ScoperHardway
 			// Execute the filtered query
 			$pages = scoper_get_results($query);
 		}
-
+		
 		if ( empty($pages) )
 			// alternate hook name (WP core already applied get_pages filter)
 			return apply_filters('get_pages_rs', array(), $r);

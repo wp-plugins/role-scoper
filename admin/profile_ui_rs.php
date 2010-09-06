@@ -67,10 +67,11 @@ class ScoperProfileUI {
 				$html .= sprintf( __("<strong>Assigned WordPress Role:</strong> %s", 'scoper'), implode(", ", $display_names) );
 			
 				if ( $contained_roles = $this->scoper->role_defs->get_contained_roles( array_keys($wp_blog_roles), false, SCOPER_ROLE_TYPE ) ) {
-					$display_names = array();			
+					$display_names = array();	
+	
 					foreach (array_keys($contained_roles) as $role_handle)
 						$display_names []= $this->scoper->role_defs->get_display_name($role_handle);
-					
+
 					$html .= '<br /><span class="rs-gray">';
 					$html .= sprintf( __("(contains %s)", 'scoper'), implode(", ", $display_names) );
 					$html .= '</span>';
