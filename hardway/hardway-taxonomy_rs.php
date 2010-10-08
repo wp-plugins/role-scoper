@@ -16,7 +16,7 @@ require_once( SCOPER_ABSPATH . '/lib/ancestry_lib_rs.php' );
 // flt_get_pages is required on the front end (even for administrators) to enable the inclusion of private pages
 // flt_get_terms '' so private posts are included in count, as basis for display when hide_empty arg is used
 if ( $scoper->is_front() || ! is_content_administrator_rs() ) {	
-	add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);
+	add_filter('get_terms', array('ScoperHardwayTaxonomy', 'flt_get_terms'), 0, 3);   // WPML registers at priority 1
 	
 	// Since the NOT IN subquery is a painful aberration for filtering, replace it with the separate term query used by WP prior to 2.7
 	add_filter('posts_where', array('ScoperHardwayTaxonomy', 'flt_cat_not_in_subquery'), 1);
@@ -28,7 +28,7 @@ if ( $scoper->is_front() || ! is_content_administrator_rs() ) {
  * hardway-taxonomy_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
  *
@@ -38,7 +38,7 @@ class ScoperHardwayTaxonomy
 	//  Scoped equivalent to WP 3.0 core get_terms
 	//	Currently, scoped roles cannot be enforced without replicating the whole function 
 	// 
-	// Cap requirements depend on access type, and are specified in the WP_Scoped_Data_Source->get_terms_reqd_caps corresponding to taxonomy in question
+	// Cap requirements depend on access type, and are specified by Scoper::get_terms_reqd_caps() corresponding to taxonomy in question
 	function flt_get_terms($results, $taxonomies, $args) {
 		global $wpdb;
 		$empty_array = array();
@@ -71,11 +71,12 @@ class ScoperHardwayTaxonomy
 		//
 		global $scoper;
 		
-		if ( ! $scoper->taxonomies->is_member( $taxonomies[0] ) )
+		$use_taxonomies = scoper_get_option( 'use_taxonomies' );
+
+		if ( empty( $use_taxonomies[$taxonomy] ) )
 			return $results;
 		
 
-			
 		// no backend filter for administrators
 		$parent_or = '';
 		if ( ( is_admin() || defined('XMLRPC_REQUEST') ) ) {
@@ -178,6 +179,7 @@ class ScoperHardwayTaxonomy
 		// === END Role Scoper MODIFICATION ===
 		// ====================================
 
+		$is_term_admin = strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit-tags.php' );
 
 		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
 		$key = md5( serialize( compact(array_keys($defaults)) ) . serialize( $taxonomies ) . $filter_key );
@@ -186,11 +188,11 @@ class ScoperHardwayTaxonomy
 		// === BEGIN Role Scoper MODIFICATION: cache key specific to access type and user/groups ===
 		//
 		$object_src_name = $scoper->taxonomies->member_property($taxonomies[0], 'object_source', 'name');
-		$ckey = md5( $key . serialize($scoper->get_terms_reqd_caps($taxonomies[0], $object_src_name)) );
+		$ckey = md5( $key . serialize( $scoper->get_terms_reqd_caps($taxonomies[0], '', $is_term_admin) ) );
 		
 		global $current_user;
-		$cache_flag = SCOPER_ROLE_TYPE . '_get_terms';
-		
+		$cache_flag = 'rs_get_terms';
+
 		$cache = $current_user->cache_get( $cache_flag );
 		
 		if ( false !== $cache ) {
@@ -367,16 +369,16 @@ class ScoperHardwayTaxonomy
 			$do_teaser = ( $scoper->is_front() && empty($skip_teaser) && scoper_get_otype_option('do_teaser', 'post') );
 		else
 			$do_teaser = false;
-	
-		$query = apply_filters('terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser));
+			
+		$query = apply_filters( 'terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser, 'is_term_admin' => $is_term_admin ) );
 
+		//dump($query);
+		
 		// if no filering was applied because the teaser is enabled, prevent a redundant query
 		if ( ! empty($exclude_tree) || ($query_base != $query) || $parent || ( 'all' != $fields ) ) {
 			$terms = scoper_get_results($query);
 		} else
 			$terms = $results;
-			
-		//dump($terms);
 			
 		if ( 'count' == $fields ) {
 			$term_count = $wpdb->get_var($query);
@@ -387,8 +389,9 @@ class ScoperHardwayTaxonomy
 			update_term_cache($terms);
 			
 		// RS: don't cache an empty array, just in case something went wrong
-		if ( empty($terms) )
+		if ( empty($terms) ) {
 			return array();
+		}	
 		//
 		// === END Role Scoper MODIFICATION ===
 		// ====================================
@@ -444,9 +447,13 @@ class ScoperHardwayTaxonomy
 		// Replace DB-stored term counts with actual number of posts this user can read.
 		// In addition, without the rs_tally_term_counts call, WP will hide categories that have no public posts (even if this user can read some of the pvt posts).
 		// Post counts will be incremented to include child categories only if $pad_counts is true
-		if ( ! defined('XMLRPC_REQUEST') && ( 'all' == $fields ) )
-			//-- RoleScoper Modification - alternate function call (was _pad_term_counts) --//
-			rs_tally_term_counts($terms, $taxonomies[0], '', array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser ) );
+		if ( ! defined('XMLRPC_REQUEST') && ( 'all' == $fields ) && ! $is_term_admin ) {
+			if ( ! is_admin() || ( ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/post.php' ) && ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/post-new.php' ) ) ) {
+			
+				//-- RoleScoper Modification - alternate function call (was _pad_term_counts) --//
+				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser ) );
+			}
+		}
 		
 		// Make sure we show empty categories that have children.
 		if ( $hierarchical && $hide_empty ) {
@@ -551,32 +558,7 @@ class ScoperHardwayTaxonomy
 	}
 }
 
-
-//
-// Private
-//
-function rs_get_term($term_id, $taxonomy) {
-	global $scoper;
-	
-	if ( ! isset($scoper->taxonomies[$taxonomy]) ) {
-		//return new WP_Error('invalid_taxonomy', __awp('Invalid Taxonomy') . ': ' . __($taxonomy));
-		return false;
-	}
-
-	$tx = $scoper->taxonomies[$taxonomy];
-	
-	if ( $tx->uses_standard_schema )
-		return get_term_by( 'id', $term_id, $taxonomy);  // this is a WP core taxonomy, let core get_term() handle it
-		
-	if ( ! $_term = wpp_cache_get($term_id, "rs_$taxonomy") ) {   //TODO: is this caching useful?
-		$_term = scoper_get_row("SELECT * FROM $tx->source WHERE $tx->source->cols->id = '$term_id' LIMIT 1");
-		wpp_cache_set($term_id, $_term, "rs_$taxonomy");
-	}
-}
-
-
 // renamed for clarity (was get_term_children)
-// Also adds support for taxonomies that don't use wp_term_taxonomy schema
 function &rs_get_term_descendants($requested_parent_id, $qualified_terms, $taxonomy) {
 	if ( empty($qualified_terms) )
 		return array();
@@ -589,34 +571,30 @@ function &rs_get_term_descendants($requested_parent_id, $qualified_terms, $taxon
 		return $arr;
 	}
 	
-	global $scoper;
-	$tx = $scoper->taxonomies->get($taxonomy);	
-	$col_id = $tx->source->cols->id;	
-	$col_parent = $tx->source->cols->parent;
-	
 	foreach ( $qualified_terms as $term ) {
 		$use_id = false;
 		if ( !is_object($term) ) {
-			$term = rs_get_term($term, $taxonomy);
+			$term = get_term_by( 'id', $term, $taxonomy); 
+
 			if ( is_wp_error( $term ) )
 				return $term;
 			$use_id = true;
 		}
 
-		if ( $term->$col_id == $requested_parent_id )
+		if ( $term->term_id == $requested_parent_id )
 			continue;
 		
 		// if this qualified term has the requested parent, log it and all its descendants
-		if ( $term->$col_parent == $requested_parent_id ) {
+		if ( $term->parent == $requested_parent_id ) {
 			if ( $use_id )
-				$descendant_list[] = $term->$col_id;
+				$descendant_list[] = $term->term_id;
 			else
 				$descendant_list[] = $term;
 
-			if ( !isset($has_children[$term->$col_id]) )
+			if ( ! isset($has_children[$term->term_id]) )
 				continue;
 	
-			if ( $descendants = rs_get_term_descendants($term->$col_id, $qualified_terms, $taxonomy) )
+			if ( $descendants = rs_get_term_descendants($term->term_id, $qualified_terms, $taxonomy) )
 				$descendant_list = array_merge($descendant_list, $descendants);
 		}
 	}
@@ -628,51 +606,51 @@ function &rs_get_term_descendants($requested_parent_id, $qualified_terms, $taxon
 // Rewritten from WP core pad_term_counts to make object count reflect any user-specific roles
 // Recalculates term counts by including items from child terms (or if pad_counts is false, simply credits each term for readable private posts)
 // Assumes all relevant children are already in the $terms argument
-function rs_tally_term_counts(&$terms, $taxonomy, $object_type = '', $args = '') {
+//
+// note: this function does not deal with non-WP taxonomies
+function rs_tally_term_counts(&$terms, $taxonomy, $args = array()) {
 	global $wpdb, $scoper;
 	
 	$defaults = array ( 'pad_counts' => true, 'skip_teaser' => false );
-	$args = array_merge( $defaults, $args );
+	$args = array_merge( $defaults, (array) $args );
 	extract($args);
 	
 	if ( ! $terms )
 		return;
-	
-	if ( ! $tx = $scoper->taxonomies->get($taxonomy) )
-		return;
-	
-	if ( empty($tx->cols->count) || empty($tx->object_source) )
-		return;
-		
+
 	$term_items = array();
 	$terms_by_id = array();
 	foreach ( $terms as $key => $term ) {
-		$terms_by_id[$term->{$tx->source->cols->id}] = & $terms[$key];
-		$term_ids[$term->{$tx->cols->term2obj_tid}] = $term->{$tx->source->cols->id};  // key and value will match for WP < 2.3 and other non-taxonomy category types
+		$terms_by_id[$term->term_id] = & $terms[$key];
+		$term_ids[$term->term_taxonomy_id] = $term->term_id;  // key and value will match for non-taxonomy category types
 	}
 
-	$src = $scoper->data_sources->get('post');
-	$categorized_types = array('post');
-	foreach ( array_keys($src->object_types) as $this_object_type )
-		if ( 'post' != $this_object_type )
-			if ( scoper_get_otype_option( 'use_term_roles', 'post', $this_object_type ) )
-				$categorized_types []= $this_object_type;
+	$tx_obj = get_taxonomy( $taxonomy, 'object' );
+	$post_types = (array) $tx_obj->object_type;
 
+	$enabled_types = array();
+	foreach ( $post_types as $_post_type )
+		if ( scoper_get_otype_option( 'use_term_roles', 'post', $_post_type ) )
+			$enabled_types []= $_post_type;
+
+	if ( ! $enabled_types )
+		return;
+			
 	// Get the object and term ids and stick them in a lookup table
 	$request = "SELECT DISTINCT $wpdb->posts.ID, tt.term_taxonomy_id, tt.term_id, tr.object_id"
 			 . " FROM $wpdb->posts"
 			 . " INNER JOIN $wpdb->term_relationships AS tr ON $wpdb->posts.ID = tr.object_id "
 			 . " INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id "
-			 . " WHERE tt.term_id IN ('" . implode("','", $term_ids) . "') "
-			 . " AND $wpdb->posts.post_type IN ('" . implode("','", $categorized_types) . "')";
+			 . " WHERE tt.taxonomy = '$taxonomy' AND tt.term_id IN ('" . implode("','", $term_ids) . "') "
+			 . " AND $wpdb->posts.post_type IN ('" . implode("','", $enabled_types) . "')";
 	
 	// no need to pass any parameters which do not pertain to the objects_request filter
 	$args = array_intersect_key( $args, array_flip( array('skip_teaser') ) );
 
-	if ( 1 == count($categorized_types) )
-		$object_type = reset($categorized_types);
+	$post_type = reset($enabled_types);
 
-	$request = apply_filters('objects_request_rs', $request, $tx->object_source->name, $object_type, $args);
+	// note: don't pass in a taxonomies arg because we need to consider restrictions associated with any taxonomy to determine readable objects for terms of this taxonomy
+	$request = apply_filters('objects_request_rs', $request, 'post', $post_type, $args);
 
 	$results = scoper_get_results($request);
 	
@@ -689,8 +667,8 @@ function rs_tally_term_counts(&$terms, $taxonomy, $object_type = '', $args = '')
 		foreach ( $term_ids as $term_id ) {
 			$child_term_id = $term_id;
 			
-			while ( isset($terms_by_id[$child_term_id]->{$tx->source->cols->parent}) ) {
-				if ( ! $parent_term_id = $terms_by_id[$child_term_id]->{$tx->source->cols->parent} )
+			while ( isset($terms_by_id[$child_term_id]->parent) ) {
+				if ( ! $parent_term_id = $terms_by_id[$child_term_id]->parent )
 					break;
 				
 				if ( ! empty($term_items[$term_id]) )

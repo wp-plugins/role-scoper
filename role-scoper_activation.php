@@ -2,15 +2,14 @@
 if ( ! function_exists( 'scoper_activate' ) ) {
 function scoper_activate() {
 	// set_current_user may have triggered DB setup already
-	global $scoper_db_setup_done;
-	if ( empty ($scoper_db_setup_done) ) {
+	if ( empty ($GLOBALS['scoper_db_setup_done']) ) {
 		require_once('db-setup_rs.php');
 		scoper_db_setup('');  // TODO: is it safe to call get_option here to pass in last DB version, avoiding unnecessary ALTER TABLE statement?
 	}
 	
 	require_once('admin/admin_lib_rs.php');
 	ScoperAdminLib::sync_wproles();
-	
+
 	scoper_flush_site_rules();
 	scoper_expire_file_rules();
 }

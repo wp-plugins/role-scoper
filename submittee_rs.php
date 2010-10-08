@@ -34,7 +34,7 @@ class Scoper_Submittee {
 
 		if ( ! in_array( $_GET["page"], array( 'rs-options', 'rs-site_options') ) )
 			return;
-		
+			
 		if ( empty($_POST['rs_submission_topic']) )
 			return;
 		
@@ -194,9 +194,9 @@ class Scoper_Submittee {
 		
 		// changes to these options will trigger .htaccess regen
 		if ( $sitewide ) {
-			add_action( 'update_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
+			add_action( 'pre_update_site_option_scoper_file_filtering', 'scoper_maybe_flush_site_rules', 10, 2 );
 			add_action( 'add_site_option_scoper_file_filtering', 'scoper_flush_site_rules' );
-			add_action( 'update_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
+			add_action( 'pre_update_site_option_scoper_file_filtering', 'scoper_maybe_expire_file_rules', 10, 2 );
 			add_action( 'add_site_option_scoper_file_filtering', 'scoper_expire_file_rules' );
 		} else {
 			add_action( 'update_option_scoper_file_filtering', 'scoper_maybe_expire_file_rules', 10, 2 );
@@ -238,9 +238,6 @@ class Scoper_Submittee {
 	
 			scoper_update_option( $default_prefix . $option_basename, $value, $sitewide );
 		}
-		
-		//dump($_POST);
-		//die;
 	}
 	
 	function update_page_otype_options( $sitewide = false, $customize_defaults = false ) {
@@ -250,8 +247,8 @@ class Scoper_Submittee {
 		if ( $sitewide ) {
 			add_filter( 'add_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
 			add_filter( 'add_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
-			add_filter( 'pre_update_site_option_scoper_use_term_roles', 'scoper_expire_file_rules' );
-			add_filter( 'pre_update_site_option_scoper_use_object_roles', 'scoper_expire_file_rules' );
+			add_filter( 'pre_update_site_option_scoper_use_term_roles', 'scoper_maybe_expire_file_rules', 10, 2 );   // update_site_option hook does not pass old_value (as of WP 3.0)
+			add_filter( 'pre_update_site_option_scoper_use_object_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
 		} else {
 			add_filter( 'update_option_scoper_use_term_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
 			add_filter( 'update_option_scoper_use_object_roles', 'scoper_maybe_expire_file_rules', 10, 2 );
@@ -290,7 +287,6 @@ class Scoper_Submittee {
 		}
 
 		foreach ( $otype_option_vals as $option_basename => $value ) {
-			//echo "update $default_prefix $option_basename : " . serialize($value) . " ($sitewide)<br />";
 			scoper_update_option( $default_prefix . $option_basename , $value, $sitewide);
 		}
 	}
@@ -306,15 +302,15 @@ class Scoper_Submittee {
 	function update_rs_role_defs( $sitewide = false, $customize_defaults = false ) {
 		$default_prefix = ( $customize_defaults ) ? 'default_' : '';
 		
-		$default_role_caps = apply_filters('define_role_caps_rs', scoper_core_role_caps() );
+		$default_role_caps = apply_filters( 'define_role_caps_rs', cr_role_caps() );
 
-		$cap_defs = new WP_Scoped_Capabilities();
+		$cap_defs = new CR_Capabilities();
 		$cap_defs = apply_filters('define_capabilities_rs', $cap_defs);
-		$cap_defs->add_member_objects( scoper_core_cap_defs() );
+		$cap_defs->add_member_objects( cr_cap_defs() );
 
 		global $scoper, $scoper_role_types;
-		$role_defs = new WP_Scoped_Roles($cap_defs, $scoper_role_types);
-		$role_defs->add_member_objects( scoper_core_role_defs() );
+		$role_defs = new CR_Roles();
+		$role_defs->add_member_objects( cr_role_defs() );
 		$role_defs = apply_filters('define_roles_rs', $role_defs);
 
 		$reviewed_roles = explode(',', $_POST['reviewed_roles']);
@@ -354,7 +350,7 @@ class Scoper_Submittee {
 		scoper_update_option( $default_prefix . 'user_role_caps', $add_caps, $sitewide);
 		
 		scoper_refresh_options();
-		$scoper->load_role_caps();
+		$scoper->load_definition('cap_defs');
 		
 		global $wp_roles;
 		
@@ -369,9 +365,7 @@ class Scoper_Submittee {
 				
 				// only remove caps which are defined for this RS role's data source and object type
 				$role_attributes = $scoper->role_defs->get_role_attributes( $rs_role_handle );
-				$src_name = $role_attributes->src_names[0];
-				$object_type = $role_attributes->object_types[0];
-				$otype_caps = $scoper->cap_defs->get_matching( $src_name, $object_type, '', STATUS_ANY_RS );
+				$otype_caps = $scoper->cap_defs->get_matching( $role_attributes->src_name, $role_attributes->object_type, '', STATUS_ANY_RS );
 				
 				// make the roledef change for all blogs if RS role def is sitewide
 				if ( IS_MU_RS && $sitewide ) {
@@ -407,7 +401,7 @@ class Scoper_Submittee {
 		}
 
 		$scoper->role_defs->locked = false;
-		$scoper->role_defs->populate_with_wp_roles();
+		$scoper->log_wp_roles( $scoper->role_defs );
 		$scoper->role_defs->lock();
 	}
 }

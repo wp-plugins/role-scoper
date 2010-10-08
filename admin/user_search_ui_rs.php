@@ -280,12 +280,14 @@ class ScoperUserSearch {
 	function output_html( $agents, $agent_type = 'users' ) {
 		
 		if ( 'groups' == $agent_type ) {
-			if ( 'requested' == $this->status[0] )
-				$reqd_caps = 'request_group_membership';
-			elseif ( 'recommended' == $this->status[0] )
-				$reqd_caps = 'recommend_group_membership';
-			else
-				$reqd_caps = 'manage_groups';
+			$reqd_caps = 'manage_groups';
+			
+			if ( ! empty( $this->status[0] ) ) {
+				if ( 'requested' == $this->status[0] )
+					$reqd_caps = 'request_group_membership';
+				elseif ( 'recommended' == $this->status[0] )
+					$reqd_caps = 'recommend_group_membership';
+			}
 				
 			$editable_group_ids = ScoperAdminLib::get_all_groups( FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => $reqd_caps ) );
 		}
@@ -407,8 +409,7 @@ if ( ! empty($this->list_ids) ) :
 	</div>
 	<?php
 		foreach ( $this->list_ids as $key => $list_id ) {
-			
-			if ( $agents[ $this->status[$key] ] )
+			if ( $agents && ! empty( $agents[ $this->status[$key] ] ) )
 				$csv = implode( ',', array_keys($agents[ $this->status[$key] ] ) );
 			else
 				$csv = '';

@@ -2,7 +2,7 @@
 
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
 // link category roles, restrictions are only for bookmark management
 global $scoper;
 if ( $scoper->data_sources->is_member('link') )
@@ -49,10 +49,7 @@ class ScoperAdminHardway_Ltd {
 					$user_terms = $scoper->qualify_terms( 'manage_categories', 'category' );
 					$permit = in_array( $selected_parent, $user_terms );
 				} else {
-					$scoper->cap_interceptor->skip_id_generation = true;
-					$scoper->cap_interceptor->skip_any_term_check = true;
-					$permit = current_user_can( 'manage_categories' );
-					$scoper->cap_interceptor->skip_any_term_check = false;
+					$permit = cr_user_can( 'manage_categories', 0, 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) );
 				}
 				
 				if ( ! $permit )
@@ -65,25 +62,22 @@ class ScoperAdminHardway_Ltd {
 	
 	// next-best way to handle permission checks for Ajax operations which can't be done via has_cap filter
 	function act_check_ajax_referer( $referer_name ) {
-		if ( 'add-category' ==  $referer_name ) {
-			if ( ! empty($_POST['newcat_parent']) )
-				$parent = $_POST['newcat_parent'];
-			elseif ( ! empty($_POST['category_parent']) )
-				$parent =  $_POST['category_parent'];
+		if( 'add-tag' == $referer_name ) {			
+			if ( $tx_obj = get_taxonomy( $_POST['taxonomy'], 'object' ) )
+				$cap_name = $tx_obj->cap->manage_terms;
+
+			if ( empty($cap_name) )
+				$cap_name = 'manage_categories';
+			
+			if ( ! empty($_POST['parent']) && ( $_POST['parent'] > 0 )  )
+				$parent = $_POST['parent'];
 			else
 				$parent = 0;
-			
-			// Concern here is for addition of top level categories.  Subcat addition attempts will already be filtered by has_cap filter.
-			if ( ! $parent ) {
-				global $scoper;
-				$scoper->cap_interceptor->skip_any_term_check = true;
-				$permit = current_user_can( 'manage_categories' );
-				$scoper->cap_interceptor->skip_any_term_check = false;
 				
-				if ( ! $permit )
-					die('-1');
-			}		
-		}	
+			// Concern here is for addition of top level terms.  Subcat addition attempts will already be filtered by has_cap filter.
+			if ( ! $parent && ! cr_user_can( $cap_name, BLOG_SCOPE_RS ) )
+				die('-1');	
+		}
 	}
 	
 	
@@ -92,17 +86,37 @@ class ScoperAdminHardway_Ltd {
 	//
 	// Todo: review all queries for version-specificity; apply regular expressions to make it less brittle
 	function flt_last_resort_query($query) {
+		// no recursion
+		if ( scoper_querying_db() || $GLOBALS['cap_interceptor']->in_process )
+			return $query;
+			
 		global $wpdb, $scoper;
 
 		$posts = $wpdb->posts;
 		$comments = $wpdb->comments;
 		$links = $wpdb->links;
 		$term_taxonomy = $wpdb->term_taxonomy;
-		
-		// no recursion
-		if ( scoper_querying_db() )
-			return $query;
 
+		
+		// Media Library - unattached (as of WP 2.8, not filterable via posts_request)
+		//
+		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
+		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
+		if ( strpos($query, "post_type = 'attachment'") && strpos($query, "post_parent < 1") && strpos($query, '* FROM') ) {
+
+			if ( $where_pos = strpos($query, 'WHERE ') ) {
+				// optionally hide other users' unattached uploads, but not from blog-wide Editors
+				if ( ( ! scoper_get_option( 'admin_others_unattached_files' ) ) && ! $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) ) {
+					global $current_user;
+					
+					$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+
+					$query = str_replace( "post_type = 'attachment'", "post_type = 'attachment' $author_clause", $query);
+
+					return $query;
+				}
+			}
+		}
 		
 		// Search on query portions to make this as forward-compatible as possible.
 		// Important to include " FROM table WHERE " as a strpos requirement because scoped queries (which should not be further altered here) will insert a JOIN clause
@@ -115,158 +129,111 @@ class ScoperAdminHardway_Ltd {
 		|| ( strpos ($query, "ELECT ID, post_title, post_date_gmt") && strpos($query, " FROM $posts WHERE ") ) 
 		) {
 			//rs_errlog ("<br />caught $query <br />");	
-			$query = apply_filters('objects_request_rs', $query, 'post', 'post', '');
+			if ( $_post_type = cr_find_post_type() )
+				$query = apply_filters('objects_request_rs', $query, 'post', $_post_type, '');
 			//rs_errlog ("<br /><br />replaced with $query<br /><br />");
 		}
 		
-
 		// totals on edit.php
-		// WP 2.5: SELECT post_status, COUNT( * ) AS num_posts FROM wp_posts WHERE post_type = 'post' GROUP BY post_status
-		if ( strpos($query, "ELECT post_status, COUNT( * ) AS num_posts ") && strpos($query, " FROM $posts WHERE post_type = 'post'") ) {
-			//rs_errlog ("<br />caught $query <br />");	
-	
-			global $current_user;
-			$query = str_replace( "AND (post_status != 'private' OR ( post_author = '{$current_user->ID}' AND post_status = 'private' ))", '', $query);
-			
-			$query = str_replace( "post_status", "$posts.post_status", $query);
-			
-			$query = apply_filters('objects_request_rs', $query, 'post', 'post', array( 'objrole_revisions_clause' => true ) );
-			
-			//rs_errlog ("<br /><br /> returned $query ");
-			return $query;
-		}
-		
-		// totals on edit-pages.php
-		// WP 2.5: SELECT post_status, COUNT( * ) AS num_posts FROM wp_posts WHERE post_type = 'post' GROUP BY post_status
-		elseif ( strpos($query, "ELECT post_status, COUNT( * )") && ( ( strpos($query, " FROM $posts WHERE post_type = 'page'") || strpos($query, " FROM $posts WHERE ( post_type = 'page'") ) ) ) {
-			global $current_user;
-			
-			//rs_errlog ("<br />caught $query <br />");	
-			
-			$query = str_replace( "AND (post_status != 'private' OR ( post_author = '{$current_user->ID}' AND post_status = 'private' ))", '', $query);
-			
-			$query = str_replace( "post_status", "$posts.post_status", $query);
-			
-			$query = apply_filters('objects_request_rs', $query, 'post', 'page', array( 'objrole_revisions_clause' => true ) );
+		// SELECT post_status, COUNT( * ) AS num_posts FROM wp_posts WHERE post_type = 'post' GROUP BY post_status
+		$matches = array();
+		if ( strpos($query, "ELECT post_status, COUNT( * ) AS num_posts ") && preg_match("/FROM\s*{$posts}\s*WHERE post_type\s*=\s*'([^ ]+)'/", $query, $matches) ) {
+			$_post_type = ( ! empty( $matches[1] ) ) ? $matches[1]	: cr_find_post_type();
 
+			if ( $_post_type ) {
+				global $current_user;
+
+				foreach( get_post_stati( array( 'private' => true ) ) as $_status )
+					$query = str_replace( "AND (post_status != '$_status' OR ( post_author = '{$current_user->ID}' AND post_status = '$_status' ))", '', $query);
+				
+				$query = str_replace( "post_status", "$posts.post_status", $query);
+				
+				$query = apply_filters( 'objects_request_rs', $query, 'post', $_post_type, array( 'objrole_revisions_clause' => true ) );
+			}
+				
 			//rs_errlog ("<br /><br /> returned $query ");
 			return $query;
 		}
 		
 		////rs_errlog ("<br /><br />checking $query");
 		
-		// TODO: simplify this
-		//
-		// num cats: "SELECT COUNT(*) FROM $categories"
+		// num cats: "SELECT COUNT(*) FROM wp_term_taxonomy"
 		// SELECT DISTINCT COUNT(tt.term_id) FROM wp_term_taxonomy AS tt WHERE 1=1 AND tt.taxonomy = 'category' 
 		// SELECT DISTINCT tt.term_id FROM wp_term_taxonomy AS tt WHERE
 		$script_name = urldecode($_SERVER['REQUEST_URI']);
-		if ( ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') && ! strpos($script_name, 'p-admin/page.php') && ! strpos($script_name, 'p-admin/page-new.php') && ! defined('XMLRPC_REQUEST') ) {
-			if ( ( strpos ($query, "ELECT COUNT(*) FROM $term_taxonomy WHERE") ) 
-			|| ( strpos ($query, "ELECT DISTINCT COUNT(*) FROM $term_taxonomy WHERE") ) 
-			|| ( strpos ($query, " tt.term_id FROM $term_taxonomy AS tt WHERE") )
-			|| ( strpos ($query, " t.*, tt.* FROM $wpdb->terms ") )
-			) {
+		if ( ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') && ! defined('XMLRPC_REQUEST') ) {
+			if ( strpos($query, " FROM $term_taxonomy") || strpos($query, " FROM $wpdb->terms") ) 
+			{
 				//rs_errlog ("<br />caught $query <br />");
-				
-				// don't mess with parent category selection/availability for single category edit
-				if ( $tx = $scoper->taxonomies->get('category') ) {
-					if ( ! empty( $tx->uri_vars ) )
-						$term_id = $scoper->data_sources->detect('id', $tx);
-					else
-						$term_id = $scoper->data_sources->detect('id', $tx->source);
-					
-					if ( $term_id )
+
+				// don't mess with parent category selection/availability for single term edit
+				if ( strpos($script_name, 'p-admin/edit-tags.php') ) {
+					if ( ! empty( $_REQUEST['tag_ID'] ) )
 						return $query;
 				}
+
+				$matches = array();
+				if ( $return = preg_match( "/taxonomy IN \('(.*)'/", $query, $matches ) )
+					$taxonomy = explode( "','", str_replace( ' ', '', $matches[1] ) );
+				elseif ( $return = preg_match( "/taxonomy\s*=\s*'(.*)'/", $query, $matches ) )
+					$taxonomy = $matches[1];
 				
-				$search = "taxonomy IN ('";
-				if ( $pos = strpos($query, $search) )
-					if ( $pos_end = strpos($query, "'", $pos + strlen($search) ) )
-						$taxonomy = substr($query, $pos + strlen($search), $pos_end - ( $pos + strlen($search) ) );
-				
-				if ( empty($taxonomy ) ) {
-					$search = "taxonomy = '";
-					if ( $pos = strpos($query, $search) )
-						if ( $pos_end = strpos($query, "'", $pos + strlen($search) ) )
-							$taxonomy = substr($query, $pos + strlen($search), $pos_end - ( $pos + strlen($search) ) );
+				if ( ! empty($taxonomy) ) {
+					if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') )
+						return $query;	
+					else
+						$query = apply_filters( 'terms_request_rs', $query, $taxonomy, array( 'is_term_admin' => true ) );
 				}
-
-				if ( $taxonomy && $scoper->taxonomies->is_member($taxonomy) ) {
-					$query = str_replace( "COUNT(*) FROM $wpdb->term_taxonomy WHERE", "COUNT(*) FROM $wpdb->term_taxonomy AS tt WHERE", $query );
-					//$query = str_replace( "ELECT COUNT(*) FROM $term_taxonomy WHERE", "ELECT COUNT(DISTINCT tt.term_taxonomy_id) FROM $term_taxonomy AS tt WHERE", $query);
-					$src_name = $scoper->taxonomies->member_property($taxonomy, 'object_source', 'name');
-					$args = array();
-					$args['use_object_roles'] = false;
-					$args['reqd_caps_by_otype'] = $scoper->get_terms_reqd_caps($taxonomy, $src_name, 'admin');
-					$query = apply_filters( 'terms_request_rs', $query, $taxonomy, '', $args );
-
-					/*	// object source join, filtering was unnecessary for category count on dashboard
 					
-					if ( $src = $scoper->taxonomies->member_property($taxonomy, 'object_source') ) {
-						$object_types = array();
-						foreach ( array_keys($src->object_types) as $object_type )
-							if ( scoper_get_otype_option('use_term_roles', $src->name, $object_type) )
-								$object_types []= $object_type;
-						
-						if ( $object_types ) {
-							$query = str_replace( "ELECT COUNT(*) FROM $term_taxonomy WHERE", "ELECT COUNT(DISTINCT tt.term_taxonomy_id) FROM $term_taxonomy AS tt WHERE", $query);
-							$args = array('terms_query' => true, 'force_objects_join' => true);
-							$query = apply_filters('objects_request_rs', $query, $src->name, $object_types, $args);
-						}
-					}
-					*/
-				}
-				
 				//rs_errlog ("<br /><br /> returning $query <br />");
 				return $query;
 			}
-			
 		} 
 		
-		/* As of RS 1.1, this is replaced by the block above
-		//
-		if ( strpos ($query, "ELECT COUNT(*) FROM $term_taxonomy") ) {
-			//rs_errlog ("<br />caught $query <br />");	
-		
-			$query = str_replace( "COUNT(*)", " COUNT(DISTINCT ID)", $query);
-			$query = str_replace( "FROM $term_taxonomy", "FROM $term_taxonomy AS tt", $query);
-			$args = array('terms_query' => true, 'force_objects_join' => true);
-			$query = apply_filters('objects_request_rs', $query, 'post', 'post', $args);
-	
-			//rs_errlog ("<br /><br /> returning $query <br />");
-			return $query;
-		}
-		*/
-		
 
-		//	WP 2.5: SELECT comment_approved, COUNT( * ) AS num_comments FROM wp_comments GROUP BY comment_approved
-		// 			SELECT comment_post_ID, COUNT(comment_ID) as num_comments
-		//			SELECT SQL_CALC_FOUND_ROWS * FROM wp_comments USE INDEX (comment_date_gmt) WHERE ( comment_approved = '0' OR comment_approved = '1' )
-		//
-		// WP 2.6:  SELECT comment_approved, COUNT( * ) AS num_comments FROM wp_comments GROUP BY comment_approved
-		//
-		// comment count: SELECT COUNT(*) FROM wp_comments WHERE comment_approved = '0' 
-		// comments: SELECT SQL_CALC_FOUND_ROWS * FROM wp_comments WHERE comment_approved = '0' OR comment_approved = '1' ORDER BY comment_date DESC LIMIT 0, 25 
-		// comment moderation : SELECT * FROM wp_comments WHERE comment_approved = '0' 
+		// WP 3.0:  SELECT * FROM wp_comments c LEFT JOIN wp_posts p ON c.comment_post_ID = p.ID WHERE p.post_status != 'trash' AND ( c.comment_approved = '0' OR c.comment_approved = '1' ) ORDER BY c.comment_date_gmt
+		// 
 		if ( strpos($query, "ELECT ") && preg_match ("/FROM\s*{$comments}/", $query)
 		&& ( ! strpos($query, "ELECT COUNT") || empty( $_POST ) )
 		&& ( ! strpos($_SERVER['SCRIPT_FILENAME'], 'p-admin/upload.php') )
 		 )  // don't filter the comment count query prior to DB storage of comment_count to post record
 		{
 			//rs_errlog ("<br /> <strong>caught</strong> $query<br /> ");	
+			//d_echo( "<b>caught: <br />$query<br /></b>" );
+			
+			// cache the filtered results for pending comment count query, which (as of WP 3.0.1) is executed once per-post in the edit listing
+			$post_id = 0;
+			if ( $doing_pending_comment_count = strpos( $query, 'COUNT(comment_ID)' ) && strpos( $query, 'comment_post_ID' ) && strpos( $query, "comment_approved = '0'" ) ) {
+				if ( ! strpos($script_name, 'p-admin/index.php') ) {	// there's too much happening on the dashboard (and too much low-level query filtering) to buffer listed IDs reliably.
+					if ( preg_match( "/comment_post_ID IN \( '([0-9]+)' \)/", $query, $matches ) ) {
+						if ( $matches[1] )
+							$post_id = $matches[1];
+					}			
+				}
+				
+				if ( $post_id ) {
+					static $cache_pending_comment_count;
+						
+					if ( ! isset($cache_pending_comment_count) ) {
+						$cache_pending_comment_count = array();
+					
+					} elseif ( isset( $cache_pending_comment_count[$post_id] ) ) {
+						return "SELECT $post_id AS comment_post_ID, {$cache_pending_comment_count[$post_id]} AS num_comments";
+					}
+				}
+			}
 			
 			$comment_alias = ( strpos( $query, "$comments c" ) || strpos( $query, "$comments AS c" ) ) ? 'c' : $comments;
 			
 			// apply DISTINCT clause so JOINs don't cause redundant comment count
 			$query = str_replace( "SELECT *", "SELECT DISTINCT $comment_alias.*", $query);
 			$query = str_replace( "SELECT SQL_CALC_FOUND_ROWS *", "SELECT SQL_CALC_FOUND_ROWS DISTINCT $comment_alias.*", $query);
-			
+		
 			if ( ! strpos( $query, ' DISTINCT ' ) )
 				$query = str_replace( "SELECT ", "SELECT DISTINCT ", $query);
 
-			$query = str_replace( "COUNT(*)", " COUNT(DISTINCT $comments.comment_ID)", $query);
-			$query = str_replace( "COUNT(comment_ID)", " COUNT(DISTINCT $comments.comment_ID)", $query);
+			//$query = str_replace( "COUNT(*)", " COUNT(DISTINCT $comments.comment_ID)", $query);				// TODO: confirm preg_replace works and str_replace is not needed
+			//$query = str_replace( "COUNT(comment_ID)", " COUNT(DISTINCT $comments.comment_ID)", $query);
 			$query = preg_replace( "/COUNT(\s*\*\s*)/", " COUNT(DISTINCT $comments.comment_ID)", $query);
 			$query = preg_replace( "/COUNT(\s*comment_ID\s*)/", " COUNT(DISTINCT $comments.comment_ID)", $query);
 
@@ -281,36 +248,45 @@ class ScoperAdminHardway_Ltd {
 				if ( strpos( $query, "GROUP BY" ) )
 					$query = preg_replace( "/FROM\s*{$comments}\s*GROUP BY /", "FROM $comments INNER JOIN $posts ON $posts.ID = $comment_alias.comment_post_ID GROUP BY ", $query);
 			}
-			
-			// wp 2.6: also some formatting changes with leading tabs instead of spaces
-			//$query = preg_replace( "/FROM\s*{$comments}\s*USE INDEX\s*(comment_date_gmt)\s*WHERE/", "FROM $comments USE INDEX (comment_date_gmt) INNER JOIN $posts ON $posts.ID = $comments.comment_post_ID WHERE", $query);
-			$query = str_replace("FROM $comments USE INDEX (comment_date_gmt) WHERE", "FROM $comments USE INDEX (comment_date_gmt) INNER JOIN $posts ON $posts.ID = $comments.comment_post_ID WHERE", $query);
 
-			$query = preg_replace( "/FROM\s*$comments\s*GROUP BY /", "FROM $comments INNER JOIN $posts ON $posts.ID = $comments.comment_post_ID WHERE 1=1 GROUP BY ", $query);
-			
-			// this is already covered if we replace "SELECT " to "SELECT DISTINCT "
-			//$query = str_replace( "SELECT comment_approved", "SELECT DISTINCT comment_approved", $query);
-			//$query = str_replace( "SELECT comment_post_ID, COUNT(comment_ID) as num_comments", "SELECT DISTINCT comment_post_ID, COUNT(DISTINCT comment_ID)", $query);
-			
+			$generic_uri = strpos($_SERVER['SCRIPT_NAME'], 'p-admin/index.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/comments.php');
+
+			if ( ! $generic_uri && ( $_post_type = cr_find_post_type( '', false ) ) )
+				$post_types = array( $_post_type => get_post_type_object( $_post_type ) );
+			else
+				$post_types = array_diff_key( get_post_types( array( 'public' => true ), 'object' ), array( 'attachment' => true ) );
+
+			$post_statuses = get_post_stati( array( 'internal' => null ), 'object' );
+				
 			$reqd_caps = array();
-			if ( $statuses = $scoper->data_sources->member_property('post', 'statuses') )
-				foreach ( array_keys($statuses) as $status_name ) {
-					$reqd_caps['post'][$status_name] = array('edit_others_posts', 'moderate_comments');
-					$reqd_caps['page'][$status_name] = array('edit_others_pages', 'moderate_comments');
-				}
+			
+			$use_post_types = scoper_get_option( 'use_post_types' );
+			
+			foreach( $post_types as $_post_type => $type_obj ) {
+				if ( empty( $use_post_types[$_post_type] ) )
+					continue;
+					
+				foreach ( $post_statuses as $status => $status_obj ) {
+					$reqd_caps[$_post_type][$status] = array( $type_obj->cap->edit_others_posts, 'moderate_comments' );
+					
+					if ( $status_obj->private )
+						$reqd_caps[$_post_type][$status] []= $type_obj->cap->edit_private_posts;
+						
+					$status_name = ( ( 'publish' == $status ) || ( 'future' == $status ) ) ? 'published' : $status;
 
-			$reqd_caps['post']['private'] = array('edit_others_posts', 'edit_private_posts', 'moderate_comments');
-			$reqd_caps['page']['private'] = array('edit_others_pages', 'edit_private_pages', 'moderate_comments');
+					$property = "edit_{$status_name}_posts";
+					if ( ! empty( $type_obj->cap->$property ) && ! in_array( $type_obj->cap->$property, $reqd_caps[$_post_type][$status] ) )
+						$reqd_caps[$_post_type][$status] []= $type_obj->cap->$property;
+				}
+			}
 
 			$args = array( 'force_reqd_caps' => $reqd_caps );
-
+			
 			if ( strpos( $query, "$posts p" ) || strpos( $query, "$posts AS p" ) )
 				$args['source_alias'] = 'p';
-
-			$query = apply_filters('objects_request_rs', $query, 'post', '', $args);
-			
-			if ( ! strpos($query, "JOIN $posts") )
-				$query = str_replace( " FROM $comments ", " FROM $comments INNER JOIN $posts ON $posts.ID = $comments.comment_post_ID ", $query);
+	
+			$object_type = ( strpos( $script_name, 'p-admin/edit.php' ) ) ? cr_find_post_type() : '';
+			$query = apply_filters( 'objects_request_rs', $query, 'post', $object_type, $args );
 
 			// pre-execute the comments listing query and buffer the listed IDs for more efficient user_has_cap calls
 			if ( strpos( $query, "* FROM $comments") && empty($scoper->listed_ids['post']) ) {
@@ -322,25 +298,46 @@ class ScoperAdminHardway_Ltd {
 							$scoper->listed_ids['post'][$row->comment_post_ID] = true;
 					}
 				}
+			} elseif ( $doing_pending_comment_count && $post_id ) {	
+				if ( isset($scoper->listed_ids['post']) )
+					$listed_ids = array_keys($scoper->listed_ids['post']);
+				elseif ( ! empty($GLOBALS['wp_object_cache']->cache['posts']) && is_array($GLOBALS['wp_object_cache']->cache['posts']) )
+					$listed_ids = array_keys($GLOBALS['wp_object_cache']->cache['posts']);
+				else
+					$listed_ids = array();
+					
+				// make sure our current post_id is in the list
+				$listed_ids[] = $post_id;
+
+				if ( count( $listed_ids ) > 1 ) {
+					// cache the pending comment count for all listed posts
+					$query = str_replace( "comment_post_ID IN ( '$post_id' )", "comment_post_ID IN ( '" . implode( "','", $listed_ids ) . "' )", $query );
+					$results = scoper_get_results( $query );
+
+					$cache_pending_comment_count = array_fill_keys( $listed_ids, 0 );
+
+					foreach( $results as $row )
+						$cache_pending_comment_count[ $row->comment_post_ID ] = $row->comment_count;
+				}
 			}
 
+			//d_echo( "<br />replaced: $query<br />" );
+			
 			//rs_errlog ("<br /><br />replaced with $query<br /><br />");
 			return $query;
 		}
 		
-		// Page parent dropdown: Only display pages for which user has edit_pages or create_child_pages.
-		if ( ! awp_ver('2.7-dev') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/admin.php') ) {
+		// filter parent_dropdown() function.  As of WP 3.0.1, it still executes an otherwise unfilterable direct db query
+		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/admin.php') ) {
 			if ( strpos ($query, "ELECT ID, post_parent, post_title") && strpos($query, "FROM $posts WHERE post_parent =") && function_exists('parent_dropdown') ) {
-				require_once( SCOPER_ABSPATH . '/admin/admin_ui_lib_rs.php');
-				
 				$page_temp = '';
 				$object_id = $scoper->data_sources->detect( 'id', 'post' );
 				if ( $object_id )
 					$page_temp = get_post( $object_id );
 
 				if ( empty($page_temp) || ! isset($page_temp->post_parent) || $page_temp->post_parent ) {
-					require_once( SCOPER_ABSPATH . '/hardway/hardway-parent_rs.php');
-					$output = ScoperHardwayParent::dropdown_pages();
+					require_once( SCOPER_ABSPATH . '/hardway/hardway-parent-legacy_rs.php');
+					$output = ScoperHardwayParentLegacy::dropdown_pages();
 					echo $output;
 				}
 				$query = "SELECT ID, post_parent FROM $posts WHERE 1=2";
@@ -349,11 +346,10 @@ class ScoperAdminHardway_Ltd {
 			}
 		}
 		
-		
 		// attachment count
 		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
-		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
-		if ( strpos($query, 'ELECT post_mime_type') ) {
+		//if ( strpos($query, 'ELECT post_mime_type') ) {
+		if ( strpos($query, "post_type = 'attachment'") && ( 0 === strpos($query, "SELECT " ) ) ) {
 			if ( $where_pos = strpos($query, 'WHERE ') ) {
 				$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
 				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
@@ -387,27 +383,6 @@ class ScoperAdminHardway_Ltd {
 			}
 		}
 		
-
-		// Media Library - unattached (as of WP 2.8, not filterable via posts_request)
-		//
-		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
-		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
-		if ( strpos($query, "post_type = 'attachment'") && strpos($query, "post_parent < 1") && strpos($query, 'COUNT( * ) FROM') ) {
-
-			if ( $where_pos = strpos($query, 'WHERE ') ) {
-				// optionally hide other users' unattached uploads, but not from blog-wide Editors
-				if ( ( ! scoper_get_option( 'admin_others_unattached_files' ) ) && ! $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) ) {
-					global $current_user;
-					
-					$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-
-					$query = str_replace( "post_type = 'attachment'", "post_type = 'attachment' $author_clause", $query);
-
-					return $query;
-				}
-			}
-		}
-		
 		
 		// links
 		//SELECT * , IF (DATE_ADD(link_updated, INTERVAL 120 MINUTE) >= NOW(), 1,0) as recently_updated FROM wp_links WHERE 1=1 ORDER BY link_name ASC
@@ -438,7 +413,7 @@ class ScoperAdminHardway_Ltd {
 		else
 			$status_clause = "AND post_status = 'pending'";
 		
-		$object_type = $scoper->data_sources->detect('type', 'post');
+		$object_type = cr_find_post_type();
 		if ( ! $object_type )
 			$object_type = 'post';
 			
@@ -459,7 +434,7 @@ class ScoperAdminHardway_Ltd {
 	// scoped equivalent to WP 2.8.3 core get_bookmarks
 	//	 Currently, scoped roles cannot be enforced without replicating the whole function 
 	//
-	// Enforces cap requirements as specified in WP_Scoped_Data_Source::reqd_caps
+	// Enforces cap requirements as specified in CR_Data_Source::reqd_caps
 	function flt_get_bookmarks($results, $args) {
 		global $wpdb;
 
@@ -486,7 +461,7 @@ class ScoperAdminHardway_Ltd {
 		global $current_user;
 		$ckey = md5 ( serialize( $r ) . CURRENT_ACCESS_NAME_RS );
 		
-		$cache_flag = SCOPER_ROLE_TYPE . '_get_bookmarks';
+		$cache_flag = 'rs_get_bookmarks';
 		
 		$cache = $current_user->cache_get( $cache_flag );
 		

@@ -70,9 +70,7 @@ $role_defs = array();
 
 $date_key = '';	// temp
 
-if ( 'rs' == SCOPER_ROLE_TYPE )
-
-foreach( $scoper->role_defs->get_matching(SCOPER_ROLE_TYPE) as $role_handle => $role_def) {  // user can only view/assign roles they have
+foreach( $scoper->role_defs->get_matching('rs') as $role_handle => $role_def) {  // user can only view/assign roles they have
 	// instead of hiding unowned roles, just make them uneditable
 	//if ( $is_administrator || ! array_diff(array_keys($scoper->role_defs->role_caps[$role_handle]), $current_user->allcaps) ) {
 		$role_defs[$role_handle] = $role_def;
@@ -114,7 +112,6 @@ if ( isset($_POST['rs_submit']) ) :	?>
 			<?php 
 			$_POST['scoper_error'] = 1;
 			printf( __('Error: no %s were selected!', 'scoper'), $agent_caption_plural);
-			echo $msg;
 			?>
 			</strong></p></div>
 			<?php $err = 1;?>
@@ -183,12 +180,7 @@ $assignment_modes = array( ASSIGN_FOR_ENTITY_RS => __('Assign', 'scoper'), REMOV
 <?php
 if ( scoper_get_option('display_hints') ) {
 	echo '<div class="rs-hint">';
-	
-	if ( awp_ver( '3.0-dev' ) )
-		_e("Supplement any user's site-wide WordPress Role with additional, type-specific role(s). This does not alter the WordPress role.", 'scoper');
-	else
-		_e("Supplement any user's blog-wide WordPress Role with additional, type-specific role(s). This does not alter the WordPress role.", 'scoper');
-		
+	_e("Supplement any user's site-wide WordPress Role with additional, type-specific role(s). This does not alter the WordPress role.", 'scoper');
 	echo '</div>';
 }
 ?>
@@ -198,7 +190,7 @@ if ( scoper_get_option('display_hints') ) {
 wp_nonce_field( "scoper-assign-blogrole" );
 
 
-//echo $scoper->admin->blogrole_scroll_links();
+//echo $scoper_admin->blogrole_scroll_links();
 //echo '<hr />';
 
 // ============ Users / Groups Selection Display ================
@@ -325,14 +317,14 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			continue;
 		
 		$otype_roles = array();
-		$otype_roles[$object_type] = $scoper->role_defs->get_matching( SCOPER_ROLE_TYPE, $src_name, $object_type );
+		$otype_roles[$object_type] = $scoper->role_defs->get_matching( 'rs', $src_name, $object_type );
 		$otype_source[$object_type] = $src_name;
 		
 		$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
 		
 		if ( $include_taxonomy_otypes ) {
 			foreach ( $uses_taxonomies as $taxonomy)
-				if ( $tx_roles = $scoper->role_defs->get_matching( SCOPER_ROLE_TYPE, $src_name, $taxonomy ) )
+				if ( $tx_roles = $scoper->role_defs->get_matching( 'rs', $src_name, $taxonomy ) )
 					$otype_roles[$taxonomy] = $tx_roles;
 		}
 		
@@ -340,7 +332,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			continue;
 
 		echo "<br /><h4><a name='$object_type'></a><strong>";
-		printf( __('Modify role assignments for %s', 'scoper'), agp_strtolower($otype->display_name_plural) );
+		printf( __('Modify role assignments for %s', 'scoper'), agp_strtolower( $otype->labels->name ) );
 		echo '</strong></h4>';
 
 		//display each role eligible for group/user assignment

@@ -107,17 +107,8 @@ class AttachmentFilters_RS {
 		$return_attachment_id = 0;
 		
 		if ( empty($results) ) {
-			global $scoper;
-
-			$scoper->cap_interceptor->skip_any_object_check = true;
-			$scoper->cap_interceptor->skip_any_term_check = true;
-			$can_edit_others = current_user_can('edit_others_posts') || current_user_can('edit_others_pages');
-			$scoper->cap_interceptor->skip_any_object_check = false;
-			$scoper->cap_interceptor->skip_any_term_check = false;
-
-			//rs_errlog( "unattached upload, returning $can_edit_others" );
-
-			return $can_edit_others;
+			$args = array( 'skip_any_object_check' => true, 'skip_any_term_check' => true );
+			return cr_user_can( 'edit_others_posts', 0, 0, $args ) || cr_user_can( 'edit_others_pages', 0, 0, $args );
 		} else {
 			// set global flag (checked by flt_user_has_cap, which filters current_user_Can)
 			global $scoper_checking_attachment_access;
@@ -174,13 +165,13 @@ class AttachmentFilters_RS {
 			agp_return_file($file, $return_attachment_id);
 			return;
 		}
-		
+		 
 		// File access was not granted.  Since a 404 page will now be displayed, add filters which (for performance) were suppressed on the direct file access request
 		global $scoper;
 		$scoper->direct_file_access = false;
 		$scoper->add_main_filters();
 		$scoper->add_hardway_filters();
-
+		
 		//Determine if teaser message should be triggered
 		if ( file_exists( $uploads['basedir'] . "/$file" ) ) {
 			

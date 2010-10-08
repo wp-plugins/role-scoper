@@ -1,7 +1,6 @@
 <?php
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
-
 	
 class ScoperOptionUI {
 	var $sitewide;
@@ -20,11 +19,8 @@ class ScoperOptionUI {
 		$this->customize_defaults = $customize_defaults;
 	}
 	
-	function option_checkbox( $option_name, $tab_name, $section_name, $hint_text, $trailing_html, $args = '') {
+	function option_checkbox( $option_name, $tab_name, $section_name, $hint_text, $trailing_html, $args = array()) {
 		$return = array( 'in_scope' => false, 'val' => '' );
-		
-		if ( ! is_array($args) )
-			$args = array();
 		
 		if ( in_array( $option_name, $this->form_options[$tab_name][$section_name] ) ) {
 			$this->all_options []= $option_name;
@@ -58,11 +54,12 @@ class ScoperOptionUI {
 	}
 	
 	
-	function otype_option_checkboxes( $option_name, $caption, $tab_name, $section_name, $hint_text, $trailing_html, $args = '' ) {
-		global $scoper;
+	function otype_option_checkboxes( $option_name, $caption, $tab_name, $section_name, $hint_text, $trailing_html, $args = array() ) {
+		global $scoper, $scoper_admin;
 		
-		if ( ! is_array($args) )
-			$args = array();
+		$defaults = array( 'caption_header' => true );
+		$args = array_merge( $defaults, $args );
+		extract( $args );
 		
 		$return = array( 'in_scope' => false, 'val' => array() );
 		
@@ -75,10 +72,21 @@ class ScoperOptionUI {
 					
 				$return['val'] = array_merge($this->def_otype_options[$option_name], $return['val']);
 				
-				$plural_display_name = ( isset($args['plural_display_name']) ) ? $args['plural_display_name'] : true;
+				$label_property = ( isset($args['label_property']) ) ? $args['label_property'] : 'name';
 				
+				$first_pass = true;
 				foreach ( $return['val'] as $src_otype => $val ) {
-					$display_name_plural = $scoper->admin->interpret_src_otype($src_otype, $plural_display_name); //arg: use plural display name
+					if ( $caption_header && $first_pass ) {
+						printf( $caption, $scoper_admin->interpret_src_otype($src_otype) );  // translation back-compat
+						echo '<br /><div style="margin-left: 2em">';
+						$first_pass = false;
+					}
+					
+					$arr_src_otype = explode( ':', $src_otype );
+					if ( ! scoper_get_otype_option( 'use_object_roles', $arr_src_otype[0], $arr_src_otype[1] ) )
+						continue;
+					
+					$item_label = $scoper_admin->interpret_src_otype($src_otype, $label_property); //arg: use plural display name
 						
 					$id = str_replace(':', '_', $option_name . '-' . $src_otype);
 					
@@ -86,11 +94,18 @@ class ScoperOptionUI {
 					echo "<input name='$id' type='checkbox' id='$id' value='1' ";
 					checked('1', $val);
 					echo " /> ";
-	
-					printf( $caption, $display_name_plural );
+					
+					if ( $caption_header )
+						echo $item_label;
+					else
+						printf( $caption, $item_label );
+					
 					echo ('</label><br />');
 				} // end foreach src_otype
-					
+				
+				if ( $caption_header )
+					echo '</div>';
+				
 				if ( $hint_text && $this->display_hints )
 					echo "<span class='rs-subtext'>" . $hint_text . "</span>";
 			
@@ -142,7 +157,7 @@ if ( isset($_POST['all_otype_options']) ) {
 	echo '</p></div>';
 }
 
-global $scoper;
+global $scoper, $scoper_admin;
 
 define('SCOPER_REALM_ADMIN_RS', 1);  // We need to access all config items here, even if they are normally removed due to disabling
 $scoper->load_config();
@@ -177,7 +192,6 @@ $ui->section_captions = array(
 ),
 'advanced' => array(
 	'role_basis'	=>		__('Role Basis', 'scoper'),
-	'role_type' 	=>		__('Role Type', 'scoper'),
 	'page_structure' =>		__('Page Structure', 'scoper'),
 	'user_profile' =>		__('User Profile', 'scoper'),
 	'user_management' => 	__('User Management', 'scoper'),
@@ -213,7 +227,6 @@ $ui->option_captions = array(
 	'group_recommendations' => __('Enable membership recommendations', 'scoper' ),
 	'enable_group_roles' => __('Apply Group Roles', 'scoper'),
 	'enable_user_roles' => __('Apply User Roles', 'scoper'),
-	'role_type' => __( 'Within any scope, each user or group has:', 'scoper'),
 	'custom_user_blogcaps' => __('Support WP Custom User Caps', 'scoper'),
 	'no_frontend_admin' => __('Assume No Front-end Admin', 'scoper'),
 	'indicate_blended_roles' => __('Indicate blended roles', 'scoper'),
@@ -247,6 +260,7 @@ $ui->option_captions = array(
 	'remap_thru_excluded_term_parent' => __('Remap through excluded term parent', 'scoper'),
 	'limit_user_edit_by_level' => __('Limit User Edit by Level', 'scoper'),
 	'file_filtering' => __('Filter Uploaded File Attachments', 'scoper'),
+	'file_filtering_regen_key' => __('File Filtering Reset Key', 'scoper'),
 	'mu_sitewide_groups' => __('Share groups site-wide', 'scoper'),
 	'role_duration_limits' => __('Enable Role Duration Limits', 'scoper'),
 	'role_content_date_limits' => __('Enable Content Date Limits', 'scoper'),
@@ -273,7 +287,7 @@ $ui->form_options = array(
 	'pages_listing' => 		array( 'private_items_listable', 'remap_page_parents', 'enforce_actual_page_depth', 'remap_thru_excluded_page_parent' ),
 	'categories_listing' =>	array( 'remap_term_parents', 'enforce_actual_term_depth', 'remap_thru_excluded_term_parent' ),
 	'content_maintenance'=> array( 'default_private', 'sync_private', 'role_admin_blogwide_editor_only', 'admin_others_attached_files', 'admin_others_unattached_files', 'filter_users_dropdown' ),
-	'file_filtering' =>		array( 'file_filtering' ),
+	'file_filtering' =>		array( 'file_filtering', 'file_filtering_regen_key' ),
 	'date_limits' =>		array( 'role_duration_limits', 'role_content_date_limits' ),
 	'internal_cache' =>		array( 'persistent_cache' ),
 	'version' =>			array( 'version_update_notice' ),
@@ -287,8 +301,7 @@ $ui->form_options = array(
 								'teaser_prepend_excerpt', 'teaser_prepend_excerpt_anon', 'teaser_append_excerpt', 'teaser_append_excerpt_anon' ), */
 ),
 'advanced' => array(
-	'role_basis'	=>		array( 'enable_group_roles', 'enable_user_roles' ),
-	'role_type' 	=>		array( 'role_type', 'custom_user_blogcaps' ),
+	'role_basis'	=>		array( 'enable_group_roles', 'enable_user_roles', 'custom_user_blogcaps' ),
 	'page_structure' =>		array( 'lock_top_pages' ),
 	'user_profile' =>		array( 'display_user_profile_groups', 'display_user_profile_roles' ),
 	'user_management' => 	array( 'limit_user_edit_by_level' ),
@@ -356,20 +369,11 @@ if ( $customize_defaults )
 <td width = "90%">
 <h2><?php 
 if ( $sitewide ) {
-	if ( awp_ver( '3.0-dev' ) )
-		_e('Role Scoper Network Options', 'scoper');
-	else
-		_e('Role Scoper Site Options', 'scoper');
+	_e('Role Scoper Network Options', 'scoper');
 } elseif ( $customize_defaults ) {
-	if ( awp_ver( '3.0-dev' ) )
-		_e('Role Scoper Default Site Options', 'scoper');
-	else
-		_e('Role Scoper Default Blog Options', 'scoper');
+	_e('Role Scoper Default Site Options', 'scoper');
 } elseif ( IS_MU_RS )
-	if ( awp_ver( '3.0-dev' ) )
-		_e('Role Scoper Single Site Options', 'scoper');
-	else
-		_e('Role Scoper Blog Options', 'scoper');
+	_e('Role Scoper Single Site Options', 'scoper');
 else
 	_e('Role Scoper Options', 'scoper');
 ?>
@@ -385,21 +389,13 @@ else
 if ( $sitewide ) {
 	$color_class = 'rs-backgreen';
 	echo '<p style="margin-top:0">';
-	
-	if ( awp_ver( '3.0-dev' ) )
-		_e( 'These settings will be applied to all sites.', 'scoper' );
-	else
-		_e( 'These settings will be applied to all blogs.', 'scoper' );
+	_e( 'These settings will be applied to all sites.', 'scoper' );
 	echo '</p>';
 	
 } elseif ( $customize_defaults ) {
 	$color_class = 'rs-backgray';
 	echo '<p style="margin-top:0">';
-	
-	if ( awp_ver( '3.0-dev' ) )
-		_e( 'These are the <strong>default</strong> settings for options which can be adjusted per-site.', 'scoper' );
-	else
-		_e( 'These are the <strong>default</strong> settings for options which can be adjusted per-blog.', 'scoper' );
+	_e( 'These are the <strong>default</strong> settings for options which can be adjusted per-site.', 'scoper' );
 	echo '</p>';
 	
 } else
@@ -442,16 +438,14 @@ if ( ! empty( $ui->form_options['realm'] ) ) {
 }
 
 if ( ! empty( $ui->form_options['rs_role_definitions'] ) ) {	
-	if ( 'rs' == SCOPER_ROLE_TYPE ) {
-		$js_call = "agp_swap_display('rs-roledefs', 'rs-features', 'rs_show_roledefs', 'rs_show_features', '$class_selected', '$class_unselected');";
-		$js_call .= "agp_swap_display('', 'rs-realm', '', 'rs_show_realm', '$class_selected', '$class_unselected');";
-		$js_call .= "agp_swap_display('', 'rs-advanced', '', 'rs_show_advanced', '$class_selected', '$class_unselected');";
-		$js_call .= "agp_swap_display('', 'wp-roledefs', '', 'wp_show_roledefs', '$class_selected', '$class_unselected');";
-		$js_call .= "agp_swap_display('', 'rs-optscope', '', 'rs_show_optscope', '$class_selected', '$class_unselected');";
-		echo "<li class='$class_unselected'>"
-			. "<a id='rs_show_roledefs' href='javascript:void(0)' onclick=\"$js_call\">" . $ui->tab_captions['rs_role_definitions'] . '</a>'
-			. '</li>';
-	}
+	$js_call = "agp_swap_display('rs-roledefs', 'rs-features', 'rs_show_roledefs', 'rs_show_features', '$class_selected', '$class_unselected');";
+	$js_call .= "agp_swap_display('', 'rs-realm', '', 'rs_show_realm', '$class_selected', '$class_unselected');";
+	$js_call .= "agp_swap_display('', 'rs-advanced', '', 'rs_show_advanced', '$class_selected', '$class_unselected');";
+	$js_call .= "agp_swap_display('', 'wp-roledefs', '', 'wp_show_roledefs', '$class_selected', '$class_unselected');";
+	$js_call .= "agp_swap_display('', 'rs-optscope', '', 'rs_show_optscope', '$class_selected', '$class_unselected');";
+	echo "<li class='$class_unselected'>"
+		. "<a id='rs_show_roledefs' href='javascript:void(0)' onclick=\"$js_call\">" . $ui->tab_captions['rs_role_definitions'] . '</a>'
+		. '</li>';
 	
 	$js_call = "agp_swap_display('wp-roledefs', 'rs-features', 'wp_show_roledefs', 'rs_show_features', '$class_selected', '$class_unselected');";
 	$js_call .= "agp_swap_display('', 'rs-realm', '', 'rs_show_realm', '$class_selected', '$class_unselected');";
@@ -493,10 +487,7 @@ if ( scoper_get_option('display_hints', $sitewide, $customize_defaults) ) {
 		
 				echo  ' ';
 				
-				if ( awp_ver( '3.0-dev' ) )
-					printf( __('Note that, depending on your configuration, %1$s site-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
-				else
-					printf( __('Note that, depending on your configuration, %1$s blog-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
+				printf( __('Note that, depending on your configuration, %1$s site-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
 			}
 		} else {
 			$link_open = "<a href='admin.php?page=rs-site_options'>";
@@ -504,10 +495,7 @@ if ( scoper_get_option('display_hints', $sitewide, $customize_defaults) ) {
 	
 			echo ' ';
 			
-			if ( awp_ver( '3.0-dev' ) )
-				printf( __('Note that, depending on your configuration, %1$s network-wide options%2$s may also be available.', 'scoper'), $link_open, $link_close );
-			else
-				printf( __('Note that, depending on your configuration, %1$s site-wide options%2$s may also be available.', 'scoper'), $link_open, $link_close );
+			printf( __('Note that, depending on your configuration, %1$s network-wide options%2$s may also be available.', 'scoper'), $link_open, $link_close );
 		}
 	}
 	
@@ -536,25 +524,23 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		$hint = __('If enabled, each user group will be available for role assignment in any blog.  Any existing blog-specific groups will be unavailable.  Group role assignments are still blog-specific.', 'scoper');
 		$ui->option_checkbox( 'mu_sitewide_groups', $tab, $section, $hint, '' );
 	}	
+
+	$hint = __('Specify group membership via a search/results interface, instead of simple checkboxes.', 'scoper');
+	$js_call = "agp_display_if('group_requests_div', 'group_ajax');agp_display_if('group_recommendations_div', 'group_ajax');";
+	$ret = $ui->option_checkbox( 'group_ajax', $tab, $section, $hint, '', array( 'js_call' => $js_call ) );	
+	$group_ajax = $ret['val'] || ! $ret['in_scope'];
 	
-	if ( awp_ver( '2.8' ) ) {
-		$hint = __('Specify group membership via a search/results interface, instead of simple checkboxes.', 'scoper');
-		$js_call = "agp_display_if('group_requests_div', 'group_ajax');agp_display_if('group_recommendations_div', 'group_ajax');";
-		$ret = $ui->option_checkbox( 'group_ajax', $tab, $section, $hint, '', array( 'js_call' => $js_call ) );	
-		$group_ajax = $ret['val'] || ! $ret['in_scope'];
-		
-		$hint = __('A general role of Group Applicant (or the request_group_membership capability) allows a user to request membership in any existing group via their user profile.', 'scoper');
-		$css_display = ( $group_ajax ) ? 'block' : 'none';
-		echo "<div id='group_requests_div' style='display:$css_display; margin-top: 1em;margin-left:2em;'>";
-		$ui->option_checkbox( 'group_requests', $tab, $section, $hint, '' );	
-		echo '</div>';
-		
-		$hint = __('A Group Moderator role (general or group-specific) allows a user to recommend group members, possibly in response to requests.  This can serve as a two-tier approval mechanism.', 'scoper');
-		$css_display = ( $group_ajax ) ? 'block' : 'none';
-		echo "<div id='group_recommendations_div' style='display:$css_display; margin-top: 1em;margin-left:2em;'>";
-		$ui->option_checkbox( 'group_recommendations', $tab, $section, $hint, '' );
-		echo '</div>';
-	}
+	$hint = __('A general role of Group Applicant (or the request_group_membership capability) allows a user to request membership in any existing group via their user profile.', 'scoper');
+	$css_display = ( $group_ajax ) ? 'block' : 'none';
+	echo "<div id='group_requests_div' style='display:$css_display; margin-top: 1em;margin-left:2em;'>";
+	$ui->option_checkbox( 'group_requests', $tab, $section, $hint, '' );	
+	echo '</div>';
+	
+	$hint = __('A Group Moderator role (general or group-specific) allows a user to recommend group members, possibly in response to requests.  This can serve as a two-tier approval mechanism.', 'scoper');
+	$css_display = ( $group_ajax ) ? 'block' : 'none';
+	echo "<div id='group_recommendations_div' style='display:$css_display; margin-top: 1em;margin-left:2em;'>";
+	$ui->option_checkbox( 'group_recommendations', $tab, $section, $hint, '' );
+	echo '</div>';
 	?>
 	</td></tr>
 <?php endif; // any options accessable in this section
@@ -588,7 +574,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	<?php 
 	$otype_caption = __('Include Private %s in listing if user can read them', 'scoper');
 	$hint = __('Determines whether administrators, editors and users who have been granted access to a private page will see it in their sidebar or topbar page listing.', 'scoper');
-	$ui->otype_option_checkboxes( 'private_items_listable', $otype_caption, $tab, $section, $hint, '<br /><br />' );
+	$ui->otype_option_checkboxes( 'private_items_listable', $otype_caption, $tab, $section, $hint, '<br /><br />', array( 'caption_header' => false ) );
 
 	$hint = __('If a page\'s parent is not visible to the user, it will be listed below a visible grandparent instead.', 'scoper');
 	$js_call = "agp_display_if('enforce_actual_page_depth_div', 'remap_page_parents');agp_display_if('remap_thru_excluded_page_parent_div', 'remap_page_parents');";
@@ -650,16 +636,14 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	</th><td>
 
 	<?php
-	//$otype_caption = _ x('Default new %s to Private visibility', 'Posts / Pages', 'scoper');
-	$otype_caption = __('Default new %s to Private visibility', 'scoper');
+	$caption = __( 'Default new %s to Private visibility', 'scoper' );
 	$hint = __('Note: this does not apply to Quickposts or XML-RPC submissions.', 'scoper');
-	$ui->otype_option_checkboxes( 'default_private', $otype_caption, $tab, $section, $hint, '<br /><br />' );
+	$ui->otype_option_checkboxes( 'default_private', $caption, $tab, $section, $hint, '<br /><br />' );
 	
-	//$otype_caption = _ x('Auto-set %s to Private visibility if Reader role is restricted', 'Posts / Pages', 'scoper');
-	$otype_caption = __('Auto-set %s to Private visibility if Reader role is restricted', 'scoper');
+	$caption = __( 'Auto-set %s to Private visibility if Reader role is restricted', 'scoper' );
 	$hint = __('Note: this is only done if the Reader role is restricted via Post/Page edit form.', 'scoper');
-	$ui->otype_option_checkboxes( 'sync_private', $otype_caption, $tab, $section, $hint, '<br /><br />' );
-
+	$ui->otype_option_checkboxes( 'sync_private', $caption, $tab, $section, $hint, '<br /><br />' );
+	
 	if ( in_array( 'role_admin_blogwide_editor_only', $ui->form_options[$tab][$section] ) ) {
 		$id = 'role_admin_blogwide_editor_only';
 		$ui->all_options []= $id;
@@ -675,9 +659,6 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		
 		$captions = array( '0' => __('by the Author or Editor of any Post/Category/Page', 'scoper'), '1' => __('by site-wide Editors and Administrators', 'scoper'), 'admin_content' => __('by Content Administrators only', 'scoper'), 'admin' => __('by User Administrators only', 'scoper') );   // legacy-stored 'admin' in older versions
 		
-		if ( ! awp_ver( '3.0-dev' ) )
-			$captions['1'] = __('by blog-wide Editors and Administrators', 'scoper');
-
 		foreach ( $captions as $key => $value) {
 			$key = strval($key);
 			echo "<div style='margin: 0 0 0.5em 2em;'><label for='{$id}_{$key}'>";
@@ -696,10 +677,10 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	<?php 
 	} // endif role_admin_blogwide_editor_only controlled in this option scope
 		
-	$hint = awp_ver( '3.0-dev' ) ? __('For users who are not site-wide Editors, determines Media Library visibility of files uploaded by another user and now attached to a post which the logged user can edit.', 'scoper') : __('For users who are not blog-wide Editors, determines Media Library visibility of files uploaded by another user and now attached to a post which the logged user can edit.', 'scoper');
+	$hint = __('For users who are not site-wide Editors, determines Media Library visibility of files uploaded by another user and now attached to a post which the logged user can edit.', 'scoper');
 	$ret = $ui->option_checkbox( 'admin_others_attached_files', $tab, $section, $hint, '' );	
 	
-	$hint = awp_ver( '3.0-dev' ) ? __('For users who are not site-wide Editors, determines Media Library visibility of unattached files which were uploaded by another user.', 'scoper') : __('For users who are not blog-wide Editors, determines Media Library visibility of unattached files which were uploaded by another user.', 'scoper');
+	$hint = __('For users who are not site-wide Editors, determines Media Library visibility of unattached files which were uploaded by another user.', 'scoper');
 	$ret = $ui->option_checkbox( 'admin_others_unattached_files', $tab, $section, $hint, '' );	
 	
 	echo '<br />';
@@ -775,6 +756,38 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		}
 		?>
 		</div><br />
+		
+		<?php
+		$id = 'file_filtering_regen_key';
+		$ui->all_options []= $id;		
+		$val = scoper_get_option( $id );
+
+		echo "<div><label for='$id'>";
+		echo( $ui->option_captions[$id] );
+		?>
+		<input name="<?php echo($id);?>" type="text" style="width: 8em" id="<?php echo($id);?>" value="<?php echo($val);?>" />
+		</label>
+		</div>
+		
+		<?php
+		if ( $ui->display_hints)  {
+			echo '<div class="rs-subtext">';
+			if ( $val ) {
+				if ( IS_MU_RS )
+					_e( 'To force regeneration of file attachment access keys (at next site access), execute the following URL:', 'scoper' );
+				else
+					_e( 'To force regeneration of file attachment access keys, execute the following URL:', 'scoper' );
+					
+				$url = site_url( "index.php?action=expire_file_rules&key=$val" );
+				echo( "<br />&nbsp;&nbsp;<a href='$url'>$url</a>" );
+			} else
+				_e( 'Supply a custom key which will enable a support url to regenerate file access keys.  Then execute the url regularly (using your own cron service) to prevent long-term bookmarking of protected files.', 'scoper');
+
+			echo '</div>';
+		}
+		?>
+		<br />
+
 		<?php
 		//printf( _ x('<strong>Note:</strong> FTP-uploaded files will not be filtered correctly until you run the %1$sAttachments Utility%2$s.', 'arguments are link open, link close', 'scoper'), "<a href='admin.php?page=rs-attachments_utility'>", '</a>');
 		printf( __('<strong>Note:</strong> FTP-uploaded files will not be filtered correctly until you run the %1$sAttachments Utility%2$s.', 'scoper'), "<a href='admin.php?page=rs-attachments_utility'>", '</a>');
@@ -820,7 +833,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :
 		$ui->all_options []= 'persistent_cache';
 						
 		$cache_selected = scoper_get_option('persistent_cache', $sitewide, $customize_defaults);
-		$cache_enabled = $cache_selected && defined('ENABLE_PERSISTENT_CACHE') && ! defined('DISABLE_PERSISTENT_CACHE');
+		$cache_enabled = $cache_selected && ! defined('DISABLE_PERSISTENT_CACHE');
 		?>
 		<label for="persistent_cache">
 		<input name="persistent_cache" type="checkbox" id="persistent_cache" value="1" <?php checked(true, $cache_enabled);?> />
@@ -1049,8 +1062,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 					echo '<div class="agp-vspaced_input">';
 					echo "<label for='$id' style='margin-left: 2em;'>";
 					
-					$display_name = $scoper->admin->interpret_src_otype($src_otype, true);
-					printf(__("%s:", 'scoper'), $display_name);
+					$item_label_singular = $scoper_admin->interpret_src_otype($src_otype);
+					printf(__("%s:", 'scoper'), $item_label_singular);
 					
 					echo "<select name='$id' id='$id'>";
 					$num_chars = ( defined('SCOPER_TEASER_NUM_CHARS') ) ? SCOPER_TEASER_NUM_CHARS : 50;
@@ -1109,6 +1122,11 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 				echo '<br /><br />';
 				$display_style = ( $do_teaser[$src_name] ) ? '' : "style='display:none;'";
 				echo "<div id='teaser-pvt-$src_name' $display_style>";
+				
+				$type_caption = $scoper_admin->interpret_src_otype('post:post');
+				printf(__("Hide private %s (instead of teasing)", 'scoper'), $type_caption);	// back compat for existing translations
+				echo '<br />';
+				echo '<div style="margin-left: 2em">';
 				foreach ( $hide_private as $src_otype => $teaser_setting ) {
 					if ( $src_name != scoper_src_name_from_src_otype($src_otype) )
 						continue;
@@ -1118,11 +1136,11 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 					echo "<label for='$id'>";
 					$checked = ( $teaser_setting ) ? ' checked="checked"' : '';
 					echo "<input name='$id' type='checkbox' id='$id' value='1' $checked /> ";
-					
-					$display_name = $scoper->admin->interpret_src_otype($src_otype, true);
-					printf(__("Hide private %s (instead of teasing)", 'scoper'), $display_name);
+
+					echo ( $scoper_admin->interpret_src_otype($src_otype) );
 					echo ('</label><br />');
 				}
+				echo '</div>';
 				echo '<span class="rs-subtext">';
 				if ( $ui->display_hints) _e('Hide private content completely, while still showing a teaser for content which is published with restrictions.  <strong>Note:</strong> Private posts hidden in this way will reduce the total number of posts on their "page" of a blog listing.', 'scoper');
 				echo '</span>';
@@ -1163,14 +1181,14 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 					echo "<div id='teaserdef-$src_name' style='display:$css_display; margin-top: 2em;'>";
 				}
 				
-				$display_name = $scoper->admin->interpret_src_otype($src_otype);
+				$item_label_singular = $scoper_admin->interpret_src_otype($src_otype);
 				
 				// separate input boxes to specify teasers for anon users and unpermitted logged users
 				foreach ( $user_suffixes as $anon ) {
 					$user_descript = ( $anon ) ?  __('anonymous users', 'scoper') : __('logged users', 'scoper');
 					
 					echo '<strong>';
-					printf( __('%1$s Teaser Text (%2$s):', 'scoper'), $display_name, $user_descript );
+					printf( __('%1$s Teaser Text (%2$s):', 'scoper'), $item_label_singular, $user_descript );
 					echo '</strong>';
 					echo ('<ul class="rs-textentries">');
 				
@@ -1264,48 +1282,16 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :
 	
 	$hint = '';
 	$ui->option_checkbox( 'enable_user_roles', $tab, $section, $hint, '' );
-	?>
 	
-	</td></tr>
-<?php endif; // any options accessable in this section
-
-
-$section = 'role_type';
-if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
-	<tr valign="top">
-	<th scope="row"><?php echo $ui->section_captions[$tab][$section]; 		// --- ROLE TYPE SECTION ---
-	?>
-	</th><td>
-	
-	<?php if ( in_array( 'role_type', $ui->form_options[$tab][$section] ) ) :				
-		$ui->all_options []= 'role_type';
-		?>
-		<?php echo $ui->option_captions['role_type']; ?><br />
-		<select name="role_type" id="role_type">
-		<?php
-			$captions = array( 'rs' => __("Multiple RS Roles (type-specific, plugin-defined)", 'scoper'), 'wp' => __("Single WP Role (comprehensive, WP-defined)", 'scoper'));
-			foreach ( $scoper->role_defs->role_types as $key => $value) {
-				if ( 'wp_cap' == $value ) continue;
-				$selected = ( scoper_get_option('role_type', $sitewide, $customize_defaults) == $value ) ? 'selected="selected"' : '';
-				echo "\n\t<option value='$key' $selected>$captions[$value]</option>";
-			}
-		?>
-		</select><br />
-		<span class="rs-subtext">
-		<?php if ( $ui->display_hints) _e('Either role type can be scoped (assigned for specific terms or objects).  However, RS roles allow finer control.  A user\'s main WordPress role will be applied by default regardless of this selection.', 'scoper') ?>
-		</span>
-		<br /><br />
-	<?php endif;?>
-	
-	<?php
 	if ( scoper_get_option('custom_user_blogcaps', $sitewide, $customize_defaults) || ScoperAdminLib::any_custom_caps_assigned() ) {
 		$hint = __('Some users created under older WP versions may have direct-assigned capabilities in addition to their blog-wide role assignment.  This setting does not enable or block that feature, but determines whether Role Scoper must account for it.  Disable when possible (capabilities unrelated to RS Role Definitions are irrelevant).', 'scoper');
 		$ui->option_checkbox( 'custom_user_blogcaps', $tab, $section, $hint, '' );
 	}
 	?>
-		
+	
 	</td></tr>
 <?php endif; // any options accessable in this section
+
 
 $section = 'page_structure';
 if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
@@ -1333,12 +1319,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 	}
 	
 	echo '<span class="rs-subtext">';
-	if ( $ui->display_hints ) {
-		if ( awp_ver( '3.0' ) )
-			_e('Users who do not meet this site-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of "Main Page".  Nor will they be able to move a currently published page from "Main Page" to a different Page Parent.', 'scoper');
-		else
-			_e('Users who do not meet this blog-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of "Main Page".  Nor will they be able to move a currently published page from "Main Page" to a different Page Parent.', 'scoper');
-	}
+	if ( $ui->display_hints )
+		_e('Users who do not meet this site-wide role requirement may still be able to save and/or publish pages, but will not be able to publish a new page with a Page Parent setting of "Main Page".  Nor will they be able to move a currently published page from "Main Page" to a different Page Parent.', 'scoper');
 	
 	echo '</span>';
 	?>
@@ -1463,12 +1445,13 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 				
 				$sample_ids = array();
 		
+				// note: 'post:post' otype option is used for all non-page types
 				$sample_ids['post:post'] = '<span id="rs_sample_ids_post:post" class="rs-gray" style="display:none">' . 'rs_private_post_reader; rs_post_contributor; categorydiv; password-span; slugdiv; authordiv; commentstatusdiv; postcustom; trackbacksdiv; tagsdiv-post_tag; postexcerpt; revisionsdiv; visibility; misc-publishing-actions; edit-slug-box' . '</span>';
 				$sample_ids['post:page'] = '<span id="rs_sample_ids_post:page" class="rs-gray" style="display:none">' . 'rs_private_page_reader; rs_page_contributor; rs_page_associate; password-span; pageslugdiv; pageauthordiv; pagecommentstatusdiv; pagecustomdiv; pageparentdiv; revisionsdiv; visibility; misc-publishing-actions; edit-slug-box' . '</span>';
 				
 				foreach ( $opt_vals as $src_otype => $val ) {
 					$id = str_replace(':', '_', $option_name . '-' . $src_otype);
-					$display = $scoper->admin->interpret_src_otype($src_otype, false);
+					$display = $scoper_admin->interpret_src_otype($src_otype, 'singular_name');
 					echo('<div class="agp-vspaced_input">');
 					echo('<span class="rs-vtight">');
 					printf(__('%s Edit Form HTML IDs:', 'scoper'), $display);
@@ -1501,12 +1484,9 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 		?>
 		<div class="agp-vspaced_input">
 		<?php
-		if ( awp_ver( '3.0 ' ) )
-			_e('Specified element IDs also require the following site-wide Role:', 'scoper');
-		else
-			_e('Specified element IDs also require the following blog-wide Role:', 'scoper');
-		
-		$admin_caption = ( $custom_content_admin_cap ) ? __('Content Administrator', 'scoper') : __awp('Administrator');
+		_e('Specified element IDs also require the following site-wide Role:', 'scoper');
+
+		$admin_caption = ( ! empty($custom_content_admin_cap) ) ? __('Content Administrator', 'scoper') : __awp('Administrator');
 		
 		$captions = array( '0' => __('no requirement', 'scoper'), '1' => __('Contributor / Author / Editor', 'scoper'), 'author' => __('Author / Editor', 'scoper'), 'editor' => __awp('Editor'), 'admin_content' => __('Content Administrator', 'scoper'), 'admin_user' => __('User Administrator', 'scoper'), 'admin_option' => __('Option Administrator', 'scoper') );
 		
@@ -1522,12 +1502,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 		?>
 		<span class="rs-subtext">
 		<?php 
-		if ( $ui->display_hints) { 
-			if ( awp_ver( '3.0-dev' ) )
-				_e('Note: The above roles are type-specific RS roles (for the object type involved) which must be contained in a user\'s site-wide WordPress role.', 'scoper');
-			else
-				_e('Note: The above roles are type-specific RS roles (for the object type involved) which must be contained in a user\'s blog-wide WordPress role.', 'scoper');
-		}
+		if ( $ui->display_hints)
+			_e('Note: The above roles are type-specific RS roles (for the object type involved) which must be contained in a user\'s site-wide WordPress role.', 'scoper');
 		?>
 		</span>
 		</div>
@@ -1547,13 +1523,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 	
 	<?php
 	$otype_caption = __('Limit eligible users for %s-specific editing roles', 'scoper');
-	
-	if ( awp_ver( '3.0-dev' ) )
-		$hint = __('Role Scoper can enable any user to edit a post or page you specify, regardless of their site-wide WordPress role.  If that\'s not a good thing, check above options to require basic editing capability blog-wide or category-wide.', 'scoper');
-	else
-		$hint = __('Role Scoper can enable any user to edit a post or page you specify, regardless of their blog-wide WordPress role.  If that\'s not a good thing, check above options to require basic editing capability blog-wide or category-wide.', 'scoper');
-	
-	$ui->otype_option_checkboxes( 'limit_object_editors', $otype_caption, $tab, $section, $hint, '<br /><br />', array( 'plural_display_name' => false ) );
+	$hint = __('Role Scoper can enable any user to edit a post or page you specify, regardless of their site-wide WordPress role.  If that\'s not a good thing, check above options to require basic editing capability blog-wide or category-wide.', 'scoper');
+	$ui->otype_option_checkboxes( 'limit_object_editors', $otype_caption, $tab, $section, $hint, '<br /><br />', array( 'label_property' => 'singular_name' ) );
 	
 	$hint =  __('In the Edit Post/Edit Page roles tabs, decorate user/group name with colors and symbols if they have the role implicitly via group, general role, category role, or a superior post/page role.', 'scoper');
 	$ui->option_checkbox( 'indicate_blended_roles', $tab, $section, $hint, '<br />' );
@@ -1593,18 +1564,23 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 <?php endif; // any options accessable in this section
 
 
-
 $section = 'additional_object_roles';
 if (  ! empty( $ui->form_options[$tab][$section] ) ) :
-	$objscope_equiv_roles = array( 'rs_post_reader' => 'rs_private_post_reader', 'rs_post_author' => 'rs_post_editor', 'rs_page_reader' => 'rs_private_page_reader', 'rs_page_author' => 'rs_page_editor' );
 
+	$objscope_equiv_roles = array( 'rs_post_reader' => 'rs_private_post_reader', 'rs_post_author' => 'rs_post_editor', 'rs_page_reader' => 'rs_private_page_reader', 'rs_page_author' => 'rs_page_editor' );
+	
 	if ( 	// To avoid confusion, don't display revision roles as candidates unless revisions are available
 		( ! IS_MU_RS && defined('RVY_VERSION') )
 		//|| ( IS_MU_RS && ( ($sitewide && empty($scoper_options_sitewide['pending_revisions']) ) || ($sitewide && empty($scoper_options_sitewide['scheduled_revisions']) ) || scoper_get_option( 'pending_revisions', $sitewide ) || scoper_get_option( 'scheduled_revisions', $sitewide ) ) )
 		|| ( IS_MU_RS && ( ($sitewide && empty($rvy_options_sitewide['pending_revisions']) ) || ($sitewide && empty($rvy_options_sitewide['scheduled_revisions']) ) || rvy_get_option( 'pending_revisions', $sitewide ) || rvy_get_option( 'scheduled_revisions', $sitewide ) ) )
-	)
-		$objscope_equiv_roles = array_merge( $objscope_equiv_roles, array( 'rs_post_revisor' => 'rs_post_contributor', 'rs_page_revisor' => 'rs_page_contributor' ) );
-	
+	) {
+		$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) ); 
+
+		foreach( $post_types as $_type )
+			$objscope_equiv_roles["rs_{$_type}_revisor"] = "rs_{$_type}_contributor";	
+	}
+			
+			
 	if ( IS_MU_RS ) {  // apply option scope filtering for mu
 		foreach ( array_keys($objscope_equiv_roles) as $role_name )
 			if ( ! in_array( $role_name . '_role_objscope', $ui->form_options[$tab][$section] ) )
@@ -1613,38 +1589,34 @@ if (  ! empty( $ui->form_options[$tab][$section] ) ) :
 
 	if ( ! empty( $objscope_equiv_roles ) ) : ?>
 		<?php 
-		if ( 'rs' == SCOPER_ROLE_TYPE ):
-			foreach ( $objscope_equiv_roles as $role_handle => $equiv_role_handle ) {
-				$ui->all_options []= "{$role_handle}_role_objscope";
-			}
-			?>
-			<tr valign="top">
-			<th scope="row"><?php echo $ui->section_captions[$tab][$section]; ?></th>
-			<td>
-			<?php 
-			foreach ( $objscope_equiv_roles as $role_handle => $equiv_role_handle ) {
-				$id = "{$role_handle}_role_objscope";
-				$checked = ( scoper_get_option( $id, $sitewide, $customize_defaults ) ) ? "checked='checked'" : '';
-				echo '<div class="agp-vspaced_input">';
-				echo "<label for='$id'>";
-				echo "<input name='$id' type='checkbox' id='$id' value='1' $checked /> ";
-				printf ( __('%1$s (normally equivalent to %2$s)', 'scoper'), $scoper->role_defs->get_display_name($role_handle), $scoper->role_defs->get_display_name($equiv_role_handle) );
-				echo '</label></div>';
-			}
-			?>
-			<span class="rs-subtext">
-			<?php 
-			if ( $ui->display_hints) {
-				_e('By default, the above roles are not available for object-specific assignment because another role is usually equivalent. However, the distinctions may be useful if you propagate roles to sub-Pages, set Default Roles or customize RS Role Definitions.', 'scoper');
-				echo '<br /><br />';
-				_e('Note: Under the default configuration, the tabs labeled "Reader" in the Post/Page Edit Form actually assign the corresponding Private Reader role.', 'scoper');
-			}	
-			?>
-			</span>
-			</td></tr>
-		<?php 
-		endif; // rs role type
+		foreach ( $objscope_equiv_roles as $role_handle => $equiv_role_handle ) {
+			$ui->all_options []= "{$role_handle}_role_objscope";
+		}
 		?>
+		<tr valign="top">
+		<th scope="row"><?php echo $ui->section_captions[$tab][$section]; ?></th>
+		<td>
+		<?php 
+		foreach ( $objscope_equiv_roles as $role_handle => $equiv_role_handle ) {
+			$id = "{$role_handle}_role_objscope";
+			$checked = ( scoper_get_option( $id, $sitewide, $customize_defaults ) ) ? "checked='checked'" : '';
+			echo '<div class="agp-vspaced_input">';
+			echo "<label for='$id'>";
+			echo "<input name='$id' type='checkbox' id='$id' value='1' $checked /> ";
+			printf ( __('%1$s (normally equivalent to %2$s)', 'scoper'), $scoper->role_defs->get_display_name($role_handle), $scoper->role_defs->get_display_name($equiv_role_handle) );
+			echo '</label></div>';
+		}
+		?>
+		<span class="rs-subtext">
+		<?php 
+		if ( $ui->display_hints) {
+			_e('By default, the above roles are not available for object-specific assignment because another role is usually equivalent. However, the distinctions may be useful if you propagate roles to sub-Pages, set Default Roles or customize RS Role Definitions.', 'scoper');
+			echo '<br /><br />';
+			_e('Note: Under the default configuration, the tabs labeled "Reader" in the Post/Page Edit Form actually assign the corresponding Private Reader role.', 'scoper');
+		}	
+		?>
+		</span>
+		</td></tr>
 	
 	<?php endif; // any objscope_equiv_roles options available in this section
 	?>	
@@ -1728,6 +1700,9 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 					$opt_vals = array_merge($scoper_default_options[$option_name], $opt_vals);
 
 					foreach ( $opt_vals as $key => $val ) {
+						if ( ! $key )
+							continue;
+						
 						$id = $option_name . '-' . $key;
 						?>
 						<div class="agp-vspaced_input">
@@ -1735,11 +1710,15 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 						<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
 						<?php 
 						if ( TERM_SCOPE_RS == $scope ) {
-							$tx = get_taxonomy( $key, 'object' );
-							$display_name = $tx->labels->name;
+							if ( $tx = get_taxonomy( $key, 'object' ) )
+								$display_name = $tx->labels->name;
+							else
+								$display_name = '';
 						} else {
-							$type_obj = get_post_type_object( $key );
-							$display_name = $type_obj->labels->name;
+							if ( $type_obj = get_post_type_object( $key ) )
+								$display_name = $type_obj->labels->name;
+							else
+								$display_name = '';
 						}
 							
 						if ( ! $display_name )
@@ -1753,6 +1732,19 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 				
 			} // endif displaying this option in form
 		} // end foreach scope
+		
+		if ( defined( 'SCOPER_LATE_INIT' ) ) {	
+			echo '<div>';
+			_e( '<strong>NOTE:</strong> Role Scoper is operating in late-initialization mode, for compatibility with plugins which define taxonomies or post types late in the WordPress initialization sequence.  If this causes Role Scoper to conflict with other plugins, find a different taxonomy/post type plugin.', 'scoper' );
+			echo '</div>';
+		} else {
+			$js_call = "agp_set_display('rs-type-tx-help', 'block');agp_set_display('rs-type-tx-help-link', 'none');";
+			echo "<a href=\"javascript:void(0)\" id=\"rs-type-tx-help-link\" onclick=\"$js_call\">" . __( 'problems with types / taxonomies ?', 'scoper' ) . '</a>';
+			echo '<div id="rs-type-tx-help" style="display:none">';
+			_e( '<strong>NOTE:</strong> If your custom Taxonomies or Post Types are not shown above, they are not being defined properly.  Try a different taxonomy/post type plugin.  If they are displayed but cannot be enabled/disabled, they may be defined too late in the WordPress initialization sequence.  If you use your own registration calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to <strong>wp-config.php</strong>, ABOVE the "stop editing" line:', 'scoper' );
+			echo ( "<br /><pre>&nbsp;&nbsp;define( 'SCOPER_LATE_INIT', true );</pre>" );
+			echo '</div>';
+		}
 	?>
 	</td>
 	</tr>
@@ -1816,6 +1808,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 
 					foreach ( $opt_vals as $src_otype => $val ) {
 						if ( TERM_SCOPE_RS == $scope ) {
+							echo '<div style="margin-bottom: 2em">';
 							foreach( array_keys($opt_vals[$src_otype]) as $taxonomy ) {
 								$id = str_replace( ':', '_', $option_name . '-' . $src_otype . '-' . $taxonomy );
 								?>
@@ -1823,12 +1816,12 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 								<label for="<?php echo($id);?>" title="<?php echo($taxonomy);?>">
 								<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val[$taxonomy]);?> />
 								<?php 
-								$tx_display = $scoper->taxonomies->member_property( $taxonomy, 'display_name' );
+								$tx_display = $scoper->taxonomies->member_property( $taxonomy, 'labels', 'name' );
 
 								if ( ! $tx_display )
 									$tx_display = $taxonomy;
 
-								$display_name_plural = $scoper->admin->interpret_src_otype($src_otype);
+								$display_name_plural = $scoper_admin->interpret_src_otype($src_otype);
 
 								//printf( _ x('%1$s (for %2$s)', 'Category (for Posts)', 'scoper'), $tx_display, $display_name_plural );
 								printf( __('%1$s (for %2$s)', 'scoper'), $tx_display, $display_name_plural );
@@ -1840,6 +1833,8 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 									
 								echo ('</label></div>');
 							}
+							echo '</div>';
+							
 						} else {
 							$id = str_replace( ':', '_', $option_name . '-' . $src_otype );
 							?>
@@ -1847,7 +1842,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 							<label for="<?php echo($id);?>" title="<?php echo($src_otype);?>">
 							<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
 							<?php 
-							echo $scoper->admin->interpret_src_otype($src_otype, true);
+							echo $scoper_admin->interpret_src_otype($src_otype);
 							echo ('</label></div>');
 						}
 					} // end foreach src_otype
@@ -1888,7 +1883,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 		
 		foreach ( $scoper->access_types->get_all() as $access_name => $access_type) {
 			$id = $topic . '-' . $access_name;
-			$val = ! $opt_vals[$access_name];
+			$val = empty( $opt_vals[$access_name] );
 	?>
 	<div class="agp-vspaced_input">
 	<label for="<?php echo($id);?>">
@@ -1899,7 +1894,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 			elseif ( 'admin' == $access_name )
 				_e('Editing and administering content (admin)', 'scoper');
 			else
-				echo($access_type->display_name);
+				echo($access_type->labels->name);
 			echo('</label></div>');
 		} // end foreach access types
 	?>
@@ -1937,12 +1932,10 @@ endif; // any options accessable in this tab
 
 
 if ( ! empty( $ui->form_options['rs_role_definitions'] ) ) {
-	if ( 'rs' == SCOPER_ROLE_TYPE ) {
-		// RS Role Definitions Tab
-		include('role_definition.php');
-		scoper_display_rs_roledefs( array( 'bgcolor_class' => $color_class, 'sitewide' => $sitewide, 'customize_defaults' => $customize_defaults ) );
-	}
-	
+	// RS Role Definitions Tab
+	include('role_definition.php');
+	scoper_display_rs_roledefs( array( 'bgcolor_class' => $color_class, 'sitewide' => $sitewide, 'customize_defaults' => $customize_defaults ) );
+
 	// WP Role Definitions Tab
 	include('role_definition_wp.php');
 	scoper_display_wp_roledefs( array( 'bgcolor_class' => $color_class ) );
@@ -1970,12 +1963,9 @@ $option_scope_stamp = __( 'sitewide control of "%s"', 'scoper' );
 
 foreach ( $available_form_options as $tab_name => $sections ) {
 	echo '<li>';
-	
-	if( awp_ver( '3.0-dev' ) )
-		$explanatory_caption = __( 'Selected options will be controlled network-wide via <strong>Super Admin > Role Options</strong>; unselected options can be set per-site via <strong>Roles > Options</strong>', 'scoper' );
-	else
-		$explanatory_caption = __( 'Selected options will be controlled site-wide via <strong>Site Admin > Role Options</strong>; unselected options can be set per-blog via <strong>Roles > Options</strong>', 'scoper' );
-	
+
+	$explanatory_caption = __( 'Selected options will be controlled network-wide via <strong>Super Admin > Role Options</strong>; unselected options can be set per-site via <strong>Roles > Options</strong>', 'scoper' );
+
 	if ( isset( $ui->tab_captions[$tab_name] ) )
 		$tab_caption = $ui->tab_captions[$tab_name];
 	else
@@ -2082,12 +2072,12 @@ function scoper_display_otypes_or_source_name($src_name) {
 	
 	if ( $object_types = $scoper->data_sources->member_property($src_name, 'object_types') ) {
 		$display_names = array();
-		foreach ( $object_types as $object_type)
-			$display_names[] = $object_type->display_name_plural;
+		foreach ( $object_types as $otype)
+			$display_names[] = $otype->labels->name;
 		$display = implode(', ', $display_names);
 	} else {
-		$display_name = $scoper->data_sources->member_property($src_name, 'display_name_plural');
-		$display = sprintf(__("%s data source", 'scoper'), $display_name);
+		$item_label = $scoper->data_sources->member_property( $src_name, 'labels', 'name' );
+		$display = sprintf(__("%s data source", 'scoper'), $item_label);
 	}
 	
 	return $display;

@@ -44,11 +44,6 @@ class ScoperHardway
 	//
 	//	Enforces cap requirements as specified in cr_get_reqd_caps
 	function flt_get_pages($results, $args = array()) {
-		if ( isset( $args['show_option_none'] ) && ( __('Main Page (no parent)') == $args['show_option_none'] ) ) {
-			// avoid redundant filtering (currently replacing parent dropdown on flt_dropdown_pages filter)
-			return $results;
-		}
-
 		$results = (array) $results;
 
 		global $wpdb;
@@ -121,7 +116,18 @@ class ScoperHardway
 		// Make sure we have a valid post status
 		if ( !in_array($post_status, get_post_stati()) )
 			return false;
-				
+			
+		// for the page parent dropdown, return no available selections for a published main page if the logged user isn't allowed to de-associate it from Main
+		if ( ! empty( $name ) && ( 'parent_id' == $name ) ) {
+			global $post;
+			
+			if ( ! $post->post_parent && ! $GLOBALS['scoper_admin_filters']->user_can_associate_main( $post_type ) ) {
+				$status_obj = get_post_status_object( $post->post_status );
+				if ( $status_obj->public || $status_obj->private )
+					return array();
+			}
+		}
+			
 		//$scoper->last_get_pages_args = $r; // don't copy entire args array unless it proves necessary
 		$scoper->last_get_pages_depth = $depth;
 		$scoper->last_get_pages_suppress_filters = $suppress_filters;
@@ -254,19 +260,15 @@ class ScoperHardway
 		if ( $post_status && ( ( 'publish' != $post_status ) || ( $is_front && ! $frontend_list_private ) ) )
 			$where_status = $wpdb->prepare( "AND post_status = '%s'", $post_status );	
 		else {
-			// since we will be applying status clauses based on content-specific roles and restrictions, only a sanity check safeguard is needed when post_status is unspecified or defaulted to "publish"
-			if ( awp_ver( '3.0' ) ) {
-				$safeguard_statuses = array();
-				foreach( get_post_stati( array('internal' => false), 'object' ) as $status_name => $status_obj )
-					if ( ( ! $is_front ) || $status_obj->private || $status_obj->public )
-						$safeguard_statuses []= $status_name;
-			} else {
-				$safeguard_statuses = ( $is_front ) ? array( 'publish', 'private' ) : array( 'publish', 'private', 'draft', 'pending', 'future' );	
-			}
-			
+			// since we will be applying status clauses based on content-specific roles and restrictions, only a sanity check safeguard is needed when post_status is unspecified or defaulted to "publish"			
+			$safeguard_statuses = array();
+			foreach( get_post_stati( array('internal' => false), 'object' ) as $status_name => $status_obj )
+				if ( ( ! $is_front ) || $status_obj->private || $status_obj->public )
+					$safeguard_statuses []= $status_name;
+
 			$where_status = "AND post_status IN ('" . implode("','", $safeguard_statuses ) . "')";
 		}
-
+			
 		$query = "SELECT $fields FROM $wpdb->posts $join WHERE 1=1 AND ($where_post_type $where_status) $where $author_query ORDER BY $sort_column $sort_order";
 
 		if ( !empty($number) )
@@ -294,7 +296,7 @@ class ScoperHardway
 			// Execute the filtered query
 			$pages = scoper_get_results($query);
 		}
-		
+
 		if ( empty($pages) )
 			// alternate hook name (WP core already applied get_pages filter)
 			return apply_filters('get_pages_rs', array(), $r);

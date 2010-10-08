@@ -131,7 +131,8 @@ function wpp_cache_init( $sitewide_groups = true ) {
 		$GLOBALS['wpp_object_cache']->global_groups = array_merge( $GLOBALS['wpp_object_cache']->global_groups, array( 'all_usergroups', 'group_members' ) );
 	
 	// added by kevinB: if a flush fails, try try again (and meanwhile, DON'T use the old invalid cache)
-	$need_flush = ( function_exists('scoper_get_option') ) ? scoper_get_option('need_cache_flush') : get_option('scoper_need_cache_flush');
+	$need_flush = ( function_exists('scoper_get_option') ) ? scoper_get_option('scoper_need_cache_flush') : get_option('scoper_need_cache_flush');
+	
 	if ( $need_flush ) {
 		//rs_errlog('cache init: performing pending flush');
 		delete_option('scoper_need_cache_flush');
@@ -161,8 +162,8 @@ function wpp_cache_replace($key, $data, $flag = '', $expire = 0, $append_blog_su
 	return $wpp_object_cache->replace($key, $data, $flag, $expire);
 }
 
-function wpp_cache_set($key, $data, $flag = '', $expire = 0, $append_blog_suffix = true) {
-	if ( ! empty($_POST) )	// kevinB: reduce elusive anomolies and allow flushing optimization by disabling cache updates during POST operation
+function wpp_cache_set($key, $data, $flag = '', $expire = 0, $append_blog_suffix = true, $force_update = false) {
+	if ( ! empty($_POST) && ! $force_update )	// kevinB: reduce elusive anomolies and allow flushing optimization by disabling cache updates during POST operation
 		return;
 
 	global $wpp_object_cache;
@@ -180,16 +181,17 @@ function wpp_cache_set($key, $data, $flag = '', $expire = 0, $append_blog_suffix
 	return $wpp_object_cache->set($key, $data, $flag, $expire);
 }
 
+function wpp_cache_force_set( $key, $data, $flag = '', $expire = 0, $append_blog_suffix = true ) {
+	return wpp_cache_set( $key, $data, $flag, $expire, $append_blog_suffix, true );
+}
+
 // returns true on success
 function wpp_cache_test( &$err_msg, $text_domain = '' ) {
 	// intentionally not using WP_CACHE_DIR because we need a known location so rs_cache_flush.php can delete files without loading WP
 	$cache_dir = ( defined( 'CACHE_PATH' ) ) ? CACHE_PATH : WP_CONTENT_DIR.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
 	$err = false;
 	
-	if ( ! defined( 'ENABLE_PERSISTENT_CACHE' ) ) {
-		$err_msg = __('The file cache will not operate because ENABLE_PERSISTENT_CACHE is not defined in wp-config.php or role-scoper.php.', 'scoper');
-		$err = true;
-	} elseif ( defined( 'DISABLE_PERSISTENT_CACHE' ) ) {
+	if ( defined( 'DISABLE_PERSISTENT_CACHE' ) ) {
 		$err_msg = __('The file cache will not operate because DISABLE_PERSISTENT_CACHE is defined, possibly in wp-config.php or role-scoper.php.', 'scoper');
 		$err = true;
 	} elseif ( ! is_writable($cache_dir) || ! @ is_dir($cache_dir)) {
@@ -254,7 +256,7 @@ class WP_Persistent_Object_Cache {
 		// Also leave this method in place as a backup in case WP shutdown hook is not called.
 		register_shutdown_function(array(&$this, "__destruct"));
 		
-		if ( defined('DISABLE_PERSISTENT_CACHE') || ! defined('ENABLE_PERSISTENT_CACHE') )
+		if ( defined('DISABLE_PERSISTENT_CACHE') )
 			return;
 
 		// Disable the persistent cache if safe_mode is on.

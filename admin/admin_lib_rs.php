@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * scoper_admin_lib.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
  * These function can be used during activation, deactivation, or other 
@@ -15,11 +15,11 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  *
  */
  
-if ( awp_ver('2.7-dev') )
-	add_filter('wp_dropdown_pages', array('ScoperAdminLib', 'flt_dropdown_pages') );  // WP < 2.7 must parse low-level query
+add_filter('wp_dropdown_pages', array('ScoperAdminLib', 'flt_dropdown_pages') );
 
 if ( strpos( $_SERVER['REQUEST_URI'], 'nggallery' ) ) // Role Scoping for NGG calls ScoperAdminUI::dropdown_pages
 	require_once( 'admin_ui_lib_rs.php' );
+
 
 class ScoperAdminLib {
 	// filter page dropdown contents for Page Parent controls; leave others alone
@@ -50,7 +50,7 @@ class ScoperAdminLib {
 		return $results;
 	}
 	
-	function get_group_members($group_id, $cols = COLS_ALL_RS, $maybe_metagroup = false, $args = '' ) {
+	function get_group_members($group_id, $cols = COLS_ALL_RS, $maybe_metagroup = false, $args = array() ) {
 		global $wpdb;
 		
 		if ( empty($args['status']) ) {
@@ -162,7 +162,7 @@ class ScoperAdminLib {
 	
     // (adapted from WP-Group-Restriction plugin)
     // returns all groups, or all groups the current user can manage
-	function get_all_groups( $filtering = UNFILTERED_RS, $cols = COLS_ALL_RS, $args = '' ) {
+	function get_all_groups( $filtering = UNFILTERED_RS, $cols = COLS_ALL_RS, $args = array() ) {
 		$defaults = array ( 'include_norole_groups' => false, 'reqd_caps' => 'manage_groups', 'where' => '' );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -187,7 +187,7 @@ class ScoperAdminLib {
 		if ( ! isset($cache[$ckey]) ) {
 			global $wpdb, $current_user;
 			
-			if ( $filtering && ! is_user_administrator_rs() && ! awp_user_can($reqd_caps, BLOG_SCOPE_RS) ) {
+			if ( $filtering && ! is_user_administrator_rs() && ! cr_user_can($reqd_caps, 0, 0, array( 'skip_any_object_check' => true, 'skip_any_term_check' => true, 'skip_id_generation' => true ) ) ) {
 				$duration_clause = scoper_get_duration_clause();
 
 				global $scoper;
@@ -232,23 +232,25 @@ class ScoperAdminLib {
 			wpp_cache_set($cache_id, $cache, $cache_flag);
 		
 		
-		// strip out anon metagroup if we're not using it (have to do this after cache storage / retrieval)
-		if ( ! defined( 'SCOPER_ANON_METAGROUP' ) ) {
-			foreach ( array_keys($cache[$ckey]) as $key ) {
-				if ( 'wp_anon' == $cache[$ckey][$key]->meta_id ) {
-					unset( $cache[$ckey][$key] );
-					break;	
-				}
-			}	
-		}
-		
-		// strip out groups that don't use roles, unless arg asked for them
-		if ( ! $include_norole_groups ) {
-			foreach ( array_keys($cache[$ckey]) as $key ) {
-				if ( strpos( $cache[$ckey][$key]->meta_id, '_nr_' ) ) {
-					unset( $cache[$ckey][$key] );
-				}
-			}	
+		if ( COLS_ALL_RS == $cols ) {
+			// strip out anon metagroup if we're not using it (have to do this after cache storage / retrieval)
+			if ( ! defined( 'SCOPER_ANON_METAGROUP' ) ) {
+				foreach ( array_keys($cache[$ckey]) as $key ) {
+					if ( 'wp_anon' == $cache[$ckey][$key]->meta_id ) {
+						unset( $cache[$ckey][$key] );
+						break;	
+					}
+				}	
+			}
+			
+			// strip out groups that don't use roles, unless arg asked for them
+			if ( ! $include_norole_groups ) {
+				foreach ( array_keys($cache[$ckey]) as $key ) {
+					if ( strpos( $cache[$ckey][$key]->meta_id, '_nr_' ) ) {
+						unset( $cache[$ckey][$key] );
+					}
+				}	
+			}
 		}
 
 		if ( ! $cache[$ckey] )
@@ -289,8 +291,7 @@ class ScoperAdminLib {
 	}
 		
 	function flush_user_cache( $user_ids ) {
-		if ( ! is_array($user_ids) )
-			$user_ids = array($user_ids);
+		$user_ids = (array) $user_ids;
 		
 		scoper_flush_results_cache( ROLE_BASIS_USER, $user_ids );
 		scoper_flush_roles_cache( OBJECT_SCOPE_RS, ROLE_BASIS_USER, $user_ids);
@@ -299,8 +300,7 @@ class ScoperAdminLib {
 	}
 	
 	function flush_groups_cache_for_user( $user_ids ) {
-		if ( ! is_array($user_ids) )
-			$user_ids = array($user_ids);
+		$user_ids = (array) $user_ids;
 		
 		wpp_cache_flush_group( 'group_members' );
 		//wpp_cache_flush_group( 'group_membership_for_user' );
@@ -324,8 +324,7 @@ class ScoperAdminLib {
 	function add_group_user( $group_id, $user_ids, $status = 'active' ){
 		global $wpdb;
 		
-		if ( ! is_array($user_ids) )
-			$user_ids = array($user_ids);
+		$user_ids = (array) $user_ids;
 			
 		foreach( $user_ids as $user_id ) {
 			if ( $already_member = $wpdb->get_col( "SELECT $wpdb->user2group_uid_col FROM $wpdb->user2group_rs WHERE $wpdb->user2group_gid_col = '$group_id' AND $wpdb->user2group_uid_col = '$user_id'" ) )
@@ -353,8 +352,7 @@ class ScoperAdminLib {
 	function remove_group_user($group_id, $user_ids) {
 		global $wpdb;
 
-		if ( ! is_array($user_ids) )
-			$user_ids = array($user_ids);
+		$user_ids = (array) $user_ids;
 		
 		$id_in = "'" . implode("', '", $user_ids) . "'";
 		$delete = "DELETE FROM $wpdb->user2group_rs WHERE $wpdb->user2group_gid_col='$group_id' AND $wpdb->user2group_uid_col IN ($id_in)";
@@ -375,8 +373,7 @@ class ScoperAdminLib {
 	function update_group_user( $group_id, $user_ids, $status ) {
 		global $wpdb;
 
-		if ( ! is_array($user_ids) )
-			$user_ids = array($user_ids);
+		$user_ids = (array) $user_ids;
 		
 		$id_in = "'" . implode("', '", $user_ids) . "'";
 		
@@ -419,9 +416,8 @@ class ScoperAdminLib {
 		
 		if ( ! $user_ids )
 			return;
-		
-		if ( $user_ids && ( ! is_array($user_ids) ) )
-			$user_ids = array($user_ids);
+
+		$user_ids = (array) $user_ids;
 			
 		$user_clause = "user_id IN ('" . implode("', '", $user_ids) . "')";
 		
@@ -435,7 +431,7 @@ class ScoperAdminLib {
 		}
 	}
 
-	function clear_roles( $scope, $src_or_tx_name, $obj_or_term_id, $args = '' ) {
+	function clear_roles( $scope, $src_or_tx_name, $obj_or_term_id, $args = array() ) {
 		$defaults = array ( 'inherited_only' => false, 'clear_propagated' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -460,7 +456,7 @@ class ScoperAdminLib {
 		}
 	}
 	
-	function clear_restrictions ( $scope, $src_or_tx_name, $obj_or_term_id, $args = '' ) {
+	function clear_restrictions ( $scope, $src_or_tx_name, $obj_or_term_id, $args = array() ) {
 		$defaults = array ( 'inherited_only' => false, 'clear_propagated' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);	
@@ -499,6 +495,22 @@ class ScoperAdminLib {
 		scoper_query("UPDATE $wpdb->user2role2object_rs SET role_name = '$role_name_new' WHERE role_type = '$role_type' AND role_name = '$role_name_old'");
 
 		ScoperAdminLib::schedule_role_sync();	// sync_wp_roles() will also flush cache on role rename
+	}
+
+	function add_user( $user_id, $role_name = '', $blog_id = '' ) {
+		// enroll user in default group(s)
+		if ( $default_groups = scoper_get_option( 'default_groups' ) )
+			foreach ($default_groups as $group_id)
+				ScoperAdminLib::add_group_user($group_id, $user_id);
+		
+		global $scoper_role_types;
+	
+		foreach ( $scoper_role_types as $role_type ) {	
+			wpp_cache_flush_group("{$role_type}_users_who_can");
+			wpp_cache_flush_group("{$role_type}_groups_who_can");
+		}
+	
+		ScoperAdminLib::sync_wproles( $user_id, $role_name, $blog_id );
 	}
 
 	function sync_wproles( $user_ids = '', $role_name = '', $blog_id_arg = '' ) {

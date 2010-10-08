@@ -28,6 +28,14 @@ function agp_implode( $delim, $arr, $wrap_open, $wrap_close, $array_unique = tru
 		if ( $array_unique )
 			$arr = array_unique($arr);
 
+		if ( defined( 'RS_DEBUG' ) ) {
+			$test = implode($delim, $arr);
+			if ( strpos( $test, 'Array' ) ) {
+				dump($test);
+				agp_bt_die();
+			}
+		}
+			
 		return $wrap_open . implode($delim, $arr) . $wrap_close;
 	} else {
 		if ( $wrap_single_item )
@@ -78,8 +86,7 @@ function agp_strpos_any($haystack, $needles, $any_substr_pos = true) {
 	if ( ! $needles )
 		return false;
 
-	if ( ! is_array($needles) )
-		$needle = array($needles);
+	$needle = (array) $needles;
 	
 	if ( ! $any_substr_pos )
 		$haystack_length = strlen($haystack);

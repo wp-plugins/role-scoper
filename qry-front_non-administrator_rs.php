@@ -23,11 +23,11 @@ class QueryInterceptorFront_NonAdmin_RS {
 	
 	// Strips comments from teased posts/pages
 	function flt_comments_results($results) {
-		global $scoper;
+		global $agp_teaser_ids;
 	
-		if ( $results && ! empty($scoper->teaser_ids) ) {
+		if ( $results && ! empty($agp_teaser_ids) ) {
 			foreach ( $results as $key => $row )
-				if ( isset($row->comment_post_ID) && isset($scoper->teaser_ids['post'][$row->comment_post_ID]) )
+				if ( isset($row->comment_post_ID) && isset($agp_teaser_ids['post'][$row->comment_post_ID]) )
 					unset( $results[$key] );
 		}
 		
@@ -63,7 +63,7 @@ class QueryInterceptorFront_NonAdmin_RS {
 				}
 
 				$query_base = "SELECT t.term_id FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE 1=1 AND tt.taxonomy = '$taxonomy'";
-				$query = apply_filters( 'terms_request_rs', $query_base, $taxonomy, ''); //, array( 'skip_teaser' => true ) );
+				$query = apply_filters( 'terms_request_rs', $query_base, $taxonomy ); //, array( 'skip_teaser' => true ) );
 				$okay_ids = scoper_get_col($query);
 
 				if ( $remove_ids = array_diff( $item_ids, $okay_ids ) )
@@ -75,7 +75,7 @@ class QueryInterceptorFront_NonAdmin_RS {
 		if ( isset( $item_types['post_type'] ) ) {
 			foreach( $item_types['post_type'] as $post_type => $item_ids ) {
 				$where = apply_filters( 'objects_where_rs', '', 'post', $post_type, array( 'skip_teaser' => true ) );
-				$okay_ids = scoper_get_col( "SELECT ID from $wpdb->posts WHERE post_type = '$post_type' $where AND ID IN ('" . implode("','", $item_ids ) . "')" );
+				$okay_ids = scoper_get_col( "SELECT ID FROM $wpdb->posts WHERE post_type = '$post_type' $where AND ID IN ('" . implode("','", $item_ids ) . "')" );
 				
 				if ( $remove_ids = array_diff( $item_ids, $okay_ids ) ) {
 					if ( $teaser_enabled && scoper_get_otype_option( 'do_teaser', 'post', $post_type ) ) {

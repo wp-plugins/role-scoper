@@ -67,42 +67,38 @@ class ScoperRoleStrings {
 			case 'rs_group_applicant' :
 				return __('Group Applicant', 'scoper');
 				
-			default :
-				if ( awp_ver( '2.9' ) ) {
-					$custom_types = get_post_types( array( '_builtin' => false, 'public' => true ), 'object' );
+			default :				
+				$custom_types = get_post_types( array( '_builtin' => false, 'public' => true ), 'object' );
 
-					foreach( $custom_types as $custype ) {
-						if ( strpos( $role_handle, "_{$custype->name}_" ) ) {
-							$label = $custype->labels->singular_name;
-							
-							if ( strpos( $role_handle, '_editor' ) )
-								return ( defined( 'SCOPER_PUBLISHER_CAPTION' ) ) ? sprintf( __( '%s Publisher', 'scoper' ), $label ) : sprintf( __( '%s Editor', 'scoper' ), $label );
-							elseif ( strpos( $role_handle, '_revisor' ) )
-								return sprintf( __( '%s Revisor', 'scoper' ), $label );
-							elseif ( strpos( $role_handle, '_author' ) )
-								return sprintf( __( '%s Author', 'scoper' ), $label );
-							elseif ( strpos( $role_handle, '_contributor' ) )
-								return sprintf( __( '%s Contributor', 'scoper' ), $label );
-							elseif ( false !== strpos( $role_handle, 'private_' ) && strpos( $role_handle, '_reader' ) )
-								return ( ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ) ? sprintf( __( '%s Reader', 'scoper' ), $label ) : sprintf( __( 'Private %s Reader', 'scoper' ), $label );
-							elseif ( strpos( $role_handle, '_reader' ) )
-								return sprintf( __( '%s Reader', 'scoper' ), $label );
-						}
+				foreach( $custom_types as $custype ) {
+					if ( strpos( $role_handle, "_{$custype->name}_" ) ) {
+						$label = $custype->labels->singular_name;
+						
+						if ( strpos( $role_handle, '_editor' ) )
+							return ( defined( 'SCOPER_PUBLISHER_CAPTION' ) ) ? sprintf( __( '%s Publisher', 'scoper' ), $label ) : sprintf( __( '%s Editor', 'scoper' ), $label );
+						elseif ( strpos( $role_handle, '_revisor' ) )
+							return sprintf( __( '%s Revisor', 'scoper' ), $label );
+						elseif ( strpos( $role_handle, '_author' ) )
+							return sprintf( __( '%s Author', 'scoper' ), $label );
+						elseif ( strpos( $role_handle, '_contributor' ) )
+							return sprintf( __( '%s Contributor', 'scoper' ), $label );
+						elseif ( false !== strpos( $role_handle, 'private_' ) && strpos( $role_handle, '_reader' ) )
+							return ( ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ) ? sprintf( __( '%s Reader', 'scoper' ), $label ) : sprintf( __( 'Private %s Reader', 'scoper' ), $label );
+						elseif ( strpos( $role_handle, '_reader' ) )
+							return sprintf( __( '%s Reader', 'scoper' ), $label );
 					}
 				}
-					
-				if ( awp_ver( '3.0' ) ) {
-					$taxonomies = get_taxonomies( array( '_builtin' => false, 'public' => true ), 'object' );
-					
-					foreach( $taxonomies as $name => $tx_obj ) {
-						if ( strpos( $role_handle, "_{$name}_" ) ) {
-							if ( strpos( $role_handle, '_manager' ) )
-								return sprintf( __( '%s Manager', 'scoper' ), $tx_obj->labels->singular_name );
-						}
+
+				$taxonomies = get_taxonomies( array( '_builtin' => false, 'public' => true ), 'object' );
+				
+				foreach( $taxonomies as $name => $tx_obj ) {
+					if ( strpos( $role_handle, "_{$name}_" ) ) {
+						if ( strpos( $role_handle, '_manager' ) )
+							return sprintf( __( '%s Manager', 'scoper' ), $tx_obj->labels->singular_name );
 					}
 				}
 				
-				return ucwords( str_replace( '_', ' ', substr($role_handle, 2 ) ) );
+				return ucwords( trim( str_replace( '_', ' ', substr($role_handle, 2 ) ) ) );
 				
 		} // end switch
 		
@@ -133,10 +129,15 @@ class ScoperRoleStrings {
 				return __('Editors', 'scoper');
 				
 		} elseif ( strpos( $role_handle, '_associate' ) )
-			return __('Readers', 'scoper');
+			return __('Associates', 'scoper');
 			
 		elseif ( strpos( $role_handle, '_manager' ) )
 			return __('Managers', 'scoper');
+			
+		if ( $post_type = $GLOBALS['scoper']->role_defs->member_property( $role_handle, 'object_type' ) )
+			$role_handle = str_replace( "{$post_type}_", '', $role_handle ); 
+	
+		return ucwords( trim( str_replace( '_', ' ', substr($role_handle, 2 ) ) ) );
 	}
 	
 	function get_micro_abbrev( $role_handle, $context = '' ) {
@@ -180,7 +181,10 @@ class ScoperRoleStrings {
 				return __('Manager', 'scoper');
 				
 			default :
-				return '';
+				if ( $post_type = $GLOBALS['scoper']->role_defs->member_property( $role_handle, 'object_type' ) )
+					$role_handle = str_replace( "{$post_type}_", '', $role_handle ); 
+	
+				return ucwords( trim( str_replace( '_', ' ', substr($role_handle, 2 ) ) ) );
 		} // end switch
 	}
 } // end class

@@ -5,7 +5,7 @@
  * rewrite-rules_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2009
+ * @copyright 	Copyright 2010
  * 
  */
  
@@ -41,7 +41,7 @@ class ScoperRewrite {
 			if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
 				include_once( ABSPATH . '/wp-admin/includes/file.php' );
 
-			add_action( 'shutdown', create_function( '', 'global $wp_rewrite; if ( ! empty($wp_rewrite) ) { $wp_rewrite->flush_rules(true); }' ) );
+			add_action( 'shutdown', create_function( '', 'global $wp_rewrite; if ( ! did_action("delete_option_rewrite_rules") && ! empty($wp_rewrite) ) { $wp_rewrite->flush_rules(true); }' ), 999 );
 		}
 	}
 	

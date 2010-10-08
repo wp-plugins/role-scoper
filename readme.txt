@@ -95,7 +95,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 1. Admin menus
 2. Role boxes in Edit Post Form
 3. Role boxes in Edit Page Form
-4. Category Restrictions  
+4. Category Restrictions
 5. Category Roles
 6. <a href="http://agapetry.net/demos/category_roles/index.html">View an html sample of the Category Roles bulk admin form</a>
 7. <a href="http://agapetry.net/demos/rs-options_demo.htm">View an html sample of Role Scoper Options</a>
@@ -104,83 +104,44 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.2.8 RC9 - 6 Sep 2010 =
-* BugFix : Unnecessary DB query on post save added needless overhead, caused out of memory error on some configurations (since 1.2)
-* BugFix : Was not requiring type-specific editing capabilities for term selection in post edit form for custom types
-* BugFix : Object Roles were not correctly enabled by default (since 1.2.8.RC8)
-* BugFix : page widget / dropdown did not include non-published pages where appropriate (since 1.2.8.RC8)
-* Change : Better support for nonstandard capabilities in custom post type definitions
-* Change : Support get_pages / list_pages filtering of hierarchical custom post types
+** 1.3.RC - 8 Oct 2010 **
 
-= 1.2.8 RC8 - 31 Aug 2010 =
-* Change : Enable new Post Types and Taxonomies for RS Roles & Restrictions by default
-* BugFix : Fatal errors in wp-admin for non-Administrators under some configurations (call to undefined function user_can_edit_blogwide)
-* BugFix : Category Role usage was not available for custom post types
+= Post Editing =
+* Change : In Post Edit Form, currently assigned categories and other hierarchical terms shown with disabled checkboxes if current cannot edit in the term
+* BugFix : Default Post/Page Roles were assigned to existing posts at post edit (since 1.1.3, now assigned only to new posts)
+* BugFix : Page Parent dropdown filtering hid published pages from Contributors if none editable
+* BugFix : Page Structure option "Page Authors, Editors and Administrators" did not work (prevented all non-Administrators from editing top-level pages)
+* BugFix : Uploaded files could not be edited / deleted in some cases
 
-= 1.2.8 RC7 - 31 Aug 2010 =
-* BugFix : Post Types and Taxonomies disabled via new option checkboxes were not removed from Roles, Restrictions menus
+= Custom Post Types / Taxonomies =
+* BugFix : Previous, Next links on single post page for custom types included unpublished posts (since 1.0.0)
+* Compat : More Taxonomies, More Types now supported by automatically forcing RS to initalize later
+* Compat : Late registration of custom types/taxonomies can be supported by forcing RS to initialize later: define( 'SCOPER_LATE_INIT', true );
+* Change : Dropped support for "WP" Role Type (means scoper-assigned roles and restrictions must be object type-specific)
 
-= 1.2.8 RC6 - 31 Aug 2010 =
-* BugFix : Newly enabled custom roles were not handled correctly by RS because initial save following activation de-associated their role capabilities (under RS Role Defs tab)
-* Compat : Verve Metaboxes - Internal server error when Administrator attempted to add a new custom post type
-* Feature : New simple checklist enables/disables RS usage of each defined post type and taxonomy 
+= Performance Enhancement =
+* Perf : Eliminate extensive delays on some sites using Page Roles on hundreds of pages (when filtering posts, pre-execute a problematic subquery) 
+* Perf : Eliminate superfluous query clauses for better wp-admin/edit.php performance
+* BugFix : Dozens of PHP Notices / Warnings for undeclared variables or missing array indexes
+* Perf : Extensive code refactoring to reduce memory usage
 
-= 1.2.8 RC5 - 30 Aug 2010 =
-* BugFix : After a custom taxonomy was enabled for RS roles & restrictions, Administrators could not manage it by default
+= Category / Term Management =
+* BugFix : Category-specific assignment of Category Manger role (and management roles for custom terms) was not applied correctly with WP 3.0
+* BugFix : Bulk Administration of Term Roles / Restrictions was too narrowly limited for non-Administrators (since 1.2.?)
+* BugFix : Category Manager restrictions were not enforced against users with site-wide manage_categories capability
+* BugFix : Category creation was not appropriately restricted with WP 3.0
+* Feature : Hide the "Add New Category" UI if logged user does not have term management role site-wide
 
-= 1.2.8 RC4 - 30 Aug 2010 =
-* BugFix : Fatal error if "Roles and Restrictions can be set" is set to require Editor or Administrator role (since 1.2.8.RC3)
-
-= 1.2.8 RC3 - 27 Aug 2010 =
-* BugFix : Invalid Roles > Roles submenu displayed if logged user has edit_users capability but not manage_settings capability
-* Compat : Revisionary - Images attached to published content were not listed in Media Library based on Contributor / Revisor role
-* Feature : Media Library option, for non-Editors, to prevent the inclusion of files uploaded by other users (even if logged user can edit the related post)
-* Change : (with Revisionary plugin) Revisor role does not satisfy "Roles and Restrictions can be set" requirement of "site-wide Editor"
-* BugFix : Several issues with custom post type / custom taxonomy usage and role assignment
-
-= 1.2.8 RC2 - 25 Aug 2010 =
-* BugFix : Fatal Errors on WordPress 2.8 and older (since 1.2.8 Beta 1)
-
-= 1.2.8 RC - 24 Aug 2010 =
-* BugFix : Fatal error when manage_categories capability is checked from the front end by template or plugin code
-* Lang : Removed ASCII HTML character codes from Spanish translation (David Gómez Becerril - www.desarrollowebdequeretaro.com)
-* Compat : Role Scoping for NextGEN Gallery - Bulk Role Admin form was not usable for assigning Gallery Roles (listed posts instead of galleries)
-* Compat : Role Scoping for NextGEN Gallery - Album Roles were not available until RS Options re-saved
-* Compat : Revisionary - non-administrators could not edit their own Pending Revisions
-* BugFix : Administrators could not add/edit items of custom post type (since 1.2.8 Beta 3) unless WP Role defs modified to include new type-specific capabilities
-* BugFix : Unlogged (anonymous) readers could not view any custom post types (since 1.2.8 Beta 1)
-
-= 1.2.8 Beta 5 - 3 Aug 2010 =
-* BugFix : Post submission categories not filtered when user had category-specific Post Editor role but a General Role of Page Author / Editor (since 1.2)
-* BugFix : Custom Post Type menus were not displayed based on Object Role assignment
-
-= 1.2.8 Beta 4 - 3 Aug 2010 =
-* BugFix : Some RS Options (including custom post type / taxonomy role usage) did not store correctly with WP Multisite
-* BugFix : Roles, Restrictions were not displayed on single term edit form
-* BugFix : Comment listing in wp-admin was not filtered to match post editing access
-* Compat : WPML plugin - category names with @lang suffix did not have suffix filtered off
-
-= 1.2.8 Beta 3 - 19 July 2010 =
-* BugFix : Error when using custom post types with WP 2.9 
-* Change : Don't automatically store new capabilities to db-stored WP Role definitions
-
-= 1.2.8 Beta 2 - 19 July 2010 =
-* BugFix : Custom-defined WP Nav menus were not filtered for RS restrictions / roles
-* BugFix : Hidden Content Teaser was not applied to sticky posts
-* BugFix : Hidden Content Teaser could not be enabled for custom post types
-* BugFix : In admin menus, "Add New" was not properly suppressed in some configurations
-* BugFix : File Attachment Filter was inactive for installations upgraded to WP 3.0 multisite and still using wp-content/uploads folder
-* BugFix : On failed direct file access attempt, any page / term listings on 404 page were not filtered for RS restrictions / roles
-* BugFix : XML-RPC submissions failed for users lacking blog-wide edit_posts capability
-* BugFix : Category Roles, Category Restrictions bulk admin forms had invalid category edit links
-* BugFix : Implicit role ownership (indicated by coloring in role metaboxes) was not indicacted correctly under some configurations
-* Change : Suppress scroll links in Term Roles / Restrictions bulk admin form if terms total over 300
+= Misc. =
+* Feature : For File Filtering, ability to force regeneration of access keys and rewrite rules via utility URL
+* BugFix : Administrators could not modify User Group name or description (since 1.2)
+* Change : For Role Date Limits settings, show / hide the entry boxes if "keep stored setting" checkbox is toggled 
+* Compat : New "scoper_access_name" hook to allow 3rd party plugins to force a custom URI to be treated with wp-admin / front-end filtering
+* Change : Raise minimum WP version to 3.0
 
 
-= 1.2.8 Beta - 13 July 2010 =
-* BugFix : Role assignment metaboxes did not display for custom types
-* BugFix : On version upgrade from RS < 1.2, groups_rs db table update failed under certain conditions
-* Change : Force type-specific capability_type and caps for all custom post types
+= 1.2.8-dev =
+* Compat : Edit Flow plugin (Edit Posts / Pages listing filtered for custom status)
 
 
 = 1.2.7 - 30 June 2010 =
@@ -744,10 +705,8 @@ no changes from 1.2 RC
 * Quick Cache : not compatible as of QC 2.1.7 due to conflicting use of wp-content/cache folder
 * WPML Multilingual CMS : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  
 * QTranslate : Role Scoper ensures compatibility by disabling the caching of page and category listings.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
-* More Types : not compatible unless modified to register post types earlier: add_action('init', array(&$this, 'init_post_types'), 1);
-* More Taxonomies : not compatible unless modified to register taxonomies earlier: add_action('init', array(&$this, 'load_taxonomies'), 1);
-* Maintenance Mode : not compatible due to early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Insert the following line at the top of function current_user_can_access_on_maintenance in maintenance-mode.php: `return false;`
 * Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget or Snazzy Archives instead.
+* Maintenance Mode : not compatible due to early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Insert the following line at the top of function current_user_can_access_on_maintenance in maintenance-mode.php: `return false;`
 * Flutter : As of Nov 2009, RS filtering of Flutter categories requires that the Flutter function GetCustomWritePanels (in the RCCWP_CustomWritePanel class, file plugins/fresh-page/RCCWP_CustomWritePanel.php) be modified to the following:
 
     function GetCustomWritePanels() 

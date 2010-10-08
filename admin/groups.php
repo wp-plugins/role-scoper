@@ -71,14 +71,13 @@ switch ($mode) {
 		
 	case "editSubmit":
 		$group->ID = $_POST['groupID'];
-	
-		if ( current_user_can( 'manage_groups', $_POST['groupID'] ) ) {
-	
+		
+		if ( $can_manage_all_groups || current_user_can( 'manage_groups', $_POST['groupID'] ) ) {
 			if ( ! empty($_POST['groupName']) ) {
 				$_POST['groupName'] = str_replace( '[', '', $_POST['groupName'] );
 				$_POST['groupName'] = str_replace( ']', '', $_POST['groupName'] );
 			}
-		
+			
 			//to continue edit
 			$group->display_name = $_POST['groupName'];
 			$group->prev_name = $_POST['prevName'];
@@ -431,6 +430,7 @@ if ( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) ) {
 	$scoper_user_search->output_html( $arr_display_names, 'users' );
 } else {
 	$all_users = $scoper->users_who_can('', COLS_ID_DISPLAYNAME_RS, '', '', $_args );
+
 	UserGroups_tp::group_members_checklist( $group_id, 'member', $all_users );
 }
 ?>

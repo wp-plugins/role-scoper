@@ -5,62 +5,31 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 class ScoperRoleAssigner
 {
 	var $scoper;
+	var $scoper_admin;
 	
 	function ScoperRoleAssigner() {
-		global $scoper;
-		$this->scoper =& $scoper;
+		$this->scoper =& $GLOBALS['scoper'];
+		$this->scoper_admin =& $GLOBALS['scoper_admin'];
 	}
 	
-	function user_has_role_in_term($role_handles, $taxonomy, $term_id, $user = '', $args = '') {
-		if ( ! is_object($user) ) {
-			global $current_user;
-			$user = $current_user;
-		}
+	function user_has_role_in_term($role_handle, $taxonomy, $term_id, $user = '', $args = '') {
+		if ( empty( $this->scoper->role_defs->role_caps[$role_handle] ) )
+			return false;
 
-		$role_handles = $this->scoper->role_defs->add_containing_roles( $role_handles, SCOPER_ROLE_TYPE );
-		
-		if ( isset($args['src_name']) && isset($args['object_type']) ) {
-			$match_roles = $this->scoper->role_defs->get_matching(SCOPER_ROLE_TYPE, $args['src_name'], $args['object_type']);
-			
-			$role_handles = array_intersect_key($role_handles, $match_roles );
-		}
-		
-		$strict_terms = $this->scoper->get_restrictions(TERM_SCOPE_RS, $taxonomy );
-		
-		$date_key = ''; // temp
-		
-		foreach ( array_keys($role_handles) as $role_handle ) {
-			// can't blend in blog role if term requires term role assignment
-			if ( isset($strict_terms['unrestrictions'][$role_handle][$term_id])
-			|| ( isset($strict_terms['restrictions'][$role_handle]) && is_array($strict_terms['restrictions'][$role_handle]) && ! isset($strict_terms['restrictions'][$role_handle][$term_id]) ) ) {
-				
-				if ( isset($user->blog_roles[$date_key][$role_handle]) )
-					return true;
-			}
-		}
-		
-		// does current user have any term-specific admin caps for term admin?
-		if ( ! isset($user->term_roles[$taxonomy]) )
-			$user->get_term_roles_daterange($taxonomy);		// call daterange function populate term_roles property - possible perf enhancement for subsequent code even though we don't conider content_date-limited roles here
-
-		if ( ! empty($user->term_roles[$taxonomy][ANY_CONTENT_DATE_RS]) ) {
-			$qualifying_term_roles = array_intersect_key($user->term_roles[$taxonomy][ANY_CONTENT_DATE_RS], $role_handles);
-			
-			foreach ( array_keys($qualifying_term_roles) as $role_handle ) {
-				if ( in_array($term_id, $qualifying_term_roles[$role_handle]) ) {
-					return true;
-				}
-			} 
-		}
+		if ( $terms = $this->scoper->qualify_terms( array_keys($this->scoper->role_defs->role_caps[$role_handle]), $taxonomy, '', compact( 'user' ) ) )  // qualify_terms result is memcached
+			return in_array( $term_id, $terms );
 	}
 	
 	function _validate_assigner_roles($scope, $src_or_tx_name, $item_id, $roles) {
+		if ( ! $item_id && ! is_user_administrator_rs() )
+			return false;
+		
 		$user_has_role = array();
 		if ( TERM_SCOPE_RS == $scope ) {
 				foreach ( array_keys($roles) as $role_handle ) {
-					$role_attrib = $this->scoper->role_defs->get_role_attributes($role_handle);
-					$args = array( 'src_name' => $role_attrib->src_names, 'object_type' => $role_attrib->object_types );
-					$user_has_role[$role_handle] = $this->user_has_role_in_term( array($role_handle => 1), $src_or_tx_name, $item_id, $args);
+					$role_attributes = $this->scoper->role_defs->get_role_attributes($role_handle);
+					$args = array( 'src_name' => $role_attributes->src_name, 'object_type' => $role_attributes->object_type );
+					$user_has_role[$role_handle] = $this->user_has_role_in_term( $role_handle, $src_or_tx_name, $item_id, $args);
 				}
 		} else {
 			if ( $require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only') ) {
@@ -83,21 +52,25 @@ class ScoperRoleAssigner
 						$user_has_role[$role_handle] = false;
 						continue;	
 					}
-					
-					$role_attrib = $this->scoper->role_defs->get_role_attributes($role_handle);
-				
-					$required_cap = ( ( 1 == count($role_attrib->object_types) ) && ( 'page' == $role_attrib->object_types[0] ) ) ? 'edit_others_pages' : 'edit_others_posts';
-				
-					if ( empty( $current_user->allcaps[$required_cap] ) ) {
+
+					$object_type = $this->scoper->role_defs->member_property($role_handle, 'object_type');
+
+					static $can_edit_blogwide;
+
+					if ( ! isset($can_edit_blogwide) )
+						$can_edit_blogwide = array();
+						
+					if ( ! isset($can_edit_blogwide[$src_name][$object_type]) )
+						$can_edit_blogwide[$src_name][$object_type] = $this->scoper->user_can_edit_blogwide($src_name, $object_type, array( 'require_others_cap' => true ) );
+		
+					if ( ! $can_edit_blogwide[$src_name][$object_type] )  {
 						$user_has_role[$role_handle] = false;
 						continue;
 					}
 				}
-				
-				$reqd_caps = $this->scoper->role_defs->role_caps[$role_handle];
-				
-				if ( is_array($reqd_caps) && count($reqd_caps) ) // TODO: why would this ever be non-array? (as reported by one user)
-					$user_has_role[$role_handle] = awp_user_can(array_keys($reqd_caps), $item_id);
+
+				if ( ! empty( $this->scoper->role_defs->role_caps[$role_handle] ) )
+					$user_has_role[$role_handle] = cr_user_can( array_keys($this->scoper->role_defs->role_caps[$role_handle]), $item_id );
 			}
 		}
 		
@@ -164,14 +137,13 @@ class ScoperRoleAssigner
 		return $retval;
 	}
 	
-	function assign_roles($scope, $src_or_tx_name, $item_id, $roles, $role_basis = ROLE_BASIS_USER, $args = '' ) {
+	function assign_roles($scope, $src_or_tx_name, $item_id, $roles, $role_basis = ROLE_BASIS_USER, $args = array() ) {
 		$defaults = array( 'implicit_removal' => false, 'is_auto_insertion' => false, 'force_flush' => false, 'set_role_duration' => '', 'set_content_date_limits' => '' );
 		$args = array_merge($defaults, (array) $args);
 		extract($args);
 		
 		global $wpdb;
 
-		$SCOPER_ROLE_TYPE = SCOPER_ROLE_TYPE;
 		$col_ug_id = ( ROLE_BASIS_GROUPS == $role_basis ) ? 'group_id' : 'user_id';
 		
 		$is_administrator = is_administrator_rs( $src_or_tx_name, 'user' );
@@ -189,10 +161,9 @@ class ScoperRoleAssigner
 			
 		$ug_clause = ( ROLE_BASIS_USER == $role_basis ) ? "AND user_id > 0" : "AND group_id > 0";
 				
-		// note: default roles are stored with assignment id zero, but accounted for elsewhere
 		$qry = "SELECT $col_ug_id, assignment_id, assign_for, inherited_from, role_name, date_limited, start_date_gmt, end_date_gmt, content_date_limited, content_min_date_gmt, content_max_date_gmt FROM $wpdb->user2role2object_rs WHERE scope = '$scope' $ug_clause"
-			. " AND role_type = '$SCOPER_ROLE_TYPE' AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$item_id'";
-
+			. " AND role_type = 'rs' AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$item_id'";
+			
 		$results = scoper_get_results($qry);
 
 		$stored_assignments = array();
@@ -207,7 +178,7 @@ class ScoperRoleAssigner
 		}
 		
 		foreach ($results as $key => $ass) {
-			$role_handle = scoper_get_role_handle( $ass->role_name, SCOPER_ROLE_TYPE );
+			$role_handle = scoper_get_role_handle( $ass->role_name, 'rs' );
 			
 			if ( (OBJECT_SCOPE_RS == $scope) && isset($is_objscope_equiv[$role_handle]) )
 				$role_handle = $is_objscope_equiv[$role_handle];
@@ -239,6 +210,8 @@ class ScoperRoleAssigner
 				}
 			}
 					
+			$comparison = array();
+			
 			foreach ( $agents as $ug_id => $assign_for ) {
 				// don't assign a role which would remove existing assignment of role the current user doesn't have 
 				// (i.e. you can't change someone else from category Editor to category Reader if you are only a category Contributor)
@@ -252,7 +225,7 @@ class ScoperRoleAssigner
 						}
 					}
 				}
-
+				
 				if ( REMOVE_ASSIGNMENT_RS == $assign_for ) {
 				    // If redundant role entries somehow got stored, make sure we delete them all (_compare_role_settings() does not)
 					if ( ! empty( $assignment_ids[$role_handle][$ug_id] ) ) {
@@ -260,7 +233,6 @@ class ScoperRoleAssigner
 
 						foreach ( array_keys($assignment_ids[$role_handle][$ug_id]) as $assignment_id ) {
 							$delete_assignments [$assignment_id] = true;
-
 							$comparison['role_change'] = true;
 						}
 					}
@@ -273,10 +245,10 @@ class ScoperRoleAssigner
 						$propagate_agents[$ug_id] = $comparison['new_propagation'];
 				}
 				
-				if ( $comparison['unset'] )
+				if ( ! empty($comparison['unset']) )
 					unset( $agents[$ug_id] );
 					
-				if ( $comparison['role_change'] )
+				if ( ! empty($comparison['role_change']) )
 					$role_change_agent_ids[$role_basis][$ug_id] = 1;
 			} // end foreach users or groups
 			
@@ -299,7 +271,7 @@ class ScoperRoleAssigner
 				if ( -1 != $set_role_duration->end_date_gmt )
 					$qry .= ", end_date_gmt = '$set_role_duration->end_date_gmt'";
 					
-				$qry .= " WHERE assignment_id IN ($id_in) OR (inherited_from IN ($id_in) AND inherited_from != '0')";
+				$qry .= " WHERE assignment_id IN ($id_in)";
 				scoper_query($qry);
 			}
 			
@@ -313,7 +285,7 @@ class ScoperRoleAssigner
 				if ( -1 != $set_content_date_limits->content_max_date_gmt )
 					$qry .= ", content_max_date_gmt = '$set_content_date_limits->content_max_date_gmt'";
 					
-				$qry .= " WHERE WHERE assignment_id IN ($id_in) OR (inherited_from IN ($id_in) AND inherited_from != '0')";
+				$qry .= " WHERE assignment_id IN ($id_in)";
 
 				scoper_query($qry);
 			}
@@ -373,12 +345,12 @@ class ScoperRoleAssigner
 	
 	// $agent_ids[agent_id] = role assignment method ('entity', 'children' or 'both')
 	// $propagate_agents[agent_id] = assignment_id for inherited_from
-	function insert_role_assignments ($scope, $role_handle, $src_or_tx_name, $obj_or_term_id, $col_ug_id, $insert_agents, $propagate_agents, $args = '') {
+	function insert_role_assignments ($scope, $role_handle, $src_or_tx_name, $obj_or_term_id, $col_ug_id, $insert_agents, $propagate_agents, $args = array()) {
 		$defaults = array( 'inherited_from' => array(), 'is_auto_insertion' => false, 'set_role_duration' => '', 'set_content_date_limits' => '', 'role_duration_per_agent' => '', 'content_date_limits_per_agent' => '' );  // auto_insertion arg set for role propagation from parent objects
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 
-		global $current_user, $scoper, $wpdb;
+		global $current_user, $wpdb;
 		
 		$assigner_id = $current_user->ID;
 		
@@ -396,11 +368,11 @@ class ScoperRoleAssigner
 		// Before inserting a role, delete any overlooked old assignment.
 		// Also delete (for the same user/group) any roles which cannot be simultaneously assigned
 		if ( $role_attrib = $this->scoper->role_defs->get_role_attributes($role_handle) ) {
-			$this_otype_role_defs = $this->scoper->role_defs->get_matching($role_spec->role_type, $role_attrib->src_names, $role_attrib->object_types);
+			$this_otype_role_defs = $this->scoper->role_defs->get_matching($role_spec->role_type, $role_attrib->src_name, $role_attrib->object_type);
 			$delete_role_if_exists = array_keys($this_otype_role_defs);
 			
 			// need object_type for permission check when modifying propagated object roles
-			$object_type = $role_attrib->object_types;
+			$object_type = $role_attrib->object_type;
 		} else {
 			$delete_role_if_exists = array($role_handle);
 			$object_type = '';  // probably won't be able to propagate roles if this error occurs
@@ -410,11 +382,11 @@ class ScoperRoleAssigner
 		// prepare hierarchy and object type data for subsequent propagation
 		if ( ! empty($propagate_agents) ) {
 			if ( TERM_SCOPE_RS == $scope ) {
-				if ( ! $tx = $scoper->taxonomies->get($src_or_tx_name) )
+				if ( ! $tx = $this->scoper->taxonomies->get($src_or_tx_name) )
 					return;
 				
 				$src = $tx->source;
-			} elseif ( ! $src = $scoper->data_sources->get($src_or_tx_name) )
+			} elseif ( ! $src = $this->scoper->data_sources->get($src_or_tx_name) )
 				return;
 			
 			if ( empty( $src->cols->parent ) )
@@ -425,10 +397,10 @@ class ScoperRoleAssigner
 			$remove_ids = array();
 			foreach ( $descendant_ids as $id ) {
 				if ( TERM_SCOPE_RS == $scope ) {
-					if ( ! $this->scoper->admin->user_can_admin_terms($src_or_tx_name, $id) )
+					if ( ! $this->scoper_admin->user_can_admin_terms($src_or_tx_name, $id) )
 						$remove_ids []= $id;
 				} else {
-					if ( ! $this->scoper->admin->user_can_admin_object($src_or_tx_name, $object_type, $id) )
+					if ( ! $this->scoper_admin->user_can_admin_object($src_or_tx_name, $object_type, $id) )
 						$remove_ids []= $id;
 				}
 			}
@@ -573,15 +545,13 @@ class ScoperRoleAssigner
 			update_option( "scoper_custom_{$src_or_tx_name}", $custom_role_items );
 	}
 	
-	function restrict_roles($scope, $src_or_tx_name, $item_id, $roles, $args = '' ) {
+	function restrict_roles($scope, $src_or_tx_name, $item_id, $roles, $args = array() ) {
 		$defaults = array( 'implicit_removal' => false, 'is_auto_insertion' => false, 'force_flush' => false );
 		$args = array_merge($defaults, (array) $args);
 		extract($args);
 		
 		global $wpdb;
-		
-		$SCOPER_ROLE_TYPE = SCOPER_ROLE_TYPE;
-			
+
 		$is_administrator = is_administrator_rs($src_or_tx_name, 'user');
 		
 		$delete_reqs = array();
@@ -629,11 +599,11 @@ class ScoperRoleAssigner
 				$query_max_scope = ( $default_strict ) ? 'blog' : 'object'; // Storage of 'blog' max_scope as object restriction does not eliminate any term restrictions.  It merely indicates, for data sources that are default strict, that this object does not restrict roles
 				
 			$qry = "SELECT requirement_id AS assignment_id, require_for AS assign_for, inherited_from, role_name FROM $wpdb->role_scope_rs WHERE topic = '$scope' AND max_scope = '$query_max_scope'"
-				. " AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$item_id' AND role_type = '$SCOPER_ROLE_TYPE' $role_clause";
+				. " AND src_or_tx_name = '$src_or_tx_name' AND obj_or_term_id = '$item_id' AND role_type = 'rs' $role_clause";
 
 			if ( $results = scoper_get_results($qry) ) {
 				foreach ($results as $key => $req) {
-					$role_handle = SCOPER_ROLE_TYPE . '_' . $req->role_name;
+					$role_handle = 'rs_' . $req->role_name;
 					
 					if ( (OBJECT_SCOPE_RS == $scope) && isset($is_objscope_equiv[$role_handle]) )
 						$role_handle = $is_objscope_equiv[$role_handle];
@@ -651,13 +621,14 @@ class ScoperRoleAssigner
 				foreach ( array_keys($stored_reqs) as $role_handle ) {
 					$max_scope = isset($roles[$role_handle]['max_scope']) ? $roles[$role_handle]['max_scope'] : false;
 					
-					if ( $max_scope != $query_max_scope )
+					if ( $max_scope != $query_max_scope ) {
 						$delete_reqs = $delete_reqs + $req_ids[$role_handle];
+					}
 				}
 			}
 
 			foreach ( $roles as $role_handle => $setting ) {
-				if ( ! $is_administrator && ! $user_has_role[$role_handle] )
+				if ( ! $is_administrator && empty( $user_has_role[$role_handle] ) )
 					continue;
 	
 				if ( $default_strict && ! in_array($role_handle, $default_strict_roles) )
@@ -737,12 +708,12 @@ class ScoperRoleAssigner
 	
 	// $insert_restriction = require_for value for insertion ('entity', 'children' or 'both')
 	// $propagate_from_req_id = requirement_id for inherited_from
-	function insert_role_restrictions ($topic, $max_scope, $role_handle, $src_or_tx_name, $obj_or_term_id, $insert_restriction, $propagate_from_req_id, $args = '') {
+	function insert_role_restrictions ($topic, $max_scope, $role_handle, $src_or_tx_name, $obj_or_term_id, $insert_restriction, $propagate_from_req_id, $args = array()) {
 		$defaults = array( 'inherited_from' => 0, 'is_auto_insertion' => false );  // auto_insertion arg set for restriction propagation from parent objects
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 	
-		global $current_user, $scoper, $wpdb;
+		global $current_user, $wpdb;
 
 		if ( ! $role_spec = scoper_explode_role_handle($role_handle) )
 			return;
@@ -758,7 +729,7 @@ class ScoperRoleAssigner
 		// need object_type for permission check when modifying propagated object roles
 		if ( OBJECT_SCOPE_RS == $topic ) {
 			if ( $role_attrib = $this->scoper->role_defs->get_role_attributes($role_handle) )
-				$object_type = $role_attrib->object_types[0];
+				$object_type = $role_attrib->object_type;
 			else
 				$object_type = '';  // probably won't be able to propagate roles if this error occurs
 		}
@@ -766,11 +737,11 @@ class ScoperRoleAssigner
 		// prepare hierarchy and object type data for subsequent propagation
 		if ( $propagate_from_req_id ) {
 			if ( TERM_SCOPE_RS == $topic ) {
-				if ( ! $tx = $scoper->taxonomies->get($src_or_tx_name) )
+				if ( ! $tx = $this->scoper->taxonomies->get($src_or_tx_name) )
 					return;
 				
 				$src = $tx->source;
-			} elseif ( ! $src = $scoper->data_sources->get($src_or_tx_name) )
+			} elseif ( ! $src = $this->scoper->data_sources->get($src_or_tx_name) )
 				return;
 			
 			if ( empty( $src->cols->parent ) )
@@ -781,10 +752,10 @@ class ScoperRoleAssigner
 			$remove_ids = array();
 			foreach ( $descendant_ids as $id ) {
 				if ( TERM_SCOPE_RS == $topic ) {
-					if ( ! $this->scoper->admin->user_can_admin_terms($src_or_tx_name, $id) )
+					if ( ! $this->scoper_admin->user_can_admin_terms($src_or_tx_name, $id) )
 						$remove_ids []= $id;
 				} else {
-					if ( ! $this->scoper->admin->user_can_admin_object($src_or_tx_name, $object_type, $id) )
+					if ( ! $this->scoper_admin->user_can_admin_object($src_or_tx_name, $object_type, $id) )
 						$remove_ids []= $id;
 				}
 			}
@@ -832,7 +803,7 @@ class ScoperRoleAssigner
 			// TODO: 're-inherit parent roles' checkbox for object and term role edit UI
 			foreach ( $descendant_ids as $id ) {
 				// Don't overwrite an explicitly assigned object role with a propagated assignment
-				if ( $direct_assignment = scoper_get_var( "$qry_select_base AND inherited_from = '0' $role_clause AND obj_or_term_id = '$id' LIMIT 1" ) )
+				if ( $direct_assignment = scoper_get_var( "$qry_select_base AND inherited_from = '0' AND obj_or_term_id = '$id' LIMIT 1" ) )
 					continue;
 
 				// before inserting the role, delete any other propagated assignments this user/group has for the same object type

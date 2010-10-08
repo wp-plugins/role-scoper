@@ -14,7 +14,6 @@ function scoper_default_options_sitewide() {
 		'group_recommendations' => true,
 		'enable_group_roles' => true,
 		'enable_user_roles' => true,
-		'role_type' => true,
 		'custom_user_blogcaps' => true,
 		'no_frontend_admin' => true,
 		'indicate_blended_roles' => true,
@@ -39,6 +38,7 @@ function scoper_default_options_sitewide() {
 		'remap_thru_excluded_term_parent' => true,
 		'mu_sitewide_groups' => true,
 		'file_filtering' => true,
+		'file_filtering_regen_key' => true,
 		'role_duration_limits' => true,
 		'role_content_date_limits' => true,
 

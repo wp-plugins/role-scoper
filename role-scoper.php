@@ -3,10 +3,10 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.2.8.RC9.c
+Version: 1.3.beta
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
-Min WP Version: 2.6
+Min WP Version: 3.0
 License: GPL version 2 - http://www.opensource.org/licenses/gpl-license.php
 */
 
@@ -44,10 +44,8 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-define ('SCOPER_VERSION', '1.2.8.RC9.c');
+define ('SCOPER_VERSION', '1.3.beta');
 define ('SCOPER_DB_VERSION', '1.1.2');
-
-define( 'ENABLE_PERSISTENT_CACHE', true );
 
 /* --- ATTACHMENT FILTERING NOTE ---
 Read access to uploaded file attachments is normally filtered (via .htaccess RewriteRules) to match post/page access.
@@ -72,6 +70,19 @@ To disable caching of the pages / categories listing, add the following lines to
 	define( 'SCOPER_NO_PAGES_CACHE', true );
 	define( 'SCOPER_NO_TERMS_CACHE', true );
 */
+
+// WP role type support is dropped as of 1.2.9.  If current installation is using it, bail out - hiding all content and displaying an explanation.
+if ( $prev = get_option('scoper_version') ) {
+	if ( version_compare( $prev['version'], '1.3.1', '<') ) {
+		if ( $role_type = get_option( 'scoper_role_type' ) ) {
+			if ( 'wp' == $role_type ) {
+				require_once( 'error_rs.php' );
+				scoper_startup_error( 'wp_role_type' );
+				$bail = 1;
+			}
+		}	
+	}
+}
 
 // avoid lockout in case of editing plugin via wp-admin
 if ( defined('RS_DEBUG') && is_admin() && ( strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugin-editor.php' ) || strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugins.php' ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'activate' ) )
@@ -160,21 +171,21 @@ define ('ROLE_BASIS_USER_AND_GROUPS', 'ug');
 define ('ANY_CONTENT_DATE_RS', '');
 define ('NO_OBJSCOPE_CLAUSE_RS', '');
 
-global $wpdb;
-
 global $scoper_role_types;
 $scoper_role_types = array('rs', 'wp', 'wp_cap');
 
+global $wpdb;
+
 $bail = 0;
 
-if ( awp_ver( '2.7' ) ) {	// older db servers running on WP < 2.7 will have to fail silently because the has_cap check was introduced in 2.7
+if ( ! awp_ver('3.0') ) {
+	rs_notice('Sorry, this version of Role Scoper requires WordPress 3.0 or higher.  Please upgrade Wordpress or deactivate Role Scoper.  If you must run WP 2.6 - 2.9.2, try <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 1.2.x</a>.');
+	$bail = 1;	
+} else {
 	if ( ! $wpdb->has_cap( 'subqueries' ) ) {
 		rs_notice('Sorry, this version of Role Scoper requires a database server that supports subqueries (such as MySQL 4.1+).  Please upgrade your server or deactivate Role Scoper.');
 		$bail = 1;
 	}
-} elseif ( ! awp_ver('2.6') ) {
-	rs_notice('Sorry, this version of Role Scoper requires WordPress 2.6 or higher.  Please upgrade Wordpress or deactivate Role Scoper.  If you must run WP 2.2 - 2.5, try <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 0.9</a>.');
-	$bail = 1;	
 }
 
 if ( is_admin() || defined('XMLRPC_REQUEST') ) {
@@ -197,7 +208,6 @@ if ( is_admin() || defined('XMLRPC_REQUEST') ) {
 if ( function_exists('wp_set_current_user') || function_exists('set_current_user') ) {  //if is_administrator_rs exists, then these functions scoped_user.php somehow already executed (and plugged set_current_user) 
 	require_once( 'error_rs.php' );
 	scoper_startup_error();
-	
 	$bail = 1;
 }
 
@@ -236,8 +246,15 @@ if ( ! $bail ) {
 
 	//log_mem_usage_rs( 'user-plug_rs' );
 	
+	if ( ! defined( 'SCOPER_LATE_INIT' ) && ! defined( 'SCOPER_EARLY_INIT' ) ) {
+		if ( awp_is_plugin_active( 'more-taxonomies' ) || awp_is_plugin_active( 'ultimate-taxonomy-manager' ) )	// More Taxonomies registers taxonomies on the init action at priority 20
+			define( 'SCOPER_LATE_INIT', true );
+	}
+
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
-	add_action('set_current_user', 'scoper_maybe_init', 2);
-	add_action('init', 'scoper_log_init_action', 1);
+	$priority = ( defined( 'SCOPER_LATE_INIT' ) && ! defined( 'SCOPER_EARLY_INIT' ) ) ? 50 : 1;
+
+	add_action('set_current_user', 'scoper_maybe_init', $priority + 1);
+	add_action('init', 'scoper_log_init_action', $priority);
 }
 ?>

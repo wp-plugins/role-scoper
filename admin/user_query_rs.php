@@ -13,8 +13,7 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		
 	} elseif ( $search = new WP_User_Search( $_GET['rs_user_search'] ) ) {
 		global $wpdb;
-		$from_where = ( awp_ver( '3.0-dev' ) ) ? $search->query_from . ' ' . $search->query_where : $search->query_from_where;
-		$results = $wpdb->get_results('SELECT ID, user_login ' . $from_where . ' ORDER BY user_login' );
+		$results = $wpdb->get_results( "SELECT ID, user_login $search->query_from $search->query_where ORDER BY user_login" );
 	}
 
 	if ( $results ) {	
@@ -27,7 +26,7 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		foreach( $results as $row )
 			if ( ! in_array( $row->ID, $users ) ) {
 				//$display_name = ( $row->user_login != $row->display_name ) ? " ($row->display_name)" : '';		// possible TODO, but issues with JS and listbox width
-				echo "<option value='$row->ID'>$row->user_login{$display_name}</option>";
+				echo "<option value='$row->ID'>$row->user_login</option>";
 			}
 	}
 	
