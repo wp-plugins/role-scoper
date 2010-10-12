@@ -803,15 +803,15 @@ class QueryInterceptor_RS
 		// accomodate editing of published posts/pages to revision
 		if ( is_admin() && defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {
 			if ( empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) {
-				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'p-admin/post.php', 'p-admin/edit.php', 'p-admin/upload.php', 'p-admin/widgets.php', 'p-admin/admin-ajax.php' ) );
+				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'p-admin/edit.php', 'p-admin/upload.php', 'p-admin/widgets.php', 'p-admin/admin-ajax.php' ) );
 				$revision_uris []= 'p-admin/index.php';	
-				
+
 				if ( is_preview() || agp_strpos_any( $_SERVER['SCRIPT_NAME'], $revision_uris ) ) {
 					$strip_capreqs = array();
 					
 					foreach( (array) $object_type as $_object_type ) {
 						if ( $type_obj = get_post_type_object( $_object_type ) ) {
-							$strip_capreqs = array_merge( $strip_capreqs, array( $type_obj->cap->edit_published_posts, $type_obj->cap->edit_private_posts, $type_obj->cap->publish_posts ) );
+							$strip_capreqs = array_merge( $strip_capreqs, array( $type_obj->cap->edit_published_posts, $type_obj->cap->edit_private_posts ) );
 							$reqd_caps []= $type_obj->cap->edit_posts;
 						}
 					}
@@ -1218,7 +1218,13 @@ class QueryInterceptor_RS
 
 									// Use a subselect rather than adding our own LEFT JOIN.
 									$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause";
-									$taxonomy_clauses[$is_strict] []= "$src_table.{$src->cols->id} IN ( $terms_subselect ) $objscope_clause";
+
+									if ( defined('RVY_VERSION') && $objrole_revisions_clause )
+										$revision_clause = "OR $src_table.{$src->cols->parent} IN ( $terms_subselect )";
+									else
+										$revision_clause = '';
+
+									$taxonomy_clauses[$is_strict] []= "( $src_table.{$src->cols->id} IN ( $terms_subselect ) $revision_clause ) $objscope_clause";
 								}
 						}
 

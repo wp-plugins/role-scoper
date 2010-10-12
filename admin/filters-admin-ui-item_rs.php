@@ -144,7 +144,7 @@ jQuery(document).ready( function($) {
 	
 		if ( $require_blogwide_editor ) {
 			if ( ! $this->scoper->user_can_edit_blogwide( $src_name, $object_type, array( 'require_others_cap' => true ) ) )
-				continue;
+				return;
 		}
 
 		$role_defs = $this->scoper->role_defs->get_matching('rs', $src_name, $object_type);

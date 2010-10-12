@@ -261,7 +261,12 @@ class CapInterceptor_RS
 			} // endif not taxonomy cap
 		} // endif caps correspond to 'post' data source
 		//====================================== (end subvert misguided capability requirements) =============================================
+
 		
+		if ( defined( 'RVY_VERSION' ) ) {
+			require_once( 'revisionary-helper_rs.php' );
+			$rs_reqd_caps = Rvy_Helper::convert_post_edit_caps( $rs_reqd_caps, $object_type );
+		}
 		
 		//$matched_context = in_array( $object_type, $cap_types );
 
@@ -533,7 +538,7 @@ class CapInterceptor_RS
 			$cache_where_clause = array();
 		} else
 			$force_refresh = false;
-		
+
 		// Check whether this object id was already tested for the same reqd_caps in a previous execution of this function within the same http request
 		if ( $force_refresh || ! isset($cache_tested_ids[$src_name][$object_type][$capreqs_key][$object_id]) ) {
 		//if ( ! isset($cache_tested_ids[$src_name][$object_type][$capreqs_key][$object_id]) ) {

@@ -104,6 +104,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.RC2 - 11 Oct 2010 =
+* BugFix : Fatal Error when editing a post with a Contributor and a non-default blog-wide role requirement is specified in Roles > Options > Features > Content Maint > "Roles and Restrictions can be set"
+* Compat : When Revisionary plugin is also active, Contributor / Revisors can publish posts directly without review (since 1.3.RC)
+* Compat : Pending Revisions (from Revisionary plugin) were not included in Edit Posts listing for non-Administrators when editing access to published post is affected by category-specific roles or restrictions (since 1.0)
+
+
 ** 1.3.RC - 8 Oct 2010 **
 
 = Post Editing =
