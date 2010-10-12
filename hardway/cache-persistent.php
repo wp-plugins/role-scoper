@@ -131,7 +131,7 @@ function wpp_cache_init( $sitewide_groups = true ) {
 		$GLOBALS['wpp_object_cache']->global_groups = array_merge( $GLOBALS['wpp_object_cache']->global_groups, array( 'all_usergroups', 'group_members' ) );
 	
 	// added by kevinB: if a flush fails, try try again (and meanwhile, DON'T use the old invalid cache)
-	$need_flush = ( function_exists('scoper_get_option') ) ? scoper_get_option('scoper_need_cache_flush') : get_option('scoper_need_cache_flush');
+	$need_flush = ( function_exists('scoper_get_option') ) ? scoper_get_option('need_cache_flush') : get_option('scoper_need_cache_flush');
 	
 	if ( $need_flush ) {
 		//rs_errlog('cache init: performing pending flush');
@@ -488,6 +488,8 @@ class WP_Persistent_Object_Cache {
 		
 		$dir = $this->cache_dir . $group_dir;
 		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
+		
+		$cache_dir = rtrim($this->cache_dir, DIRECTORY_SEPARATOR);
 		// END RoleScoper Modification --//
 		
 		$top_dir = $dir;
@@ -516,16 +518,18 @@ class WP_Persistent_Object_Cache {
 				return false;
 			}
 			
-			while (($file = @ readdir($dh)) !== false) {
-				if ($file == '.' or $file == '..')
+			while ( ($file = @ readdir($dh) ) !== false) {
+				if ( $file == '.' or $file == '..')
 					continue;
 
-				if (@ is_dir($dir . DIRECTORY_SEPARATOR . $file))
+				if ( @ is_dir( $dir . DIRECTORY_SEPARATOR . $file ) )
 					$stack[] = $dir . DIRECTORY_SEPARATOR . $file;
-				else if (@ is_file($dir . DIRECTORY_SEPARATOR . $file)) {
-					if ( file_exists($dir . DIRECTORY_SEPARATOR . $file) ) {
-						if ( !@ unlink($dir . DIRECTORY_SEPARATOR . $file)) {
-							$errors++;
+				elseif ( $dir && ( $dir != $cache_dir ) ) { // never delete arbitrary files out of the main cache folder; other plugins may be using it 
+					if ( @ is_file( $dir . DIRECTORY_SEPARATOR . $file ) ) {
+						if ( file_exists( $dir . DIRECTORY_SEPARATOR . $file ) ) {
+							if ( ! @ unlink( $dir . DIRECTORY_SEPARATOR . $file ) ) {
+								$errors++;
+							}
 						}
 					}
 				}

@@ -104,6 +104,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.RC3 - 12 Oct 2010 =
+* BugFix : On WP 3.0 Multisite installations, all files in wp-content/cache get deleted, clashing with other plugins such as WP Super Cache
+
+
 = 1.3.RC2 - 11 Oct 2010 =
 * BugFix : Fatal Error when editing a post with a Contributor and a non-default blog-wide role requirement is specified in Roles > Options > Features > Content Maint > "Roles and Restrictions can be set"
 * Compat : When Revisionary plugin is also active, Contributor / Revisors can publish posts directly without review (since 1.3.RC)
