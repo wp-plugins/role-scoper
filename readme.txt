@@ -2,8 +2,8 @@
 Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
-Requires at least: 2.6
-Tested up to: 3.0
+Requires at least: 3.0
+Tested up to: 3.0.1
 Stable Tag: 1.2.7
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
@@ -150,7 +150,83 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Change : Raise minimum WP version to 3.0
 
 
-= 1.2.8-dev =
+= 1.2.8 RC9 - 6 Sep 2010 =
+* BugFix : Unnecessary DB query on post save added needless overhead, caused out of memory error on some configurations (since 1.2)
+* BugFix : Was not requiring type-specific editing capabilities for term selection in post edit form for custom types
+* BugFix : Object Roles were not correctly enabled by default (since 1.2.8.RC8)
+* BugFix : page widget / dropdown did not include non-published pages where appropriate (since 1.2.8.RC8)
+* Change : Better support for nonstandard capabilities in custom post type definitions
+* Change : Support get_pages / list_pages filtering of hierarchical custom post types
+
+= 1.2.8 RC8 - 31 Aug 2010 =
+* Change : Enable new Post Types and Taxonomies for RS Roles & Restrictions by default
+* BugFix : Fatal errors in wp-admin for non-Administrators under some configurations (call to undefined function user_can_edit_blogwide)
+* BugFix : Category Role usage was not available for custom post types
+
+= 1.2.8 RC7 - 31 Aug 2010 =
+* BugFix : Post Types and Taxonomies disabled via new option checkboxes were not removed from Roles, Restrictions menus
+
+= 1.2.8 RC6 - 31 Aug 2010 =
+* BugFix : Newly enabled custom roles were not handled correctly by RS because initial save following activation de-associated their role capabilities (under RS Role Defs tab)
+* Compat : Verve Metaboxes - Internal server error when Administrator attempted to add a new custom post type
+* Feature : New simple checklist enables/disables RS usage of each defined post type and taxonomy 
+
+= 1.2.8 RC5 - 30 Aug 2010 =
+* BugFix : After a custom taxonomy was enabled for RS roles & restrictions, Administrators could not manage it by default
+
+= 1.2.8 RC4 - 30 Aug 2010 =
+* BugFix : Fatal error if "Roles and Restrictions can be set" is set to require Editor or Administrator role (since 1.2.8.RC3)
+
+= 1.2.8 RC3 - 27 Aug 2010 =
+* BugFix : Invalid Roles > Roles submenu displayed if logged user has edit_users capability but not manage_settings capability
+* Compat : Revisionary - Images attached to published content were not listed in Media Library based on Contributor / Revisor role
+* Feature : Media Library option, for non-Editors, to prevent the inclusion of files uploaded by other users (even if logged user can edit the related post)
+* Change : (with Revisionary plugin) Revisor role does not satisfy "Roles and Restrictions can be set" requirement of "site-wide Editor"
+* BugFix : Several issues with custom post type / custom taxonomy usage and role assignment
+
+= 1.2.8 RC2 - 25 Aug 2010 =
+* BugFix : Fatal Errors on WordPress 2.8 and older (since 1.2.8 Beta 1)
+
+= 1.2.8 RC - 24 Aug 2010 =
+* BugFix : Fatal error when manage_categories capability is checked from the front end by template or plugin code
+* Lang : Removed ASCII HTML character codes from Spanish translation (David Gómez Becerril - www.desarrollowebdequeretaro.com)
+* Compat : Role Scoping for NextGEN Gallery - Bulk Role Admin form was not usable for assigning Gallery Roles (listed posts instead of galleries)
+* Compat : Role Scoping for NextGEN Gallery - Album Roles were not available until RS Options re-saved
+* Compat : Revisionary - non-administrators could not edit their own Pending Revisions
+* BugFix : Administrators could not add/edit items of custom post type (since 1.2.8 Beta 3) unless WP Role defs modified to include new type-specific capabilities
+* BugFix : Unlogged (anonymous) readers could not view any custom post types (since 1.2.8 Beta 1)
+
+= 1.2.8 Beta 5 - 3 Aug 2010 =
+* BugFix : Post submission categories not filtered when user had category-specific Post Editor role but a General Role of Page Author / Editor (since 1.2)
+* BugFix : Custom Post Type menus were not displayed based on Object Role assignment
+
+= 1.2.8 Beta 4 - 3 Aug 2010 =
+* BugFix : Some RS Options (including custom post type / taxonomy role usage) did not store correctly with WP Multisite
+* BugFix : Roles, Restrictions were not displayed on single term edit form
+* BugFix : Comment listing in wp-admin was not filtered to match post editing access
+* Compat : WPML plugin - category names with @lang suffix did not have suffix filtered off
+
+= 1.2.8 Beta 3 - 19 July 2010 =
+* BugFix : Error when using custom post types with WP 2.9 
+* Change : Don't automatically store new capabilities to db-stored WP Role definitions
+
+= 1.2.8 Beta 2 - 19 July 2010 =
+* BugFix : Custom-defined WP Nav menus were not filtered for RS restrictions / roles
+* BugFix : Hidden Content Teaser was not applied to sticky posts
+* BugFix : Hidden Content Teaser could not be enabled for custom post types
+* BugFix : In admin menus, "Add New" was not properly suppressed in some configurations
+* BugFix : File Attachment Filter was inactive for installations upgraded to WP 3.0 multisite and still using wp-content/uploads folder
+* BugFix : On failed direct file access attempt, any page / term listings on 404 page were not filtered for RS restrictions / roles
+* BugFix : XML-RPC submissions failed for users lacking blog-wide edit_posts capability
+* BugFix : Category Roles, Category Restrictions bulk admin forms had invalid category edit links
+* BugFix : Implicit role ownership (indicated by coloring in role metaboxes) was not indicacted correctly under some configurations
+* Change : Suppress scroll links in Term Roles / Restrictions bulk admin form if terms total over 300
+
+
+= 1.2.8 Beta - 13 July 2010 =
+* BugFix : Role assignment metaboxes did not display for custom types
+* BugFix : On version upgrade from RS < 1.2, groups_rs db table update failed under certain conditions
+* Change : Force type-specific capability_type and caps for all custom post types
 * Compat : Edit Flow plugin (Edit Posts / Pages listing filtered for custom status)
 
 
