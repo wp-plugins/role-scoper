@@ -663,7 +663,7 @@ class ScoperAdminFilters
 				// only administrators can change top level structure
 				return false;
 			} else {
-				$reqd_caps = ( 'author' == $top_pages_locked ) ? array( $publish_cap ) : array( $edit_cap );
+				$reqd_caps = ( 'author' === $top_pages_locked ) ? array( $post_type_obj->cap->publish_posts ) : array( $post_type_obj->cap->edit_others_posts );
 				$roles = $GLOBALS['scoper']->role_defs->qualify_roles($reqd_caps);
 				return array_intersect_key($roles, $GLOBALS['current_user']->blog_roles[ANY_CONTENT_DATE_RS]);
 			}

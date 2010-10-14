@@ -351,35 +351,38 @@ class ScoperAdminHardway_Ltd {
 		//if ( strpos($query, 'ELECT post_mime_type') ) {
 		if ( strpos($query, "post_type = 'attachment'") && ( 0 === strpos($query, "SELECT " ) ) ) {
 			if ( $where_pos = strpos($query, 'WHERE ') ) {
-				$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
-				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
 				
-				if ( ( ! $admin_others_attached ) || ! $admin_others_unattached )
-					$can_edit_others_blogwide = $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
-
-				global $wpdb, $current_user;
-				
-				// optionally hide other users' unattached uploads, but not from blog-wide Editors
-				if ( $admin_others_unattached || $can_edit_others_blogwide )
-					$author_clause = '';
-				else
-					$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-				
-				if ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS )
-					$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
-				else
-					$unattached_clause = '';
-
-				$attached_clause = ( $admin_others_attached || $can_edit_others_blogwide ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-
-				$parent_query = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1";
-				$parent_query = apply_filters('objects_request_rs', $parent_query, 'post', array('post', 'page') );
-
-				$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) $attached_clause ) ) AND ";
-				
-				$query = substr( $query, 0, $where_pos + strlen('WHERE ') ) . $where_insert . substr($query, $where_pos + strlen('WHERE ') );
-
-				return $query;
+				if ( ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {  // note: this constant actually just prevents Media Library filtering, falling back to WP Roles for attachment editability and leaving uneditable uploads viewable in Library
+					$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
+					$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
+					
+					if ( ( ! $admin_others_attached ) || ! $admin_others_unattached )
+						$can_edit_others_blogwide = $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
+	
+					global $wpdb, $current_user;
+					
+					// optionally hide other users' unattached uploads, but not from blog-wide Editors
+					if ( $admin_others_unattached || $can_edit_others_blogwide )
+						$author_clause = '';
+					else
+						$author_clause = "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+					
+					if ( ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') || ! SCOPER_BLOCK_UNATTACHED_UPLOADS )
+						$unattached_clause = "( $wpdb->posts.post_parent = 0 $author_clause ) OR";
+					else
+						$unattached_clause = '';
+	
+					$attached_clause = ( $admin_others_attached || $can_edit_others_blogwide ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
+	
+					$parent_query = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1";
+					$parent_query = apply_filters('objects_request_rs', $parent_query, 'post', array('post', 'page') );
+	
+					$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) $attached_clause ) ) AND ";
+					
+					$query = substr( $query, 0, $where_pos + strlen('WHERE ') ) . $where_insert . substr($query, $where_pos + strlen('WHERE ') );
+	
+					return $query;
+				}
 			}
 		}
 		

@@ -9,6 +9,15 @@ function scoper_version_updated( $prev_version ) {
 
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		// 1.3.RC4 changed RS cache path to subfolder, so flush the root-stored cache one last time (only for MU / Multisite due to potentially large # of folders, files)
+		if ( IS_MU_RS && version_compare( $prev_version, '1.3.RC4', '<') && ! defined( 'SKIP_CACHE_MAINT_RS' ) ) {
+			global $wpp_object_cache;
+			$wpp_object_cache = new WP_Persistent_Object_Cache( false );
+			$wpp_object_cache->global_groups = array( '' );	 // forces use of cache root for this maint operation
+			$wpp_object_cache->rm_cache_dir( '' );		// will delete any files and folders in cache root except .htaccess
+			$wpp_object_cache->cache_enabled = false;	// avoid further updating cache in this http session
+		}
+		
 		// 1.2.8 Beta disabled caps for custom post type roles under some circumstances
 		if ( version_compare( $prev_version, '1.2.7', '>') && version_compare( $prev_version, '1.2.8', '<') ) {
 			if ( $disabled_role_caps = get_option( 'scoper_disabled_role_caps' ) ) {

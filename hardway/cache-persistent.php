@@ -119,13 +119,13 @@ function wpp_cache_get($id, $flag = '', $append_blog_suffix = true) {
 	return $wpp_object_cache->get($id, $flag);
 }
 
-function wpp_cache_init( $sitewide_groups = true ) {
+function wpp_cache_init( $sitewide_groups = true, $use_cache_subdir = true ) {
 	global $wpp_object_cache;
 	
 	if ( isset($wpp_object_cache) )
 		$wpp_object_cache->save();
 		
-	$GLOBALS['wpp_object_cache'] = new WP_Persistent_Object_Cache();
+	$GLOBALS['wpp_object_cache'] = new WP_Persistent_Object_Cache( $use_cache_subdir );
 	
 	if ( IS_MU_RS && $sitewide_groups )
 		$GLOBALS['wpp_object_cache']->global_groups = array_merge( $GLOBALS['wpp_object_cache']->global_groups, array( 'all_usergroups', 'group_members' ) );
@@ -249,7 +249,8 @@ class WP_Persistent_Object_Cache {
 	var $secret = '';
 	var $is_404;
 	
-	function WP_Persistent_Object_Cache() {
+	// note: option for non-subdirectory init is to support one-time flushing of root-stored cache on version update
+	function WP_Persistent_Object_Cache( $use_subdir = true ) {
 		global $blog_id;
 		
 		// Destructor method is not reliable.  Call non-object function manually via WP shutdown hook instead.
@@ -276,6 +277,21 @@ class WP_Persistent_Object_Cache {
 		} else {
 			if (is_writable(WP_CONTENT_DIR)) {
 				$this->cache_enabled = true;
+			}
+		}
+
+		// put the entire RS cache in a subfolder to avoid clashing with other plugins
+		//	
+		if ( $use_subdir ) { // support init to root cache folder for one-time flush on version update before using subfolder
+			$this->cache_dir = $this->cache_dir . 'rs/';
+			
+			if ( ! file_exists( $this->cache_dir ) ) {
+				if ( @ mkdir( $this->cache_dir ) ) {
+					$stat = stat(WP_CONTENT_DIR);
+					$dir_perms = $stat['mode'] & 0007777; // Get the permission bits.
+					@ chmod( $this->cache_dir, $dir_perms );
+				} else
+					$this->cache_enabled = false;
 			}
 		}
 
@@ -363,7 +379,7 @@ class WP_Persistent_Object_Cache {
 		}
 		
 		$this->rm_cache_dir($group);
-		
+
 		//rs_errlog ("<br />removing cached group $group:<br />");
 		
 		if ( $group ) {
@@ -438,7 +454,7 @@ class WP_Persistent_Object_Cache {
 	}
 
 	function get_group_dir($group) {
-		if (false !== array_search($group, $this->global_groups))
+		if ( false !== array_search($group, $this->global_groups) )
 			return $group;
 
 		return "{$this->blog_id}/$group";
@@ -489,7 +505,6 @@ class WP_Persistent_Object_Cache {
 		$dir = $this->cache_dir . $group_dir;
 		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
 		
-		$cache_dir = rtrim($this->cache_dir, DIRECTORY_SEPARATOR);
 		// END RoleScoper Modification --//
 		
 		$top_dir = $dir;
@@ -524,7 +539,7 @@ class WP_Persistent_Object_Cache {
 
 				if ( @ is_dir( $dir . DIRECTORY_SEPARATOR . $file ) )
 					$stack[] = $dir . DIRECTORY_SEPARATOR . $file;
-				elseif ( $dir && ( $dir != $cache_dir ) ) { // never delete arbitrary files out of the main cache folder; other plugins may be using it 
+				elseif ( '.htaccess' != $file ) {  // sanity check and allows for last-time flushing of MU/MS cache folder without wiping WP Super Cache again
 					if ( @ is_file( $dir . DIRECTORY_SEPARATOR . $file ) ) {
 						if ( file_exists( $dir . DIRECTORY_SEPARATOR . $file ) ) {
 							if ( ! @ unlink( $dir . DIRECTORY_SEPARATOR . $file ) ) {

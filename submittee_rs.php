@@ -32,7 +32,7 @@ class Scoper_Submittee {
 			return;	
 		}
 
-		if ( ! in_array( $_GET["page"], array( 'rs-options', 'rs-site_options') ) )
+		if ( ! in_array( $_GET["page"], array( 'rs-options', 'rs-site_options', 'rs-default_options') ) )
 			return;
 			
 		if ( empty($_POST['rs_submission_topic']) )

@@ -167,10 +167,10 @@ class CapInterceptor_RS
 			// required capabilities correspond to multiple data sources
 			return $wp_blogcaps;		
 		}
-		
+
 		// Establish some context by detecting object type - based on object ID if provided, or otherwise based on http variables.  May differ from cap type.
 		$object_type = cr_find_object_type( $src_name, $object_id );
-		
+
 		// TODO: also incorporate other special handling for attachments up here?
 		if ( strpos( $_SERVER['REQUEST_URI'], 'media-upload.php' ) || strpos( $_SERVER['REQUEST_URI'], 'async-upload.php' ) ) {
 			if ( ! empty($_POST['post_ID']) )

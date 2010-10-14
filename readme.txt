@@ -104,6 +104,13 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.RC4 - 14 Oct 2010 =
+* BugFix : Non-administrators could not save new top-level pages
+* BugFix : On Multisite installations, could not save changes to Default Sitewide Options
+* Compat : Store persistent cache to a subdirectory to avoid clashing with other plugin use of wp-cache (Multisite usage was wiping WP Super Cache .htaccess file)
+* Lang : updated .pot file
+
+
 = 1.3.RC3 - 12 Oct 2010 =
 * BugFix : On WP 3.0 Multisite installations, all files in wp-content/cache get deleted, clashing with other plugins such as WP Super Cache
 
