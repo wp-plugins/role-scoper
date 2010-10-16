@@ -80,27 +80,21 @@ function scoper_refresh_options_sitewide() {
 		$scoper_options_sitewide['mu_sitewide_groups'] = true;	// sitewide_groups option must be set site-wide!
 }
 
-
-function scoper_apply_custom_default_options() {
-	global $wpdb, $scoper_default_options, $scoper_default_otype_options, $scoper_options_sitewide;
+function scoper_apply_custom_default_options( $options_var ) {
+	global $wpdb, $scoper_options_sitewide;
 	
 	if ( $results = scoper_get_results( "SELECT meta_key, meta_value FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key LIKE 'scoper_default_%'" ) ) {
-
 		foreach ( $results as $row ) {
 			$option_basename = str_replace( 'scoper_default_', '', $row->meta_key );
 
 			if ( ! empty( $scoper_options_sitewide[$option_basename] ) )
 				continue;	// custom defaults are only for blog-specific options
 
-			if( isset( $scoper_default_options[$option_basename] ) )
-				$scoper_default_options[$option_basename] = maybe_unserialize( $row->meta_value );
-
-			elseif( isset( $scoper_default_otype_options[$option_basename] ) )
-				$scoper_default_otype_options[$option_basename] = maybe_unserialize( $row->meta_value );
+			if( isset( $GLOBALS[$options_var][$option_basename] ) )
+				$GLOBALS[$options_var][$option_basename] = maybe_unserialize( $row->meta_value );
 		}
 	}
 }
-
 
 function scoper_establish_group_scope() {
 	// TODO : possibly change this back to scoper_get_option call

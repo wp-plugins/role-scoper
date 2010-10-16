@@ -77,7 +77,7 @@ class ScoperOptionUI {
 				$first_pass = true;
 				foreach ( $return['val'] as $src_otype => $val ) {
 					if ( $caption_header && $first_pass ) {
-						printf( $caption, $scoper_admin->interpret_src_otype($src_otype) );  // translation back-compat
+						printf( $caption, $scoper_admin->interpret_src_otype($src_otype, $label_property) );
 						echo '<br /><div style="margin-left: 2em">';
 						$first_pass = false;
 					}

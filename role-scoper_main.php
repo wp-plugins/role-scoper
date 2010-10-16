@@ -509,7 +509,8 @@ class Scoper
 				
 			if ( ORDERBY_HIERARCHY_RS == $order_by ) {
 				require_once('admin/admin_lib_rs.php');
-				if ( $src = $this->taxonomies->member_property($taxonomy, 'source') ) {
+				
+				if ( $src = $this->data_sources->get( $tx->source ) ) {
 					if ( ! empty($src->cols->id) && ! empty($src->cols->parent) ) {
 						require_once( 'admin/admin_lib-bulk-parent_rs.php');
 						$results = ScoperAdminBulkParent::order_by_hierarchy($results, $src->cols->id, $src->cols->parent);

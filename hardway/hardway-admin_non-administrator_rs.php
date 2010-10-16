@@ -167,7 +167,7 @@ class ScoperAdminHardway_Ltd {
 				//rs_errlog ("<br />caught $query <br />");
 
 				// don't mess with parent category selection/availability for single term edit
-				if ( strpos($script_name, 'p-admin/edit-tags.php') ) {
+				if ( $is_term_admin = strpos($script_name, 'p-admin/edit-tags.php') ) {
 					if ( ! empty( $_REQUEST['tag_ID'] ) )
 						return $query;
 				}
@@ -182,7 +182,7 @@ class ScoperAdminHardway_Ltd {
 					if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') )
 						return $query;	
 					else
-						$query = apply_filters( 'terms_request_rs', $query, $taxonomy, array( 'is_term_admin' => true ) );
+						$query = apply_filters( 'terms_request_rs', $query, $taxonomy, array( 'is_term_admin' => $is_term_admin ) );
 				}
 					
 				//rs_errlog ("<br /><br /> returning $query <br />");

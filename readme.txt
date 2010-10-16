@@ -104,6 +104,14 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.RC5 - 16 Oct 2010 =
+* BugFix : For non-Administrators, Edit Posts listing showed all as Uncategorized
+* BugFix : In Roles > Categories, could not assign roles for "sub-categories" or "selected and sub-categories"
+* BugFix : In Roles > Categories and Restrictions > Categories, category links were not displayed hierarchically
+* BugFix : With Multisite, some Default Site Options could not be modified
+* Change : Auto-flush the persistent cache more aggressively on role / restriction modification
+
+
 = 1.3.RC4 - 14 Oct 2010 =
 * BugFix : Non-administrators could not save new top-level pages
 * BugFix : On Multisite installations, could not save changes to Default Sitewide Options

@@ -154,7 +154,7 @@ function scoper_refresh_default_options() {
 	$scoper_default_options = apply_filters( 'default_options_rs', scoper_default_options() );
 	
 	if ( IS_MU_RS )
-		scoper_apply_custom_default_options();
+		scoper_apply_custom_default_options( 'scoper_default_options' );
 }
 
 function scoper_refresh_default_otype_options() {
@@ -166,6 +166,9 @@ function scoper_refresh_default_otype_options() {
 	// compat workaround for old versions of Role Scoping for NGG which use old otype option key structure
 	if ( isset( $scoper_default_otype_options['use_term_roles']['ngg_gallery:ngg_gallery'] ) && ( ! is_array($scoper_default_otype_options['use_term_roles']['ngg_gallery:ngg_gallery']) ) )
 		$scoper_default_otype_options['use_term_roles']['ngg_gallery:ngg_gallery'] = array( 'ngg_album' => 1 );
+		
+	if ( IS_MU_RS )
+		scoper_apply_custom_default_options( 'scoper_default_otype_options' );
 }
 
 function scoper_get_default_otype_options() {

@@ -106,7 +106,7 @@ class QueryInterceptorBase_RS {
 							
 							$per_page = apply_filters( $edit_per_page, $per_page );
 							$per_page = apply_filters( 'edit_posts_per_page', $per_page, $post_type );
-							
+
 							if ( count($results) <= $per_page )
 								$determine_listed_ids = false;
 						}
@@ -114,7 +114,7 @@ class QueryInterceptorBase_RS {
 						$determine_listed_ids = false;
 	
 					// temp debug
-					if ( false && $determine_listed_ids ) {
+					if ( $determine_listed_ids ) {
 						// Construct and execute a secondary query (for IDs only) which includes the paging clause that would be used if edit.php did not defeat it
 						$pgstrt = ($pagenum - 1) * $per_page . ', ';
 						$limits = ' LIMIT ' . $pgstrt . $per_page;

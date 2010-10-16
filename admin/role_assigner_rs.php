@@ -315,6 +315,10 @@ class ScoperRoleAssigner
 		if ( count($role_change_agent_ids) || $force_flush ) {
 			$role_change_user_ids = array();
 		
+			// just flush entire cache until selective auto-flushing can be re-verified
+			wpp_cache_flush();
+			
+			/*
 			if ( ROLE_BASIS_GROUPS == $role_basis ) {
 				scoper_flush_roles_cache( $scope, ROLE_BASIS_GROUPS );
 				scoper_flush_results_cache( ROLE_BASIS_GROUPS );
@@ -339,6 +343,7 @@ class ScoperRoleAssigner
 				scoper_flush_roles_cache( $scope, ROLE_BASIS_USER_AND_GROUPS, array_keys($role_change_user_ids) );
 				scoper_flush_results_cache( ROLE_BASIS_USER_AND_GROUPS, array_keys($role_change_user_ids) );
 			}
+			*/
 		}
 	}
 	
@@ -378,14 +383,14 @@ class ScoperRoleAssigner
 			$object_type = '';  // probably won't be able to propagate roles if this error occurs
 		}
 		
-		
 		// prepare hierarchy and object type data for subsequent propagation
 		if ( ! empty($propagate_agents) ) {
 			if ( TERM_SCOPE_RS == $scope ) {
 				if ( ! $tx = $this->scoper->taxonomies->get($src_or_tx_name) )
 					return;
+
+				$src = $this->scoper->data_sources->get( $tx->source );
 				
-				$src = $tx->source;
 			} elseif ( ! $src = $this->scoper->data_sources->get($src_or_tx_name) )
 				return;
 			
@@ -702,8 +707,13 @@ class ScoperRoleAssigner
 			scoper_query($qry);
 		}
 
+		// just flush entire cache until selective auto-flushing can be re-verified
+		wpp_cache_flush();
+		
+		/*
 		scoper_flush_restriction_cache( $scope );
 		scoper_flush_results_cache();
+		*/
 	}
 	
 	// $insert_restriction = require_for value for insertion ('entity', 'children' or 'both')
