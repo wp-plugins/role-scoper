@@ -113,7 +113,6 @@ class QueryInterceptorBase_RS {
 					} else
 						$determine_listed_ids = false;
 	
-					// temp debug
 					if ( $determine_listed_ids ) {
 						// Construct and execute a secondary query (for IDs only) which includes the paging clause that would be used if edit.php did not defeat it
 						$pgstrt = ($pagenum - 1) * $per_page . ', ';

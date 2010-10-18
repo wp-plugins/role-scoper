@@ -104,6 +104,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3-dev =
+* BugFix : Hidden Content Teaser blocked all posts if "hide private posts" option not enabled
+
+
 = 1.3.RC5 - 16 Oct 2010 =
 * BugFix : For non-Administrators, Edit Posts listing showed all as Uncategorized
 * BugFix : In Roles > Categories, could not assign roles for "sub-categories" or "selected and sub-categories"

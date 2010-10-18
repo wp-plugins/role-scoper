@@ -122,7 +122,7 @@ class QueryInterceptor_RS
 			$object_types = $_wp_query->query_vars['post_type'];
 		else
 			$object_types = '';
-			
+
 		return $this->flt_objects_request( $request, 'post', $object_types );
 	}
 
@@ -340,7 +340,6 @@ class QueryInterceptor_RS
 		$GLOBALS['scoper_status']->querying_db = false;
 		
 		//d_echo( "<br />filtered: $request<br /><br />" );
-		
 		return $request;
 	}
 	
@@ -558,10 +557,11 @@ class QueryInterceptor_RS
 					// must take this opportunity to add private status to the query (otherwise WP excludes private for anon user)
 					// (But don't do this if the query is for a specific status, or if teaser is configured to hide private content)
 					$check_otype = ( count($tease_otypes) && in_array('post', $tease_otypes) ) ? 'post' : $tease_otypes[0];
-	
+
 					if ( ! scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) {
-						if ( $col_status ) {
-							$in_statuses = "'" . implode("', '", array_keys($otype_status_reqd_caps) ) . "'";
+						if ( $col_status && isset( $otype_status_reqd_caps[$check_otype] ) ) {
+							$in_statuses = "'" . implode("', '", array_keys($otype_status_reqd_caps[$check_otype]) ) . "'";
+
 							$where = str_replace( $basic_status_clause['publish'], "{$src_table}.$col_status IN ($in_statuses)", $where);
 						} else {
 							$where = str_replace( $basic_status_clause['publish'], "1=1", $where);
