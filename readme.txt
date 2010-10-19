@@ -106,6 +106,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = 1.3-dev =
 * BugFix : Hidden Content Teaser blocked all posts if "hide private posts" option not enabled
+* BugFix : With "Users CSV Entry" enabled (default for sites with over 100 users), new roles could not be assigned to users
 
 
 = 1.3.RC5 - 16 Oct 2010 =

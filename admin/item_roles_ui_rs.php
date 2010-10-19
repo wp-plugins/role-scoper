@@ -104,7 +104,7 @@ class ScoperItemRolesUI {
 			// note: all users are eligible for a reading role assignment, but we may not be displaying user checkboxes
 			
 			$user_csv_input = scoper_get_option("user_role_assignment_csv");
-			
+
 			if ( ! $user_csv_input )
 				$this->all_agents[ROLE_BASIS_USER] = $this->scoper->users_who_can( '', COLS_ID_DISPLAYNAME_RS);
 			elseif( $object_id ) {

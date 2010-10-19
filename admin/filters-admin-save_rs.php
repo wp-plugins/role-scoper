@@ -110,6 +110,8 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		$new_role_settings = false;
 		$new_restriction_settings = false;
 		
+		$use_csv_entry = array( constant('ROLE_BASIS_USER') => scoper_get_option( 'user_role_assignment_csv' ) );
+
 		// Were roles / restrictions custom-edited just now?
 		if ( ! defined('XMLRPC_REQUEST') ) {
 			// Now determine if roles/restrictions have changed since the edit form load
@@ -121,8 +123,14 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 					continue;
 
 				// did user change roles?
+
+				if ( $use_csv_entry[ROLE_BASIS_USER] && ! empty( $_POST[ "{$role_code}u_csv" ] ) ) {
+					$new_role_settings = true;
+				} 
+
+				// even if CSV entry is enabled, user removal is via checkbox
 				$compare_vars = array( "{$role_code}u" => "last_{$role_code}u", "{$role_code}g" => "last_{$role_code}g" );
-				
+
 				if ( $col_parent ) {
 					$compare_vars ["p_{$role_code}u"] = "last_p_{$role_code}u";
 					$compare_vars ["p_{$role_code}g"] = "last_p_{$role_code}g";
@@ -236,14 +244,16 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 							// NOTE: restrict_roles, assign_roles functions validate current user roles before modifying assignments
 	
 							// handle csv-entered agent names
-							$csv_id = "{$id_prefix}_csv";
-							
-							if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( $csv_id, $role_basis ) )
-								$for_entity_agent_ids = array_merge($for_entity_agent_ids, $csv_for_item);
-							
-							if ( $csv_for_children = ScoperAdminLib::agent_ids_from_csv( "p_$csv_id", $role_basis ) )
-								$for_children_agent_ids = array_merge($for_children_agent_ids, $csv_for_children);
+							if ( ! empty( $use_csv_entry[$role_basis] ) ) {
+								$csv_id = "{$id_prefix}_csv";
 								
+								if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( $csv_id, $role_basis ) )
+									$for_entity_agent_ids = array_merge($for_entity_agent_ids, $csv_for_item);
+	
+								if ( $csv_for_children = ScoperAdminLib::agent_ids_from_csv( "p_$csv_id", $role_basis ) )
+									$for_children_agent_ids = array_merge($for_children_agent_ids, $csv_for_children);
+							}
+
 							$set_roles[$role_basis][$role_handle] = array();
 		
 							if ( $for_both_agent_ids = array_intersect($for_entity_agent_ids, $for_children_agent_ids) )
