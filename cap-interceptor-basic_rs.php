@@ -32,9 +32,9 @@ class CapInterceptorBasic_RS
 	// (only offer an opinion on scoper-defined caps, with others left in $allcaps array as blog-wide caps)
 	//
 	function flt_user_has_cap($wp_blogcaps, $orig_reqd_caps, $args)	{
-		if ( empty($args[2]) )
+		if ( empty( $args[2] ) )
 			return $wp_blogcaps;
-	
+
 		// Disregard caps which are not defined in Role Scoper config
 		if ( ! $rs_reqd_caps = array_intersect( $orig_reqd_caps, $this->scoper->cap_defs->get_all_keys() ) )
 			return $wp_blogcaps;	
@@ -43,39 +43,29 @@ class CapInterceptorBasic_RS
 
 		global $current_user;
 		
-		if ($user_id && ($user_id != $current_user->ID) )
-			$user = new WP_Scoped_User($user_id);
+		if ( $user_id && ( $user_id != $current_user->ID ) )
+			$user = new WP_Scoped_User( $user_id );
 		else
 			$user = $current_user;
 
+		$object_id = (int) $args[2];		
 		
-		$object_id = (int) $args[2];
-		
-		$src_name = '';
-		//$cap_type = $this->scoper->cap_defs->object_type_from_caps( $rs_reqd_caps, $src_name );
-
-		if ( ! $src_name )
+		if ( ! $post_type = get_post_field( 'post_type', $object_id ) )
 			return $wp_blogcaps;
 
-		//if ( empty($cap_type) )
-			$cap_type = cr_find_object_type( $src_name, $object_id );
+		global $wpdb;
 
-		$id_in = " AND $src->table.{$src->cols->id} = '$object_id'";
+		$use_term_roles = scoper_get_otype_option( 'use_term_roles', 'post', $post_type );	
 
-		$use_term_roles = scoper_get_otype_option( 'use_term_roles', $src_name, $cap_type );	
-
-		$use_object_roles = ( empty($src->no_object_roles) ) ? scoper_get_otype_option( 'use_object_roles', $src_name, $cap_type ) : false;
-		
-		$this_args = array('object_type' => $cap_type, 'user' => $user, 'otype_use_term_roles' => $use_term_roles, 'otype_use_object_roles' => $use_object_roles, 'skip_teaser' => true );
-		
-		$where = $this->query_interceptor->objects_where_role_clauses($src_name, $rs_reqd_caps, $this_args );
+		$use_object_roles = ( empty($src->no_object_roles) ) ? scoper_get_otype_option( 'use_object_roles', 'post', $post_type ) : false;
+	
+		$this_args = array('object_type' => $post_type, 'user' => $user, 'otype_use_term_roles' => $use_term_roles, 'otype_use_object_roles' => $use_object_roles, 'skip_teaser' => true );
+		$where = $this->query_interceptor->objects_where_role_clauses( 'post', $rs_reqd_caps, $this_args );
 
 		if ( $where )
 			$where = "AND ( $where )";
-		
-		$query = "SELECT $src->table.{$src->cols->id} FROM $src->table WHERE 1=1 $where $id_in LIMIT 1";
-		
-		$id_ok = scoper_get_var($query);
+
+		$id_ok = scoper_get_var( "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1 $where AND $wpdb->posts.ID = '$object_id' LIMIT 1" );
 
 		$rs_reqd_caps = array_fill_keys( $rs_reqd_caps, true );
 
