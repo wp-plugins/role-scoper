@@ -108,6 +108,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Hidden Content Teaser blocked all posts if "hide private posts" option not enabled
 * BugFix : With "Users CSV Entry" enabled (default for sites with over 100 users), new roles could not be assigned to users
 * BugFix : Non-administrators could not view file attachments to private/restricted content (including images), even if they can read the post
+* BugFix : File Attachments were not protected based on restriction of Reader role
+* BugFix : Hidden Content Teaser was not applied to single view for pages and other non-post types
 
 
 = 1.3.RC5 - 16 Oct 2010 =

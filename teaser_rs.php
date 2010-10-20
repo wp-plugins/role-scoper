@@ -199,7 +199,7 @@ class ScoperTeaser {
 		// strip content from all $results rows not in $items
 		$args = array( 'teaser_prepend' => $teaser_prepend, 		'teaser_append' => $teaser_append, 	'teaser_replace' => $teaser_replace, 
 						'excerpt_teaser' => $excerpt_teaser,		'more_teaser' => $more_teaser,		'x_chars_teaser' => $x_chars_teaser );
-
+		
 		foreach ( array_keys($results) as $key ) {
 			if ( is_array($results[$key]) )
 				$id = $results[$key]['ID'];

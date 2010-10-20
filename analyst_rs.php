@@ -54,9 +54,7 @@ class ScoperAnalyst {
 				$reader_roles[]= $role_handle;
 		}
 
-		$role_clause = "AND rs.role_name IN ('" . implode( "','", $reader_roles ) . "')";
-
-		//dump($reader_roles);
+		$role_clause = "AND rs.role_name IN ('" . implode( "','", scoper_role_handles_to_names($reader_roles) ) . "')";
 
 		//if ( $use_private_status )
 		//	$role_clause = ( 'rs' == SCOPER_ROLE_TYPE ) ? "AND rs.role_name IN ('post_reader', 'page_reader')" : '';	// if also checking for private status, don't need to check for restriction of private_reader roles
@@ -128,7 +126,6 @@ class ScoperAnalyst {
 			$attachment_query = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE $wpdb->posts.ID IN ( SELECT post_parent FROM $wpdb->posts WHERE post_type = 'attachment' $id_clause ) ";
 		}
 		
-	
 		if ( $use_object_restrictions ) {
 			$object_restriction_query = "SELECT rs.obj_or_term_id AS obj_id, rs.role_name, rs.max_scope FROM $wpdb->role_scope_rs AS rs "
 									. "WHERE rs.role_type = 'rs' AND rs.require_for IN ('entity', 'both') AND rs.topic = 'object' AND rs.src_or_tx_name = 'post' $role_clause AND rs.obj_or_term_id IN ( $attachment_query )";
@@ -138,7 +135,7 @@ class ScoperAnalyst {
 			
 			$all_objects = array();
 			$all_objects['post'] = scoper_get_col( $attachment_query );
-									
+								
 			$restricted_roles = array();
 			$unrestricted_roles = array();
 							
@@ -150,8 +147,7 @@ class ScoperAnalyst {
 						$restricted_roles['post'][$row->role_name] []= $row->obj_id;
 				}
 			}
-	
-		
+
 			// if there a role is default-restricted, mark all terms as restricted (may be unrestricted later)
 			if ( $results = scoper_get_col( $object_default_restriction_query ) ) {
 				foreach ( $results as $role_name ) {
@@ -209,7 +205,6 @@ class ScoperAnalyst {
 		}
 		
 		$query = "SELECT $query_cols FROM $wpdb->posts WHERE $attachment_type_clause ( 1=1 $status_query $term_restriction_clause $object_restriction_clause $unattached_clause ) $id_clause ORDER BY ID DESC $limit_clause";
-		
 		
 		if ( $id_clause && ! is_array( $attachment_id ) ) {
 			if ( $single_col )

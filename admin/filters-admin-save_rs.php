@@ -45,6 +45,12 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	function scoper_mnt_save_object($src_name, $args, $object_id, $object = '') {
 		global $scoper, $scoper_admin;
 
+		// operations in this function only apply to main post save action, not revision save
+		if ( 'post' == $src_name ) {
+			if ( is_object($object) && ! empty( $object->post_type ) && ( ( 'revision' == $object->post_type ) || ( 'auto-draft' == $object->post_status ) ) )
+				return;
+		}
+
 		static $saved_objects;
 
 		if ( ! isset($saved_objects) )
@@ -318,8 +324,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			
 			if ( $maybe_flush_file_rules ) {
 				global $wpdb;
-				if ( scoper_get_var( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = '$object_id' LIMIT 1" ) )   // no need to flush file rules unless this post has at least one attachment
-					scoper_flush_file_rules();	
+				if ( scoper_get_var( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = '$object_id' LIMIT 1" ) ) {   // no need to flush file rules unless this post has at least one attachment
+					scoper_flush_file_rules();
+				}
 			}
 		}
 		

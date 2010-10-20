@@ -86,8 +86,10 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			. " AND uro.scope = 'object' AND uro.role_type = 'rs'";
 		
 		$duration_clause = ( $enforce_duration_limits ) ? scoper_get_duration_clause( "{$src->table}.{$src->cols->date}" ) : '';
-			
-		$where = " WHERE 1=1 $otype_clause $duration_clause $ug_clause_for_user_being_viewed";
+
+		$status_clause = ( 'post' == $src_name ) ? "AND post_status != 'auto-draft'" : '';	 // TODO: version update script to delete post roles on auto-drafts (stored via default roles)
+		
+		$where = " WHERE 1=1 $status_clause $otype_clause $duration_clause $ug_clause_for_user_being_viewed";
 		$orderby = " ORDER BY $src->table.$col_name ASC, uro.role_name ASC";
 		
 		$qry .= $join . $where . $orderby;

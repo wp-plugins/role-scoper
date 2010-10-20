@@ -851,6 +851,9 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 		if ( 'revision' == $object_type )
 			$object_type = get_post_field( 'post_type', $GLOBALS['post']->post_parent );
 
+	} elseif ( ! empty( $GLOBALS['wp_query']->queried_object ) ) {
+		$object_type = $GLOBALS['wp_query']->queried_object->post_type;
+
 	} elseif ( strpos( $script_name, 'post-new.php' ) || strpos( $script_name, 'edit.php' ) ) {
 		$object_type = ! empty( $_GET['post_type'] ) ? $_GET['post_type'] : 'post';
 		
@@ -880,7 +883,7 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 			}	
 		}
 	}
-		
+
 	if ( ! empty($object_type) ) {
 		return $object_type;
 		

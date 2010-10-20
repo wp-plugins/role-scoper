@@ -75,7 +75,7 @@ class ScoperAdminFilters
 		
 		foreach ( $rs_actions as $original_hook => $rs_hook ) {
 			if ( ! $original_hook ) continue;
-			$orig_hook_numargs = 1;
+			$orig_hook_numargs = ( 'save_post' == $original_hook ) ? 2 : 1;	// TODO: abstract
 			$arg_str = agp_get_lambda_argstring($orig_hook_numargs);
 			$comma = ( $rs_hook->rs_args ) ? ',' : '';
 			$func = "do_action( '$rs_hook->name', $rs_hook->rs_args $comma $arg_str );";
