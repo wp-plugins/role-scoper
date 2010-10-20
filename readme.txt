@@ -104,13 +104,14 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3-dev =
+= 1.3.RC6 - 20 Oct 2010 =
+* Feature : Nav Menu Manager role assignments per-menu
 * BugFix : Hidden Content Teaser blocked all posts if "hide private posts" option not enabled
-* BugFix : With "Users CSV Entry" enabled (default for sites with over 100 users), new roles could not be assigned to users
-* BugFix : Non-administrators could not view file attachments to private/restricted content (including images), even if they can read the post
-* BugFix : File Attachments were not protected based on restriction of Reader role
 * BugFix : Hidden Content Teaser was not applied to single view for pages and other non-post types
-* BugFix : With "Users CSV Entry" enabled (default for sites with over 100 users), new roles for subpages could not be assigned to users
+* BugFix : File Attachments were not protected based on restriction of Reader role
+* BugFix : Non-administrators could not view file attachments to private content (including images), even if they can read the post
+* BugFix : Display of edit link in Edit Posts/Pages listing did not reflect capability requirements imposed by other plugins 
+* BugFix : With "Users CSV Entry" enabled (default for sites with over 100 users), new roles could not be assigned to users
 * BugFix : With "Users CSV Entry" enabled, checkboxes for existing role assignments were not displayed in some cases 
 
 
@@ -813,11 +814,10 @@ no changes from 1.2 RC
 
 = Specific Plugin Compatibility Issues =
 * WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
-* Quick Cache : not compatible as of QC 2.1.7 due to conflicting use of wp-content/cache folder
+* Maintenance Mode : use version 5.3 or later.  Other "site down for maintenance" plugins may be incompatible due to early execution of pluggable.php and/or pre-init capability checks
 * WPML Multilingual CMS : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  
 * QTranslate : Role Scoper ensures compatibility by disabling the caching of page and category listings.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
-* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget or Snazzy Archives instead.
-* Maintenance Mode : not compatible due to early login check.  To resolve conflict, disable front-end access by administrators during maintenance. Insert the following line at the top of function current_user_can_access_on_maintenance in maintenance-mode.php: `return false;`
+* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget instead.
 * Flutter : As of Nov 2009, RS filtering of Flutter categories requires that the Flutter function GetCustomWritePanels (in the RCCWP_CustomWritePanel class, file plugins/fresh-page/RCCWP_CustomWritePanel.php) be modified to the following:
 
     function GetCustomWritePanels() 
@@ -856,6 +856,51 @@ to:
       add_filter( 'post_limits', array( $this, 'events_search_limits' ) );
     }
     
+* PHP Execution : as of v1.0.0, mechanism to limit editing based on post author capabilities is inherently incompatible w/ Role Scoper. Edit php-execution-plugin/includes/class.php_execution.php as follows :
+
+change:
+    add_filter('user_has_cap', array(&$this,'action_user_has_cap'),10,3);
+			
+to:
+    add_filter( 'map_meta_cap', array( &$this,'map_meta_cap' ), 10, 4 );
+    
+replace function action_user_has_cap with :
+    function map_meta_cap( $caps, $meta_cap, $user_id, $args ) {
+        $object_id = ( is_array($args) ) ? $args[0] : $args;
+        if ( ! $post = get_post( $object_id ) )
+            return $caps;
+
+        if ( function_exists( 'get_post_type_object' ) ) {
+            $type_obj = get_post_type_object( $post->post_type );
+            $is_edit_cap = ( ( $type_obj->cap->edit_post == $meta_cap ) && in_array( $type_obj->cap->edit_others_posts, $caps ) );
+        } else {
+            $is_edit_cap = in_array( $meta_cap, array( 'edit_post', 'edit_page' ) ) && array_intersect( $caps, array( 'edit_others_posts', 'edit_others_pages' ) );
+        }
+
+        if ( $is_edit_cap ) {
+            $id = $post->post_author;
+
+            if ( isset( $this->cap_cache[$id] ) ) {
+                $author_can_exec_php = $this->cap_cache[$id];
+            } else {
+                $author = new WP_User($id);
+                $author_can_exec_php = ! empty( $author->allcaps[PHP_EXECUTION_CAPABILITY] );
+                $this->cap_cache[$id] = $author_can_exec_php;
+            }
+
+            if ( $author_can_exec_php ) 
+                $caps []= PHP_EXECUTION_CAPABILITY;
+        }
+
+        return $caps;	
+    }
+
+
+    
+* custom post type / taxonomy registration : If they cannot be enabled via Roles > Options > Realm, registration may be applied too late in the WordPress initialization sequence.  If you use your own register calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to wp-config.php, ABOVE the "stop editing" line :
+
+    define( 'SCOPER_LATE_INIT', true );
+
 **Attachment Filtering**
 
 Read access to uploaded file attachments is normally filtered to match post/page access.

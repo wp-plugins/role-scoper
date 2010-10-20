@@ -109,7 +109,7 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 		$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) );
 	else
 		$post_types = get_post_types( array( '_builtin' => false, 'public' => true ) );
-
+		
 	foreach ( $post_types as $type ) {
 		$def['limit_object_editors']["post:{$type}"] = 0;
 		$def['default_private']["post:{$type}"] = 0;
@@ -146,7 +146,10 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 	} // end foreach post type
 	
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
+	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
 
+	$post_types []= 'nav_menu_item';
+	
 	foreach ( $taxonomies as $taxonomy => $taxonomy_obj ) {			
 		$_object_types = (array) $taxonomy_obj->object_type;
 		
@@ -155,7 +158,7 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 				$def['use_term_roles']["post:{$object_type}"][$taxonomy] = 1;
 		}
 	}
-
+	
 	$def['do_teaser'] ['post'] = false;  					// don't enable teaser by default (separate per-type settings default to true)
 	
 	if( isset( $def['use_term_roles']['post:page']['category'] ) )

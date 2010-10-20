@@ -53,6 +53,9 @@ class ScoperAdminFiltersUI
 		
 		if ( strpos($_SERVER['SCRIPT_NAME'], 'role-management.php') && empty($_POST) )
 			add_filter( 'capabilities_list', array(&$this, 'flt_capabilities_list') );	// capabilities_list is a Role Manager hook
+
+		if ( strpos( $_SERVER['REQUEST_URI'], 'p-admin/nav-menus.php' ) )
+			add_action( 'admin_head', array(&$this, 'ui_hide_add_menu') );
 	} // end class constructor
 	
 	function ui_hide_admin_divs() {
@@ -139,6 +142,23 @@ class ScoperAdminFiltersUI
 		
 	}
 
+	// Don't show add new menu UI if user can't edit nav menus blogwide.  Otherwise they could create a new menu but not edit it later.
+	function ui_hide_add_menu() {
+		$tx_obj = get_taxonomy( 'nav_menu' );
+
+		if ( cr_user_can( $tx_obj->cap->manage_terms, BLOG_SCOPE_RS ) )
+			return;
+?>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(document).ready( function($) {
+	$('.menu-add-new').hide();
+});
+/* ]]> */
+</script>
+<?php
+	} // end function 
+	
 	function ui_admin_footer() {
 		if ( (false !== strpos($_SERVER['HTTP_USER_AGENT'], 'msie 7') ) )
 			echo '<span style="float:right; margin-left: 2em"><a href="http://agapetry.net/">' . __('Role Scoper', 'scoper') . '</a> ' . SCOPER_VERSION . ' | ' . '<a href="http://agapetry.net/forum/">' . __('Support Forum', 'scoper') . '</a>&nbsp;</span>';

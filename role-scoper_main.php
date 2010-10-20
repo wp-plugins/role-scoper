@@ -354,7 +354,7 @@ class Scoper
 				'p-admin/upload.php', 		'p-admin/edit-comments.php', 	'p-admin/edit-tags.php',
 				'p-admin/profile.php',		'p-admin/admin-ajax.php',
 				'p-admin/link-manager.php', 'p-admin/link-add.php',			'p-admin/edit-link-category.php', 	'p-admin/edit-link-categories.php',
-				'p-admin/media-upload.php'   );
+				'p-admin/media-upload.php',	'p-admin/nav-menus.php'   );
 				
 				
 				$hardway_uris = apply_filters('scoper_admin_hardway_uris', $hardway_uris);
@@ -843,7 +843,7 @@ class Scoper
 		$full_uri = urldecode($_SERVER['REQUEST_URI']);
 		$return_caps = array();
 
-		$is_term_admin = $is_term_admin || strpos( $full_uri, "wp-admin/edit-tags.php" );	// possible TODO: abstract for non-WP taxonomies
+		$is_term_admin = $is_term_admin || strpos( $full_uri, "wp-admin/edit-tags.php" ) || strpos( $full_uri, "wp-admin/nav-menus.php" );	// possible TODO: abstract for non-WP taxonomies
 
 		if ( $is_term_admin ) {
 			// query pertains to the management of terms

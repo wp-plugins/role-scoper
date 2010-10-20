@@ -367,8 +367,11 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 		if ( empty($default_taxonomies) || ! did_action('init') ) {
 			$default_taxonomies = array();
 			
-			foreach ( get_taxonomies( array( 'public' => true ) ) as $taxonomy ) {
-				if ( ! in_array( $taxonomy, array( 'link_category', 'ngg_tag', 'nav_menu' ) ) )
+			$taxonomies = get_taxonomies( array( 'public' => true ) );
+			$taxonomies[] = 'nav_menu';
+
+			foreach ( $taxonomies as $taxonomy ) {
+				if ( ! in_array( $taxonomy, array( 'link_category', 'ngg_tag' ) ) )
 					$default_taxonomies[$taxonomy] = 1;
 			}
 	

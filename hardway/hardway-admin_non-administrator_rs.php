@@ -2,39 +2,40 @@
 
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-	
-// link category roles, restrictions are only for bookmark management
-global $scoper;
-if ( $scoper->data_sources->is_member('link') )
-	add_filter('get_bookmarks', array('ScoperAdminHardway_Ltd', 'flt_get_bookmarks'), 1, 2);	
 
 add_action( 'check_admin_referer', array('ScoperAdminHardway_Ltd', 'act_check_admin_referer') );
 	
-add_action( 'check_ajax_referer', array('ScoperAdminHardway_Ltd', 'act_check_ajax_referer') );
+if ( ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/nav-menus.php' ) ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
 
-// limit these links on post/page edit listing to drafts which current user can edit
-add_filter('get_others_drafts', array('ScoperAdminHardway_Ltd', 'flt_get_others_drafts'), 50, 1);
-
-// TODO: better handling of low-level AJAX filtering
-// URIs ending in specified filename will not be subjected to low-level query filtering
-$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
-$nomess_uris = array_merge($nomess_uris, array('p-admin/admin-ajax.php'));
-
-if ( ! agp_strpos_any(urldecode($_SERVER['REQUEST_URI']), $nomess_uris ) )
-	add_filter('query', array('ScoperAdminHardway_Ltd', 'flt_last_resort_query') );
-
+	// link category roles, restrictions are only for bookmark management
+	global $scoper;
+	if ( $scoper->data_sources->is_member('link') )
+		add_filter('get_bookmarks', array('ScoperAdminHardway_Ltd', 'flt_get_bookmarks'), 1, 2);	
+	
+	add_action( 'check_ajax_referer', array('ScoperAdminHardway_Ltd', 'act_check_ajax_referer') );
+	
+	// limit these links on post/page edit listing to drafts which current user can edit
+	add_filter('get_others_drafts', array('ScoperAdminHardway_Ltd', 'flt_get_others_drafts'), 50, 1);
+	
+	// TODO: better handling of low-level AJAX filtering
+	// URIs ending in specified filename will not be subjected to low-level query filtering
+	$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
+	$nomess_uris = array_merge($nomess_uris, array('p-admin/admin-ajax.php'));
+	
+	if ( ! agp_strpos_any(urldecode($_SERVER['REQUEST_URI']), $nomess_uris ) )
+		add_filter('query', array('ScoperAdminHardway_Ltd', 'flt_last_resort_query') );
+}
 
 class ScoperAdminHardway_Ltd {
 	
 	// next-best way to handle any permission checks for non-Ajax operations which can't be done via has_cap filter
 	function act_check_admin_referer( $referer_name ) {
-		
-		// filter category parent selection for Category editing
-		if ( ! isset( $_POST['cat_ID'] ) )
-			return;
 	
 		if ( 'update-category_' . $_POST['cat_ID'] == $referer_name ) {
-	
+			// filter category parent selection for Category editing
+			if ( ! isset( $_POST['cat_ID'] ) )
+				return;
+			
 			$stored_term = get_term_by( 'id', $_POST['cat_ID'], 'category' );
 			
 			$selected_parent = $_POST['category_parent'];
@@ -55,8 +56,13 @@ class ScoperAdminHardway_Ltd {
 				if ( ! $permit )
 					wp_die( __('You do not have permission to select that Category Parent', 'scoper') );
 			}
-		}
 			
+		} elseif ( 'update-nav_menu' == $referer_name ) {
+			$tx = get_taxonomy( 'nav_menu' );
+			if ( ! cr_user_can( $tx->cap->manage_terms, $_REQUEST['menu'], 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) ) ) {
+				wp_die( __('You do not have permission to create new Navigation Menus', 'scoper') );
+			}
+		}
 	}
 	
 	
@@ -251,7 +257,7 @@ class ScoperAdminHardway_Ltd {
 
 			$generic_uri = strpos($_SERVER['SCRIPT_NAME'], 'p-admin/index.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/comments.php');
 
-			if ( ! $generic_uri && ( $_post_type = cr_find_post_type( '', false ) ) )
+			if ( ! $generic_uri && ( $_post_type = cr_find_post_type( '', false ) ) )  // arg: don't return 'post' as default if detection fails
 				$post_types = array( $_post_type => get_post_type_object( $_post_type ) );
 			else
 				$post_types = array_diff_key( get_post_types( array( 'public' => true ), 'object' ), array( 'attachment' => true ) );

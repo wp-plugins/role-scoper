@@ -91,22 +91,24 @@ class CapInterceptor_RS
 			//rs_errlog(serialize($orig_reqd_caps));
 			//rs_errlog(serialize($args));
 			//rs_errlog('');
-			//rs_errlog(' ');
 		//}
 
 		// ============================================= (end temporary debug code) ==============================================
 		
 
 		// convert 'rs_role_name' to corresponding caps (and also make a tinkerable copy of orig_reqd_caps)
-		$reqd_caps = $this->scoper->role_defs->role_handles_to_caps($orig_reqd_caps);
+		$orig_reqd_caps = $this->scoper->role_defs->role_handles_to_caps($orig_reqd_caps);
 		
 		
 		// ================= EARLY EXIT CHECKS (if the provided reqd_caps do not need filtering or need special case filtering ==================
 		
 		// Disregard caps which are not defined in Role Scoper config
-		if ( ! $rs_reqd_caps = array_intersect( $reqd_caps, $this->scoper->cap_defs->get_all_keys() ) ) {
+		if ( ! $rs_reqd_caps = array_intersect( $orig_reqd_caps, $this->scoper->cap_defs->get_all_keys() ) ) {
 			return $wp_blogcaps;		
 		}
+		
+		// log initial set of RS-filtered caps (in case we swap in equivalent caps for intermediate processing)
+		$orig_reqd_caps = $rs_reqd_caps;
 
 		// permitting this filter to execute early in an attachment request resets the found_posts record, preventing display in the template
 		if ( is_attachment() && ! is_admin() && ! did_action('template_redirect') ) {
@@ -596,11 +598,9 @@ class CapInterceptor_RS
 					$okay_ids = array_fill_keys($okay_ids, true);
 			}
 
-			
-				//dump($rs_reqd_caps);
-				//dump($query);
-				//dump($okay_ids);
-
+			//dump($rs_reqd_caps);
+			//dump($query);
+			//dump($okay_ids);
 			
 			//rs_errlog( $query );
 			//rs_errlog( 'results: ' . serialize( $okay_ids ) );
@@ -654,7 +654,8 @@ class CapInterceptor_RS
 				
 			//d_echo( 'OKAY:' );
 			//dump($args);
-			//dump($rs_reqd_caps);	
+			//dump($wp_blogcaps);
+			//dump($rs_reqd_caps);
 			//d_echo( '<br />' );
 			
 			return array_merge($wp_blogcaps, $rs_reqd_caps);

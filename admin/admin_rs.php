@@ -599,6 +599,11 @@ class ScoperAdmin
 		} else
 			$label_text = $this->scoper->data_sources->member_property($arr_src_otype[0], 'labels', $label_property);
 			
+		if ( ! $label_text ) { // need this in cases (Realm option labeling) where taxonomy is RS-enabled but its corresponding post type is not.  TODO: eliminate redundancy
+			if ( ( 'post' == $arr_src_otype[0] ) && ( $type_object = get_post_type_object( $arr_src_otype[1] ) ) )
+				$label_text = $type_object->labels->name;
+		}
+
 		if ( ! $label_text )	// in case of data sources definition error, cryptic fallback better than nullstring
 			$label_text = $src_otype;
 			

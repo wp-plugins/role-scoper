@@ -742,7 +742,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	if ( empty($all_items) )
 		$all_items = array();
 	
-	if ( ! $single_item && is_user_administrator_rs() ) {		
+	if ( ! $single_item && is_user_administrator_rs() && ( 'nav_menu' != $src_or_tx_name ) ) {		// TODO: action handler for new menu item storage
 		if ( ROLE_ASSIGNMENT_RS == $mode )
 			$root_caption = sprintf( __('DEFAULTS for new %s', 'scoper'), $otype_or_tx->labels->name );
 		else

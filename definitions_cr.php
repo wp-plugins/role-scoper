@@ -202,11 +202,13 @@ function cr_wp_taxonomies() {
 			foreach ( array_keys($use_term_roles[$src_otype]) as $taxonomy )
 				if ( $use_term_roles[$src_otype][$taxonomy] )
 					$arr_use_wp_taxonomies[$taxonomy] = true;
-
+			
 	$wp_taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
+	$wp_taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
 	
 	$post_types = get_post_types( array( 'public' => true ) );
-
+	$post_types []= 'nav_menu_item';
+	
 	// Detect and support additional WP taxonomies (just require activation via Role Scoper options panel)
 	global $scoper;
 	
@@ -241,6 +243,9 @@ function cr_wp_taxonomies() {
 														'delete_term' => "delete_{$taxonomy}", 	'term_edit_ui' => "{$taxonomy}_edit_form" );
 				
 				$arr[$taxonomy]->admin_filters = array( 'pre_object_terms' => "pre_post_{$taxonomy}" );
+				
+				if ( 'nav_menu' == $taxonomy )
+					$arr[$taxonomy]->edit_url = "nav-menus.php?action=edit&menu=%d";
 			}
 		}	
 	} // end foreach taxonomy known to WP core
@@ -316,6 +321,7 @@ function cr_taxonomy_cap_defs() {
 	$arr = array();
 	
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
+	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
 	
 	foreach ( $taxonomies as $name => $taxonomy_obj ) {	
 		$arr[ $taxonomy_obj->cap->manage_terms ] = 	(object) array( 'src_name' => 'post', 'op_type' => OP_ADMIN_RS, 'is_taxonomy_cap' => true );  // possible TODO: set src_name as taxonomy source instead?
@@ -439,6 +445,7 @@ function cr_taxonomy_role_caps() {
 	$arr = array();
 	
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
+	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
 	
 	$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	
@@ -524,7 +531,8 @@ function cr_taxonomy_role_defs() {
 	$arr = array();
 	
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
-	
+	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
+
 	$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	
 	foreach ( $taxonomies as $name => $taxonomy_obj ) {	

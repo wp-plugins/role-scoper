@@ -40,8 +40,12 @@ function _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
 	if ( ! $matched_op )
 		return $caps;
 
-	$_obj_id = ( is_array($args) ) ? $args[0] : $args;
-	if ( ! $post = get_post( $_obj_id ) )
+	$object_id = ( is_array($args) ) ? $args[0] : $args;
+
+	if ( ! $object_id )
+		return $caps;
+
+	if ( ! $post = get_post( $object_id ) )
 		return $caps;
 
 	if ( in_array( $post->post_type, array( 'revision', 'attachment' ) ) )

@@ -1392,7 +1392,7 @@ class QueryInterceptor_RS
 	// currently only used to conditionally launch teaser filtering
 	function flt_the_posts( $results ) {	
 		if ( empty($this->skip_teaser) ) {
-			$object_type = cr_find_post_type();
+			$object_type = cr_find_post_type( '', false); // arg: don't return 'post' as a default if detection fails
 
 			// won't do anything unless teaser is enabled for object type(s)
 			$results = apply_filters( 'objects_teaser_rs', $results, 'post', $object_type, array('force_teaser' => true) );

@@ -86,6 +86,12 @@ if ( scoper_get_option('display_hints') ) {
 	} else
 		printf(__('Grant capabilities within a specific %s, potentially more than a user\'s WP role would allow.', 'scoper'), $tx->labels->singular_name );
 		
+	if ( 'nav_menu' == $taxonomy ) {
+		echo '<p>';
+		_e( '<strong>Note</strong> that as of WordPress 3.0, users also need the <strong>edit_theme_options</strong> capability in their WordPress role.', 'scoper');
+		echo '</p>';
+	}
+		
 	echo '</div>';
 }
 
@@ -167,51 +173,55 @@ echo '</div>'; //rs-section-roles
 </form>
 <a name="scoper_notes"></a>
 <?php
-$args = array( 'display_links' => true, 'display_restriction_key' => true );
-ScoperAdminUI::role_owners_key($tx, $args);
+if ( 'nav_menu' != $taxonomy ) { // TODO: better logic for note construction when related custom type is not being RS-filtered
 
-$osrc = $scoper->data_sources->get( $tx->object_source );
-
-echo '<br /><h4 style="margin-bottom:0.1em">' . __("Notes", 'scoper') . ':</h4><ul class="rs-notes">';	
-
-echo '<li>';
-_e('A Role is a collection of capabilities.', 'scoper');
-echo '</li>';
-
-echo '<li>';
-_e("Capabilities in a user's WordPress Role (and, optionally, RS-assigned General Roles) enable site-wide operations (read/edit/delete) on some object type (post/page/link), perhaps of a certain status (private/published/draft).", 'scoper');
-echo '</li>';
-
-echo '<li>';
-if ( empty($osrc->no_object_roles) )
-	printf(__('Scoped Roles can grant users these same WordPress capabilities on a per-%1$s or per-%2$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->labels->singular_name, $osrc->labels->singular_name);
-else
-	printf(__('Scoped Roles can grant users these same WordPress capabilities on a per-%1$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->labels->singular_name, $osrc->labels->singular_name);
-echo '</li>';
-
-echo '<li>';
-printf(__('Users with a %1$s Role assignment may have capabilities beyond their General Role(s) for %2$s in the specified %1$s.', 'scoper'), $tx->labels->singular_name, $osrc->labels->name);
-echo '</li>';
-
-if ( ! empty($tx->requires_term) ) {
+	$args = array( 'display_links' => true, 'display_restriction_key' => true );
+	ScoperAdminUI::role_owners_key($tx, $args);
+	
+	$osrc = $scoper->data_sources->get( $tx->object_source );
+	
+	echo '<br /><h4 style="margin-bottom:0.1em">' . __("Notes", 'scoper') . ':</h4><ul class="rs-notes">';	
+	
 	echo '<li>';
-	printf(__('If a role is restricted for some %s, general (site-wide) assignments of that role are ignored.', 'scoper'), $tx->labels->singular_name );
+	_e('A Role is a collection of capabilities.', 'scoper');
 	echo '</li>';
-
+	
 	echo '<li>';
-	printf(__('If a %1$s is in multiple %2$s, permission is granted if any %3$s has a qualifying role assignment or permits a qualifying General Role.', 'scoper'), $osrc->labels->singular_name, $tx->labels->name, $tx->labels->singular_name );
+	_e("Capabilities in a user's WordPress Role (and, optionally, RS-assigned General Roles) enable site-wide operations (read/edit/delete) on some object type (post/page/link), perhaps of a certain status (private/published/draft).", 'scoper');
 	echo '</li>';
-}
-
-if ( empty($osrc->no_object_roles) ) {
+	
 	echo '<li>';
-	printf(__('If a role is restricted for some requested %1$s, %2$s-assignment and General-assignment of that role are ignored.', 'scoper'), $osrc->labels->singular_name, $tx->labels->singular_name );
+	if ( empty($osrc->no_object_roles) )
+		printf(__('Scoped Roles can grant users these same WordPress capabilities on a per-%1$s or per-%2$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->labels->singular_name, $osrc->labels->singular_name);
+	else
+		printf(__('Scoped Roles can grant users these same WordPress capabilities on a per-%1$s basis. Useful in fencing off sections your site.', 'scoper'), $tx->labels->singular_name, $osrc->labels->singular_name);
 	echo '</li>';
-}
+	
+	echo '<li>';
+	printf(__('Users with a %1$s Role assignment may have capabilities beyond their General Role(s) for %2$s in the specified %1$s.', 'scoper'), $tx->labels->singular_name, $osrc->labels->name);
+	echo '</li>';
+	
+	if ( ! empty($tx->requires_term) ) {
+		echo '<li>';
+		printf(__('If a role is restricted for some %s, general (site-wide) assignments of that role are ignored.', 'scoper'), $tx->labels->singular_name );
+		echo '</li>';
+	
+		echo '<li>';
+		printf(__('If a %1$s is in multiple %2$s, permission is granted if any %3$s has a qualifying role assignment or permits a qualifying General Role.', 'scoper'), $osrc->labels->singular_name, $tx->labels->name, $tx->labels->singular_name );
+		echo '</li>';
+	}
+	
+	if ( empty($osrc->no_object_roles) ) {
+		echo '<li>';
+		printf(__('If a role is restricted for some requested %1$s, %2$s-assignment and General-assignment of that role are ignored.', 'scoper'), $osrc->labels->singular_name, $tx->labels->singular_name );
+		echo '</li>';
+	}
+	
+	echo '<li>';
+	_e('Administrators are exempted from Role Restrictions.', 'scoper');
+	echo '</li></ul>';
 
-echo '<li>';
-_e('Administrators are exempted from Role Restrictions.', 'scoper');
-echo '</li></ul>';
+} //endif showing notes
 
 echo('<a href="#scoper_top">' . __('top', 'scoper') . '</a>');
 ?>
