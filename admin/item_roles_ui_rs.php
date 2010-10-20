@@ -109,17 +109,18 @@ class ScoperItemRolesUI {
 				$this->all_agents[ROLE_BASIS_USER] = $this->scoper->users_who_can( '', COLS_ID_DISPLAYNAME_RS);
 			elseif( $object_id ) {
 				$assignees = array();
+
 				if ( $this->current_roles[ROLE_BASIS_USER] )
 					foreach ( array_keys($this->current_roles[ROLE_BASIS_USER]) as $role_handle )
-						$assignees = $assignees + array_keys( $this->current_roles[ROLE_BASIS_USER][$role_handle]['assigned'] );
-						
+						$assignees = array_merge( $assignees, array_keys( $this->current_roles[ROLE_BASIS_USER][$role_handle]['assigned'] ) );
+
 				$assignees = array_unique( $assignees );
 				
 				global $wpdb;
 				$this->all_agents[ROLE_BASIS_USER] = scoper_get_results( "SELECT ID, display_name FROM $wpdb->users WHERE ID IN ('" . implode("','", $assignees) . "')" );
 			} else
 				$this->all_agents[ROLE_BASIS_USER] = array();
-
+				
 			//log_mem_usage_rs( 'load_roles: users_who_can for all_agents' );
 			
 			//users eligible for an editing role assignments are those who have the basic edit cap via taxonomy or blog role

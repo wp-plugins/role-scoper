@@ -115,7 +115,7 @@ class ScoperAgentsChecklist {
 
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
-		
+
 		$ie_checkbox_style = ( ! empty( $GLOBALS['is_IE'] ) ) ? "style='height:1em'" : '';
 
 		if ( ( ELIGIBLE_ITEMS_RS == $agents_subset ) && scoper_get_option("{$role_basis}_role_assignment_csv") )

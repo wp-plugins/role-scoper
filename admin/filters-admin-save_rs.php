@@ -130,7 +130,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 				// did user change roles?
 
-				if ( $use_csv_entry[ROLE_BASIS_USER] && ! empty( $_POST[ "{$role_code}u_csv" ] ) ) {
+				if ( $use_csv_entry[ROLE_BASIS_USER] && ( ! empty( $_POST[ "{$role_code}u_csv" ] ) || ! empty( $_POST[ "p_{$role_code}u_csv" ] ) ) ) {
 					$new_role_settings = true;
 				} 
 
