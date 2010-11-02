@@ -6,7 +6,7 @@ require_once('lib/agapetry_config_items.php');
 
 class CR_Capabilities extends AGP_Config_Items {
 	// defining_module could be a plugin name, theme name, etc.
-	// args: status, owner_base_cap, anon_user_has, is_taxonomy_cap
+	// args: status, base_cap, anon_user_has, is_taxonomy_cap
 	function &add($name, $defining_module, $src_name, $object_type, $op_type, $args = array()) {
 		if ( $this->locked ) {
 			$notice = sprintf('A plugin or theme (%1$s) is too late in its attempt to define a capability (%2$s).', $defining_module, $name)
@@ -151,9 +151,9 @@ class CR_Capabilities extends AGP_Config_Items {
 		$caps = (array) $caps;
 
 		foreach ( $caps as $key => $cap_name )
-			if ( ! empty($this->members[$cap_name]->owner_base_cap) ) {
+			if ( ! empty($this->members[$cap_name]->base_cap) ) {
 				if ( $substitute )
-					$caps[$key] = $this->members[$cap_name]->owner_base_cap;
+					$caps[$key] = $this->members[$cap_name]->base_cap;
 				else
 					unset( $caps[$key] );
 			}
@@ -193,7 +193,7 @@ class CR_Capabilities extends AGP_Config_Items {
 			if ( ( $capdef->src_name == $src_name )
 			&& ( empty($object_types) || ( isset($capdef->object_types) && array_intersect( $object_types, $capdef->object_types ) ) || ( empty($strict_otype_match) && empty($capdef->object_types) ) )
 			&& ( (STATUS_ANY_RS == $status) || ( ! $status && empty($capdef->status) ) || ( isset($capdef->status) && ($status == $capdef->status) ) )
-			&& ( ! $base_caps_only || empty($capdef->owner_base_cap) ) 
+			&& ( ! $base_caps_only || empty($capdef->base_cap) ) 
 			)
 				$arr[$cap_name] = $capdef;
 						
@@ -227,11 +227,11 @@ class CR_Capability extends AGP_Config_Item {
 	var $object_types = array();	// array[object_type] = true : populated based on cap usage in RS roles
 	var $op_type;			// required
 	var $status = '';			
-	var $owner_base_cap;			// documentation not finished - see scoper_core_cap_defs()
+	var $base_cap;			// documentation not finished - see scoper_core_cap_defs()
 	var $anon_user_has;		// 		''
 	var $is_taxonomy_cap;	// 		''
 	
-	// args: status, owner_base_cap, anon_user_has, is_taxonomy_cap 
+	// args: status, base_cap, anon_user_has, is_taxonomy_cap 
 	function CR_Capability($name, $defining_module, $src_name, $object_type = '', $op_type = '', $args) {
 		$this->AGP_Config_Item($name, $defining_module, $args);
 		

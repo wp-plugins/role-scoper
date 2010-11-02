@@ -3,34 +3,35 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-add_action( 'check_admin_referer', array('ScoperAdminHardway_Ltd', 'act_check_admin_referer') );
-	
 if ( 'nav-menus.php' != $GLOBALS['pagenow'] ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
-
-	// link category roles, restrictions are only for bookmark management
-	global $scoper;
-	if ( $scoper->data_sources->is_member('link') )
-		add_filter('get_bookmarks', array('ScoperAdminHardway_Ltd', 'flt_get_bookmarks'), 1, 2);	
-	
-	add_action( 'check_ajax_referer', array('ScoperAdminHardway_Ltd', 'act_check_ajax_referer') );
-	
-	// limit these links on post/page edit listing to drafts which current user can edit
-	add_filter('get_others_drafts', array('ScoperAdminHardway_Ltd', 'flt_get_others_drafts'), 50, 1);
-	
-	// TODO: better handling of low-level AJAX filtering
-	// URIs ending in specified filename will not be subjected to low-level query filtering
-	$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
-	$nomess_uris = array_merge($nomess_uris, array('p-admin/admin-ajax.php'));
-	
-	if ( ! in_array( $GLOBALS['pagenow'], $nomess_uris ) && ! in_array( $GLOBALS['plugin_page_cr'], $nomess_uris ) )
-		add_filter('query', array('ScoperAdminHardway_Ltd', 'flt_last_resort_query') );
+	add_action( 'set_current_scoped_user', array('ScoperAdminHardway_Ltd', 'add_filters') );
 }
 
 class ScoperAdminHardway_Ltd {
+	function add_filters() {
+		// link category roles, restrictions are only for bookmark management
+		global $scoper;
+		if ( $scoper->data_sources->is_member('link') )
+			add_filter('get_bookmarks', array('ScoperAdminHardway_Ltd', 'flt_get_bookmarks'), 1, 2);	
+		
+		add_action( 'check_admin_referer', array('ScoperAdminHardway_Ltd', 'act_check_admin_referer') );
 	
+		add_action( 'check_ajax_referer', array('ScoperAdminHardway_Ltd', 'act_check_ajax_referer') );
+		
+		// limit these links on post/page edit listing to drafts which current user can edit
+		add_filter('get_others_drafts', array('ScoperAdminHardway_Ltd', 'flt_get_others_drafts'), 50, 1);
+		
+		// TODO: better handling of low-level AJAX filtering
+		// URIs ending in specified filename will not be subjected to low-level query filtering
+		$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
+		$nomess_uris = array_merge($nomess_uris, array('p-admin/admin-ajax.php'));
+		
+		if ( ! in_array( $GLOBALS['pagenow'], $nomess_uris ) && ! in_array( $GLOBALS['plugin_page_cr'], $nomess_uris ) )
+			add_filter('query', array('ScoperAdminHardway_Ltd', 'flt_last_resort_query') );	
+	}
+
 	// next-best way to handle any permission checks for non-Ajax operations which can't be done via has_cap filter
 	function act_check_admin_referer( $referer_name ) {
-	
 		if ( 'update-category_' . $_POST['cat_ID'] == $referer_name ) {
 			// filter category parent selection for Category editing
 			if ( ! isset( $_POST['cat_ID'] ) )

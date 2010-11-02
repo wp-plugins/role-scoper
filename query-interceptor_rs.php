@@ -853,6 +853,7 @@ class QueryInterceptor_RS
 
 			$qualifying_roles = $this->scoper->role_defs->qualify_roles($reqd_caps_arg, '', $object_type );
 
+
 			/*
 			rs_errlog( '' );
 			rs_errlog( "reqd_caps arg: " . serialize($reqd_caps_arg) );
@@ -880,6 +881,7 @@ class QueryInterceptor_RS
 			}
 
 			if ( ! empty($src->cols->owner) && ! $skip_owner_clause && $user->ID ) {
+
 				if ( ! $require_full_object_role ) {
 					// if owner qualifies for the operation by any different roles than other users, add separate owner clause
 					$owner_reqd_caps = $this->scoper->cap_defs->get_base_caps($reqd_caps_arg);

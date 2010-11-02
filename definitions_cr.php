@@ -296,14 +296,14 @@ function cr_post_cap_defs() {
 		$cap = $post_type_obj->cap;
 		
 		$post_caps = array(
-			$cap->read_private_posts =>		(object) array( 'src_name' => 'post', 'op_type' => OP_READ_RS, 		'owner_base_cap' => 'read', 				'status' => 'private' ),	
+			$cap->read_private_posts =>		(object) array( 'src_name' => 'post', 'op_type' => OP_READ_RS, 		'base_cap' => 'read', 				'status' => 'private' ),	
 			$cap->edit_posts => 			(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'no_custom_remove' => true ),
-			$cap->edit_others_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS, 		'owner_base_cap' => $cap->edit_posts, 		'no_custom_remove' => true  ),
-			$cap->edit_private_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'owner_base_cap' => $cap->edit_posts, 		'status' => 'private' ),
+			$cap->edit_others_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS, 		'base_cap' => $cap->edit_posts, 		'no_custom_remove' => true  ),
+			$cap->edit_private_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'base_cap' => $cap->edit_posts, 		'status' => 'private' ),
 			$cap->edit_published_posts => 	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'status' => 'publish' ),
 			$cap->delete_posts =>  			(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS ),
-			$cap->delete_others_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS, 	'owner_base_cap' => $cap->delete_posts ),
-			$cap->delete_private_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS,	'owner_base_cap' => $cap->delete_posts, 	'status' => 'private' ),
+			$cap->delete_others_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS, 	'base_cap' => $cap->delete_posts ),
+			$cap->delete_private_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS,	'base_cap' => $cap->delete_posts, 	'status' => 'private' ),
 			$cap->delete_published_posts =>	(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS,	'status' => 'publish' ),
 			$cap->publish_posts => 			(object) array( 'src_name' => 'post', 'op_type' => OP_PUBLISH_RS )
 		);
