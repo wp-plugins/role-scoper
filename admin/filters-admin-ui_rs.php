@@ -19,25 +19,23 @@ class ScoperAdminFiltersUI
 	var $scoper_admin;
 	
 	function ScoperAdminFiltersUI() {
+		global $pagenow, $plugin_page_cr;
+
 		$this->scoper =& $GLOBALS['scoper'];
 		$this->scoper_admin =& $GLOBALS['scoper_admin'];
-		
-		$current_script = $_SERVER['SCRIPT_NAME'];
-		$item_edit_scripts = apply_filters( 'item_edit_scripts_rs', array('p-admin/post-new.php', 'p-admin/post.php', 'p-admin/page.php', 'p-admin/page-new.php', 'p-admin/edit-tags.php') );
-		$item_edit_scripts []= 'p-admin/admin-ajax.php';
 
-		foreach( $item_edit_scripts as $edit_script ) {
-			if ( strpos( $current_script, $edit_script ) ) {
-				require_once( 'filters-admin-ui-item_rs.php' );
-				global $scoper_admin_filters_item_ui;
-				$scoper_admin_filters_item_ui = new ScoperAdminFiltersItemUI();
-				break;
-			}
+		$item_edit_scripts = apply_filters( 'item_edit_scripts_rs', array('post-new.php', 'post.php', 'page.php', 'page-new.php', 'edit-tags.php') );
+		$item_edit_scripts []= 'admin-ajax.php';
+
+		if ( in_array( $pagenow, $item_edit_scripts ) || in_array( $plugin_page_cr, $item_edit_scripts ) ) {
+			require_once( 'filters-admin-ui-item_rs.php' );
+			global $scoper_admin_filters_item_ui;
+			$scoper_admin_filters_item_ui = new ScoperAdminFiltersItemUI();
 		}
 
 		add_action('admin_head', array(&$this, 'ui_hide_admin_divs') );
 
-		if ( is_user_administrator_rs() || strpos($_SERVER['REQUEST_URI'], 'admin.php?page=rs-') )
+		if ( is_user_administrator_rs() || ( 0 === strpos( $plugin_page_cr, 'rs-' ) ) )
 			add_action('in_admin_footer', array(&$this, 'ui_admin_footer') );
 
 		if ( GROUP_ROLES_RS ) {
@@ -49,22 +47,21 @@ class ScoperAdminFiltersUI
 		add_action('show_user_profile', array(&$this, 'ui_user_roles'), 2);
 		add_action('edit_user_profile', array(&$this, 'ui_user_roles'), 2);
 		
-		$script_name = $_SERVER['SCRIPT_NAME'];
-		
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'role-management.php') && empty($_POST) )
+		// possible TODO: equivalent message display for other role management plugins
+		if ( ( 'role-management.php' == $plugin_page_cr ) && empty( $_POST ) )
 			add_filter( 'capabilities_list', array(&$this, 'flt_capabilities_list') );	// capabilities_list is a Role Manager hook
 
-		if ( strpos( $_SERVER['REQUEST_URI'], 'p-admin/nav-menus.php' ) )
+		if ( 'nav-menus.php' == $pagenow )
 			add_action( 'admin_head', array(&$this, 'ui_hide_add_menu') );
 	} // end class constructor
 	
 	function ui_hide_admin_divs() {
-		if ( ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/post.php' ) && ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/post-new.php' ) )
+		if ( ! in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) )
 			return;
-		
+
 		if ( ! $object_type = cr_find_post_type() )
 			return;
-			
+
 		// For this data source, is there any html content to hide from non-administrators?
 		$option_type = ( 'page' == $object_type ) ? 'page' : 'post';
 		$css_ids = scoper_get_otype_option('admin_css_ids', 'post', $option_type);

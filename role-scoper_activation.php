@@ -18,7 +18,7 @@ function scoper_activate() {
 if ( ! function_exists( 'scoper_deactivate' ) ) {
 function scoper_deactivate() {
 	if ( function_exists( 'wpp_cache_flush' ) )
-		wpp_cache_flush();
+		wpp_cache_flush_all_sites();
 	
 	delete_option('scoper_page_ancestors');
 	

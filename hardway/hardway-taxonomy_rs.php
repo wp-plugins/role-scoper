@@ -117,7 +117,7 @@ class ScoperHardwayTaxonomy
 	
 		// don't offer to set a category as its own parent
 		if ( is_admin() && ( 'category' == $taxonomy ) ) {
-			if ( strpos(urldecode($_SERVER['REQUEST_URI']), 'categories.php') ) {
+			if ( 'edit-tags.php' == $GLOBALS['pagenow'] ) {
 				if ( $editing_cat_id = $scoper->data_sources->get_from_uri('id', 'term') ) {
 					if ( ! empty($args['exclude']) )
 						$args['exclude'] .= ',';
@@ -179,7 +179,7 @@ class ScoperHardwayTaxonomy
 		// === END Role Scoper MODIFICATION ===
 		// ====================================
 
-		$is_term_admin = strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit-tags.php' );
+		$is_term_admin = ( 'edit-tags.php' == $GLOBALS['pagenow'] );
 
 		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
 		$key = md5( serialize( compact(array_keys($defaults)) ) . serialize( $taxonomies ) . $filter_key );
@@ -448,7 +448,7 @@ class ScoperHardwayTaxonomy
 		// In addition, without the rs_tally_term_counts call, WP will hide categories that have no public posts (even if this user can read some of the pvt posts).
 		// Post counts will be incremented to include child categories only if $pad_counts is true
 		if ( ! defined('XMLRPC_REQUEST') && ( 'all' == $fields ) && ! $is_term_admin ) {
-			if ( ! is_admin() || ( ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/post.php' ) && ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/post-new.php' ) ) ) {
+			if ( ! is_admin() || ! in_array( $_GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
 			
 				//-- RoleScoper Modification - alternate function call (was _pad_term_counts) --//
 				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser ) );

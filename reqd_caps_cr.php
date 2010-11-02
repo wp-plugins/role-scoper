@@ -113,7 +113,7 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 							// edit_{$_status}_posts (if defined)
 							$status_string = ( 'publish' == $_status ) ? 'published' : $_status;
 							$status_cap = "{$op}_{$status_string}_posts";
-							
+
 							if ( ! empty( $cap->$status_cap ) )
 								$arr[$op][$_post_type][$_status] []= $cap->$status_cap;
 						}
@@ -152,7 +152,7 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 		$reqd_caps[$src_name][$op] = apply_filters( 'define_required_caps_rs', $arr[$op], $src_name, $op );
 		
 	} // endif pulling from static buffer
-	
+
 	
 	if ( ( -1 != $status ) && ( -1 != $object_type ) ) {
 		if ( isset( $reqd_caps[$src_name][$op][$object_type][$status] ) )

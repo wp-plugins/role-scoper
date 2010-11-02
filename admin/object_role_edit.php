@@ -24,7 +24,7 @@ if ( ! $is_administrator && ! $scoper_admin->user_can_admin_object($src_name, $o
 $err = 0;
 if ( isset($_POST['rs_submit'] ) ) {
 	global $scoper_admin_filters;
-	
+
 	$scoper_admin_filters->mnt_save_object($src_name, '', $object_id);
 
 	echo '<div id="message" class="updated fade"><p>';

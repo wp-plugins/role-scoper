@@ -27,9 +27,9 @@ class ScoperAdminLib {
 		if ( ! strpos( $orig_options_html, 'parent_id' ) && ! strpos( $orig_options_html, 'post_parent' ) )
 			return $orig_options_html;
 
-		if ( strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/options-' ) )
+		if ( 0 === strpos( $GLOBALS['pagenow'], 'options-' ) )
 			return $orig_options_html;
-			
+
 		require_once( SCOPER_ABSPATH . '/hardway/hardway-parent_rs.php');
 		return ScoperHardwayParent::flt_dropdown_pages($orig_options_html);
 	}
@@ -525,6 +525,7 @@ class ScoperAdminLib {
 
 	function schedule_role_sync() {
 		// Role Manager / Capability Manager don't actually create the role until after the option update we're hooking on, so defer our maintenance operation
+		wpp_cache_flush();
 		add_action( 'shutdown', array('ScoperAdminLib', 'sync_all_wproles') );
 	}
 

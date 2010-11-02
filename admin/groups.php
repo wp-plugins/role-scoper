@@ -105,7 +105,8 @@ switch ($mode) {
 						$mode = "edit";
 					}
 				}
-			}
+			} else
+				$success_msg = sprintf( __("Group <strong>%s</strong> updated successfuly.", 'scoper'), '');
 		} else { // endif logged user is a group manager / administrator
 			$success_msg = __("Group members updated successfuly.", 'scoper');
 		}

@@ -7,9 +7,12 @@ require_once('hardway/cache-persistent.php');
 //if ( ! awp_ver( '3.0' ) )
 //	require_once( 'wp-legacy_rs.php' );
 
+// As of WP 3.0, this is not set until admin_header is loaded, and remains unset for non-admin urls.  To simplify subsequent checks, set it early and universally.
+$GLOBALS['plugin_page_cr'] = ( is_admin() && isset( $_GET['page'] ) ) ? $_GET['page'] : '';
+
 if ( is_admin() )
 	require_once( 'admin/admin-init_rs.php' );
-
+	
 if ( IS_MU_RS )
 	require_once( 'mu-init_rs.php' );
 
@@ -27,7 +30,6 @@ add_action( 'delete_transient_rewrite_rules', 'scoper_rewrite_inclusions' );
 // some options can be overridden by constant definition
 add_filter( 'site_options_rs', 'scoper_apply_constants', 99 );
 add_filter( 'options_rs', 'scoper_apply_constants', 99 );
-	
 
 function scoper_log_init_action() {
 	define ( 'INIT_ACTION_DONE_RS', true );
@@ -56,7 +58,7 @@ function scoper_maybe_init() {
 
 function scoper_init() {
 	global $scoper;
-
+	
 	if ( IS_MU_RS ) {
 		global $scoper_sitewide_options;
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
@@ -407,7 +409,7 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 
 	$default_otype_options = scoper_get_default_otype_options();
 	
-	// RS stores all portions of the otype option array are always set together, but blending is needed because RS Extensions or other plugins can filter the default otype options array for specific taxonomies / object types
+	// RS stores all portions of the otype option array together, but blending is needed because RS Extensions or other plugins can filter the default otype options array for specific taxonomies / object types
 	$optval = awp_blend_option_array( 'scoper_', $option_main_key, $default_otype_options, 1, $stored_option );
 	
 	// note: access_name-specific entries are not valid for most otype options (but possibly for teaser text front vs. rss)
@@ -787,26 +789,12 @@ function scoper_get_taxonomy_usage( $src_name, $object_types = '' ) {
 	$taxonomies = array();
 	$object_types = (array) $object_types;
 
-	//$src_taxonomies = $GLOBALS['scoper']->taxonomies->filter_keys( '', array( 'object_source' => $src_name ) );
-
 	foreach( $object_types as $object_type )
 		if ( $use_taxonomies = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type ) )
 			$taxonomies = array_merge( $taxonomies, array_intersect( (array) $use_taxonomies, array( 1 ) ) );  // array cast prevents PHP warning on first-time execution following update to RS 1.2
 	
 			
-	/*
-	if ( $use_term_roles = scoper_get_option( 'use_term_roles' ) ) {
-		foreach ( array_keys($use_term_roles) as $src_otype ) {
-			$arr_src_otype = explode( ':', $src_otype );
-			
-			if ( $src_name == $arr_src_otype[0] ) {
-				if ( ! $object_types || in_array( $arr_src_otype[1], $object_types ) )
-					$taxonomies = array_merge( $taxonomies, array_intersect( (array) $use_term_roles[$src_otype], array( 1 ) ) );  // array cast prevents PHP warning on first-time execution following update to RS 1.2
-			}
-		}
-	}
-	*/
-	
+
 	if ( $taxonomies ) {
 		// make sure we indicate non-usage of term roles for taxonomies that are completely disabled for RS
 		if ( 'post' == $src_name ) {
@@ -846,8 +834,8 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 	}
 	
 	// no post id was passed in, or we couldn't retrieve it for some reason, so check $_REQUEST args
-	$script_name = $_SERVER['SCRIPT_NAME'];
-	
+	global $pagenow;
+
 	if ( ! empty( $GLOBALS['post']->post_type ) ) {
 		$object_type = $GLOBALS['post']->post_type;
 
@@ -857,9 +845,9 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 	} elseif ( ! empty( $GLOBALS['wp_query']->queried_object ) ) {
 		$object_type = $GLOBALS['wp_query']->queried_object->post_type;
 
-	} elseif ( strpos( $script_name, 'post-new.php' ) || strpos( $script_name, 'edit.php' ) ) {
+	} elseif ( in_array( $pagenow, array( 'post-new.php', 'edit.php' ) ) ) {
 		$object_type = ! empty( $_GET['post_type'] ) ? $_GET['post_type'] : 'post';
-		
+
 	} elseif ( ! empty( $_POST['post_ID'] ) ) {
 		if ( $_post = get_post( $_POST['post_ID'] ) )
 			$object_type = $_post->post_type;
@@ -867,7 +855,7 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 	} elseif ( ! empty( $_GET['post'] ) ) {	 // post.php
 		if ( $_post = get_post( $_GET['post'] ) )
 			$object_type = $_post->post_type;
-			
+	
 	} elseif( ! empty( $GLOBALS['scoper_object_type'] ) ) {
 		$object_type = $GLOBALS['scoper_object_type'];
 

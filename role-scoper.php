@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.3.RC6
+Version: 1.3
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 3.0
@@ -30,12 +30,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 	
-if ( strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/index-extra.php' ) || strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/update.php' ) )
+if ( in_array( $GLOBALS['pagenow'], array( 'index-extra.php', 'update.php' ) ) )
 	return;
 
 if ( defined( 'SCOPER_VERSION' ) ) {
 	// don't allow two copies of RS to run simultaneously
-	if ( is_admin() && strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/plugins.php' ) && ! strpos( urldecode($_SERVER['REQUEST_URI']), 'deactivate' ) ) {
+	if ( is_admin() && ( 'plugins.php' == $GLOBALS['pagenow'] ) && empty( $_REQUEST['deactivate'] ) ) {
 		$message = sprintf( __( '<strong>Error:</strong> Multiple copies of Role Scoper activated. Only version %1$s (in folder "%2$s") is functional.', 'scoper' ), SCOPER_VERSION, SCOPER_FOLDER );
 		
 		add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade" style="color: black">' . $message . '</div>\';'));
@@ -44,7 +44,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-define ('SCOPER_VERSION', '1.3.RC6');
+define ('SCOPER_VERSION', '1.3');
 define ('SCOPER_DB_VERSION', '1.1.2');
 
 /* --- ATTACHMENT FILTERING NOTE ---
@@ -85,9 +85,9 @@ if ( $prev = get_option('scoper_version') ) {
 }
 
 // avoid lockout in case of editing plugin via wp-admin
-if ( defined('RS_DEBUG') && is_admin() && ( strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugin-editor.php' ) || strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugins.php' ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'activate' ) )
+if ( defined('RS_DEBUG') && is_admin() && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) && empty( $_REQUEST['activate'] ) )
 	return;
-	
+
 define ('COLS_ALL_RS', 0);
 define ('COL_ID_RS', 1);
 define ('COLS_ID_DISPLAYNAME_RS', 2);
@@ -193,10 +193,7 @@ if ( is_admin() || defined('XMLRPC_REQUEST') ) {
 	// Early bailout for problematic 3rd party plugin ajax calls
 	if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-wall-ajax.php') )
 		return;
-		
-	// skip WP version check and init operations when a WP plugin auto-update is in progress
-	if ( false !== strpos($_SERVER['SCRIPT_NAME'], 'update.php') )
-		return;
+
 } elseif ( ! $bail ) {
 	require_once('feed-interceptor_rs.php'); // must define get_currentuserinfo early
 }
@@ -226,9 +223,9 @@ if ( ! $bail ) {
 	
 	// if role options were just updated via http POST, use new values rather than loading old option values from DB
 	// These option values are used in WP_Scoped_User constructor
-	if ( is_admin() && isset( $_POST['role_type'] ) && strpos( urldecode($_SERVER['REQUEST_URI']), 'admin.php?page=rs-' )  ) {
+	if ( is_admin() && isset( $_POST['enable_group_roles'] ) && ( 0 === strpos( $GLOBALS['plugin_page_cr'], 'rs-' ) ) )
 		scoper_use_posted_init_options();
-	} else
+	else
 		scoper_get_init_options();
 	
 	if ( IS_MU_RS ) {

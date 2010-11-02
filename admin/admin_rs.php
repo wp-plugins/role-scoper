@@ -21,7 +21,7 @@ require_once( 'admin_lib_rs.php' );
 if ( IS_MU_RS )
 	require_once( 'admin_lib-mu_rs.php' );
 
-if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/index.php' ) && ! defined( 'USE_RVY_RIGHTNOW' )  )
+if ( ( 'index.php' == $GLOBALS['pagenow'] ) && ! defined( 'USE_RVY_RIGHTNOW' )  )
 	include_once( 'admin-dashboard_rs.php' );
 
 	
@@ -32,6 +32,8 @@ class ScoperAdmin
 	var $tinymce_readonly;
 	
 	function ScoperAdmin() {
+		global $pagenow;
+		
 		$this->scoper =& $GLOBALS['scoper'];
 		
 		add_action('admin_head', array(&$this, 'admin_head_base'));
@@ -39,15 +41,15 @@ class ScoperAdmin
 		if ( ! defined('DISABLE_QUERYFILTERS_RS') || is_content_administrator_rs() ) {
 			add_action('admin_head', array(&$this, 'admin_head'));
 			
-			if ( ! defined('XMLRPC_REQUEST') && ! strpos($_SERVER['SCRIPT_NAME'], 'p-admin/async-upload.php' ) ) {
+			if ( ! defined('XMLRPC_REQUEST') && ( 'async-upload.php' != $pagenow ) ) {
 				add_action('admin_menu', array(&$this,'build_menu'));
-				
-				if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/plugins.php') )
+
+				if ( 'plugins.php' == $pagenow )
 					add_filter( 'plugin_row_meta', array(&$this, 'flt_plugin_action_links'), 10, 2 );
 			}
 		}
 
-		if ( ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/categories.php') || ( isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'p-admin/categories.php') ) ) && awp_is_plugin_active('subscribe2') )
+		if ( ( ( 'edit-tags.php' == $pagenow ) || ( isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'p-admin/edit-tags.php') ) ) && awp_is_plugin_active('subscribe2') )
 			require_once('subscribe2_helper_rs.php');
 			
 		if ( defined( 'FLUTTER_NAME' ) )
@@ -142,19 +144,21 @@ class ScoperAdmin
 	}
 	
 	function admin_head() {
+		global $pagenow, $plugin_page_cr;
+		
 		echo '<link rel="stylesheet" href="' . SCOPER_URLPATH . '/admin/role-scoper.css" type="text/css" />'."\n";
 
-		if ( false !== strpos(urldecode($_SERVER['REQUEST_URI']), 'page=rs-options') ) {
+		if ( 'rs-options' == $plugin_page_cr ) {
 			if ( scoper_get_option('version_update_notice') ) {
 				require_once('misc/version_notice_rs.php');
 				scoper_new_version_notice();
 			}
 
-		} elseif ( false !== strpos(urldecode($_SERVER['REQUEST_URI']), 'admin.php?page=rs-about') ) {
+		} elseif ( 'rs-about' == $plugin_page_cr ) {
 			echo '<link rel="stylesheet" href="' . SCOPER_URLPATH . '/admin/about/about.css" type="text/css" />'."\n";
 		}
-				
-		if ( strpos($_SERVER['REQUEST_URI'], 'post.php') || strpos($_SERVER['REQUEST_URI'], 'post-new.php') ) {
+
+		if ( in_array( $pagenow, array( 'post.php', 'post-new.php') ) ) {
 			$src_name = 'post';
 			$object_type = cr_find_post_type();	
 		} elseif ( isset($_GET['src_name']) && isset($_GET['object_type']) ) {
@@ -182,8 +186,7 @@ class ScoperAdmin
 			add_filter( 'contextual_help_list', array(&$this, 'flt_contextual_help_list'), 10, 2 );
 		}
 		
-		if( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'admin.php?page=rs-' ) 
-		&& false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'roles' ) ) {
+		if ( ( 0 === strpos( $plugin_page_cr, 'rs-' ) ) && strpos( $plugin_page_cr, 'roles' ) ) {
 			// add Ajax goodies we need for role duration/content date limit editing Bulk Role Admin
 			wp_print_scripts( array( 'page' ) );
 			
@@ -195,15 +198,15 @@ class ScoperAdmin
 		echo "\n" . "<script type='text/javascript' src='" . SCOPER_URLPATH . "/admin/agapetry.js'></script>";
 		echo "\n" . "<script type='text/javascript' src='" . SCOPER_URLPATH . "/admin/role-scoper.js'></script>";
 		
-		if ( scoper_get_option( 'group_ajax' ) && ( strpos( $_SERVER['REQUEST_URI'], 'user-edit.php' ) || strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) || strpos( $_SERVER['REQUEST_URI'], 'page=rs-groups' ) ) ) {
+		if ( scoper_get_option( 'group_ajax' ) && ( in_array( $pagenow, array( 'user-edit.php', 'profile.php' ) ) || ( 'rs-groups' == $plugin_page_cr ) ) ) {
 			global $scoper_user_search;
-			
-			if ( strpos( $_SERVER['REQUEST_URI'], 'page=rs-groups' ) ) {
+
+			if ( 'rs-groups' == $plugin_page_cr ) {
 				$agent_type = 'users';
 				$agent_id = isset( $_GET['id'] ) ? $_GET['id'] : 0;
 			} else {
 				$agent_type = 'groups';
-				if ( strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) ) {
+				if ( 'profile.php' == $pagenow ) {
 					global $current_user;
 					$agent_id = $current_user->ID;	
 				} else
@@ -287,12 +290,11 @@ class ScoperAdmin
 	}
 	
 	function build_menu() {
-		if ( ! defined('USER_ROLES_RS') && isset( $_POST['role_type'] ) )
-			scoper_use_posted_init_options();
-	
-		$uri = $_SERVER['SCRIPT_NAME'];
-		$path = SCOPER_ABSPATH;
+		global $plugin_page_cr;
 		
+		if ( ! defined('USER_ROLES_RS') && isset( $_POST['enable_group_roles'] ) )
+			scoper_use_posted_init_options();
+
 		global $current_user;
 
 		$this->filter_add_new_content_links();
@@ -371,10 +373,10 @@ class ScoperAdmin
 				add_submenu_page( 'users.php', $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
 
 			// satisfy WordPress' demand that all admin links be properly defined in menu
-			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-default_groups' ) )
+			if ( 'rs-default_groups' == $plugin_page_cr )
 				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Default Groups', 'scoper'), $cap_req, 'rs-default_groups', array( &$this, 'menu_handler' ) );
 		
-			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-group_members' ) )
+			if ( 'rs-group_members' == $plugin_page_cr )
 				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Group Members', 'scoper'), $cap_req, 'rs-group_members', array( &$this, 'menu_handler' ) );
 		}
 
@@ -555,7 +557,7 @@ class ScoperAdmin
 				$submenu[$roles_menu][0][0] = __awp('Options');
 				
 			// satisfy WordPress' demand that all admin links be properly defined in menu
-			if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'rs-attachments_utility' ) )
+			if ( 'rs-attachments_utility' == $plugin_page_cr )
 				add_submenu_page($roles_menu, __('Attachment Utility', 'scoper'), __('Attachment Utility', 'scoper'), 'read', 'rs-attachments_utility', array( &$this, 'menu_handler' ) );
 
 		} elseif ( empty($show_restrictions_menu) || empty($show_roles_menu) ) {
@@ -585,7 +587,7 @@ class ScoperAdmin
 		
 
 		// satisfy WordPress' demand that all admin links be properly defined in menu
-		if ( false !== strpos( urldecode($_SERVER['REQUEST_URI']), 'page=rs-object_role_edit' ) )
+		if ( 'rs-object_role_edit' == $plugin_page_cr )
 			add_submenu_page($roles_menu, __('Object Role Edit', 'scoper'), __('Object Role Edit', 'scoper'), 'read', 'rs-object_role_edit', array( &$this, 'menu_handler' ) );
 	}
 

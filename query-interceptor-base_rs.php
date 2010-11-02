@@ -90,7 +90,7 @@ class QueryInterceptorBase_RS {
 					$listed_ids = array();
 					
 					// In edit.php, WP forces all objects into recordset for hierarchical post types.  But for perf enchancement, we need to know IDs of items which are actually listed
-					if ( strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit.php' ) ) {
+					if ( 'edit.php' == $GLOBALS['pagenow'] ) {
 						$post_type = ( ! empty( $_GET['post_type'] ) ) ? $_GET['post_type'] : 'post';
 						$determine_listed_ids = ! is_content_administrator_rs() && is_post_type_hierarchical( $post_type ) && ! empty( $GLOBALS['query_interceptor']->last_request[$src_name] ) && ! strpos( $GLOBALS['query_interceptor']->last_request[$src_name], 'LIMIT ' );
 
@@ -144,10 +144,10 @@ class QueryInterceptorBase_RS {
 		//}
 		
 		// now determine what restrictions were in place on these results 
-		// (currently only for RS role type, post data source, front end or manage posts/pages)
+		// (currently only for post data source, front end or manage posts/pages)
 		//
 		// possible todo: support other data sources, WP role type
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/edit.php') ) {
+		if ( 'edit.php' == $GLOBALS['pagenow'] ) {
 			if ( scoper_get_otype_option('restrictions_column', 'post') || scoper_get_otype_option('term_roles_column', 'post') || scoper_get_otype_option('object_roles_column', 'post') ) {
 				global $scoper_role_usage;
 				

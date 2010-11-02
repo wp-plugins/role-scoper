@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.2.7
+Stable Tag: 1.3
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3 - 2 Nov 2010 =
+* BugFix : Pages could not be selected as parent based on Page Associate role assignment (since 1.3.RC)
+* BugFix : Infinite redirection if file keys in .htaccess (uploads folder) were manually modified
+* Change : User search results for group membership show user display name (rather than login)
+
 
 = 1.3.RC6 - 20 Oct 2010 =
 * Feature : Nav Menu Manager role assignments per-menu

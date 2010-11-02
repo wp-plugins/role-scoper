@@ -225,8 +225,8 @@ class CR_Roles extends AGP_Config_Items {
 				}
 			}
 		}
-		
-		if ( $role_type )
+
+		if ( $role_type && $contained_roles )
 			$contained_roles = $this->filter_keys( array_keys($contained_roles), array( 'role_type' => $role_type ), 'names_as_key' );
 
 		if ( $contained_roles && ! $include_this_role )
@@ -305,7 +305,7 @@ class CR_Roles extends AGP_Config_Items {
 		
 		if ( isset( $this->members[$role_handle] ) ) {
 			$attribs->role_type = $this->members[$role_handle]->role_type;
-			
+
 			if ( 'rs' == $attribs->role_type ) {
 				$attribs->src_name = $this->members[$role_handle]->src_name;
 				$attribs->object_type = $this->members[$role_handle]->object_type;
@@ -380,7 +380,6 @@ class CR_Roles extends AGP_Config_Items {
 		return;
 		
 		/*
-		if ( 'rs' == SCOPER_ROLE_TYPE ) {
 			if ( $custom_members = array_diff_key( $this->members, array_fill_keys( array( 'rs_post_reader', 'rs_private_post_reader', 'rs_post_contributor', 'rs_post_author', 'rs_post_revisor', 'rs_post_editor', 'rs_page_reader', 'rs_private_page_reader', 'rs_page_contributor', 'rs_page_author', 'rs_page_revisor', 'rs_page_editor', 'rs_page_associate', 'rs_link_editor', 'rs_category_manager', 'rs_group_manager' ), true ) ) ) {
 				foreach ( $custom_members as $role_handle => $role_def ) {
 					if ( ( 'post' == $role_def->src_name ) && in_array( $role_def->object_type, array( 'post', 'page' ) )
@@ -388,7 +387,6 @@ class CR_Roles extends AGP_Config_Items {
 						unset( $this->members[$role_handle] );
 				}
 			}
-		}
 		*/
 	}
 } // end class CR_Roles

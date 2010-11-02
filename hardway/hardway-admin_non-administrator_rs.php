@@ -5,7 +5,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 add_action( 'check_admin_referer', array('ScoperAdminHardway_Ltd', 'act_check_admin_referer') );
 	
-if ( ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/nav-menus.php' ) ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
+if ( 'nav-menus.php' != $GLOBALS['pagenow'] ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
 
 	// link category roles, restrictions are only for bookmark management
 	global $scoper;
@@ -22,7 +22,7 @@ if ( ! strpos( $_SERVER['REQUEST_URI'], 'p-admin/nav-menus.php' ) ) {	// nav-men
 	$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
 	$nomess_uris = array_merge($nomess_uris, array('p-admin/admin-ajax.php'));
 	
-	if ( ! agp_strpos_any(urldecode($_SERVER['REQUEST_URI']), $nomess_uris ) )
+	if ( ! in_array( $GLOBALS['pagenow'], $nomess_uris ) && ! in_array( $GLOBALS['plugin_page_cr'], $nomess_uris ) )
 		add_filter('query', array('ScoperAdminHardway_Ltd', 'flt_last_resort_query') );
 }
 
@@ -56,7 +56,7 @@ class ScoperAdminHardway_Ltd {
 				if ( ! $permit )
 					wp_die( __('You do not have permission to select that Category Parent', 'scoper') );
 			}
-			
+
 		} elseif ( 'update-nav_menu' == $referer_name ) {
 			$tx = get_taxonomy( 'nav_menu' );
 			if ( ! cr_user_can( $tx->cap->manage_terms, $_REQUEST['menu'], 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) ) ) {
@@ -96,7 +96,7 @@ class ScoperAdminHardway_Ltd {
 		if ( scoper_querying_db() || $GLOBALS['cap_interceptor']->in_process )
 			return $query;
 			
-		global $wpdb, $scoper;
+		global $wpdb, $pagenow, $scoper;
 
 		$posts = $wpdb->posts;
 		$comments = $wpdb->comments;
@@ -166,14 +166,14 @@ class ScoperAdminHardway_Ltd {
 		// num cats: "SELECT COUNT(*) FROM wp_term_taxonomy"
 		// SELECT DISTINCT COUNT(tt.term_id) FROM wp_term_taxonomy AS tt WHERE 1=1 AND tt.taxonomy = 'category' 
 		// SELECT DISTINCT tt.term_id FROM wp_term_taxonomy AS tt WHERE
-		$script_name = urldecode($_SERVER['REQUEST_URI']);
-		if ( ! strpos($script_name, 'p-admin/post.php') && ! strpos($script_name, 'p-admin/post-new.php') && ! defined('XMLRPC_REQUEST') ) {
+		if ( ! in_array( $pagenow, array( 'post.php', 'post-new.php') ) && ! defined('XMLRPC_REQUEST') ) {
 			if ( strpos($query, " FROM $term_taxonomy") || strpos($query, " FROM $wpdb->terms") ) 
 			{
 				//rs_errlog ("<br />caught $query <br />");
 
 				// don't mess with parent category selection/availability for single term edit
-				if ( $is_term_admin = strpos($script_name, 'p-admin/edit-tags.php') ) {
+				$is_term_admin = ( 'edit-tags.php' == $pagenow );
+				if ( $is_term_admin ) {
 					if ( ! empty( $_REQUEST['tag_ID'] ) )
 						return $query;
 				}
@@ -185,7 +185,7 @@ class ScoperAdminHardway_Ltd {
 					$taxonomy = $matches[1];
 				
 				if ( ! empty($taxonomy) ) {
-					if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') )
+					if ( 'profile.php' == $pagenow )
 						return $query;	
 					else
 						$query = apply_filters( 'terms_request_rs', $query, $taxonomy, array( 'is_term_admin' => $is_term_admin ) );
@@ -210,7 +210,7 @@ class ScoperAdminHardway_Ltd {
 			// cache the filtered results for pending comment count query, which (as of WP 3.0.1) is executed once per-post in the edit listing
 			$post_id = 0;
 			if ( $doing_pending_comment_count = strpos( $query, 'COUNT(comment_ID)' ) && strpos( $query, 'comment_post_ID' ) && strpos( $query, "comment_approved = '0'" ) ) {
-				if ( ! strpos($script_name, 'p-admin/index.php') ) {	// there's too much happening on the dashboard (and too much low-level query filtering) to buffer listed IDs reliably.
+				if ( 'index.php' != $pagenow ) {	// there's too much happening on the dashboard (and too much low-level query filtering) to buffer listed IDs reliably.
 					if ( preg_match( "/comment_post_ID IN \( '([0-9]+)' \)/", $query, $matches ) ) {
 						if ( $matches[1] )
 							$post_id = $matches[1];
@@ -255,7 +255,7 @@ class ScoperAdminHardway_Ltd {
 					$query = preg_replace( "/FROM\s*{$comments}\s*GROUP BY /", "FROM $comments INNER JOIN $posts ON $posts.ID = $comment_alias.comment_post_ID GROUP BY ", $query);
 			}
 
-			$generic_uri = strpos($_SERVER['SCRIPT_NAME'], 'p-admin/index.php') || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/comments.php');
+			$generic_uri = in_array( $pagenow, array( 'index.php', 'comments.php' ) );
 
 			if ( ! $generic_uri && ( $_post_type = cr_find_post_type( '', false ) ) )  // arg: don't return 'post' as default if detection fails
 				$post_types = array( $_post_type => get_post_type_object( $_post_type ) );
@@ -291,7 +291,7 @@ class ScoperAdminHardway_Ltd {
 			if ( strpos( $query, "$posts p" ) || strpos( $query, "$posts AS p" ) )
 				$args['source_alias'] = 'p';
 	
-			$object_type = ( strpos( $script_name, 'p-admin/edit.php' ) ) ? cr_find_post_type() : '';
+			$object_type = ( 'edit.php' == $pagenow ) ? cr_find_post_type() : '';
 			$query = apply_filters( 'objects_request_rs', $query, 'post', $object_type, $args );
 
 			// pre-execute the comments listing query and buffer the listed IDs for more efficient user_has_cap calls
@@ -334,7 +334,7 @@ class ScoperAdminHardway_Ltd {
 		}
 		
 		// filter parent_dropdown() function.  As of WP 3.0.1, it still executes an otherwise unfilterable direct db query
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/admin.php') ) {
+		if ( 'admin.php' == $pagenow ) {
 			if ( strpos ($query, "ELECT ID, post_parent, post_title") && strpos($query, "FROM $posts WHERE post_parent =") && function_exists('parent_dropdown') ) {
 				$page_temp = '';
 				$object_id = $scoper->data_sources->detect( 'id', 'post' );
@@ -357,7 +357,7 @@ class ScoperAdminHardway_Ltd {
 		//if ( strpos($query, 'ELECT post_mime_type') ) {
 		if ( strpos($query, "post_type = 'attachment'") && ( 0 === strpos($query, "SELECT " ) ) ) {
 			if ( $where_pos = strpos($query, 'WHERE ') ) {
-				
+
 				if ( ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {  // note: this constant actually just prevents Media Library filtering, falling back to WP Roles for attachment editability and leaving uneditable uploads viewable in Library
 					$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
 					$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );

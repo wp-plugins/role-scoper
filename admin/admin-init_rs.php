@@ -24,7 +24,7 @@ function scoper_admin_init() {
 
 
 function scoper_use_posted_init_options() {
-	if ( ! strpos( urldecode($_SERVER['REQUEST_URI']), 'admin.php?page=rs-' ) || defined('GROUP_ROLES_RS') )
+	if ( 0 !== strpos( $GLOBALS['plugin_page_cr'], 'rs-' ) || defined('GROUP_ROLES_RS') )
 		return;
 	
 	if ( isset( $_POST['rs_defaults'] ) ) {

@@ -185,7 +185,7 @@ class ScoperRewrite {
 				$new_rules .= "RewriteCond %{REQUEST_URI} ^(.*)/$file_path" . "$ [NC]\n";
 				$new_rules .= "RewriteCond %{QUERY_STRING} !^(.*)rs_file_key=$key(.*)\n";
 				$new_rules .= $main_rewrite_rule;
-						
+
 				if ( $pos_ext = strrpos( $file_path, '\.' ) ) {
 					$thumb_path = substr( $file_path, 0, $pos_ext );
 					$ext = substr( $file_path, $pos_ext + 2 );	

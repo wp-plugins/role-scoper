@@ -8,7 +8,7 @@ class ScoperProfileUI {
 
 	function display_ui_user_roles($user, $groups_only = false) {
 		global $scoper;
-		
+
 		$blog_roles = array();
 		$term_roles = array();
 
@@ -184,9 +184,7 @@ class ScoperProfileUI {
 			$col_name = $tx_src->cols->name;
 			
 			$term_names = array();
-			foreach ( $terms as $term )
-				$term_names[$term->$col_id] = $term->name;
-	
+
 			foreach ( $terms as $term )
 				$term_names[$term->$col_id] = $term->$col_name;
 				

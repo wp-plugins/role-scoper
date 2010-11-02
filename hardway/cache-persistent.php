@@ -63,19 +63,24 @@ function wpp_cache_delete($id, $flag = '', $append_blog_suffix = true) {
 	return $wpp_object_cache->delete($id, $flag);
 }
 
-function wpp_cache_flush() {
+function wpp_cache_flush_all_sites() {
+	return wpp_cache_flush( true );
+}
+
+function wpp_cache_flush( $all_sites = false ) {
 	global $wpp_object_cache;
 
 	if ( empty($wpp_object_cache) || ! is_object($wpp_object_cache) ) {
 		
 		if ( empty($wpp_object_cache->auto_flushed) ) {
 			//rs_errlog('need flush - failed wpp_cache_flush');
-			update_option( 'scoper_need_cache_flush', true );
+			$val = $all_sites ? 'all_sites' : true;
+			update_option( 'scoper_need_cache_flush', $val );
 		}
 		return;
 	}
-		
-	return $wpp_object_cache->flush();
+	
+	return $wpp_object_cache->flush( '', $all_sites );
 }
 
 // added by kevinB for use with Role Scoper
@@ -138,7 +143,8 @@ function wpp_cache_init( $sitewide_groups = true, $use_cache_subdir = true ) {
 		delete_option('scoper_need_cache_flush');
 		
 		$wpp_object_cache->auto_flushed = true;
-		$GLOBALS['wpp_object_cache']->flush();
+		$all_sites = ( 'all_sites' == $need_flush );
+		$GLOBALS['wpp_object_cache']->flush( '', $all_sites );
 	}
 		
 }
@@ -363,7 +369,7 @@ class WP_Persistent_Object_Cache {
 	// only be deleted by flushing the entire cache, or by explicit deletion of each
 	// user/group id.  Neither option is reasonable; we need the ability to flush a wp_cache group. 
 	//
-	function flush($group = '') {
+	function flush( $group = '', $all_sites = false ) {
 		if ( empty( $this->cache_enabled ) )
 			return true;
 
@@ -378,7 +384,7 @@ class WP_Persistent_Object_Cache {
 			return false;
 		}
 		
-		$this->rm_cache_dir($group);
+		$this->rm_cache_dir( $group, $all_sites );
 
 		//rs_errlog ("<br />removing cached group $group:<br />");
 		
@@ -498,10 +504,13 @@ class WP_Persistent_Object_Cache {
 	}
 
 	// modified by kevinB for use with Role Scoper ( see explanation above flush method )
-	function rm_cache_dir($group = '') {
+	function rm_cache_dir( $group = '', $all_sites = false ) {
 		// BEGIN Rolescoper Modification: optionally reference group subdir
-		$group_dir = ( $group ) ? $this->get_group_dir($group) : '';
-		
+		if ( $group )
+			$group_dir = $this->get_group_dir( $group );
+		else
+			$group_dir = ( $all_sites ) ? '' : $this->blog_id;
+
 		$dir = $this->cache_dir . $group_dir;
 		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
 		

@@ -180,7 +180,7 @@ $role_display = array();
 $editable_roles = array();
 
 $role_defs_by_otype = array();
-$role_defs_by_otype[$object_type] = $scoper->role_defs->get_matching('rs', $src_name, $object_type);
+$role_defs_by_otype[$object_type] = $scoper->role_defs->get_matching( 'rs', $src_name, $object_type);
 
 foreach ( array_keys($role_defs_by_otype[$object_type]) as $role_handle ) {
 	$role_display[$role_handle] = $scoper->role_defs->get_abbrev( $role_handle, OBJECT_UI_RS );

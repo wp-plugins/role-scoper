@@ -151,7 +151,7 @@ class ScoperAdminFilters
 		add_filter( 'save_post', array(&$this, 'custom_taxonomies_helper'), 5, 2); 
 		
 		// TODO: also hook to "pre_option_default_{$taxonomy}"
-		if ( ( ! strpos($_SERVER['SCRIPT_NAME'], 'p-admin/options-writing.php') ) && ! is_content_administrator_rs() )
+		if ( ( 'options-writing.php' != $GLOBALS['pagenow'] ) && ! is_content_administrator_rs() )
 			add_filter('pre_option_default_category', array(&$this, 'flt_default_term') );
 
 		// Follow up on role creation / deletion by Role Manager, Capability Manager or other equivalent plugin
@@ -173,9 +173,6 @@ class ScoperAdminFilters
 			if ( isset($t->update_count_callback) && ( '_update_post_term_count' == $t->update_count_callback ) )
 				$wp_taxonomies[$key]->update_count_callback = 'scoper_update_post_term_count';
 		}
-		
-		//if ( strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit.php' ) )
-		//	add_filter( '
 	}
 	
 	// make sure pre filter is applied for all custom taxonomies regardless of term selection
@@ -244,10 +241,8 @@ class ScoperAdminFilters
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) )
 			return $cols;
 		
-		if (   // possible TODO: reinstate support for separate activation of pages / posts lean (as of WP 2.9, all post types us edit.php)
-		( ( defined( 'SCOPER_EDIT_PAGES_LEAN' ) || defined( 'SCOPER_EDIT_POSTS_LEAN' ) ) && 
-		  ( strpos(urldecode($_SERVER['REQUEST_URI']), 'wp-admin/edit-pages.php') || strpos(urldecode($_SERVER['REQUEST_URI']), 'wp-admin/edit.php') ) )
-	    ) {
+		// possible TODO: reinstate support for separate activation of pages / posts lean (as of WP 2.9, all post types us edit.php)
+		if ( ( defined( 'SCOPER_EDIT_PAGES_LEAN' ) || defined( 'SCOPER_EDIT_POSTS_LEAN' ) ) && ( 'edit.php' == $GLOBALS['pagenow'] ) ) {
 			global $wpdb;
 			$cols = "$wpdb->posts.ID, $wpdb->posts.post_author, $wpdb->posts.post_date, $wpdb->posts.post_date_gmt, $wpdb->posts.post_title, $wpdb->posts.post_status, $wpdb->posts.comment_status, $wpdb->posts.ping_status, $wpdb->posts.post_password, $wpdb->posts.post_name, $wpdb->posts.to_ping, $wpdb->posts.pinged, $wpdb->posts.post_parent, $wpdb->posts.post_modified, $wpdb->posts.post_modified_gmt, $wpdb->posts.guid, $wpdb->posts.post_type, $wpdb->posts.post_mime_type, $wpdb->posts.menu_order, $wpdb->posts.comment_count";
 		}

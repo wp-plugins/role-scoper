@@ -28,7 +28,7 @@ class Scoper_Submittee {
 			$sitewide = true;		// default customization is only for per-blog options, but is sitewide in terms of DB storage in sitemeta table
 			
 		if ( 'flush' == $action ) {
-			wpp_cache_flush();
+			wpp_cache_flush_all_sites();
 			return;	
 		}
 

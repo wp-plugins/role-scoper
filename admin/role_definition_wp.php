@@ -115,7 +115,6 @@ if ( scoper_get_option('display_hints') ) {
 		
 	echo '</tbody></table>';
 	echo '<br /><br />';
-
 ?>
 </div>
 

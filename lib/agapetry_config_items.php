@@ -82,8 +82,8 @@ class AGP_Config_Items {
 		if ( is_object($obj_or_name) )
 			return $obj_or_name;
 		
-		if ( ! is_string($obj_or_name) )
-			agp_bt_die();
+		//if ( ! is_string($obj_or_name) )
+		//	agp_bt_die();
 			
 		// $obj_or_name must actually be the object name
 		if ( isset($this->members[$obj_or_name]) )

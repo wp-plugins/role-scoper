@@ -752,7 +752,6 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 			$root_item = (object) array( $col_id => 0, $col_name => $root_caption, $col_parent => 0 );
 			array_unshift( $all_items, $root_item);
 		} else {
-			//$all_items = array( $root_caption => (object) array($col_id => 0) ) + $all_items;
 			$obj = (object) array($col_id => 0);
 			$all_items = array( $root_caption => $obj ) + $all_items;
 			
@@ -763,9 +762,7 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 	}
 	
 	$title_roles = __('edit roles', 'scoper');
-	//$title_item = sprintf(_ x('edit %s', 'post/page/category/etc.', 'scoper'), agp_strtolower($item_label) );
 	$title_item = sprintf(__('edit %s', 'scoper'), agp_strtolower($item_label) );
-	//$title_term = sprintf(_ x('edit %s', 'category/link category/etc', 'scoper'), agp_strtolower($item_label) );
 
 	foreach($all_items as $key => $item) {
 		$id = $item->$col_id;
@@ -837,9 +834,8 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 		if (TERM_SCOPE_RS == $scope)
 			$prevlink = ( $last_id && ! $single_item && $id ) ? "<a{$ie_link_style} href='#item-" . $last_id . "'>" . $prevtext . "</a>" : '';
 			
-		if ( $id && ( ! $is_administrator && ( ! isset($admin_items[$id]) ) ) ) {
+		if ( $id && ( ! $is_administrator && ( ! isset($admin_items[$id]) ) ) )
 			continue;
-		}
 		
 		$last_id = $id;
 		$last_name = $name;

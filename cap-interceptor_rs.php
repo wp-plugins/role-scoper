@@ -63,7 +63,7 @@ class CapInterceptor_RS
 	//
 	function _flt_user_has_cap($wp_blogcaps, $orig_reqd_caps, $args) {
 		
-		// =============================== Static variable declaration and initialization ===================================
+		// =============================== STATIC VARIABLE DECLARATION AND INITIALIZATION (to memcache filtering results) =====
 		static $cache_tested_ids;
 		static $cache_okay_ids;
 		static $cache_where_clause;
@@ -84,8 +84,6 @@ class CapInterceptor_RS
 		//if ( strpos( $_SERVER['REQUEST_URI'], 'ajax' ) ) {
 			//if ( ! empty($_REQUEST) )
 			//	rs_errlog( serialize($_REQUEST) );
-			//rs_errlog( '' );
-			//rs_errlog( serialize($_SERVER) );
 			//rs_errlog( '' );
 			//rs_errlog('flt_user_has_cap');
 			//rs_errlog(serialize($orig_reqd_caps));
@@ -141,10 +139,8 @@ class CapInterceptor_RS
 
 
 		// ============================ GLOBAL VARIABLE DECLARATIONS, ARGUMENT TRANSLATION AND STATUS DETECTION =============================
-		global $current_user;
-		
-		$script_name = $_SERVER['SCRIPT_NAME'];
-		
+		global $current_user, $pagenow;
+
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 
 		if ( $user_id && ($user_id != $current_user->ID) )
@@ -174,7 +170,7 @@ class CapInterceptor_RS
 		$object_type = cr_find_object_type( $src_name, $object_id );
 
 		// TODO: also incorporate other special handling for attachments up here?
-		if ( strpos( $_SERVER['REQUEST_URI'], 'media-upload.php' ) || strpos( $_SERVER['REQUEST_URI'], 'async-upload.php' ) ) {
+		if ( in_array( $pagenow, array( 'media-upload.php', 'async-upload.php' ) ) ) {
 			if ( ! empty($_POST['post_ID']) )
 				$object_id = $_POST['post_ID'];
 			elseif ( ! empty($_REQUEST['post_id']) )
@@ -223,20 +219,15 @@ class CapInterceptor_RS
 					// Replace edit_posts requirement with corresponding type-specific requirement, but only after admin menu is drawn, or on a submission before the menu is drawn
 					$replace_post_caps = array( 'edit_posts', 'publish_posts' );
 					
-					//if ( strpos($_SERVER['REQUEST_URI'], 'media-upload.php' ) )
+					//if ( 'media-upload.php' == $pagenow )
 						$replace_post_caps = array_merge( $replace_post_caps, array( 'edit_others_posts', 'edit_published_posts' ) );
 
 					foreach( $replace_post_caps as $post_cap_name ) {
 						$key = array_search( $post_cap_name, $rs_reqd_caps );
 
-						//if ( ( false !== $key ) ) {
-						if ( ( false !== $key ) && ! $doing_admin_menus && ( strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/post.php') || strpos($script_name, 'p-admin/post-new.php') || strpos($_SERVER['REQUEST_URI'], 'p-admin/admin-ajax.php') ) ) {				
-							//if ( $object_id )
-								//rs_errlog( "substituting {$object_type_obj->cap->$post_cap_name} for $post_cap_name (id $object_id)" );
-
-								$rs_reqd_caps[$key] = $object_type_obj->cap->$post_cap_name;
-								$modified_caps = true;
-							//$wp_blogcaps = array_merge( $wp_blogcaps, array('edit_posts' => true) );
+						if ( ( false !== $key ) && ! $doing_admin_menus && in_array( $pagenow, array( 'edit.php', 'post.php', 'post-new.php', 'admin-ajax.php' ) ) ) {				
+							$rs_reqd_caps[$key] = $object_type_obj->cap->$post_cap_name;
+							$modified_caps = true;
 						}
 					}
 				}
@@ -247,7 +238,7 @@ class CapInterceptor_RS
 					if( in_array( reset($rs_reqd_caps), array( 'edit_others_posts' ) ) ) {
 						require_once( 'lib/agapetry_wp_admin_lib.php' ); // function awp_metaboxes_started()
 		
-						if ( ! awp_metaboxes_started($object_type) && ! strpos($_SERVER['SCRIPT_NAME'], 'p-admin/revision.php') && false === strpos(urldecode($_SERVER['REQUEST_URI']), 'page=revisions' )  ) // don't enable contributors to view/restore revisions
+						if ( ! awp_metaboxes_started( $object_type ) && ( 'revision.php' != $pagenow ) && ( 'revisions' != $GLOBALS['plugin_page_cr'] ) ) // don't enable contributors to view/restore revisions
 							$rs_reqd_caps[0] = $object_type_obj->cap->edit_posts;   // don't enable contributors to view/restore revisions
 						else
 							$rs_reqd_caps[0] = $object_type_obj->cap->edit_published_posts;	// we will filter / suppress the author dropdown downstream from here
@@ -269,7 +260,7 @@ class CapInterceptor_RS
 			require_once( 'revisionary-helper_rs.php' );
 			$rs_reqd_caps = Rvy_Helper::convert_post_edit_caps( $rs_reqd_caps, $object_type );
 		}
-		
+
 		//$matched_context = in_array( $object_type, $cap_types );
 
 		//rs_errlog( "matched context for $object_id : $matched_context" );
@@ -294,7 +285,7 @@ class CapInterceptor_RS
 		//if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {
 			if ( ! $object_id && ! $doing_admin_menus ) {
 				// ============================================ OBJECT ID DETERMINATION ========================================
-				if ( ! $this->skip_id_generation && ! defined('XMLRPC_REQUEST') && ! strpos( $script_name, 'p-admin/media-upload.php' ) && ! strpos( $script_name, 'p-admin/async-upload.php' ) ) {  // lots of superfluous queries in media upload popup otherwise
+				if ( ! $this->skip_id_generation && ! defined('XMLRPC_REQUEST') && ! in_array( $pagenow, array( 'media-upload.php', 'async-upload.php' ) ) ) {  // lots of superfluous queries in media upload popup otherwise
 					// Try to generate missing object_id argument for problematic current_user_can calls 
 					static $generated_id;
 					
@@ -308,9 +299,7 @@ class CapInterceptor_RS
 	
 						foreach( $rs_reqd_caps as $cap_name ) {
 							if ( $gen_id = (int) $this->_detect_object_id( $cap_name ) ) {
-								// Special case for upload scripts: don't do scoped role query if the post doesn't have any categories saved yet
-								if ( ( 'post' != $src_name ) || ! strpos($script_name, 'p-admin/media-upload.php') || ! strpos($script_name, 'p-admin/async-upload.php') || wp_get_post_categories($gen_id) )
-									break;	// means we are accepting the generated id
+								break;	// means we are accepting the generated id
 							}
 						}
 	
@@ -322,7 +311,7 @@ class CapInterceptor_RS
 					//rs_errlog( "detected ID: $object_id" );
 				} else
 					$this->skip_id_generation = false; // this is a one-time flag
-					
+
 				// ========================================= (end object id determination) =======================================
 			} else {
 				if ( $_post = get_post($object_id) ) {
@@ -331,7 +320,7 @@ class CapInterceptor_RS
 				}
 			}
 			
-			
+
 			// If we still have no object id (detection was skipped or failed to identify it)...
 			if ( ! $object_id ) { // || ! $matched_context ) {
 				// ============================================ "CAN FOR ANY" CHECKS ===========================================
@@ -341,9 +330,8 @@ class CapInterceptor_RS
 					// If we are about to fail the blogcap requirement, credit a missing cap if the user has it by term role for ANY term.
 					// This prevents failing initial UI entrance exams that only consider blog-wide roles.
 					if ( ! $this->skip_any_term_check ) {
-						if ( $tax_caps = $this->user_can_for_any_term($missing_caps) ) {
+						if ( $tax_caps = $this->user_can_for_any_term($missing_caps) )
 							$wp_blogcaps = array_merge($wp_blogcaps, $tax_caps);
-						}
 							
 						//rs_errlog( "can for any term: " . serialize($tax_caps) );
 					} else
@@ -401,7 +389,7 @@ class CapInterceptor_RS
 			}
 		}
 		
-		
+
 		// Note: At this point, we have a nonzero object_id...
 		
 		// if this is a term administration request, route to user_can_admin_terms()
@@ -475,7 +463,7 @@ class CapInterceptor_RS
 		// ================================ SPECIAL HANDLING FOR ATTACHMENTS AND REVISIONS ==========================================
 		$maybe_revision = ( 'post' == $src_name && ! isset($cache_tested_ids[$src_name][$object_type][$capreqs_key][$object_id]) );
 
-		$maybe_attachment = strpos($script_name, 'p-admin/upload.php') || strpos($script_name, 'p-admin/media.php');
+		$maybe_attachment = in_array( $pagenow, array( 'upload.php', 'media.php' ) );
 
 		if ( $maybe_revision || $maybe_attachment ) {
 			global $wpdb;
@@ -525,15 +513,15 @@ class CapInterceptor_RS
 				} //endif retrieved post is a revision or attachment
 			} // endif post retrieved
 		} // endif specified id might be a revision or attachment
-		// ============================== (end special handling for attachements and revisions) ==========================================
+		// ============================== (end special handling for attachments and revisions) ==========================================
 		
 			
 		// ============ SCOPED QUERY for required caps on object id (if other listed ids are known, query for them also).  Cache results to static var. ===============
 		
-		// $force_refresh = false; // strpos( $_SERVER['REQUEST_URI'], 'async-upload.php' );
+		// $force_refresh = 'async-upload.php' == $pagenow;
 		
 		// Page refresh following publishing of new page by users who can edit by way of Term Role fails without this workaround
-		if ( ! empty( $_POST ) && ( defined( 'SCOPER_CACHE_SAFE_MODE' ) || ( strpos($_SERVER['REQUEST_URI'], 'p-admin/post.php') && ( $args[0] == $object_type_obj->cap->edit_post ) ) ) ) {
+		if ( ! empty( $_POST ) && ( defined( 'SCOPER_CACHE_SAFE_MODE' ) || ( ( 'post.php' == $pagenow ) && ( $args[0] == $object_type_obj->cap->edit_post ) ) ) ) {
 			$force_refresh = true;
 			$cache_tested_ids = array();
 			$cache_okay_ids = array();
@@ -554,20 +542,21 @@ class CapInterceptor_RS
 			//
 			// (This is useful when front end code must check caps for each post 
 			//  to determine whether to display 'edit' link, etc.)
-			if ( ! strpos($script_name, 'p-admin/index.php') ) {  // there's too much happening on the dashboard (and too much low-level query filtering) to buffer listed IDs reliably.
+			if ( is_admin() && ( 'index.php' == $pagenow ) ) {  // there's too much happening on the dashboard (and too much low-level query filtering) to buffer listed IDs reliably.
+				$listed_ids = array();
+			} else {
 				if ( isset($this->scoper->listed_ids[$src_name]) )
 					$listed_ids = array_keys($this->scoper->listed_ids[$src_name]);
 				else // note: don't use wp_object_cache because it includes posts not present in currently displayed resultset listing page
 					$listed_ids = array();
-			} else
-				$listed_ids = array();
+			}
 			
 			// make sure our current object_id is in the list
 			$listed_ids[] = $object_id;
 
 			// since the objects_where_role_clauses() output itself is not id-specific, also statically buffer it per reqd_caps
 			if ( $force_refresh || ! isset( $cache_where_clause[$src_name][$object_type][$capreqs_key] ) ) {
-				
+
 				$use_term_roles = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );
 
 				$no_object_roles = $this->scoper->data_sources->member_property($src_name, 'no_object_roles');
@@ -601,7 +590,7 @@ class CapInterceptor_RS
 			//dump($rs_reqd_caps);
 			//dump($query);
 			//dump($okay_ids);
-			
+
 			//rs_errlog( $query );
 			//rs_errlog( 'results: ' . serialize( $okay_ids ) );
 				
@@ -654,7 +643,6 @@ class CapInterceptor_RS
 				
 			//d_echo( 'OKAY:' );
 			//dump($args);
-			//dump($wp_blogcaps);
 			//dump($rs_reqd_caps);
 			//d_echo( '<br />' );
 			
@@ -690,7 +678,7 @@ class CapInterceptor_RS
 			if ( 'post' == $src_name ) {
 				if ( ! $id = $this->scoper->data_sources->get_from_http_post('id', 'post') ) {
 	
-					if ( strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/async-upload.php' ) ) {
+					if ( 'async-upload.php' != $pagenow ) {
 						if ( $attach_id = $this->scoper->data_sources->get_from_http_post('attachment_id', 'post') ) {
 							if ( $attach_id ) {
 								global $wpdb;
@@ -705,7 +693,7 @@ class CapInterceptor_RS
 			}
 
 			/* on the moderation page, admin-ajax tests for moderate_comments without passing any ID */
-			if ( ( 'moderate_comments' == $required_cap ) )
+			if ( 'moderate_comments' == $required_cap )
 				if ( $comment = get_comment( $id ) )
 					return $comment->comment_post_ID;
 			
@@ -760,11 +748,6 @@ class CapInterceptor_RS
 
 		$caps_by_otype = $this->scoper->cap_defs->organize_caps_by_otype($reqd_caps);
 
-		
-		//d_echo( "user_can_for_any_term: " . serialize($reqd_caps) );
-
-		//dump($caps_by_otype);
-
 		foreach ( $caps_by_otype as $src_name => $otypes ) {
 			$object_types = $this->scoper->data_sources->member_property($src_name, 'object_types');
 		
@@ -804,13 +787,12 @@ class CapInterceptor_RS
 					$roles = $this->scoper->role_defs->qualify_roles($this_op_caps);
 					
 					foreach ($uses_taxonomies as $taxonomy) {
-						if ( ! isset($user->term_roles[$taxonomy]) ) {
+						if ( ! isset($user->term_roles[$taxonomy]) )
 							$user->term_roles[$taxonomy] = $user->get_term_roles_daterange($taxonomy);				// call daterange function populate term_roles property - possible perf enhancement for subsequent code even though we don't conider content_date-limited roles here
-						}
 
 						if ( array_intersect_key($roles, agp_array_flatten( $user->term_roles[$taxonomy], false ) ) ) {	// okay to include all content date ranges because can_for_any_term checks are only preliminary measures to keep the admin UI open
 							$grant_caps = array_merge($grant_caps, $this_op_caps);
-							//dump($grant_caps);
+							break;
 						}
 					}
 				}

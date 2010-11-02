@@ -53,7 +53,7 @@ class ScoperOptionUI {
 		return $return;
 	}
 	
-	
+
 	function otype_option_checkboxes( $option_name, $caption, $tab_name, $section_name, $hint_text, $trailing_html, $args = array() ) {
 		global $scoper, $scoper_admin;
 		
@@ -134,7 +134,7 @@ if ( $sitewide )
 $ui = new ScoperOptionUI( $sitewide, $customize_defaults );
 		
 if ( isset($_POST['all_otype_options']) ) {
-	wpp_cache_flush();
+	wpp_cache_flush( $sitewide );
 
 	//global $wp_rewrite;
 	//if ( ! empty($wp_rewrite) )
@@ -1122,7 +1122,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 				echo '<br /><br />';
 				$display_style = ( $do_teaser[$src_name] ) ? '' : "style='display:none;'";
 				echo "<div id='teaser-pvt-$src_name' $display_style>";
-				
+
 				$type_caption = $scoper_admin->interpret_src_otype('post:post');
 				printf(__("Hide private %s (instead of teasing)", 'scoper'), $type_caption);	// back compat for existing translations
 				echo '<br />';
@@ -1580,7 +1580,7 @@ if (  ! empty( $ui->form_options[$tab][$section] ) ) :
 			$objscope_equiv_roles["rs_{$_type}_revisor"] = "rs_{$_type}_contributor";	
 	}
 			
-			
+
 	if ( IS_MU_RS ) {  // apply option scope filtering for mu
 		foreach ( array_keys($objscope_equiv_roles) as $role_name )
 			if ( ! in_array( $role_name . '_role_objscope', $ui->form_options[$tab][$section] ) )
@@ -1834,7 +1834,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 								echo ('</label></div>');
 							}
 							echo '</div>';
-							
+
 						} else {
 							$id = str_replace( ':', '_', $option_name . '-' . $src_otype );
 							?>

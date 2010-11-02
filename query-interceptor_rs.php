@@ -65,10 +65,8 @@ class QueryInterceptor_RS
 					continue;
 			
 				if ( ! $is_administrator ) {
-					//if ( isset($src->query_hooks->where) && isset($src->query_hooks->join) ) {
 					if ( isset($src->query_hooks->where) ) {
 						$rs_hooks[$src->query_hooks->where] = 	(object) array( 'name' => 'objects_where_rs',	'rs_args' => "'$src_name', '', '' ");	
-						//$rs_hooks[$src->query_hooks->join] =  	(object) array( 'name' => 'objects_join_rs', 	'rs_args' => "'$src_name', '', '' ");	
 					
 					} elseif ( isset($src->query_hooks->request) )
 						$rs_hooks[$src->query_hooks->request] = (object) array( 'name' => 'objects_request_rs',	'rs_args' => "'$src_name', '', '' ");
@@ -78,8 +76,6 @@ class QueryInterceptor_RS
 				if ( isset($src->query_hooks->results) )
 					$rs_hooks[$src->query_hooks->results] = 	(object) array( 'name' => 'objects_results_rs', 'rs_args' => "'$src_name', '', '' ");
 	
-				//if ( isset($src->query_hooks->distinct) )
-				//	$rs_hooks[$src->query_hooks->distinct] = 	(object) array( 'name' => 'objects_distinct_rs','rs_args' => '');	
 			} //foreach data_sources
 
 			// use late-firing filter so teaser filtering is also applied to sticky posts
@@ -88,6 +84,7 @@ class QueryInterceptor_RS
 			// manually hook posts_request to pass on object_type value in the referenced wp_query object
 			add_filter( 'posts_request', array( &$this, 'flt_posts_request'), 50, 2 );
 			
+			// ...but don't include this hook in the filter-wrapping loop below
 			if ( isset( $rs_hooks['posts_request'] ) )
 				unset( $rs_hooks['posts_request'] );
 
@@ -97,11 +94,10 @@ class QueryInterceptor_RS
 				if ( ! $original_hook )
 					continue;
 				
-				$orig_hook_numargs = 1;
-				$arg_str = agp_get_lambda_argstring($orig_hook_numargs);
+				$arg_str = '$a';
 				$comma = ( $rs_hook->rs_args ) ? ',' : '';
 				$func = "return apply_filters( '$rs_hook->name', $arg_str $comma $rs_hook->rs_args );";
-				add_filter( $original_hook, create_function( $arg_str, $func ), 50, $orig_hook_numargs );	
+				add_filter( $original_hook, create_function( $arg_str, $func ), 50, 1 );	
 
 				//d_echo ("adding filter: $original_hook -> $func <br />");
 			}
@@ -426,11 +422,9 @@ class QueryInterceptor_RS
 			return $where;
 		}
 		
-		// need to allow ambiguous object type for custom cap requirements like comment filtering
+		// need to allow ambiguous object type for special cap requirements like comment filtering
 		$object_types = $this->_get_object_types($src, $object_types);
-		$tease_otypes = $this->_get_teaser_object_types($src_name, $object_types, $args);
-		
-		$tease_otypes = array_intersect($object_types, $tease_otypes);
+		$tease_otypes = array_intersect( $object_types, $this->_get_teaser_object_types($src_name, $object_types, $args) );
 
 		if ( ! empty($src->no_object_roles) )
 			$use_object_roles = false;
@@ -438,7 +432,7 @@ class QueryInterceptor_RS
 		if ( $terms_query && $terms_reqd_caps ) {
 			foreach ( array_keys($terms_reqd_caps) as $_object_type )
 				$otype_status_reqd_caps[$_object_type][''] = $terms_reqd_caps[$_object_type];  // terms request does not support multiple statuses
-				
+
 		} else {
 			if ( $force_reqd_caps && is_array($force_reqd_caps) ) {
 				$otype_status_reqd_caps = $force_reqd_caps;
@@ -452,8 +446,7 @@ class QueryInterceptor_RS
 			
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
 		}
-		
-		//dump($object_types);
+
 		//dump($otype_status_reqd_caps);
 	
 		// Since Role Scoper can restrict or expand access regardless of post_status, query must be modified such that
@@ -471,7 +464,7 @@ class QueryInterceptor_RS
 		
 		if ( ! empty($src->query_replacements) ) {
 			foreach ( $src->query_replacements as $find => $replace ) {
-				// for posts_request, remove the owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" because we'll account for that for each status based on properties of required caps
+				// for posts_request, remove the owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" because we'll account for each status based on properties of required caps
 				$find_ = str_replace('[user_id]', $user->ID, $find);
 				if ( false !== strpos($find_, '[') ||  false !== strpos($find_, ']') ) {
 					rs_notice( sprintf( 'Role Scoper Config Error: invalid query clause search criteria for %1$s (%2$s).<br /><br />Valid placeholders are:<br />', $src_name, $find) . print_r(array_keys($map)) ); 
@@ -499,7 +492,7 @@ class QueryInterceptor_RS
 			if ( 1 == $num_matches ) {
 				$force_single_type = true;
 				$object_types = array( $matches[1][0] );
-				
+
 				if ( $matched_reqd_caps = array_intersect_key( $otype_status_reqd_caps, array_flip($object_types) ) ) // sanity check prevents running with an empty reqd_caps array if something goes wrong with otype detection
 					$otype_status_reqd_caps = $matched_reqd_caps;
 			}
@@ -514,10 +507,8 @@ class QueryInterceptor_RS
 			// force standard query padding
 			$where = preg_replace("/$col_status\s*=\s*'/", "$col_status = '", $where);
 			
-			if ( ! $status_col_with_table = ( strpos($where, "{$src_table}.$col_status") ) ) {
-				$where = str_replace(" $col_status =", " {$src_table}.$col_status =", $where);
-				$where = str_replace(" $col_status IN", " {$src_table}.$col_status IN", $where);
-			}
+			$where = str_replace(" $col_status =", " {$src_table}.$col_status =", $where);
+			$where = str_replace(" $col_status IN", " {$src_table}.$col_status IN", $where);
 
 			foreach ( array_keys( $otype_status_reqd_caps ) as $listing_otype )
 				foreach( array_keys( $otype_status_reqd_caps[$listing_otype] ) as $status )
@@ -766,17 +757,16 @@ class QueryInterceptor_RS
 		//rs_errlog ("object_where output: $where");
 		//rs_errlog ('');
 		//rs_errlog ('');
-		
+
 		return $where;
 	}
 
 	
 	// core Role Scoper where clause concatenation called by listing filter (flt_objects_request) and single access filter (flt_user_has_cap)
 	// $reqd_caps[cap_name] = min scope
-	
-	// required: object_type
-	// otype_use_object_roles, otype_use_term_roles
-	
+	//
+	// required args: user, object_type, otype_use_object_roles, otype_use_term_roles
+	//
 	function objects_where_role_clauses($src_name, $reqd_caps, $args = array() ) {	
 		$defaults = array( 'taxonomies' => array(), 'terms_query' => false, 'alternate_reqd_caps' => '', 
 						'custom_user_blogcaps' => '', 'skip_owner_clause' => false, 'require_full_object_role' => false );
@@ -803,12 +793,12 @@ class QueryInterceptor_RS
 		// accomodate editing of published posts/pages to revision
 		if ( is_admin() && defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {
 			if ( empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) {
-				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'p-admin/edit.php', 'p-admin/upload.php', 'p-admin/widgets.php', 'p-admin/admin-ajax.php' ) );
-				$revision_uris []= 'p-admin/index.php';	
+				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'edit.php', 'upload.php', 'widgets.php', 'admin-ajax.php' ) );
+				$revision_uris []= 'index.php';	
 
-				if ( is_preview() || agp_strpos_any( $_SERVER['SCRIPT_NAME'], $revision_uris ) ) {
+				if ( is_preview() || in_array( $GLOBALS['pagenow'], $revision_uris ) || in_array( $GLOBALS['plugin_page_cr'], $revision_uris ) ) {
 					$strip_capreqs = array();
-					
+
 					foreach( (array) $object_type as $_object_type ) {
 						if ( $type_obj = get_post_type_object( $_object_type ) ) {
 							$strip_capreqs = array_merge( $strip_capreqs, array( $type_obj->cap->edit_published_posts, $type_obj->cap->edit_private_posts ) );
@@ -831,9 +821,10 @@ class QueryInterceptor_RS
 			return ' 1=2 ';
 		}
 		
+		$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
 		// special case to include pending / scheduled revisions by object role
 		if ( ! isset( $args['objrole_revisions_clause'] ) ) {
-			$args['objrole_revisions_clause'] = strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit.php' ) || strpos( $_SERVER['REQUEST_URI'], 'p-admin/edit-pages.php' );
+			$args['objrole_revisions_clause'] = ( 'edit.php' == $GLOBALS['pagenow'] );
 		}
 		
 		// These arguments are simply passed on to objects_where_scope_clauses()
@@ -933,7 +924,7 @@ class QueryInterceptor_RS
 	
 	
 	function objects_where_scope_clauses($src_name, $reqd_caps, $args ) {
-		
+
 		// Optional Args (will be defaulted to meaningful values)
 		// Note: ignore_restrictions affects Scoper::qualify_terms() output
 		$defaults = array( 'taxonomies' => '', 'use_blog_roles' => true, 'terms_query' => false, 
@@ -1097,7 +1088,6 @@ class QueryInterceptor_RS
 							if ( count($user_terms[$date_key]) ) {
 								// don't bother applying term requirements if user has cap for all terms in this taxonomy
 								if ( (count($user_terms[$date_key]) >= $term_count[$taxonomy]) && $this->scoper->taxonomies->member_property($taxonomy, 'requires_term') ) {
-
 									// User is qualified for all terms in this taxonomy; no need for any term_id clauses
 									$all_terms_qualified[$date_key][$taxonomy] = true;
 								} else {
@@ -1111,11 +1101,7 @@ class QueryInterceptor_RS
 				} // end foreach taxonomy
 			}
 
-			//dump($all_terms_qualified);
-			//dump($all_taxonomies_qualified);
 			
-			//dump($role_handle);
-			//dump($where);
 			
 			foreach ( array_keys($user_blog_roles) as $date_key ) {
 				if ( ! empty($all_taxonomies_qualified[$date_key]) || ( ! $_taxonomies && ! empty($user_blog_roles[$date_key][$role_handle]) ) ) {
@@ -1174,12 +1160,10 @@ class QueryInterceptor_RS
 			}
 		}
 
-		//d_echo ("where_scope_clauses where array");
-		
+
 		// since object roles are not pre-loaded prior to this call, role date limits are handled via subselect, within the date_key = '' iteration
 		$object_roles_duration_clause = scoper_get_duration_clause();
 				
-		//dump($where);
 				
 		// implode the array of where criteria into a query as concisely as possible 
 		foreach ( $where as $date_key => $objscope_clauses ) {
@@ -1333,9 +1317,7 @@ class QueryInterceptor_RS
 			foreach ( array_keys($where[$date_key]) as $objscope_clause )
 				if ( empty ($where[$date_key][$objscope_clause]) )
 					unset($where[$date_key][$objscope_clause]);
-				
-			//dump($where);
-					
+	
 			// all objscope clauses concat: [clauses w/o objscope] [OR] [objscope 1 clauses] [OR] [objscope 2 clauses]
 			$where[$date_key] = agp_implode(' ) OR ( ', $where[$date_key], ' ( ', ' ) ');
 			
@@ -1364,7 +1346,7 @@ class QueryInterceptor_RS
 		else
 			$object_type = intval( $object_types );
 
-		if ( strpos($_SERVER['SCRIPT_NAME'], 'p-admin/edit.php') && ! is_content_administrator_rs() ) {
+		if ( ( 'edit.php' == $GLOBALS['pagenow'] ) && ! is_content_administrator_rs() ) {
 			$post_type_obj = get_post_type_object( $object_type );
 
 			if ( ! empty($post_type_obj->hierarchical) ) {

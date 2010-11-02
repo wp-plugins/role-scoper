@@ -133,7 +133,7 @@ class ScoperRoleStrings {
 			
 		elseif ( strpos( $role_handle, '_manager' ) )
 			return __('Managers', 'scoper');
-			
+
 		if ( $post_type = $GLOBALS['scoper']->role_defs->member_property( $role_handle, 'object_type' ) )
 			$role_handle = str_replace( "{$post_type}_", '', $role_handle ); 
 	

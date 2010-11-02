@@ -113,11 +113,9 @@ class Scoper
 		}
 	}
 	
-	function load_definition( $topic, $apply_user_customizations = true ) {
+	function load_definition( $topic ) {
 		$class_name = "CR_" . $this->definitions[$topic];
 		require_once( strtolower($this->definitions[$topic]) . '_rs.php' );
-
-		//$this->$topic = new $class_name( call_user_func("cr_{$topic}"), "define_" . strtolower($this->definitions[$topic]) . "_rs" );
 
 		$filter_name = "define_" . strtolower($this->definitions[$topic]) . "_rs";
 		$this->$topic = apply_filters( $filter_name, new $class_name( call_user_func("cr_{$topic}") ) );
@@ -125,18 +123,13 @@ class Scoper
 		if ( 'role_defs' == $topic ) {
 			$this->role_defs->role_caps = apply_filters('define_role_caps_rs', cr_role_caps() );
 			
-			if ( $apply_user_customizations ) {
-				if ( $user_role_caps = scoper_get_option( 'user_role_caps' ) )
-					$this->role_defs->add_role_caps( $user_role_caps );
-			}
+			if ( $user_role_caps = scoper_get_option( 'user_role_caps' ) )
+				$this->role_defs->add_role_caps( $user_role_caps );
 
 			$this->log_cap_usage( $this->role_defs, $this->cap_defs );  // add any otype associations from new user_role_caps, but don't remove an otype association due to disabled_role_caps
-			
-			if ( $apply_user_customizations ) {
-				if ( $disabled_role_caps = scoper_get_option( 'disabled_role_caps' ) ) {
-					$this->role_defs->remove_role_caps( $disabled_role_caps );
-				}
-			}
+
+			if ( $disabled_role_caps = scoper_get_option( 'disabled_role_caps' ) )
+				$this->role_defs->remove_role_caps( $disabled_role_caps );
 
 			$this->role_defs->remove_invalid(); // currently don't allow additional custom-defined post, page or link roles
 
@@ -230,11 +223,13 @@ class Scoper
 
 		// ===== Special early exit if this is a plugin install script
 		if ( is_admin() ) {
-			$script_name = $_SERVER['SCRIPT_NAME'];
-			if ( strpos($script_name, 'p-admin/plugins.php') || strpos($script_name, 'p-admin/plugin-install.php') || strpos($script_name, 'p-admin/plugin-editor.php') ) {
+			if ( in_array( $GLOBALS['pagenow'], array( 'plugins.php', 'plugin-install.php', 'plugin-editor.php' ) ) ) {
 				// flush RS cache on activation of any plugin, in case we cached results based on its presence / absence
 				if ( ( ! empty($_POST) ) || ( ! empty($_REQUEST['action']) ) ) {
-					wpp_cache_flush();
+					if ( ! empty($_POST['networkwide']) || ( 'plugin-editor.php' == $GLOBALS['pagenow'] ) )
+						wpp_cache_flush_all_sites();
+					else
+						wpp_cache_flush();
 				}
 
 				do_action( 'scoper_init' );
@@ -252,12 +247,11 @@ class Scoper
 		if ( $disable_queryfilters ) {
 			// Some wp-admin pages need to list pages or categories based on front-end access.  Classic example is Subscribe2 categories checklist, included in Subscriber profile
 			// In that case, filtering will be applied even if wp-admin filtering is disabled.  API hook enables other plugins to defined their own "always filter" URIs.
-			$always_filter_uris = apply_filters('scoper_always_filter_uris', array( 'p-admin/profile.php' ) );
-			foreach ( $always_filter_uris as $uri_sub ) {
-				if ( strpos(urldecode($_SERVER['REQUEST_URI']), $uri_sub) ) {
-					$disable_queryfilters = false;
-					break;
-				}
+			$always_filter_uris = apply_filters( 'scoper_always_filter_uris', array( 'p-admin/profile.php' ) );
+
+			if ( in_array( $GLOBALS['pagenow'], $always_filter_uris ) || in_array( $GLOBALS['plugin_page_cr'], $always_filter_uris ) ) {
+				$disable_queryfilters = false;
+				break;
 			}
 		}
 		
@@ -295,13 +289,13 @@ class Scoper
 	
 	// filters which are only needed for the wp-admin UI
 	function add_admin_ui_filters( $is_administrator ) {
-		$script_name = $_SERVER['SCRIPT_NAME'];
+		global $pagenow;
 		
 		// ===== Admin filters (menu and other basics) which are (almost) always loaded 
 		require_once('admin/admin_rs.php');
 		$GLOBALS['scoper_admin'] = new ScoperAdmin();
 		
-		if ( ! strpos($script_name, 'p-admin/async-upload.php' ) ) {
+		if ( 'async-upload.php' != $pagenow ) {
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator ) {
 				require_once( 'admin/filters-admin-ui_rs.php' );
 				$GLOBALS['scoper_admin_filters_ui'] = new ScoperAdminFiltersUI();
@@ -310,14 +304,14 @@ class Scoper
 		// =====
 
 		// ===== Script-specific Admin filters 
-		if ( strpos($script_name, 'p-admin/users.php') ) {
+		if ( 'users.php' == $pagenow ) {
 			require_once( 'admin/filters-admin-users_rs.php' );
 			
-		} elseif ( strpos($script_name, 'p-admin/edit.php') || strpos($script_name, 'p-admin/edit-pages.php') ) {
+		} elseif ( 'edit.php' == $pagenow ) {
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator )
 				require_once( 'admin/filters-admin-ui-listing_rs.php' );
-	
-		} elseif ( strpos($script_name, 'p-admin/edit-tags.php') ) {
+
+		} elseif ( 'edit-tags.php' == $pagenow ) {
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') )
 				require_once( 'admin/filters-admin-terms_rs.php' );
 		}
@@ -331,8 +325,6 @@ class Scoper
 	
 	
 	function add_hardway_filters() {
-		$script_name = $_SERVER['SCRIPT_NAME'];
-		
 		// port or low-level query filters to work around limitations in WP core API
 		require_once('hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
 		
@@ -346,26 +338,25 @@ class Scoper
 		}
 
 		if ( is_admin() || defined('XMLRPC_REQUEST') ) {
-            if ( ! strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugin-editor.php' ) && ! strpos( urldecode($_SERVER['REQUEST_URI']), 'p-admin/plugins.php' ) ) {
+            global $pagenow;
+			
+			if ( ! in_array( $pagenow, array( 'plugin-editor.php', 'plugins.php' ) ) ) {
+	            global $plugin_page_cr;
+
 				// low-level filtering for miscellaneous admin operations which are not well supported by the WP API
 				$hardway_uris = array(
-				'p-admin/index.php',		'p-admin/revision.php',			'admin.php?page=rvy-revisions',
-				'p-admin/post.php', 		'p-admin/post-new.php', 		'p-admin/edit.php', 
-				'p-admin/upload.php', 		'p-admin/edit-comments.php', 	'p-admin/edit-tags.php',
-				'p-admin/profile.php',		'p-admin/admin-ajax.php',
-				'p-admin/link-manager.php', 'p-admin/link-add.php',			'p-admin/edit-link-category.php', 	'p-admin/edit-link-categories.php',
-				'p-admin/media-upload.php',	'p-admin/nav-menus.php'   );
-				
-				
-				$hardway_uris = apply_filters('scoper_admin_hardway_uris', $hardway_uris);
+				'index.php',		'revision.php',			'admin.php?page=rvy-revisions',
+				'post.php', 		'post-new.php', 		'edit.php', 
+				'upload.php', 		'edit-comments.php', 	'edit-tags.php',
+				'profile.php',		'admin-ajax.php',
+				'link-manager.php', 'link-add.php',			'edit-link-category.php', 	'edit-link-categories.php',
+				'media-upload.php',	'nav-menus.php'  
+				);
 
-				$uri = urldecode($_SERVER['REQUEST_URI']);
-				foreach ( $hardway_uris as $uri_sub ) {	// index.php can only be detected by index.php, but 3rd party-defined hooks may include arguments only present in REQUEST_URI
-					if ( defined('XMLRPC_REQUEST') || strpos($script_name, $uri_sub) || strpos($uri, $uri_sub) ) {
-						require_once('hardway/hardway-admin_rs.php');
-						break;
-					}
-				}
+				$hardway_uris = apply_filters( 'scoper_admin_hardway_uris', $hardway_uris );
+																															// support for rs-config-ngg <= 1.0
+				if ( defined('XMLRPC_REQUEST') || in_array( $pagenow, $hardway_uris ) || in_array( $plugin_page_cr, $hardway_uris ) || in_array( "p-admin/admin.php?page=$plugin_page_cr", $hardway_uris ) )
+					require_once( 'hardway/hardway-admin_rs.php' );
         	}
 		} // endif is_admin or xmlrpc
 	}
@@ -373,7 +364,6 @@ class Scoper
 	
 	// add filters which were skipped due to direct file access, but are now needed for the error page display
 	function add_main_filters() {
-		$script_name = $_SERVER['SCRIPT_NAME'];
 		$is_admin = is_admin();
 		$is_administrator = is_content_administrator_rs();
 		$disable_queryfilters = defined('DISABLE_QUERYFILTERS_RS');
@@ -398,7 +388,7 @@ class Scoper
 			// ===== Filters which are always loaded (except on plugin scripts), for any access type
 			include_once( 'hardway/wp-patches_agp.php' ); // simple patches for WP
 			
-			if ( $this->is_front() || strpos($script_name, 'p-admin/edit.php') ) {
+			if ( $this->is_front() || ( 'edit.php' == $GLOBALS['pagenow'] ) ) {
 				require_once('query-interceptor-base_rs.php');
 				$GLOBALS['query_interceptor_base'] = new QueryInterceptorBase_RS();  // listing filter used for role status indication in edit posts/pages and on front end by template functions
 			}
@@ -817,7 +807,7 @@ class Scoper
 				$all_terms_cols = $this->get_terms( $taxonomy, UNFILTERED_RS );
 				$good_tt_ids = array();
 				foreach ( $good_terms[$date_key] as $term_id )
-					foreach (array_keys($all_terms_cols) as $termkey)
+					foreach ( array_keys($all_terms_cols) as $termkey )
 						if ( $all_terms_cols[$termkey]->term_id == $term_id ) {
 							$good_tt_ids []= $all_terms_cols[$termkey]->term_taxonomy_id;
 							break;
@@ -835,15 +825,16 @@ class Scoper
 	// account for different contexts of get_terms calls 
 	// (Scoped roles can dictate different results for front end, edit page/post, manage categories)
 	function get_terms_reqd_caps( $taxonomy, $operation = '', $is_term_admin = false ) {
+		global $pagenow;
+
 		if ( taxonomy_exists( $taxonomy ) )
 			$src_name = 'post';
 		else
 			$src_name = $this->taxonomies->member_property( $taxonomy, 'object_source' );
 
-		$full_uri = urldecode($_SERVER['REQUEST_URI']);
 		$return_caps = array();
 
-		$is_term_admin = $is_term_admin || strpos( $full_uri, "wp-admin/edit-tags.php" ) || strpos( $full_uri, "wp-admin/nav-menus.php" );	// possible TODO: abstract for non-WP taxonomies
+		$is_term_admin = $is_term_admin || in_array( $pagenow, array( 'edit-tags.php', 'nav-menus.php' ) );	// possible TODO: abstract for non-WP taxonomies
 
 		if ( $is_term_admin ) {
 			// query pertains to the management of terms
@@ -874,7 +865,7 @@ class Scoper
 					$status = ( is_admin() ) ? 'draft' : 'publish';	// we want to retrieve basic object access caps for current access type (possible TODO: define a default_status property)
 
 					// terms query should be limited to a single object type for post.php, post-new.php, so only return caps for that object type (TODO: do this in wp-admin regardless of URI ?)
-					if ( strpos( $full_uri, "wp-admin/post.php" ) || strpos( $full_uri, "wp-admin/post-new.php" ) )
+					if ( in_array( $pagenow, array( 'post.php', 'post-new.php' ) ) )
 						$object_type = cr_find_post_type();
 				} else
 					$status = '';
@@ -901,7 +892,7 @@ class Scoper
 			}
 
 			if ( empty($operation) )
-				$operation = ( $this->is_front() || strpos($_SERVER['SCRIPT_NAME'], 'p-admin/profile.php') ) ? 'read' : 'edit';  // hack to support subscribe2 categories checklist
+				$operation = ( $this->is_front() || ( 'profile.php' == $pagenow ) ) ? 'read' : 'edit';  // hack to support subscribe2 categories checklist
 
 			if ( 'read' == $operation )
 				$status = 'publish';
@@ -1036,10 +1027,8 @@ class Scoper
 		// object roles support date limits, but content date limits (would be redundant and a needless performance hit)
 		$duration_clause = scoper_get_duration_clause( '', $wpdb->user2role2object_rs );
 
-		if ( $role_names = scoper_get_col("SELECT DISTINCT role_name FROM $wpdb->user2role2object_rs WHERE role_type='rs' AND scope='object' $duration_clause $u_g_clause") ) {
+		if ( $role_names = scoper_get_col("SELECT DISTINCT role_name FROM $wpdb->user2role2object_rs WHERE role_type='rs' AND scope='object' $duration_clause $u_g_clause") )
 			$role_handles = scoper_role_names_to_handles($role_names, 'rs', true); //arg: return role keys as array key
-			//$role_handles = array_intersect_key($role_handles, $this->members);
-		}
 		
 		if ( is_object($user) ) {
 			$user->cache_force_set($role_handles, $cache_flag);

@@ -39,9 +39,9 @@ class ScoperItemRolesUI {
 	function load_roles($src_name, $object_type, $object_id) {
 		//log_mem_usage_rs( 'start ItemRolesUI::load_roles()' );
 		
-		if ( strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/edit.php') || strpos( $_SERVER['SCRIPT_NAME'], 'p-admin/edit-pages.php') )
+		if ( 'edit.php' == $GLOBALS['pagenow'] )
 			return;
-	
+
 		if ( ! scoper_get_otype_option('use_object_roles', $src_name, $object_type) )
 			return;
 			

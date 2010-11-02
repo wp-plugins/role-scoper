@@ -153,7 +153,7 @@ foreach ( $all_terms as $term ) {
 
 	foreach ( $role_defs_by_otype as $object_type => $role_defs )
 		foreach ( array_keys($role_defs) as $role_handle )
-			if ( $role_assigner->user_has_role_in_term( $role_handle, $taxonomy, $id, '', array('src_name' => $src_name, 'object_type' => $object_type) ) )
+			if ( $role_assigner->user_has_role_in_term( $role_handle, $taxonomy, $id, '', compact( 'src_name', 'object_type' ) ) )
 				$editable_roles[$id][$role_handle] = true;
 }
 

@@ -78,9 +78,9 @@ class CR_Data_Sources extends AGP_Config_Items {
 	function get_object($src_name, $object_id, $cols = '') {
 		// special cases to take advantage of cached post/link
 		if ( ('post' == $src_name) ) {
-			if ( $cols && ! strpos( $cols, ',' ) ) {
+			if ( $cols && ! strpos( $cols, ',' ) )
 				return get_post_field( $cols, $object_id, 'db' );
-			} else
+			else
 				return get_post($object_id);
 				
 		} elseif ( 'link' == $src_name ) {
@@ -115,7 +115,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 		if ( 'id' != $what ) {
 			if ( ( 'type' == $what ) && ( 'post' == $src->name ) ) 
 				return cr_find_post_type();
-			
+
 			if ( $it = $this->get_the_only($what, $src) )
 				return $it;
 			
@@ -155,19 +155,16 @@ class CR_Data_Sources extends AGP_Config_Items {
 				return $it;
 					
 		// Is it one of the query variables in current URI?
-		if ( $it = $this->get_from_uri($what, $src, $object_type) ) {
+		if ( $it = $this->get_from_uri($what, $src, $object_type) )
 			return $it;
-		}
 			
 		// Does the last database query include a helpful equality clause?
-		if ( $it = $this->get_from_query($what, $src, $query) ) {
+		if ( $it = $this->get_from_query($what, $src, $query) )
 			return $it;
-		}
 			
 		// if detection failed and the desired quanity is a member of a config array, default to first array element
-		if ( $it = $this->get_the_only($what, $src, true) ) {
+		if ( $it = $this->get_the_only($what, $src, true) )
 			return $it;
-		}
 		
 		return ( in_array( $what, array( 'id', 'parent' ) ) ) ? 0 : '';
 	}
@@ -219,9 +216,8 @@ class CR_Data_Sources extends AGP_Config_Items {
 		
 		if ( $object = $this->get_object($src->name, $object_id, $col) ) {
 			if ( is_object( $object ) ) {
-				if ( isset( $object->$col ) ) {
+				if ( isset( $object->$col ) )
 					return $object->$col;
-				}
 			} else
 				return $object;
 		}
@@ -273,15 +269,13 @@ class CR_Data_Sources extends AGP_Config_Items {
 		if ( ( 'type' == $what ) && ( 'post' == $src->name ) )
 			return cr_find_post_type();
 
-		$full_uri = urldecode($_SERVER['REQUEST_URI']);
-
 		if ( ! $src = $this->get($src) )
 			return;
 		
 		/*
 		rs_errlog('');
 		rs_errlog("get $what from_uri");
-		rs_errlog('URI: '. $full_uri);
+		rs_errlog( 'URI: '. $_SERVER['REQUEST_URI'] );
 		*/
 	
 		// Try to pull the desired value from URI variables, 

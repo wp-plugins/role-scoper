@@ -78,7 +78,7 @@ class WP_Cap_Helper_CR {
 
 			$wp_post_types[$post_type]->cap = (object) $type_caps;
 		} // end foreach post type
-	
+
 	}
 
 	function force_distinct_post_caps() {  // but only if the post type has RS usage enabled

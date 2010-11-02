@@ -288,10 +288,16 @@ class ScoperHardway
 				if ( ! scoper_get_otype_option('teaser_hide_private', 'post', $post_type) )
 					$tease_all = true;
 			}
-	
+
 		} else {
+			$_args = array( 'skip_teaser' => true );
+
+			if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
+				$_args['alternate_reqd_caps'][0] = array( "create_child_{$post_type}s" );
+			}
+
 			// Pass query through the request filter
-			$query = apply_filters('objects_request_rs', $query, 'post', $post_type, array( 'skip_teaser' => true ) );
+			$query = apply_filters('objects_request_rs', $query, 'post', $post_type, $_args );
 
 			// Execute the filtered query
 			$pages = scoper_get_results($query);

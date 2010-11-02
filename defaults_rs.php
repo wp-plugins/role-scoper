@@ -58,8 +58,8 @@ function scoper_default_options() {
 		'rs_page_revisor_role_objscope' => 0,
 		'rs_post_revisor_role_objscope' => 0,
 		'lock_top_pages' => 0,
-		'display_user_profile_groups' => 1,
-		'display_user_profile_roles' => 1,
+		'display_user_profile_groups' => 0,
+		'display_user_profile_roles' => 0,
 		'user_role_assignment_csv' => 0,
 		'admin_others_unattached_files' => 0,
 		'admin_others_unattached_files' => 0,
@@ -77,9 +77,9 @@ function scoper_default_options() {
 		'filter_users_dropdown' => 1,
 		'auto_private' => 1
 	);
-	
+
 	// NOTE: scoper_get_option() applies these defaults
-	if ( strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-options' ) || strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-site_options' ) ) {
+	if ( in_array( $GLOBALS['plugin_page_cr'], array( 'rs-options', 'rs-site_options' ) ) ) {
 		$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) );
 		foreach ( $post_types as $type )
 			$def['use_post_types'][$type] = 1;

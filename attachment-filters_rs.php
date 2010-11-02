@@ -24,22 +24,26 @@ function agp_return_file( $file_path, $attachment_id = 0 ) {
 		if ( ! $attachment_id = scoper_get_var( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND guid = '$orig_file_url' AND post_parent > 0 LIMIT 1" ) )
 			return;
 	}
-	
+
 	if ( ! $key = get_post_meta( $attachment_id, '_rs_file_key' ) ) {
 		// The key was lost from DB, so regenerate it (and files / uploads .htaccess)
 		require_once( 'rewrite-rules_rs.php' );
 		ScoperRewrite::resync_file_rules();
 		
 		// If the key is still not available, fail out to avoid recursion
-		if ( ! $key = get_post_meta( $attachment_id, '_rs_file_key' ) )
+		if ( ! $key = get_post_meta( $attachment_id, '_rs_file_key' ) ) {
 			exit(0);
-	} elseif ( ! empty($_GET['rs_file_key']) && ( $_GET['rs_file_key'] == $key ) ) {
+		}
+	} elseif ( strpos( $_SERVER['REQUEST_URI'], 'rs_file_key' ) ) {
 		// Apparantly, the .htaccess rules contain an entry for this file, but with invalid file key.  URL with this valid key already passed through RewriteRules.  
-		// Regenerate .htaccess, but don't risk recursion by redirecting again.
-		require_once( 'rewrite-rules_rs.php' );
-		ScoperRewrite::resync_file_rules();
-		
-		exit(0);
+		// Regenerate .htaccess file in uploads folder, but don't risk recursion by redirecting again.  Note that Firefox browser cache may need to be cleared following this error.
+		$last_resync = get_option( 'scoper_last_htaccess_resync' );
+		if ( ( ! $last_resync ) || ( time() - $last_resync > 3600 ) ) {  // prevent abuse (mismatched .htaccess keys should not be a frequent occurance)
+			update_option( 'scoper_last_htaccess_resync', time() );
+			require_once( 'rewrite-rules_rs.php' );
+			ScoperRewrite::resync_file_rules();
+		}
+		exit(0);  // If htaccess rewrite was instantaneous, we could just continue without this exit.  But settle for the one-time image access failure to avoid a redirect loop on delayed file update.
 	}
 
 	if ( is_array($key) )

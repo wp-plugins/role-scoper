@@ -36,7 +36,7 @@ function cr_data_sources() {
 
 	'query_hooks' => (object) array( 'results' => 'posts_results', 'listing' => 'the_posts' ),
 	
-	'query_replacements' => array( "OR post_author = [user_id] AND post_status = 'private'" => "OR post_status = 'private'" ),
+	'query_replacements' => array( "OR post_author = [user_id] AND post_status = 'private'" => "OR post_status = 'private'" )
 	
 	); // end outer array		NOTE: posts_request is manually hooked to take advantage of passed wp_query object reference
 			
@@ -213,7 +213,7 @@ function cr_wp_taxonomies() {
 	global $scoper;
 	
 	foreach ( $wp_taxonomies as $taxonomy => $wp_tax ) {
-		if ( ! isset($arr_use_wp_taxonomies[$taxonomy]) && ! strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-options' ) && ! strpos( $_SERVER['REQUEST_URI'], 'admin.php?page=rs-site_options' ) )  // always load taxonomy ID data for Realm Options display
+		if ( ! isset( $arr_use_wp_taxonomies[$taxonomy] ) && ! in_array( $GLOBALS['plugin_page_cr'], array( 'rs-options', 'rs-site_options' ) ) )  // always load taxonomy ID data for Realm Options display
 			continue;
 
 		// taxonomy must be approved for scoping and have a Scoper-defined object type

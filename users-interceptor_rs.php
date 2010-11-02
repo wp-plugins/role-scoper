@@ -375,9 +375,7 @@ class UsersInterceptor_RS
 									$ot_where[$user_type][$role_basis][$scope] = agp_implode(' ) OR ( ', $ot_where[$user_type][$role_basis][$scope], ' ( ', ' ) ');	
 							} // end foreach scope
 							
-							//print_r($ot_where[$user_type][$role_basis]['blog']);
-							//d_echo( '<br /><br />' );
-							
+
 							if ( ! empty($ot_where[$user_type][$role_basis]) ) {  // [object scope clauses] [OR] [taxonomy scope clauses] [OR] [blog scope clauses]
 								$ot_where[$user_type][$role_basis] = agp_implode(' ) OR ( ', $ot_where[$user_type][$role_basis], ' ( ', ' ) ');	
 								
@@ -413,14 +411,7 @@ class UsersInterceptor_RS
 			if ( isset( $rs_where[$src_name]) ) {	// object_type1 clauses [AND] [object_type2 clauses] [AND] ...
 				$rs_where[$src_name] = agp_implode(' ) AND ( ', $rs_where[$src_name], ' ( ', ' ) ');	
 			}
-			
-			//dump($reqd_caps);
-			//dump($rs_where);
-					
-			
-			//if ( isset($rs_where[$src_name]) && is_array($rs_where[$src_name]) ) {  // user basis clause [OR] groups basis clause ...
-			//	$rs_where[$src_name] = agp_implode(' ) OR ( ', $rs_where[$src_name], ' ( ', ' ) ');
-			//}
+
 		} // end foreach data source
 		
 		// data_source 1 clauses [AND] [data_source 2 clauses] [AND] ...
@@ -471,11 +462,11 @@ class UsersInterceptor_RS
 		if ( ! $roles ) {
 			if ( ! $roles = $this->scoper->role_defs->qualify_roles( $reqd_caps ) )
 				return array();
-				
+
 		} else
 			$roles = (array) $roles;
 			
-		// this set of reqd_caps cannot be satisfied by any role, either WP-defined or (if scoping with RS roles) RS-defined
+		// this set of reqd_caps cannot be satisfied by any role
 		if ( ! $reqd_caps && ! $roles )
 			return;
 			

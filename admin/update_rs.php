@@ -5,10 +5,20 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 function scoper_version_updated( $prev_version ) {
 	if ( function_exists( 'wpp_cache_flush' ) )
-		wpp_cache_flush();
+		wpp_cache_flush_all_sites();
 
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		// Delete any roles or restrictions inappropriately stored for attachments, revisions or auto-drafts
+		if ( version_compare( $prev_version, '1.3', '<') ) {
+			global $wpdb;	
+			scoper_query( "DELETE FROM $wpdb->user2role2object_rs WHERE role_type = 'wp' AND scope='blog' AND obj_or_term_id = '0'" );
+			scoper_sync_wproles();
+
+			scoper_query( "DELETE FROM $wpdb->role_scope_rs WHERE src_or_tx_name = 'post' AND obj_or_term_id IN ( SELECT ID FROM wp_posts WHERE post_type IN ('attachment', 'revision') OR post_status = 'auto-draft' )" );
+			scoper_query( "DELETE FROM $wpdb->user2role2object_rs WHERE src_or_tx_name = 'post' AND obj_or_term_id IN ( SELECT ID FROM wp_posts WHERE post_type IN ('attachment', 'revision') OR post_status = 'auto-draft' )" );
+		}
+
 		// 1.3.RC4 changed RS cache path to subfolder, so flush the root-stored cache one last time (only for MU / Multisite due to potentially large # of folders, files)
 		if ( IS_MU_RS && version_compare( $prev_version, '1.3.RC4', '<') && ! defined( 'SKIP_CACHE_MAINT_RS' ) ) {
 			global $wpp_object_cache;

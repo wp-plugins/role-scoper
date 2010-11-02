@@ -357,7 +357,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	//  * If an unqualified user tries to associate or un-associate a page with Main Page,
 	//	  revert page to previously stored parent if possible. Otherwise set status to "unpublished".
 	function scoper_flt_post_status ($status) {
-		if ( strpos( $_SERVER['REQUEST_URI'], 'p-admin/async-upload.php' ) || ( ! empty ($_POST['action']) && ( 'autosave' == $_POST['action'] ) ) )
+		if ( ( 'async-upload.php' == $GLOBALS['pagenow'] ) || ( ! empty( $_POST['action'] ) && ( 'autosave' == $_POST['action'] ) ) )
 			return $status;
 
 		if ( defined('XMLRPC_REQUEST') ) {
