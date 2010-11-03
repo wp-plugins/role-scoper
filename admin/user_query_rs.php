@@ -1,0 +1,67 @@
+<?php
+global $current_user;
+
+require_once( ABSPATH . '/wp-admin/includes/user.php' );
+
+//echo "<option value='$row->ID'>test</option>";
+
+if ( isset( $_GET['rs_user_search'] )  ) {
+	
+	if ( empty( $_GET['rs_user_search'] ) ) {
+		global $wpdb;
+		$results = $wpdb->get_results("SELECT ID, display_name FROM $wpdb->users ORDER BY display_name");
+		
+	} elseif ( $search = new WP_User_Search( $_GET['rs_user_search'] ) ) {
+		global $wpdb;
+		$results = $wpdb->get_results( "SELECT ID, display_name $search->query_from $search->query_where ORDER BY display_name" );
+	}
+
+	if ( $results ) {	
+		// determine all current users (of any status) for group in question
+		if ( ! empty( $_GET['rs_agent_id'] ) )
+			$users = ScoperAdminLib::get_group_members( $_GET['rs_agent_id'], COL_ID_RS, false, array( 'status' => 'any' ) );
+		else
+			$users = array();
+		
+		foreach( $results as $row )
+			if ( ! in_array( $row->ID, $users ) ) {
+				echo "<option value='$row->ID'>$row->display_name</option>";
+			}
+	}
+	
+} elseif ( isset( $_GET['rs_group_search'] ) ) {
+	
+	if ( ! empty( $_GET['rs_group_search'] ) ) {
+		$searches = array();
+		$where = 'AND (';
+		foreach ( array('group_name', 'group_description') as $col )
+			$searches[] = $col . " LIKE '%{$_GET['rs_group_search']}%'";
+		$where .= implode(' OR ', $searches);
+		$where .= ')';
+	} else
+		$where = '';
+	
+	if ( 'recommended' == $_GET['rs_target_status'] )
+		$reqd_caps = 'recommend_group_membership';
+	elseif ( 'requested' == $_GET['rs_target_status'] )
+		$reqd_caps = 'request_group_membership';
+	else
+		$reqd_caps = 'manage_groups';
+		
+	global $current_user;
+	
+	// determine all currently stored groups (of any status) for user in question (not necessarily logged user)
+	if ( ! empty( $_GET['rs_agent_id'] ) )
+		$user_groups = $current_user->get_groups_for_user( $_GET['rs_agent_id'], array( 'status' => 'any' ) );
+	else
+		$user_groups = array();
+		
+	if ( $groups = ScoperAdminLib::get_all_groups(FILTERED_RS, COLS_ALL_RS, array( 'include_norole_groups' => false, 'reqd_caps' => $reqd_caps, 'where' => $where ) ) ) {
+		foreach( $groups as $row )
+			if ( ( is_null($row->meta_id) || empty($row->meta_id) ) && ! in_array( $row->ID, $user_groups ) )
+				echo "<option value='$row->ID'>$row->display_name</option>";
+	}
+}
+
+
+?>
