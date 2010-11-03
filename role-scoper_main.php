@@ -717,9 +717,8 @@ class Scoper
 		}
 		
 		// If the taxonomy does not require objects to have at least one term, there are no strict terms.
-		// Therefore, blogrole blending is not per-term and is handled in the calling function rather than here.
 		if ( ! $this->taxonomies->member_property($taxonomy, 'requires_term') )
-			$use_blog_roles = false;
+			$ignore_restrictions = true;
 
 		if ( ! is_array($qualifying_roles) )
 			$qualifying_roles = array($qualifying_roles => 1);	
@@ -754,7 +753,7 @@ class Scoper
 					$good_terms[$date_key] = agp_array_flatten( $good_terms[$date_key] );
 			}
 		}
-		
+
 		if ( $use_blog_roles ) {
 			foreach ( array_keys($user->blog_roles) as $date_key ) {	
 				$user_blog_roles = array_intersect_key( $user->blog_roles[$date_key], $qualifying_roles );

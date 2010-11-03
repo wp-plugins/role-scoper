@@ -853,7 +853,6 @@ class QueryInterceptor_RS
 
 			$qualifying_roles = $this->scoper->role_defs->qualify_roles($reqd_caps_arg, '', $object_type );
 
-
 			/*
 			rs_errlog( '' );
 			rs_errlog( "reqd_caps arg: " . serialize($reqd_caps_arg) );
@@ -874,9 +873,14 @@ class QueryInterceptor_RS
 			//if ( $args['otype_use_object_roles'] )
 				$args['ignore_restrictions'] = ( 1 == count($reqd_caps_arg) ) && $this->scoper->cap_defs->member_property( reset($reqd_caps_arg), 'ignore_restrictions' );
 			
-			if ( $qualifying_roles ) {  
+			if ( $owner_reqd_caps = $this->scoper->cap_defs->get_base_caps($reqd_caps_arg) ) {
+				$owner_roles = $this->scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
+				$qualifying_object_roles = $this->scoper->confirm_object_scope( $owner_roles );		// have to pass this in for 'user' call because qualifying_roles may not include a qualifying object role (i.e. Page Contributor object role assignment)
+			}
+				
+			if ( $qualifying_roles || ! empty($qualifying_object_roles) ) {
 				//d_echo( "regular objects_where_scope_clauses for " . serialize( $reqd_caps ) );
-				$args = array_merge($args, array( 'qualifying_roles' => $qualifying_roles) );
+				$args = array_merge( $args, compact( 'qualifying_roles', 'qualifying_object_roles' ) );
 				$where[$cap_name]['user'] = $this->objects_where_scope_clauses($src_name, $reqd_caps_arg, $args );
 			}
 
@@ -884,16 +888,12 @@ class QueryInterceptor_RS
 
 				if ( ! $require_full_object_role ) {
 					// if owner qualifies for the operation by any different roles than other users, add separate owner clause
-					$owner_reqd_caps = $this->scoper->cap_defs->get_base_caps($reqd_caps_arg);
-
 					$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;
 
 					if ( ! $owner_reqd_caps ) {
 						// all reqd_caps are granted to owner automatically
 						$where[$cap_name]['owner'] = "$src_table.{$src->cols->owner} = '$user->ID'";
 					} elseif ( $owner_reqd_caps != $reqd_caps_arg ) {
-						$owner_roles = $this->scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
-						
 						if ( $owner_roles ) {
 							//d_echo( "owner objects_where_scope_clauses: " );
 							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles ) );
@@ -929,9 +929,9 @@ class QueryInterceptor_RS
 
 		// Optional Args (will be defaulted to meaningful values)
 		// Note: ignore_restrictions affects Scoper::qualify_terms() output
-		$defaults = array( 'taxonomies' => '', 'use_blog_roles' => true, 'terms_query' => false, 
+		$defaults = array( 'taxonomies' => '', 'use_blog_roles' => true, 'terms_query' => false,  'qualifying_object_roles' => false,
 						   'skip_objscope_check' => false, 'require_full_object_role' => false, 'objrole_revisions_clause' => false, 'ignore_restrictions' => false );
-					
+							   
 		// Required Args
 		// NOTE: use_object_roles is a boolean for the single object_type in question, but use_term_roles is array[taxonomy] = true or false
 		$required = array_fill_keys( array( 'user', 'object_type', 'qualifying_roles', 'otype_use_term_roles', 'otype_use_object_roles' ), true );
@@ -956,14 +956,15 @@ class QueryInterceptor_RS
 			$otype_use_object_roles = true;
 		elseif ( ! empty($src->no_object_roles) )
 			$otype_use_object_roles = false;
-
+		
 		// primary qualifying_roles array should contain only RS roles
-		$qualifying_roles = $this->scoper->role_defs->filter( $qualifying_roles, array( 'role_type' => 'rs' ) );
+		$qualifying_roles = $this->scoper->role_defs->filter( $qualifying_roles, array( 'role_type' => 'rs' ), 'names_as_key' );
 
 		if ( $otype_use_object_roles ) {
 			// For object assignment, replace any "others" reqd_caps array. 
 			// Also exclude any roles which have never been assigned to any object
-			$qualifying_object_roles = $this->scoper->confirm_object_scope( $qualifying_roles, $user );	
+			if ( ! is_array( $qualifying_object_roles ) )
+				$qualifying_object_roles = $this->scoper->confirm_object_scope( $qualifying_roles, $user );	
 
 			if ( $skip_objscope_check )
 				$objscope_objects = array();
@@ -1234,6 +1235,7 @@ class QueryInterceptor_RS
 	
 					case OBJECT_SCOPE_RS:	// should only exist with nullstring objscope_clause
 						if ( $user_qualifies_for_obj_roles ) {
+	
 							global $wpdb;
 							$u_g_clause = $user->get_user_clause('uro');
 							
@@ -1253,7 +1255,7 @@ class QueryInterceptor_RS
 								}
 								
 								$objrole_subselect = "SELECT DISTINCT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause ";
-								
+
 								if ( did_action( 'save_post' ) || ! empty($_GET['doaction']) ) {
 									// make sure we don't refresh the same query multiple times following an update operation
 									if ( isset( $post_save_refreshed[$objrole_subselect] ) )
@@ -1272,7 +1274,7 @@ class QueryInterceptor_RS
 									$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "$src_table.{$src->cols->id} IN ( '" . implode( "','", $cache_obj_ids[$objrole_subselect] ) . "' )";
 								} else
 									$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "1=2";
-								
+
 								if ( defined('RVY_VERSION') && $objrole_revisions_clause ) 
 									$where[$date_key][$objscope_clause][OBJECT_SCOPE_RS] = "( {$where[$date_key][$objscope_clause]['object']} OR ( $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ( '" . implode( "','", $cache_obj_ids[$objrole_subselect] ) . "' ) ) )";
 							}

@@ -4,7 +4,8 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
 if ( 'nav-menus.php' != $GLOBALS['pagenow'] ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
-	add_action( 'set_current_scoped_user', array('ScoperAdminHardway_Ltd', 'add_filters') );
+	if ( false === strpos( $_SERVER['REQUEST_URI'], 'upload.php' ) )	// TODO: internal criteria to prevent application of flt_last_resort when scoped user object is not fully loaded
+		ScoperAdminHardway_Ltd::add_filters();
 }
 
 class ScoperAdminHardway_Ltd {
