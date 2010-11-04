@@ -1,7 +1,7 @@
 === Plugin Name ===
 Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
-Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
+Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 2.7
 Tested up to: 3.0.1
 Stable Tag: 1.2.11
