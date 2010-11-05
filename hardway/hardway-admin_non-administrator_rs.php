@@ -157,6 +157,14 @@ class ScoperAdminHardway_Ltd {
 				$query = str_replace( "post_status", "$posts.post_status", $query);
 				
 				$query = apply_filters( 'objects_request_rs', $query, 'post', $_post_type, array( 'objrole_revisions_clause' => true ) );
+				
+				// as of WP 3.0.1, additional queries triggered by objects_request filter breaks all subsequent filters which would have operated on this query
+				if ( defined( 'RVY_VERSION' ) ) {
+					if ( class_exists( 'RevisionaryAdminHardway_Ltd' ) )
+						$query = RevisionaryAdminHardway_Ltd::flt_last_resort_query( $query );
+						
+					$query = RevisionaryAdminHardway::flt_include_pending_revisions( $query );
+				}
 			}
 				
 			//rs_errlog ("<br /><br /> returned $query ");

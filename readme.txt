@@ -1,7 +1,7 @@
 === Plugin Name ===
 Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
-Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
+Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 3.0
 Tested up to: 3.0.1
 Stable Tag: 1.3.2
@@ -104,6 +104,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.3-dev =
+* Compat : Smart YouTube (and other plugins that execute a posts query joined to comments table) - database error
+* Compat : Revisionary - Pending count and links were not displayed in Dashboard Right Now or Edit Posts listing if revisor capability is by term or object role assignment
+* Compat : Revisionary - Non-Administrators receive Not Found error for revision preview
+
+
 = 1.3.2 - 3 Nov 2010 =
 * BugFix : Post counts and other dashboard items were not filtered for non-Administrators (since 1.3.1)
 * Compat : Revisionary - users could not submit or edit revisions based on Contributor role direct-assigned for post
@@ -155,7 +161,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Pending Revisions (from Revisionary plugin) were not included in Edit Posts listing for non-Administrators when editing access to published post is affected by category-specific roles or restrictions (since 1.0)
 
 
-**1.3.RC - 8 Oct 2010**
+** 1.3.RC - 8 Oct 2010 **
 
 = Post Editing =
 * Change : In Post Edit Form, currently assigned categories and other hierarchical terms shown with disabled checkboxes if current cannot edit in the term
@@ -316,14 +322,41 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Blank options area when attempting to access General Options (since 1.2 RC)
 
 
-**1.2 - 2 June 2010**
+= 1.2 - 2 June 2010 =
+no changes from 1.2 RC
+
+
+= 1.2 RC - 1 June 2010 =
+* BugFix : Roles and Restricions menu did not remain collapsed
+* BugFix : On abnormally configured web servers, RS menu links did not work
+* Change : When running with WP 3.0, use "Network / Site" terminology in captions
+* Change : On WP < 2.9, Roles and Restrictions menus will appear at the bottom of the navigation sidebar
+
+
+= 1.2 Beta 3 - 29 May 2010 =
+* BugFix : Private Posts were excluded from Recent Posts widget if Hidden Content Teaser enabled, even if logged user can read the post
+* BugFix : On some installations, Page Roles could not be updated correctly following upgrade from older Role Scoper version
+* BugFix : Users could not be added to groups following first-time installation of RS (since 1.2 Beta 1)
+* BugFix : Hidden Content Teaser prefix and suffix were not applied if configured for "fixed teaser" (since 1.2 Beta 1)
+* BugFix : PHP Warning in taxonomies_rs.php if previous installation never customized RS options (since 1.2 Beta 1)
+* Lang : Use mb_strtolower() for better multibyte support in translated captions
+
+
+= 1.2 Beta 2 - 20 May 2010 =
+* BugFix : File Filtering did not work on WP 3.0 Multisite
+* BugFix : File Filtering did not work on new MU blogs until plugin re-activation or File Filtering re-enable
+* BugFix : If redundant Page / Post / Category roles were stored to database, they could only be deleted one at a time (giving the appearance and effect of a failed role deletion)
+* BugFix : Javascript error in Page Edit form, failed to set tooltip caption for Page Role checkboxes
+* BugFix : PHP Warning on RS version upgrade if previous installation never customized RS options (since 1.2 Beta 1)
+
+
+**1.2 Beta 1 - 7 May 2010**
 
 = WordPress 3.0 Compatibility =
 * Compat : WP 3.0 elimination of page.php, edit-pages.php, page-new.php broke many aspects of page filtering
 * Compat : Support RS Roles, Restrictions for Custom Post Types created via WP 2.9 / 3.0 framework
 * Compat : Support RS Roles for Custom Taxonomies created via WP 2.9 / 3.0 framework
 * Compat : WP 3.0 Multisite menu items had invalid link
-* Compat : File Filtering did not work on WP 3.0 Multisite
 
 = New Features =
 * Feature : Ajax interface for group membership selection
@@ -332,15 +365,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = Major Bug Fixes =
 * BugFix : File Filtering was not imposed based on Post/Page Restrictions or Default Category Roles (also required Private visibility)
-* BugFix : File Filtering did not work on new MU blogs until plugin re-activation or File Filtering re-enable
 * BugFix : RS Restrictions and Roles were not applied to Sticky Posts
 * BugFix : Attachment filenames with spaces, parenthesis and other special chars caused corrupt or ineffective .htaccess (possibly resulting in Internal Server Error)
 * BugFix : Last blog paging link sometimes hidden when Hidden Content Teaser enabled (also caused WP-PageNavi conflict)
 * BugFix : With Revisionary (or possibly other plugins) enabled, posts are inappropriately forced into default category in logged user cannot post there.
 * BugFix : Custom calls to wp_dropdown_pages (in template or other plugin code) were sometimes filtered inappropriately
-* BugFix : If redundant Page / Post / Category roles were stored to database, they could only be deleted one at a time (giving the appearance and effect of a failed role deletion)
-* BugFix : On some installations, Page Roles could not be updated correctly following upgrade from older Role Scoper version
-* BugFix : On abnormally configured web servers, RS menu links did not work
 
 = Minor Bug Fixes =
 * BugFix : When previewing a post, non-editors don't see Page or Post listings in sidebar / topbar
@@ -353,9 +382,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : If Post Reader is enabled as an "Additional Object Role", Private Post Reader also remains captioned as "Post Reader"
 * BugFix : Bad edit link on User Profile where user is a Group Manager for specific group(s)
 * BugFix : When scanning Posts/Pages for unregistered attachments, File Attachment Utility did not distinguish broken links
-* BugFix : Roles and Restricions menu did not remain collapsed
-* BugFix : Private Posts were excluded from Recent Posts widget if Hidden Content Teaser enabled, even if logged user can read the post
-* BugFix : Javascript error in Page Edit form, failed to set tooltip caption for Page Role checkboxes
 
 = Plugin Compatibility =
 * Compat : WP-PageNavi - conflict with paging links, see above
@@ -367,9 +393,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = Other Changes =
 * Change : Apply Excerpt Teaser Prefix,Suffix whenever excerpt, pre-more, or first X chars replace content, if SCOPER_FORCE_EXCERPT_SUFFIX is defined.
-* Change : When running with WP 3.0, use "Network / Site" terminology in captions
-* Change : On WP < 2.9, Roles and Restrictions menus will appear at the bottom of the navigation sidebar
-* Lang : Use mb_strtolower() for better multibyte support in translated captions
 * Perf : Don't load and initialize Role Scoper on asynchronous dashboard feed calls (WP dev blog, etc.)
 
 
@@ -466,7 +489,30 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Recursive execution of category filter caused memory error in some installations
 
 
-**1.1 - 30 Dec 2009**
+= 1.1 - 30 Dec 2009 =
+* Feature : Additional "Lock Top Pages" option to allow any Page Author to set or remove top-level pages
+* Feature : If HTTP authentication is enabled, append the http_auth argument to Category, Tag, Author and Comment feed links also 
+* BugFix : Changes to restrictions, roles did not clear internal cache for anonymous user (since 1.1.RC1)
+* BugFix : Contributors could not upload an image before a category is set, if editing rights are based on category
+* BugFix : Edit Posts listing for Published status included non-published posts (since 1.1.RC1)
+* BugFix : Edit Pages listing for Published status included non-published pages (since 1.1.RC1)
+* BugFix : Category Restrictions were not correctly noted in Edit Posts listing or front-end template functions (since 1.1.RC1)
+* BugFix : In WP-mu dashboard, PHP warnings on first execution (since 1.1.RC1)
+* BugFix : Attachments Utility did not load (since 1.1.RC1)
+* Compat : Simple Section Nav: page selection list in Widget setup was broken with latest SSN version
+
+
+= 1.1.RC3 - 18 Dec 2009 =
+* BugFix : Categories listing filter was inactive for new installations and following RS Options re-save (since 1.1.RC1)
+* BugFix : Invalid HTML formatting of Page Parent dropdown if no published pages exist
+
+
+= 1.1.RC2 - 17 Dec 2009 =
+* BugFix : Custom Taxonomy Restrictions were not applied correctly (since 1.1.RC1)
+* BugFix : Activation Error (since 1.1.RC1)
+
+
+**1.1.RC1 - 12 Dec 2009**
 
 = WP-mu: =
 * Feature : Option for site-wide groups when running on WP-mu
@@ -540,12 +586,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = Post / Page Edit Form: =
 * Feature : Option to default new posts and/or pages to Private visibility
 * Feature : Option to auto-select Private visibility when the Reader role is restricted in Page/Post Edit Form
-* BugFix : Contributors could not upload an image before a category is set, if editing rights are based on category
 * BugFix : On post creation, default category was not applied in some situations when author had save / publish capability for it
 * BugFix : On post creation, first available category was not applied in some situations when author did not select any categories (and does not have save/publish capability for default cat)
 * BugFix : Authors could not edit their own private posts / pages in some configurations
 * BugFix : Non-editors were sometimes unable to save subpages of pages based on their Page Associate role; received a "cannot associate with the Main Page" error message
-* BugFix : Invalid HTML formatting of Page Parent dropdown if no published pages exist
 * BugFix : WP Metagroup Category/General Role assignments were not indicated by color coding in Post/Page Edit Form role metaboxes
 * BugFix : "Attempt has failed" error when submitting post with some certain WP/RS Role Definitions and editing roles restricted in all categories
 * BugFix : Out of memory / timeout error on some servers when non-Administrator views Edit Posts listing
@@ -587,7 +631,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Workaround : WP core forces display of published posts only in Edit Posts listing when filtering by a custom taxonomy term
 
 = Front-End Misc: =
-* Feature : If HTTP authentication is enabled, append the http_auth argument to Category, Tag, Author and Comment feed links also 
 * BugFix : get_comments() function did not include comments on attachments to private posts
 * BugFix : In some installations with a language defined and "suppress private caption" option enabled, fatal error from translate call in template-interceptor 
 * BugFix : template function is_restricted_rs() indicated some false positives for category restrictions
@@ -596,7 +639,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = Admin Misc: =
 * Feature : Add pending posts and pages total to Dashboard Right Now list
-* Feature : Additional "Lock Top Pages" option to allow any Page Author to set or remove top-level pages
 * BugFix : Cannot approve / unapprove comments when capability is granted via Category Role or Page/Post Role
 * BugFix : Roles, Restrictions menu icons were not displayed if custom WP_CONTENT_DIR set
 * BugFix : PHP Warning on installation / version update due to DB key name conflicting with an existing WP key name
@@ -629,7 +671,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Tiny MCE Advanced (conflict was present in RS 1.1 beta versions)
 * Compat : Flutter (may require Flutter code patch, see Notes)
 * Compat : Use display names and plural display names defined by Custom Taxonomies plugin
-* Compat : Simple Section Nav: page selection list in Widget setup was broken with latest SSN version
 
 = Browser Compat (wp-admin): =
 * BugFix : Background color not applied to RS Options form in some versions of IE
@@ -780,8 +821,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = 1.0.0 - 21 March 2009 =
 * BugFix : In some installations, DB error for anonymous user front-end access (since rc9.9220)
-
-note: the change log has been truncated for size; changes from some beta and RC versions are now included in corresponding stable release
 
 
 == Other Notes ==

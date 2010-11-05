@@ -32,12 +32,15 @@ class ScoperHardwayFront
 		
 		// Due to missing get_comments hook, this filter operates on every front-end query.
 		// If query doesn't pertain to comments, skip out with as little overhead as possible.
-		if ( strpos($query, 'comment') 
+		if ( strpos($query, 'comment')
 		&& strpos($query, "ELECT") && ! strpos($query, 'posts as parent') && ! strpos($query, "COUNT") && strpos($query, "comment_approved") )
 		{
 			if ( ! is_attachment() && ! is_content_administrator_rs() ) {
 				
 				global $wpdb;
+
+				if ( strpos($query, " $wpdb->posts " ) )
+					return $query;
 
 				if ( awp_is_plugin_active( 'wp-wall') ) {
 					$options = WPWall_GetOptions();

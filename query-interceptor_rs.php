@@ -791,12 +791,14 @@ class QueryInterceptor_RS
 		$reqd_caps = $this->scoper->role_defs->role_handles_to_caps($reqd_caps);
 
 		// accomodate editing of published posts/pages to revision
-		if ( is_admin() && defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {
+		if ( defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {
 			if ( empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) {
 				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'edit.php', 'upload.php', 'widgets.php', 'admin-ajax.php' ) );
 				$revision_uris []= 'index.php';	
 
-				if ( is_preview() || in_array( $GLOBALS['pagenow'], $revision_uris ) || in_array( $GLOBALS['plugin_page_cr'], $revision_uris ) ) {
+				$plugin_page = is_admin() ? $GLOBALS['plugin_page_cr'] : '';
+
+				if ( is_preview() || in_array( $GLOBALS['pagenow'], $revision_uris ) || in_array( $plugin_page, $revision_uris ) ) {
 					$strip_capreqs = array();
 
 					foreach( (array) $object_type as $_object_type ) {
@@ -805,7 +807,7 @@ class QueryInterceptor_RS
 							$reqd_caps []= $type_obj->cap->edit_posts;
 						}
 					}
-							
+
 					$reqd_caps = array_unique( array_diff($reqd_caps, $strip_capreqs) );
 				}
 			}	
