@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, groups, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, upload, files, rss, feed, feeds
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.2
+Stable Tag: 1.3.3
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -104,7 +104,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.3-dev =
+= 1.3.3 - 5 Nov 2010 =
 * Compat : Smart YouTube (and other plugins that execute a posts query joined to comments table) - database error
 * Compat : Revisionary - Pending count and links were not displayed in Dashboard Right Now or Edit Posts listing if revisor capability is by term or object role assignment
 * Compat : Revisionary - Non-Administrators receive Not Found error for revision preview
