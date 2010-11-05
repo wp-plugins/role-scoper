@@ -794,7 +794,9 @@ class QueryInterceptor_RS
 		if ( defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {
 			if ( empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) {
 				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'edit.php', 'upload.php', 'widgets.php', 'admin-ajax.php' ) );
-				$revision_uris []= 'index.php';	
+
+				if ( ! is_admin() && ! empty( $_GET['preview'] ) )
+					$revision_uris []= 'index.php';	
 
 				$plugin_page = is_admin() ? $GLOBALS['plugin_page_cr'] : '';
 

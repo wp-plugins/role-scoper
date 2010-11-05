@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.3
+Stable Tag: 1.3.4
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.4 - 5 Nov 2010 =
+* Compat : Revisionary - Posts were blocked from front-end display if both Role Scoper and Revisionary enabled (since 1.3.3)
+
 
 = 1.3.3 - 5 Nov 2010 =
 * Compat : Smart YouTube (and other plugins that execute a posts query joined to comments table) - database error
