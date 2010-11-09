@@ -104,6 +104,13 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.5-dev =
+* BugFix : Category Manager role was not applied to new subcategories when assigned for "parent and sub-categories"
+* BugFix : Link Admin roles / restrictions were not correctly applied per-category
+* Change : Separate role definitions for link editing, link category management for per-category assignment
+* Compat : Revisionary - Dashboard Right Now count did not include revisable posts/pages (since 1.3.3)
+
+
 = 1.3.4 - 5 Nov 2010 =
 * Compat : Revisionary - Posts were blocked from front-end display if both Role Scoper and Revisionary enabled (since 1.3.3)
 
@@ -165,7 +172,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Pending Revisions (from Revisionary plugin) were not included in Edit Posts listing for non-Administrators when editing access to published post is affected by category-specific roles or restrictions (since 1.0)
 
 
-** 1.3.RC - 8 Oct 2010 **
+**1.3.RC - 8 Oct 2010**
 
 = Post Editing =
 * Change : In Post Edit Form, currently assigned categories and other hierarchical terms shown with disabled checkboxes if current cannot edit in the term

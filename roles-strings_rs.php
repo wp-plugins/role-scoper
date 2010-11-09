@@ -53,8 +53,11 @@ class ScoperRoleStrings {
 					return __('Page Editor', 'scoper');
 				
 			case 'rs_link_editor' :
-				return __('Link Admin', 'scoper');
-				
+				return __('Link Editor', 'scoper');
+
+			case 'rs_category_link_manager' :
+				return __('Category Link Manager', 'scoper');
+
 			case 'rs_category_manager' :
 				return __('Category Manager', 'scoper');
 				

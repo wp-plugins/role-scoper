@@ -18,10 +18,10 @@ class CR_Data_Sources extends AGP_Config_Items {
 		$args = array(
 			'is_taxonomy' => 1,		'taxonomy_only' => 1,	
 			'table_basename' => 'term_taxonomy',  'table' => $wpdb->prefix . 'term_taxonomy',
-			'table_alias' => 'tt', 	'edit_url' => '%1$s/wp-admin/categories.php?action=edit&cat_ID=%2$d',
+			'table_alias' => 'tt',
 			'cols' => (object) array( 'id' => 'term_id', 'name' => 'name', 'parent' => 'parent' ),			// NOTE on ID col: DB queries actually use term_taxonomy_id based on attributes returned by get_terms_query_vars.  term_id here is used for categories queries.  Possible Todo: resolve this discrepancy and potential bug source
-			'http_post_vars' => (object) array( 'id' => 'cat_ID', 'parent' => 'category_parent' ),
-			'uri_vars' => (object) array( 'id' => 'cat_ID' )
+			'http_post_vars' => (object) array( 'id' => 'tag_ID' ),
+			'uri_vars' => (object) array( 'id' => 'tag_ID' )
 		); // end outer array
 		
 		// $src_name, $table_basename, $label_singular, $label_name, $col_id, $col_name

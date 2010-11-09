@@ -33,14 +33,16 @@ class ScoperAdminHardway_Ltd {
 
 	// next-best way to handle any permission checks for non-Ajax operations which can't be done via has_cap filter
 	function act_check_admin_referer( $referer_name ) {
-		if ( 'update-category_' . $_POST['cat_ID'] == $referer_name ) {
+		if ( 'update-tag_' . $_POST['tag_ID'] == $referer_name ) {
 			// filter category parent selection for Category editing
-			if ( ! isset( $_POST['cat_ID'] ) )
+			if ( ! isset( $_POST['tag_ID'] ) )
 				return;
 			
-			$stored_term = get_term_by( 'id', $_POST['cat_ID'], 'category' );
-			
-			$selected_parent = $_POST['category_parent'];
+			$taxonomy = $_POST['taxonomy'];
+				
+			$stored_term = get_term_by( 'id', $_POST['tag_ID'], $taxonomy );
+
+			$selected_parent = $_POST['parent'];
 			
 			if ( -1 == $selected_parent )
 				$selected_parent = 0;
@@ -48,11 +50,13 @@ class ScoperAdminHardway_Ltd {
 			if ( $stored_term->parent != $selected_parent ) {
 				global $scoper;
 				
-				if ( $selected_parent ) {
-					$user_terms = $scoper->qualify_terms( 'manage_categories', 'category' );
-					$permit = in_array( $selected_parent, $user_terms );
-				} else {
-					$permit = cr_user_can( 'manage_categories', 0, 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) );
+				if ( $tx_obj = get_taxonomy( $taxonomy ) ) {
+					if ( $selected_parent ) {
+						$user_terms = $scoper->qualify_terms( $tx_obj->cap->manage_terms, $taxonomy );
+						$permit = in_array( $selected_parent, $user_terms );
+					} else {
+						$permit = cr_user_can( $tx_obj->cap->manage_terms, 0, 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) );
+					}
 				}
 				
 				if ( ! $permit )
@@ -70,22 +74,22 @@ class ScoperAdminHardway_Ltd {
 	
 	// next-best way to handle permission checks for Ajax operations which can't be done via has_cap filter
 	function act_check_ajax_referer( $referer_name ) {
-		if( 'add-tag' == $referer_name ) {			
-			if ( $tx_obj = get_taxonomy( $_POST['taxonomy'], 'object' ) )
+		if ( 'add-tag' == $referer_name ) {			
+			if ( $tx_obj = get_taxonomy( $_POST['taxonomy'] ) )
 				$cap_name = $tx_obj->cap->manage_terms;
 
 			if ( empty($cap_name) )
 				$cap_name = 'manage_categories';
-			
-			if ( ! empty($_POST['parent']) && ( $_POST['parent'] > 0 )  )
-				$parent = $_POST['parent'];
-			else
-				$parent = 0;
-				
+
 			// Concern here is for addition of top level terms.  Subcat addition attempts will already be filtered by has_cap filter.
-			if ( ! $parent && ! cr_user_can( $cap_name, BLOG_SCOPE_RS ) )
+			if ( ( empty( $_POST['parent'] ) || $_POST['parent'] < 0 ) && ! cr_user_can( $cap_name, BLOG_SCOPE_RS ) )
+				die('-1');	
+		
+		} elseif ( 'add-link-category' == $referer_name ) {		
+			if ( ! cr_user_can( 'manage_categories', BLOG_SCOPE_RS ) )
 				die('-1');	
 		}
+		
 	}
 	
 	
@@ -182,7 +186,7 @@ class ScoperAdminHardway_Ltd {
 				//rs_errlog ("<br />caught $query <br />");
 
 				// don't mess with parent category selection/availability for single term edit
-				$is_term_admin = ( 'edit-tags.php' == $pagenow );
+				$is_term_admin = ( in_array( $pagenow, array( 'edit-tags.php', 'edit-link-categories.php' ) ) );
 				if ( $is_term_admin ) {
 					if ( ! empty( $_REQUEST['tag_ID'] ) )
 						return $query;
@@ -200,12 +204,12 @@ class ScoperAdminHardway_Ltd {
 					else
 						$query = apply_filters( 'terms_request_rs', $query, $taxonomy, array( 'is_term_admin' => $is_term_admin ) );
 				}
-					
+
 				//rs_errlog ("<br /><br /> returning $query <br />");
 				return $query;
 			}
 		} 
-		
+
 
 		// WP 3.0:  SELECT * FROM wp_comments c LEFT JOIN wp_posts p ON c.comment_post_ID = p.ID WHERE p.post_status != 'trash' AND ( c.comment_approved = '0' OR c.comment_approved = '1' ) ORDER BY c.comment_date_gmt
 		// 

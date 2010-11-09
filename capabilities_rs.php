@@ -60,7 +60,7 @@ class CR_Capabilities extends AGP_Config_Items {
 					foreach( $cap_def->object_types as $type )
 						$object_types[$cap_def->src_name] [] = $type;
 				}
-		
+
 		// If multiple sources were identified from these caps, the reqd_caps set is at least partially invalid.
 		// If post data source was among those identified, return its post types.  Otherwise, fail.
 		if ( count( $object_types ) > 1 ) {

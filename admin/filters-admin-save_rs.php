@@ -94,8 +94,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				update_post_meta($object_id, '_scoper_last_parent', (int) $set_parent);
 			
 		} else {
+			// for other data sources, we have to assume object is new unless it has a role or restriction stored already.
 			require_once( 'filters-admin-save-custom_rs.php' );
-			ScoperCustomAdminFiltersSave::log_object_save( $src_name, $object_id, $is_new_object, $col_parent, $set_parent );
+			$is_new_object = ScoperCustomAdminFiltersSave::log_object_save( $src_name, $object_id, $is_new_object, $col_parent, $set_parent );
 		}
 	
 		// used here and in UI display to enumerate role definitions
@@ -554,7 +555,6 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		
 		if ( $col_parent = $scoper->taxonomies->member_property($taxonomy, 'source', 'cols', 'parent') ) {
 			$tx_src_name = $scoper->taxonomies->member_property($taxonomy, 'source', 'name');
-			
 			$set_parent = $scoper->data_sources->get_from_http_post('parent', $tx_src_name);
 		}
 
@@ -588,7 +588,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( ! $is_new_term )
 			if ( $custom_role_objects = get_option( "scoper_custom_{$taxonomy}" ) )
 				$roles_customized = isset( $custom_role_objects[$term_id] );
-			
+				
 		// Inherit parent roles / restrictions, but only for new terms, 
 		// or if a new parent is set and no roles have been manually assigned to this term
 		if ( $is_new_term || ( ! $roles_customized && ($set_parent != $last_parent) ) ) {
@@ -600,7 +600,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				ScoperAdminLib::clear_restrictions(TERM_SCOPE_RS, $taxonomy, $term_id, $args);
 				ScoperAdminLib::clear_roles(TERM_SCOPE_RS, $taxonomy, $term_id, $args);
 			}
-			
+
 			// apply propagating roles,restrictions from specific parent
 			if ( $set_parent ) {
 				scoper_inherit_parent_roles($term_id, TERM_SCOPE_RS, $taxonomy, $set_parent);
@@ -609,6 +609,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		} // endif new parent selection (or new object)
 		
 		scoper_term_cache_flush();
+		scoper_flush_roles_cache(TERM_SCOPE_RS, '', '', $taxonomy);
 		delete_option( "{$taxonomy}_children_rs" );
 	}
 	

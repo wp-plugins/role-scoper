@@ -128,14 +128,14 @@ class QueryInterceptor_RS
 		$defaults = array( 'reqd_caps_by_otype' => array(), 'is_term_admin' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
-		
+
 		$taxonomies = (array) $taxonomies;
 		if ( ! $taxonomies )
 			return $request;
 
 		if ( ! preg_match('/\s*WHERE\s*1=1/', $request) )
 			$request = preg_replace('/\s*WHERE\s*/', ' WHERE 1=1 AND ', $request);
-
+	
 		// support multiple taxonomies, but only if they all use the same object data source
 		$taxonomy_sources = array();
 		foreach ( $taxonomies as $taxonomy ) {
@@ -149,17 +149,19 @@ class QueryInterceptor_RS
 			
 			$taxonomy_sources[$src_name] = true;
 		}
+		
 		if ( count($taxonomy_sources) != 1 )
 			return $request;
-		
+			
 		// if the filter call did not specify required caps...
 		if ( ! $reqd_caps_by_otype ) {
 			$reqd_caps_by_otype = array();
-			
-			// try to determine context from URI (if taxonomy definition includes such clues)
-			foreach( $taxonomies as $taxonomy ) 
-				$reqd_caps_by_otype = array_merge( $reqd_caps_by_otype, $this->scoper->get_terms_reqd_caps( $taxonomy, '', $is_term_admin ) );   // NOTE: get_terms_reqd_caps() returns term management caps on edit-tags.php, otherwise post edit caps
 
+			// try to determine context from URI (if taxonomy definition includes such clues)
+			foreach( $taxonomies as $taxonomy ) {
+				$reqd_caps_by_otype = array_merge( $reqd_caps_by_otype, $this->scoper->get_terms_reqd_caps( $taxonomy, '', $is_term_admin ) );   // NOTE: get_terms_reqd_caps() returns term management caps on edit-tags.php, otherwise post edit caps
+			}
+				
 			// if required operation still unknown, default based on access type
 			if ( ! $reqd_caps_by_otype )
 				return $request;
@@ -173,7 +175,7 @@ class QueryInterceptor_RS
 		// if this is a term management query, no need to involve objects query filtering
 		if ( ( 'post' == $src_name ) && isset( $reqd_caps_by_otype[ $taxonomies[0] ] ) ) {
 			/*
-			$taxonomy_obj = get_taxonomy( $taxonomies[0], 'object' );
+			$taxonomy_obj = get_taxonomy( $taxonomies[0] );
 			if ( in_array( $taxonomy_obj->cap->manage_terms, $reqd_caps_by_otype[ $taxonomies[0] ] ) ) {
 				$args['taxonomies'] = array( $taxonomies[0] );
 				$args['object_type'] = $taxonomies[0];
@@ -216,9 +218,9 @@ class QueryInterceptor_RS
 				$request = substr($request, 0, $pos_suffix) . ' WHERE 1=1 ' .  substr($request, $pos_suffix);
 				$pos_where = $pos_suffix;
 			}
-	
-			$where = $this->flt_objects_where($where, $src_name, '', $args);
 			
+			$where = $this->flt_objects_where($where, $src_name, '', $args);
+
 			if ( $pos_where === false )
 				$request = $request . ' WHERE 1=1 ' . $where;
 			else
@@ -425,7 +427,7 @@ class QueryInterceptor_RS
 		// need to allow ambiguous object type for special cap requirements like comment filtering
 		$object_types = $this->_get_object_types($src, $object_types);
 		$tease_otypes = array_intersect( $object_types, $this->_get_teaser_object_types($src_name, $object_types, $args) );
-
+	
 		if ( ! empty($src->no_object_roles) )
 			$use_object_roles = false;
 			
@@ -445,10 +447,8 @@ class QueryInterceptor_RS
 			}
 			
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
-		}
-
-		//dump($otype_status_reqd_caps);
-	
+		}	
+		
 		// Since Role Scoper can restrict or expand access regardless of post_status, query must be modified such that
 		//  * the default owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" is removed
 		//  * all statuses are listed apart from owner inclusion clause (and each of these status clauses is subsequently replaced with a scoped equivalent which imposes any necessary access limits)
@@ -536,7 +536,6 @@ class QueryInterceptor_RS
 			// this source doesn't define statuses
 			$basic_status_clause = array ( '' => '');
 		}
-	
 		
 		if ( empty($skip_teaser) && ! array_diff($object_types, $tease_otypes) ) {
 			if ( $status_clause_pos && $force_single_type ) {
@@ -591,9 +590,11 @@ class QueryInterceptor_RS
 								$otype_use_term_roles[$taxonomy] = 1;
 					} else
 						$otype_use_term_roles = ( ! empty( $src->uses_taxonomies ) ) ? array_fill_keys( $src->uses_taxonomies, true ) : array();
-				} else
-					$otype_use_term_roles = ( -1 == $use_term_roles ) ? scoper_get_otype_option('use_term_roles', $src_name, $object_type) : false;
-					
+				} else {
+					$check_object_type = ( 'link_category' == $object_type ) ? 'link' : $object_type;	
+					$otype_use_term_roles = ( -1 == $use_term_roles ) ? scoper_get_otype_option('use_term_roles', $src_name, $check_object_type) : false;
+				}
+
 				if ( ( ! $otype_use_term_roles ) && $terms_query )
 					continue;	
 
@@ -603,7 +604,9 @@ class QueryInterceptor_RS
 				$otype_use_term_roles = false;
 				$otype_use_object_roles = false;
 			}
-
+				
+					
+		if ( 'link' == $src_name )
 			//now step through all statuses and corresponding cap requirements for this otype and access type
 			// (will replace "col_status = status_name" with "col_status = status_name AND ( [scoper requirements] )
 			foreach ($status_reqd_caps as $status_name => $reqd_caps) {
@@ -770,7 +773,7 @@ class QueryInterceptor_RS
 	function objects_where_role_clauses($src_name, $reqd_caps, $args = array() ) {	
 		$defaults = array( 'taxonomies' => array(), 'terms_query' => false, 'alternate_reqd_caps' => '', 
 						'custom_user_blogcaps' => '', 'skip_owner_clause' => false, 'require_full_object_role' => false );
-
+						
 		// Required Args
 		// NOTE: use_object_roles is a boolean for the single object_type in question, but otype_use_object_roles is array[taxonomy] = true or false
 		$required = array_fill_keys( array( 'user', 'object_type', 'otype_use_term_roles', 'otype_use_object_roles' ), true );
@@ -795,7 +798,7 @@ class QueryInterceptor_RS
 			if ( empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) {
 				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'edit.php', 'upload.php', 'widgets.php', 'admin-ajax.php' ) );
 
-				if ( ! is_admin() && ! empty( $_GET['preview'] ) )
+				if ( is_admin() || ! empty( $_GET['preview'] ) )
 					$revision_uris []= 'index.php';	
 
 				$plugin_page = is_admin() ? $GLOBALS['plugin_page_cr'] : '';
@@ -856,7 +859,7 @@ class QueryInterceptor_RS
 			}
 
 			$qualifying_roles = $this->scoper->role_defs->qualify_roles($reqd_caps_arg, '', $object_type );
-
+			
 			/*
 			rs_errlog( '' );
 			rs_errlog( "reqd_caps arg: " . serialize($reqd_caps_arg) );
@@ -881,7 +884,7 @@ class QueryInterceptor_RS
 				$owner_roles = $this->scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
 				$qualifying_object_roles = $this->scoper->confirm_object_scope( $owner_roles );		// have to pass this in for 'user' call because qualifying_roles may not include a qualifying object role (i.e. Page Contributor object role assignment)
 			}
-				
+			
 			if ( $qualifying_roles || ! empty($qualifying_object_roles) ) {
 				//d_echo( "regular objects_where_scope_clauses for " . serialize( $reqd_caps ) );
 				$args = array_merge( $args, compact( 'qualifying_roles', 'qualifying_object_roles' ) );
@@ -944,7 +947,7 @@ class QueryInterceptor_RS
 			rs_notice ( sprintf( 'Role Scoper Runtime Error (%1$s) - Missing argument(s): %2$s', 'objects_where_scope_clauses', implode( ", ", array_keys($missing) ) ) );  
 			return ' 1=2 ';	
 		}
-		
+
 		$defaults = array_merge( $defaults, $required );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -1257,7 +1260,7 @@ class QueryInterceptor_RS
 									$cache_obj_ids = array();
 									$post_save_refreshed = array();
 								}
-								
+
 								$objrole_subselect = "SELECT DISTINCT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause ";
 
 								if ( did_action( 'save_post' ) || ! empty($_GET['doaction']) ) {

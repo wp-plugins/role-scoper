@@ -136,7 +136,7 @@ class CapInterceptor_RS
 				}
 		}
 		// =================================================== (end early exit checks) ======================================================
-
+		
 
 		// ============================ GLOBAL VARIABLE DECLARATIONS, ARGUMENT TRANSLATION AND STATUS DETECTION =============================
 		global $current_user, $pagenow;
@@ -204,7 +204,7 @@ class CapInterceptor_RS
 
 			// slight simplification: assume a single cap object type for a few cap substitution checks
 			if ( $is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' ) )
-				$cap_type_obj = get_taxonomy( reset($cap_types), 'object' );
+				$cap_type_obj = get_taxonomy( reset($cap_types) );
 			else {
 				if ( count( $cap_types ) > 1 )
 					$cap_type_obj = $object_type_obj;
@@ -395,7 +395,7 @@ class CapInterceptor_RS
 		// if this is a term administration request, route to user_can_admin_terms()
 		if ( $is_taxonomy_cap ) {
 			if ( 'post' == $src_name )
-				$cap_otype_obj = get_taxonomy( reset($cap_types), 'object' );
+				$cap_otype_obj = get_taxonomy( reset($cap_types) );
 			
 			if ( ( ( 'post' != $src_name ) || ( $rs_reqd_caps[0] == $cap_otype_obj->cap->manage_terms ) ) && ( count($rs_reqd_caps) == 1 ) ) {  // don't re-route if multiple caps are being required
 				// always pass through any assigned blog caps which will not be involved in this filtering
@@ -876,7 +876,7 @@ function _cr_user_can( $reqd_caps, $object_id = 0, $user_id = 0, $meta_flags = a
 		} else
 			$meta_flags = array();
 	}
-
+	
 	$capabilities = apply_filters('user_has_cap', $user->allcaps, $reqd_caps, array( $reqd_caps, $user->ID, $object_id ) );
 
 	if ( $meta_flags ) {

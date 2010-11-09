@@ -18,9 +18,9 @@ class ScoperHardwayFront
 			return;
 	
 		$readable_cats = apply_filters( 'get_terms', array(), 'category', array('fields' => 'ids', 'skip_teaser' => true) );
-	
+
 		foreach ( $cats as $key => $cat )
-			if ( ! in_array($cat->cat_ID, $readable_cats) )
+			if ( ! in_array($cat->term_id, $readable_cats) )
 				unset( $cats[$key] );
 	
 		return $cats;

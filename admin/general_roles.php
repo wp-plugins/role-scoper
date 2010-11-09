@@ -355,6 +355,9 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 				if ( ! empty($role->anon_only) )
 					continue;
 			
+				if ( ! empty($role->valid_scopes) && empty($role->valid_scopes['blog']) )
+					continue;
+					
 				$assignment_list = array();
 				foreach ( $role_bases as $role_basis ) {
 					if ( is_array($blog_roles[$role_basis]) && isset($blog_roles[$role_basis][$role_handle]) ) {

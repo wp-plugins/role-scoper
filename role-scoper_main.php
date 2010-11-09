@@ -311,7 +311,7 @@ class Scoper
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator )
 				require_once( 'admin/filters-admin-ui-listing_rs.php' );
 
-		} elseif ( 'edit-tags.php' == $pagenow ) {
+		} elseif ( in_array( $pagenow, array( 'edit-tags.php', 'edit-link-categories.php' ) ) ) {
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') )
 				require_once( 'admin/filters-admin-terms_rs.php' );
 		}
@@ -826,10 +826,10 @@ class Scoper
 	function get_terms_reqd_caps( $taxonomy, $operation = '', $is_term_admin = false ) {
 		global $pagenow;
 
-		if ( taxonomy_exists( $taxonomy ) )
-			$src_name = 'post';
-		else
-			$src_name = $this->taxonomies->member_property( $taxonomy, 'object_source' );
+		if ( ! $src_name = $this->taxonomies->member_property( $taxonomy, 'object_source' ) ) {
+			if ( taxonomy_exists( $taxonomy ) )
+				$src_name = 'post';
+		}
 
 		$return_caps = array();
 
@@ -840,9 +840,12 @@ class Scoper
 			if ( 'post' == $src_name ) {
 				$taxonomy_obj = get_taxonomy( $taxonomy );
 				$return_caps[$taxonomy] = array( $taxonomy_obj->cap->manage_terms );
+			} elseif ( 'link_category' == $taxonomy ) { 
+				$return_caps[$taxonomy] = array( 'manage_categories' );
 			} else {
 				global $scoper;
-				$return_caps[$taxonomy] = $scoper->cap_defs->get_matching( $src_name, $taxonomy, OP_ADMIN_RS );
+				$cap_defs = $scoper->cap_defs->get_matching( $src_name, $taxonomy, OP_ADMIN_RS );
+				$return_caps[$taxonomy] = $cap_defs ? array_keys( $cap_defs ) : array();
 			}	 	
 		} else {
 			// query pertains to reading or editing content within certain terms, or adding terms to content

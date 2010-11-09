@@ -209,9 +209,11 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 				} else {
 					$disabled_role = '';
 					$available_caps = $rs_default_cap_defs->get_matching($src_name, $object_type, '', STATUS_ANY_RS);
-
+					
 					$available_cap_names = array_keys($available_caps);
 					sort($available_cap_names);
+					
+					$available_cap_names = array_merge( $available_cap_names, $active_cap_names );
 				}
 
 				// abbreviate type caps and reorder display

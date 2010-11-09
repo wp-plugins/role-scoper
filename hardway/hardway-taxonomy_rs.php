@@ -71,11 +71,14 @@ class ScoperHardwayTaxonomy
 		//
 		global $scoper;
 		
-		$use_taxonomies = scoper_get_option( 'use_taxonomies' );
-
-		if ( empty( $use_taxonomies[$taxonomy] ) )
-			return $results;
-		
+		if ( $tx_obj = get_taxonomy( $taxonomies[0] ) ) {	// don't require use_taxonomies setting for link_categories or other non-post taxonomies
+			if ( array_intersect( $tx_obj->object_type, get_post_types() ) ) {
+				$use_taxonomies = scoper_get_option( 'use_taxonomies' );
+	
+				if ( empty( $use_taxonomies[$taxonomy] ) )
+					return $results;
+			}
+		}
 
 		// no backend filter for administrators
 		$parent_or = '';
@@ -116,8 +119,8 @@ class ScoperHardwayTaxonomy
 			$args['exclude_tree'] = $args['exclude'];
 	
 		// don't offer to set a category as its own parent
-		if ( is_admin() && ( 'category' == $taxonomy ) ) {
-			if ( 'edit-tags.php' == $GLOBALS['pagenow'] ) {
+		if ( 'edit-tags.php' == $GLOBALS['pagenow'] ) {			
+			if ( $tx_obj->hierarchical ) {
 				if ( $editing_cat_id = $scoper->data_sources->get_from_uri('id', 'term') ) {
 					if ( ! empty($args['exclude']) )
 						$args['exclude'] .= ',';
@@ -179,7 +182,7 @@ class ScoperHardwayTaxonomy
 		// === END Role Scoper MODIFICATION ===
 		// ====================================
 
-		$is_term_admin = ( 'edit-tags.php' == $GLOBALS['pagenow'] );
+		$is_term_admin = in_array( $GLOBALS['pagenow'], array( 'edit-tags.php', 'edit-link-categories.php' ) );
 
 		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
 		$key = md5( serialize( compact(array_keys($defaults)) ) . serialize( $taxonomies ) . $filter_key );
@@ -370,10 +373,8 @@ class ScoperHardwayTaxonomy
 		else
 			$do_teaser = false;
 			
-		$query = apply_filters( 'terms_request_rs', $query_base, $taxonomies[0], '', array('skip_teaser' => ! $do_teaser, 'is_term_admin' => $is_term_admin ) );
+		$query = apply_filters( 'terms_request_rs', $query_base, $taxonomies[0], array('skip_teaser' => ! $do_teaser, 'is_term_admin' => $is_term_admin ) );
 
-		//dump($query);
-		
 		// if no filering was applied because the teaser is enabled, prevent a redundant query
 		if ( ! empty($exclude_tree) || ($query_base != $query) || $parent || ( 'all' != $fields ) ) {
 			$terms = scoper_get_results($query);
@@ -625,7 +626,7 @@ function rs_tally_term_counts(&$terms, $taxonomy, $args = array()) {
 		$term_ids[$term->term_taxonomy_id] = $term->term_id;  // key and value will match for non-taxonomy category types
 	}
 
-	$tx_obj = get_taxonomy( $taxonomy, 'object' );
+	$tx_obj = get_taxonomy( $taxonomy );
 	$post_types = (array) $tx_obj->object_type;
 
 	$enabled_types = array();

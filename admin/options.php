@@ -1710,7 +1710,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 						<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
 						<?php 
 						if ( TERM_SCOPE_RS == $scope ) {
-							if ( $tx = get_taxonomy( $key, 'object' ) )
+							if ( $tx = get_taxonomy( $key ) )
 								$display_name = $tx->labels->name;
 							else
 								$display_name = '';

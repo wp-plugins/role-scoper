@@ -267,7 +267,7 @@ function cr_cap_defs() {
 	'moderate_comments' => 			(object) array( 'src_name' => 'post',  'op_type' => '' ),
 	'unfiltered_html' => 			(object) array( 'src_name' => 'post',  'op_type' => '' ),
 
-	'manage_links' =>  				(object) array( 'src_name' => 'link',  'op_type' => OP_ADMIN_RS, 'no_custom_remove' => true ),
+	'manage_links' =>  				(object) array( 'src_name' => 'link',  'op_type' => OP_ADMIN_RS, 'no_custom_remove' => true, 'object_types' => array( 'link' ) ),	/* set object_type explicitly for link due to complication with manage_categories cap association */
 	
 	'manage_groups' =>   			(object) array( 'src_name' => 'group', 'op_type' => OP_ADMIN_RS, 'no_custom_remove' => true, 'defining_module' => 'role-scoper' ),
 	'recommend_group_membership' => (object) array( 'src_name' => 'group', 'op_type' => OP_EDIT_RS,  'no_custom_remove' => true, 'defining_module' => 'role-scoper' ),
@@ -341,6 +341,9 @@ function cr_role_caps() {
 	$arr = array(
 		'rs_link_editor' => array(
 			'manage_links' => true
+		),
+		'rs_link_category_manager' => array(
+			'manage_categories' => true
 		),
 		'rs_group_manager' => array(
 			'manage_groups' => true,
@@ -528,7 +531,9 @@ function cr_post_role_defs() {
 }
 
 function cr_taxonomy_role_defs() {
-	$arr = array();
+	$arr = array(
+		'rs_link_category_manager' =>	(object) array( 'src_name' => 'link', 'object_type' => 'link_category', 'valid_scopes' => array( 'term' => true ), 'no_custom_caps' => true )
+	);
 	
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
 	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
