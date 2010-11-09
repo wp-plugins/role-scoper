@@ -24,8 +24,8 @@ class ScoperAdminHardway_Ltd {
 		
 		// TODO: better handling of low-level AJAX filtering
 		// URIs ending in specified filename will not be subjected to low-level query filtering
-		$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'p-admin/categories.php', 'p-admin/themes.php', 'p-admin/plugins.php', 'p-admin/profile.php' ) );
-		$nomess_uris = array_merge($nomess_uris, array('p-admin/admin-ajax.php'));
+		$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'categories.php', 'themes.php', 'plugins.php', 'profile.php', 'link.php' ) );
+		$nomess_uris = array_merge($nomess_uris, array('admin-ajax.php'));
 		
 		if ( ! in_array( $GLOBALS['pagenow'], $nomess_uris ) && ! in_array( $GLOBALS['plugin_page_cr'], $nomess_uris ) )
 			add_filter('query', array('ScoperAdminHardway_Ltd', 'flt_last_resort_query') );	
@@ -68,6 +68,16 @@ class ScoperAdminHardway_Ltd {
 			if ( ! cr_user_can( $tx->cap->manage_terms, $_REQUEST['menu'], 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) ) ) {
 				wp_die( __('You do not have permission to create new Navigation Menus', 'scoper') );
 			}
+			
+		} elseif ( 'add-bookmark' == $referer_name ) {
+			require_once( 'hardway-admin-links_rs.php' );
+			$link_category = ! empty( $_POST['link_category'] ) ? $_POST['link_category'] : array();
+			$_POST['link_category'] = scoper_flt_newlink_category( $link_category );
+
+		} elseif ( 0 === strpos( $referer_name, 'update-bookmark_' ) ) {
+			require_once( 'hardway-admin-links_rs.php' );
+			$link_category = ! empty( $_POST['link_category'] ) ? $_POST['link_category'] : array();
+			$_POST['link_category'] = scoper_flt_link_category( $link_category );
 		}
 	}
 	
@@ -88,8 +98,8 @@ class ScoperAdminHardway_Ltd {
 		} elseif ( 'add-link-category' == $referer_name ) {		
 			if ( ! cr_user_can( 'manage_categories', BLOG_SCOPE_RS ) )
 				die('-1');	
-		}
 		
+		}
 	}
 	
 	

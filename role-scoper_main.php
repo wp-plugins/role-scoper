@@ -349,7 +349,8 @@ class Scoper
 				'post.php', 		'post-new.php', 		'edit.php', 
 				'upload.php', 		'edit-comments.php', 	'edit-tags.php',
 				'profile.php',		'admin-ajax.php',
-				'link-manager.php', 'link-add.php',			'edit-link-category.php', 	'edit-link-categories.php',
+				'link-manager.php', 'link-add.php',			'link.php',		 
+				'edit-link-category.php', 	'edit-link-categories.php',
 				'media-upload.php',	'nav-menus.php'  
 				);
 

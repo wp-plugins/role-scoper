@@ -55,7 +55,7 @@
 				if ( ! empty($object->$col_owner) && ( $object->$col_owner != $GLOBALS['current_user']->ID) )
 					$base_caps_only = false;
 		}
-				
+
 		if ( ! $reqd_caps = cr_get_reqd_caps( $src->name, OP_EDIT_RS, $object_type, $status, $base_caps_only ) )
 			return $selected_terms;
 
@@ -84,5 +84,4 @@
 
 		return $selected_terms;
 	}
-
 ?>

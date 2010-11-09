@@ -142,7 +142,7 @@ class ScoperAdminFilters
 		add_filter('pre_post_parent', array(&$this, 'flt_page_parent'), 50, 1);
 			
 		add_filter( 'pre_post_tax_input', array(&$this, 'flt_tax_input'), 50, 1);
-		
+
 		// Filtering of terms selection:
 		add_action('check_admin_referer', array(&$this, 'act_detect_post_presave')); // abuse referer check to work around a missing hook
 

@@ -107,7 +107,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = 1.3.5-dev =
 * BugFix : Post Author dropdown was limited to Editors and Administrators if "Filter Users Dropdown" option enabled
 * BugFix : Category Manager role was not applied to new subcategories when assigned for "parent and sub-categories"
+* BugFix : Invalid posts filtering when template invokes two or more query_posts calls with category_name argument
 * BugFix : Link Admin roles / restrictions were not correctly applied per-category
+* Change : If a limited Link Editor submits new link without selecting a category, default to a selectable category
 * Change : Separate role definitions for link editing, link category management for per-category assignment
 * Compat : Revisionary - Dashboard Right Now count did not include revisable posts/pages (since 1.3.3)
 

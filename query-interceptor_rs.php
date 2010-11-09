@@ -149,7 +149,7 @@ class QueryInterceptor_RS
 			
 			$taxonomy_sources[$src_name] = true;
 		}
-		
+
 		if ( count($taxonomy_sources) != 1 )
 			return $request;
 			
@@ -158,10 +158,9 @@ class QueryInterceptor_RS
 			$reqd_caps_by_otype = array();
 
 			// try to determine context from URI (if taxonomy definition includes such clues)
-			foreach( $taxonomies as $taxonomy ) {
+			foreach( $taxonomies as $taxonomy )
 				$reqd_caps_by_otype = array_merge( $reqd_caps_by_otype, $this->scoper->get_terms_reqd_caps( $taxonomy, '', $is_term_admin ) );   // NOTE: get_terms_reqd_caps() returns term management caps on edit-tags.php, otherwise post edit caps
-			}
-				
+
 			// if required operation still unknown, default based on access type
 			if ( ! $reqd_caps_by_otype )
 				return $request;
@@ -227,14 +226,16 @@ class QueryInterceptor_RS
 				$request = substr($request, 0, $pos_where) . ' WHERE 1=1 ' . $where; // any pre-exising join clauses remain in $request
 				
 			// For Edit Form display, include currently stored terms.  User will still not be able to remove them without proper editing roles for object. (TODO: abstract for other data sources)
-			if ( 'post' == $src_name ) {
-				if ( $object_id = $this->scoper->data_sources->detect( 'id', $src_name ) ) {
-					if ( $stored_terms = wp_get_object_terms( $object_id, $taxonomies[0] ) ) {
-						$tt_ids = array();
-						foreach( array_keys($stored_terms) as $key ) 
-							$tt_ids []= $stored_terms[$key]->term_taxonomy_id;						
-							
-						$request = str_replace( "ORDER BY", "OR tt.term_taxonomy_id IN ('" . implode( "','", $tt_ids ) . "') ORDER BY", $request );
+			if ( 'post.php' == $GLOBALS['pagenow'] ) {
+				if ( 'post' == $src_name ) {
+					if ( $object_id = $this->scoper->data_sources->detect( 'id', $src_name ) ) {
+						if ( $stored_terms = wp_get_object_terms( $object_id, $taxonomies[0] ) ) {
+							$tt_ids = array();
+							foreach( array_keys($stored_terms) as $key ) 
+								$tt_ids []= $stored_terms[$key]->term_taxonomy_id;						
+								
+							$request = str_replace( "ORDER BY", "OR tt.term_taxonomy_id IN ('" . implode( "','", $tt_ids ) . "') ORDER BY", $request );
+						}
 					}
 				}
 			}
@@ -449,6 +450,8 @@ class QueryInterceptor_RS
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
 		}	
 		
+		//dump($otype_status_reqd_caps);
+	
 		// Since Role Scoper can restrict or expand access regardless of post_status, query must be modified such that
 		//  * the default owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" is removed
 		//  * all statuses are listed apart from owner inclusion clause (and each of these status clauses is subsequently replaced with a scoped equivalent which imposes any necessary access limits)
@@ -537,6 +540,7 @@ class QueryInterceptor_RS
 			$basic_status_clause = array ( '' => '');
 		}
 		
+		
 		if ( empty($skip_teaser) && ! array_diff($object_types, $tease_otypes) ) {
 			if ( $status_clause_pos && $force_single_type ) {
 			
@@ -604,9 +608,7 @@ class QueryInterceptor_RS
 				$otype_use_term_roles = false;
 				$otype_use_object_roles = false;
 			}
-				
-					
-		if ( 'link' == $src_name )
+
 			//now step through all statuses and corresponding cap requirements for this otype and access type
 			// (will replace "col_status = status_name" with "col_status = status_name AND ( [scoper requirements] )
 			foreach ($status_reqd_caps as $status_name => $reqd_caps) {
