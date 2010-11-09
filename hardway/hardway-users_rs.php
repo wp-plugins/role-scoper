@@ -170,7 +170,7 @@ class ScoperHardwayUsers {
 			if ( $force_user_id )
 				$args['preserve_or_clause'] = " uro.user_id = '$force_user_id'";
 				
-			$users = $scoper->users_who_can($post_type_obj->cap->edit_others_posts, COLS_ID_DISPLAYNAME_RS, 'post', $object_id, $args);
+			$users = $scoper->users_who_can($post_type_obj->cap->edit_posts, COLS_ID_DISPLAYNAME_RS, 'post', $object_id, $args);
 		} else {
 			$display_name = $wpdb->get_var( "SELECT display_name FROM $wpdb->users WHERE ID = '$force_user_id'" );
 			$users = array( (object) array( 'ID' => $force_user_id, 'display_name' => $display_name ) );

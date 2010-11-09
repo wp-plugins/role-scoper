@@ -105,6 +105,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.3.5-dev =
+* BugFix : Post Author dropdown was limited to Editors and Administrators if "Filter Users Dropdown" option enabled
 * BugFix : Category Manager role was not applied to new subcategories when assigned for "parent and sub-categories"
 * BugFix : Link Admin roles / restrictions were not correctly applied per-category
 * Change : Separate role definitions for link editing, link category management for per-category assignment
