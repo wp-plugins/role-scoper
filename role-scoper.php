@@ -93,6 +93,7 @@ define ('COL_ID_RS', 1);
 define ('COLS_ID_DISPLAYNAME_RS', 2);
 define ('COL_TAXONOMY_ID_RS', 3);
 define ('COL_COUNT_RS', 4);
+define ('COLS_ID_NAME_RS', 5);
 
 define ('UNFILTERED_RS', 0);
 define ('FILTERED_RS', 1);

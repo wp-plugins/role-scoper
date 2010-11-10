@@ -621,7 +621,7 @@ class UsersInterceptor_RS
 	 * Get all users with required capabilities, applying scoped roles where pertinent.
 	 *
 	 * reqd_caps: array of capability names, or string value containing single capability name
-	 * cols: enumeration COLS_ALL_RS, COL_ID_RS or COLS_ID_DISPLAYNAME_RS. Determines return array dimensions.
+	 * cols: enumeration COLS_ALL_RS, COL_ID_RS, COLS_ID_NAME_RS or COLS_ID_DISPLAYNAME_RS. Determines return array dimensions.
 	 * object_src_name: object data source name as defined in $scoper->data_sources ( 'post' for posts OR pages )
 	 * object_id: array(reqd_cap => object_id), or string value containing single object_id
 	 *
@@ -640,8 +640,12 @@ class UsersInterceptor_RS
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 		
-		if ( ! $orderby && ( ( COLS_ALL_RS == $cols ) || ( COLS_ID_DISPLAYNAME_RS == $cols ) ) )
-			$orderby = " ORDER BY display_name";
+		if ( ! $orderby ) {
+			if ( ( COLS_ALL_RS == $cols ) || ( COLS_ID_DISPLAYNAME_RS == $cols ) )
+				$orderby = " ORDER BY display_name";
+			elseif ( COLS_ID_NAME_RS == $cols )
+				$orderby = " ORDER BY user_login AS display_name";	// calling code assumes display_name property for user or group object
+		}
 		
 		if ( COL_ID_RS == $cols ) {
 			if ( $force_all_users )
@@ -651,6 +655,8 @@ class UsersInterceptor_RS
 		} else {
 			if ( COLS_ID_DISPLAYNAME_RS == $cols )
 				$qcols = "$wpdb->users.ID, $wpdb->users.display_name";
+			elseif ( COLS_ID_NAME_RS == $cols )
+				$qcols = "$wpdb->users.ID, $wpdb->users.user_login AS display_name";	// calling code assumes display_name property for user or group object
 			elseif ( COLS_ALL_RS == $cols )
 				$qcols = "$wpdb->users.*";
 			else

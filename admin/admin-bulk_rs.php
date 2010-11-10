@@ -16,7 +16,7 @@ function get_agents($role_bases = '') {
 	
 	if ( in_array(ROLE_BASIS_USER, $role_bases) ) {
 		global $scoper;
-		$agents[ROLE_BASIS_USER] = $scoper->users_who_can('', COLS_ID_DISPLAYNAME_RS);
+		$agents[ROLE_BASIS_USER] = $scoper->users_who_can('', COLS_ID_NAME_RS);
 	}
 	
 	if ( in_array(ROLE_BASIS_GROUPS, $role_bases) ) {

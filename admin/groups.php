@@ -419,9 +419,9 @@ if ( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) ) {
 	$arr_display_names = array();
 
 	$status_users = array();
-	$status_users['active'] = ScoperAdminLib::get_group_members( $group_id, COLS_ID_DISPLAYNAME_RS, false, array( 'status' => 'active' ) );
-	$status_users['recommended'] = ScoperAdminLib::get_group_members( $group_id, COLS_ID_DISPLAYNAME_RS, false, array( 'status' => 'recommended' ) );
-	$status_users['requested'] = ScoperAdminLib::get_group_members( $group_id, COLS_ID_DISPLAYNAME_RS, false, array( 'status' => 'requested' ) );
+	$status_users['active'] = ScoperAdminLib::get_group_members( $group_id, COLS_ID_NAME_RS, false, array( 'status' => 'active' ) );
+	$status_users['recommended'] = ScoperAdminLib::get_group_members( $group_id, COLS_ID_NAME_RS, false, array( 'status' => 'recommended' ) );
+	$status_users['requested'] = ScoperAdminLib::get_group_members( $group_id, COLS_ID_NAME_RS, false, array( 'status' => 'requested' ) );
 
 	foreach ( $status_users as $key => $users )
 		foreach ( $users as $user )
@@ -430,7 +430,7 @@ if ( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) ) {
 	global $scoper_user_search;
 	$scoper_user_search->output_html( $arr_display_names, 'users' );
 } else {
-	$all_users = $scoper->users_who_can('', COLS_ID_DISPLAYNAME_RS, '', '', $_args );
+	$all_users = $scoper->users_who_can('', COLS_ID_NAME_RS, '', '', $_args );
 
 	UserGroups_tp::group_members_checklist( $group_id, 'member', $all_users );
 }

@@ -912,6 +912,8 @@ class Scoper
 		if ( ! $reqd_caps ) {
 			if ( COL_ID_RS == $cols )
 				$qcols = 'ID';
+			elseif ( COLS_ID_NAME_RS == $cols )
+				$qcols = "ID, user_login AS display_name";	// calling code assumes display_name property for user or group object
 			elseif ( COLS_ID_DISPLAYNAME_RS == $cols )
 				$qcols = "ID, display_name";
 			elseif ( COLS_ALL_RS == $cols )

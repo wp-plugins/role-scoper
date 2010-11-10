@@ -255,7 +255,7 @@ class UserGroups_tp {
 		global $scoper;
 		
 		if ( ! $all_users )
-			$all_users = $scoper->users_who_can('', COLS_ID_DISPLAYNAME_RS);
+			$all_users = $scoper->users_who_can('', COLS_ID_NAME_RS);
 
 		if ( $group_id )
 			$group = ScoperAdminLib::get_group($group_id);

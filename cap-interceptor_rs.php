@@ -190,15 +190,14 @@ class CapInterceptor_RS
 		
 		if ( empty($cap_types) )
 			$cap_types = array( $object_type );
-			
-		$doing_admin_menus = is_admin() && did_action( '_admin_menu' ) && ! did_action('admin_menu'); // ! did_action('admin_notices');
+		
+		$doing_admin_menus = is_admin() && did_action( '_admin_menu' ) && ! did_action('admin_menu');  // ! did_action('admin_notices');
 		// =====================================================================================================================================
-
 
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
 		if ( 'post' == $src_name ) {	
 			//dump($cap_types);
-					
+
 			if ( count($cap_types) > 1 )
 				$cap_types = array_diff( $cap_types, array( '' ) );   // ignore nullstring object_type property associated with some caps
 
@@ -217,8 +216,11 @@ class CapInterceptor_RS
 				
 				if ( 'post' != $object_type ) {
 					// Replace edit_posts requirement with corresponding type-specific requirement, but only after admin menu is drawn, or on a submission before the menu is drawn
-					$replace_post_caps = array( 'edit_posts', 'publish_posts' );
+					$replace_post_caps = array( 'publish_posts' );
 					
+					if ( did_action( 'admin_init' ) )	// otherwise extra padding between menu items due to some items populated but unpermitted
+						$replace_post_caps []= 'edit_posts'; 
+
 					//if ( 'media-upload.php' == $pagenow )
 						$replace_post_caps = array_merge( $replace_post_caps, array( 'edit_others_posts', 'edit_published_posts' ) );
 
@@ -255,7 +257,6 @@ class CapInterceptor_RS
 		} // endif caps correspond to 'post' data source
 		//====================================== (end subvert misguided capability requirements) =============================================
 
-		
 		if ( defined( 'RVY_VERSION' ) ) {
 			require_once( 'revisionary-helper_rs.php' );
 			$rs_reqd_caps = Rvy_Helper::convert_post_edit_caps( $rs_reqd_caps, $object_type );

@@ -112,6 +112,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Link Admin roles / restrictions were not correctly applied per-category
 * Change : If a limited Link Editor submits new link without selecting a category, default to a selectable category
 * Change : Separate role definitions for link editing, link category management for per-category assignment
+* BugFix : Posts / Comments menu sometimes displayed inappropriately for content-specific editors
+* Change : Display user_login for role assignment and group membership administration, even if user has set a different display name
 * Compat : Revisionary - Dashboard Right Now count did not include revisable posts/pages (since 1.3.3)
 
 

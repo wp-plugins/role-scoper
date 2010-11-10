@@ -9,11 +9,11 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 	
 	if ( empty( $_GET['rs_user_search'] ) ) {
 		global $wpdb;
-		$results = $wpdb->get_results("SELECT ID, display_name FROM $wpdb->users ORDER BY display_name");
+		$results = $wpdb->get_results("SELECT ID, user_login FROM $wpdb->users ORDER BY user_login");
 		
 	} elseif ( $search = new WP_User_Search( $_GET['rs_user_search'] ) ) {
 		global $wpdb;
-		$results = $wpdb->get_results( "SELECT ID, display_name $search->query_from $search->query_where ORDER BY display_name" );
+		$results = $wpdb->get_results( "SELECT ID, user_login $search->query_from $search->query_where ORDER BY user_login" );
 	}
 
 	if ( $results ) {	
@@ -25,7 +25,7 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		
 		foreach( $results as $row )
 			if ( ! in_array( $row->ID, $users ) ) {
-				echo "<option value='$row->ID'>$row->display_name</option>";
+				echo "<option value='$row->ID'>$row->user_login</option>";
 			}
 	}
 	

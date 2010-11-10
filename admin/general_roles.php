@@ -18,7 +18,7 @@ $is_administrator = is_user_administrator_rs();
 
 if ( USER_ROLES_RS && ( $is_administrator ) ) {
 	$role_bases []= ROLE_BASIS_USER;
-	$agents[ROLE_BASIS_USER] = $scoper->users_who_can('', COLS_ID_DISPLAYNAME_RS);
+	$agents[ROLE_BASIS_USER] = $scoper->users_who_can('', COLS_ID_NAME_RS);
 	
 	$agent_list_prefix[ROLE_BASIS_USER] = '';
 }

@@ -86,8 +86,13 @@ class ScoperAdminLib {
 	        	$results = array();
 	        
 		} else {
-			$qcols = ( COLS_ID_DISPLAYNAME_RS == $cols ) ? "u.ID, u.display_name" : "u.*";
-			
+			if ( COLS_ID_DISPLAYNAME_RS == $cols ) 
+				$qcols = "u.ID, u.display_name";
+			elseif ( COLS_ID_NAME_RS == $cols ) 
+				$qcols = "u.ID, u.user_login AS display_name";	// calling code assumes display_name property for user or group object
+			else
+				$qcols = "u.*";
+
 			$query = "SELECT $qcols FROM $wpdb->users AS u"
 					. " INNER JOIN $wpdb->user2group_rs AS gu ON gu.$wpdb->user2group_uid_col = u.ID $status_clause "
 					. " AND gu.{$wpdb->user2group_gid_col} IN ($group_in) ORDER BY u.display_name";

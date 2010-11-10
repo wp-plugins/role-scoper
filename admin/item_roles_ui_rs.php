@@ -106,7 +106,7 @@ class ScoperItemRolesUI {
 			$user_csv_input = scoper_get_option("user_role_assignment_csv");
 
 			if ( ! $user_csv_input )
-				$this->all_agents[ROLE_BASIS_USER] = $this->scoper->users_who_can( '', COLS_ID_DISPLAYNAME_RS);
+				$this->all_agents[ROLE_BASIS_USER] = $this->scoper->users_who_can( '', COLS_ID_NAME_RS);
 			elseif( $object_id ) {
 				$assignees = array();
 
