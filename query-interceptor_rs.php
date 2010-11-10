@@ -296,7 +296,13 @@ class QueryInterceptor_RS
 
 		// TODO: abstract this
 		if ( strpos( $request, "post_type = 'attachment'" ) ) {
-			if ( ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {
+			global $wpdb;
+			
+			// filter attachments by inserting a scoped subquery based on user roles on the post/page attachment is tied to
+			$rs_where = $this->flt_objects_where( '', $src_name, '', $args );
+			$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
+
+			if ( is_admin() && ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {
 				// The listed objects are attachments, so query filter is based on objects they inherit from
 				$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
 				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
@@ -304,7 +310,7 @@ class QueryInterceptor_RS
 				if ( ( ! $admin_others_attached ) || ! $admin_others_unattached )
 					$can_edit_others_blogwide = $this->scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
 
-				global $wpdb, $current_user;
+				global $current_user;
 				
 				// optionally hide other users' unattached uploads, but not from blog-wide Editors
 				if ( $admin_others_unattached || $can_edit_others_blogwide )
@@ -318,13 +324,11 @@ class QueryInterceptor_RS
 					$unattached_clause = '';
 
 				$attached_clause = ( $admin_others_attached || $can_edit_others_blogwide ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
-
-				// filter attachments on upload page by inserting a scoped subquery based on user roles on the post/page attachment is tied to
-				$rs_where = $this->flt_objects_where( '', $src_name, '', $args );
-				$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
-
+				
 				$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( $wpdb->posts.post_type = 'attachment' AND ( $unattached_clause ( $wpdb->posts.post_parent IN ($subqry) $attached_clause ) ) )", $request );
-			}
+			} else
+				$request = str_replace( "$wpdb->posts.post_type = 'attachment'", "( $wpdb->posts.post_type = 'attachment' AND ( $wpdb->posts.post_parent IN ($subqry) ) )", $request );
+
 		} else {
 			// Generate a query filter based on roles for the listed objects
 			$rs_where = $this->flt_objects_where($where, $src_name, $object_types, $args);

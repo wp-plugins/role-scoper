@@ -108,6 +108,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Post Author dropdown was limited to Editors and Administrators if "Filter Users Dropdown" option enabled
 * BugFix : Category Manager role was not applied to new subcategories when assigned for "parent and sub-categories"
 * BugFix : Invalid posts filtering when template invokes two or more query_posts calls with category_name argument
+* BugFix : Front-end attachment queries returned only attachments authored by logged user
 * BugFix : Link Admin roles / restrictions were not correctly applied per-category
 * Change : If a limited Link Editor submits new link without selecting a category, default to a selectable category
 * Change : Separate role definitions for link editing, link category management for per-category assignment
