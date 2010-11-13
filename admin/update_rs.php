@@ -338,19 +338,21 @@ function scoper_sync_wproles($user_ids = '', $role_name_arg = '', $blog_id_arg =
 		
 	} // end foreach WP usermeta
 
+	// disable orphaned role deletion until we can recreate and eliminate improper deletion as reported in support forum (http://agapetry.net/forum/role-scoper/permissions-reset-randomly-for-a-section-of-pages/page-1/post-3513/)
 	
 	// Delete any role assignments for users which no longer exist
-	delete_roles_orphaned_from_user();
+	//delete_roles_orphaned_from_user();
 	
 	// Delete any role assignments for WP groups which no longer exist
-	delete_roles_orphaned_from_group();
+	//delete_roles_orphaned_from_group();
 	
 	// Delete any role assignments for posts/pages which no longer exist
-	delete_roles_orphaned_from_item( OBJECT_SCOPE_RS, 'post' );
+	//delete_roles_orphaned_from_item( OBJECT_SCOPE_RS, 'post' );
 	//delete_restrictions_orphaned_from_item( OBJECT_SCOPE_RS, 'post' );	// hold off on this until delete_roles_orphaned_from_item() call has a long, clear track record
 	
 	// Delete any role assignments for categories which no longer exist
-	delete_roles_orphaned_from_item( TERM_SCOPE_RS, 'category' );
+	//delete_roles_orphaned_from_item( TERM_SCOPE_RS, 'category' );
+	
 	//delete_restrictions_orphaned_from_item( TERM_SCOPE_RS, 'category' );
 	
 	//rs_errlog("finished syncroles "');

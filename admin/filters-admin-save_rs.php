@@ -8,8 +8,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	// * force the filter for all associated taxonomies regardless of term selection
 	// * apply default term(s) if defined
 	function scoper_force_custom_taxonomy_filters( $post_id, $post ) {
+
 		$post_type_obj = get_post_type_object( $post->post_type );
-		
+
 		foreach( $post_type_obj->taxonomies as $taxonomy ) {
 			// if terms were selected, WP core already applied the filter and there is no need to apply default terms
 			if ( in_array( $taxonomy, array( 'category', 'post_tag' ) ) || did_action( "pre_post_{$taxonomy}" ) )

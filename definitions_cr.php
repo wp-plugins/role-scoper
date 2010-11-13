@@ -507,11 +507,11 @@ function cr_post_role_defs() {
 		$arr["rs_{$name}_reader"] = 		(object) array( 'src_name' => 'post', 'object_type' => $name, 'valid_scopes' => array( 'blog' => true, 'term' => true ), 'anon_user_blogrole' => true );
 		$arr["rs_private_{$name}_reader"] =	(object) array( 'src_name' => 'post', 'object_type' => $name, 'objscope_equivalents' => array("rs_{$name}_reader") );
 	
-		$arr["rs_{$name}_contributor"] =	(object) array( 'src_name' => 'post', 'object_type' => $name, 'objscope_equivalents' => array("rs_{$name}_revisor") );
+		$arr["rs_{$name}_contributor"] =	(object) array( 'src_name' => 'post', 'object_type' => $name );
 		$arr["rs_{$name}_author"] =			(object) array( 'src_name' => 'post', 'object_type' => $name, 'valid_scopes' => array( 'blog' => true, 'term' => true ) );
 		
 		if ( defined( 'RVY_VERSION' ) )
-			$arr["rs_{$name}_revisor"] = 	(object) array( 'src_name' => 'post', 'object_type' => $name, 'valid_scopes' => array( 'blog' => true, 'term' => true ) );
+			$arr["rs_{$name}_revisor"] = 	(object) array( 'src_name' => 'post', 'object_type' => $name );
 		
 		$arr["rs_{$name}_editor"] = 		(object) array( 'src_name' => 'post', 'object_type' => $name, 'objscope_equivalents' => array("rs_{$name}_author") );
 		

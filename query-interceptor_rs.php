@@ -802,7 +802,7 @@ class QueryInterceptor_RS
 		// accomodate editing of published posts/pages to revision
 		if ( defined( 'RVY_VERSION' ) && rvy_get_option('pending_revisions') ) {
 			if ( empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) {
-				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'edit.php', 'upload.php', 'widgets.php', 'admin-ajax.php' ) );
+				$revision_uris = apply_filters( 'scoper_revision_uris', array( 'edit.php', 'upload.php', 'widgets.php', 'admin-ajax.php', 'rvy-revisions' ) );
 
 				if ( is_admin() || ! empty( $_GET['preview'] ) )
 					$revision_uris []= 'index.php';	
@@ -887,10 +887,10 @@ class QueryInterceptor_RS
 				$args['ignore_restrictions'] = ( 1 == count($reqd_caps_arg) ) && $this->scoper->cap_defs->member_property( reset($reqd_caps_arg), 'ignore_restrictions' );
 			
 			if ( $owner_reqd_caps = $this->scoper->cap_defs->get_base_caps($reqd_caps_arg) ) {
-				$owner_roles = $this->scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
+				$owner_roles = ( $require_full_object_role ) ? $qualifying_roles : $this->scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
 				$qualifying_object_roles = $this->scoper->confirm_object_scope( $owner_roles );		// have to pass this in for 'user' call because qualifying_roles may not include a qualifying object role (i.e. Page Contributor object role assignment)
 			}
-			
+
 			if ( $qualifying_roles || ! empty($qualifying_object_roles) ) {
 				//d_echo( "regular objects_where_scope_clauses for " . serialize( $reqd_caps ) );
 				$args = array_merge( $args, compact( 'qualifying_roles', 'qualifying_object_roles' ) );
@@ -898,7 +898,6 @@ class QueryInterceptor_RS
 			}
 
 			if ( ! empty($src->cols->owner) && ! $skip_owner_clause && $user->ID ) {
-
 				if ( ! $require_full_object_role ) {
 					// if owner qualifies for the operation by any different roles than other users, add separate owner clause
 					$src_table = ( ! empty($source_alias) ) ? $source_alias : $src->table;

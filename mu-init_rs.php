@@ -24,8 +24,6 @@ function scoper_default_options_sitewide() {
 		'rs_page_author_role_objscope' => true,
 		'rs_post_reader_role_objscope' => true,
 		'rs_post_author_role_objscope' => true,
-		'rs_page_revisor_role_objscope' => true,
-		'rs_post_revisor_role_objscope' => true,
 		
 		'display_user_profile_groups' => true,
 		'display_user_profile_roles' => true,

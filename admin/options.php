@@ -244,8 +244,6 @@ $ui->option_captions = array(
 	'rs_page_author_role_objscope' => $scoper->role_defs->get_display_name('rs_page_author'),
 	'rs_post_reader_role_objscope' => $scoper->role_defs->get_display_name('rs_post_reader'),
 	'rs_post_author_role_objscope' => $scoper->role_defs->get_display_name('rs_post_author'),
-	'rs_page_revisor_role_objscope' => $scoper->role_defs->get_display_name('rs_page_revisor'),
-	'rs_post_revisor_role_objscope' => $scoper->role_defs->get_display_name('rs_post_revisor'),
 	'lock_top_pages' => __('Pages can be set or removed from Top Level by:', 'scoper'),
 	'display_user_profile_groups' => __('Display User Groups', 'scoper'),
 	'display_user_profile_roles' => __('Display User Roles', 'scoper'),
@@ -310,7 +308,7 @@ $ui->form_options = array(
 	'limited_editing_elements' => array( 'admin_css_ids', 'hide_non_editor_admin_divs' ),
 	'role_assignment_interface' => array( 'limit_object_editors', 'indicate_blended_roles', 'display_hints', 'user_role_assignment_csv' ),
 	'custom_columns' =>	array( 'restrictions_column', 'term_roles_column', 'object_roles_column' ),
-	'additional_object_roles' => array( 'rs_page_reader_role_objscope', 'rs_post_reader_role_objscope', 'rs_page_author_role_objscope', 'rs_post_author_role_objscope', 'rs_page_revisor_role_objscope', 'rs_post_revisor_role_objscope' )
+	'additional_object_roles' => array( 'rs_page_reader_role_objscope', 'rs_post_reader_role_objscope', 'rs_page_author_role_objscope', 'rs_post_author_role_objscope' )
 ), 
 'realm' => array(
 	'term_object_scopes' =>	array( 'use_term_roles' ), /* 'use_term_roles', 'use_object_roles'  NOTE: all related options follow scope setting of use_term_roles */
@@ -1566,20 +1564,11 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 
 $section = 'additional_object_roles';
 if (  ! empty( $ui->form_options[$tab][$section] ) ) :
-
-	$objscope_equiv_roles = array( 'rs_post_reader' => 'rs_private_post_reader', 'rs_post_author' => 'rs_post_editor', 'rs_page_reader' => 'rs_private_page_reader', 'rs_page_author' => 'rs_page_editor' );
-	
-	if ( 	// To avoid confusion, don't display revision roles as candidates unless revisions are available
-		( ! IS_MU_RS && defined('RVY_VERSION') )
-		//|| ( IS_MU_RS && ( ($sitewide && empty($scoper_options_sitewide['pending_revisions']) ) || ($sitewide && empty($scoper_options_sitewide['scheduled_revisions']) ) || scoper_get_option( 'pending_revisions', $sitewide ) || scoper_get_option( 'scheduled_revisions', $sitewide ) ) )
-		|| ( IS_MU_RS && ( ($sitewide && empty($rvy_options_sitewide['pending_revisions']) ) || ($sitewide && empty($rvy_options_sitewide['scheduled_revisions']) ) || rvy_get_option( 'pending_revisions', $sitewide ) || rvy_get_option( 'scheduled_revisions', $sitewide ) ) )
-	) {
-		$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) ); 
-
-		foreach( $post_types as $_type )
-			$objscope_equiv_roles["rs_{$_type}_revisor"] = "rs_{$_type}_contributor";	
+	$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) ); 
+	foreach( $post_types as $_type ) {
+		$objscope_equiv_roles["rs_{$_type}_reader"] = "rs_private_{$_type}_reader";
+		$objscope_equiv_roles["rs_{$_type}_author"] = "rs_{$_type}_editor";
 	}
-			
 
 	if ( IS_MU_RS ) {  // apply option scope filtering for mu
 		foreach ( array_keys($objscope_equiv_roles) as $role_name )
@@ -1603,7 +1592,12 @@ if (  ! empty( $ui->form_options[$tab][$section] ) ) :
 			echo '<div class="agp-vspaced_input">';
 			echo "<label for='$id'>";
 			echo "<input name='$id' type='checkbox' id='$id' value='1' $checked /> ";
-			printf ( __('%1$s (normally equivalent to %2$s)', 'scoper'), $scoper->role_defs->get_display_name($role_handle), $scoper->role_defs->get_display_name($equiv_role_handle) );
+			
+			if ( in_array( $role_handle, array( 'rs_post_reader', 'rs_post_author' ) ) )
+				printf ( __('%1$s (normally equivalent to %2$s)', 'scoper'), $scoper->role_defs->get_display_name($role_handle), $scoper->role_defs->get_display_name($equiv_role_handle) );
+			else
+				echo $scoper->role_defs->get_display_name($role_handle);
+
 			echo '</label></div>';
 		}
 		?>

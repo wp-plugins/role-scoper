@@ -23,8 +23,7 @@ class ScoperAdminFiltersItemUI {
 		$object_type = cr_find_post_type();
 
 		if ( $object_type && scoper_get_otype_option( 'default_private', 'post', $object_type ) )
-			add_action('admin_footer', array(&$this, 'default_private_js') );
-			
+			add_action('admin_footer', array(&$this, 'default_private_js') );			
 
 		if ( $object_type && scoper_get_otype_option( 'sync_private', 'post', $object_type ) )
 			add_action('admin_head', array(&$this, 'sync_private_js') );
@@ -68,9 +67,16 @@ jQuery(document).ready( function($) {
 </script>
 <?php
 }
-	
+
 
 	function default_private_js() {
+		global $post;
+		
+		if ( $post && ( 'auto-draft' != $post->post_status ) )
+			return;
+
+		if ( 'post-new.php' != $GLOBALS['pagenow'] )
+			return;
 ?>
 <script type="text/javascript">
 /* <![CDATA[ */

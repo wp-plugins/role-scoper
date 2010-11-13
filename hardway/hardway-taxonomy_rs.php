@@ -161,7 +161,7 @@ class ScoperHardwayTaxonomy
 			$args['hierarchical'] = false;
 			$args['pad_counts'] = false;
 		}
-	
+
 		if ( 'all' == $args['get'] ) {
 			$args['child_of'] = 0;
 			$args['hide_empty'] = 0;

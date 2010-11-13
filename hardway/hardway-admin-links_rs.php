@@ -1,7 +1,7 @@
 <?php
 
 	function scoper_flt_newlink_category( $link_category ) {
-		$user_cats = get_terms( 'link_category', array( 'fields' => 'ids' ) );
+		$user_cats = get_terms( 'link_category', array( 'fields' => 'ids', 'hide_empty' => false ) );
 
 		$selected_cats = ( ! empty( $_POST['link_category'] ) ) ? $_POST['link_category'] : array();
 
@@ -9,7 +9,7 @@
 
 		if ( ! $selected_cats )
 			$selected_cats = array( reset( $user_cats ) );	
-		
+			
 		return $selected_cats;
 	}
 
