@@ -83,13 +83,17 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 								$arr['read'][$_post_type][$_status] = array_unique( $arr['read'][$_post_type][$_status] );
 							}
 						
-						} elseif ( ! empty($_GET['preview']) && ( 'trash' != $_status ) ) {
+						} elseif ( ( ( 'future' == $_status ) || ! empty($_GET['preview']) ) && ( 'trash' != $_status ) ) {
 							// preview supports non-published statuses, but requires edit capability
 							//  array ( 'draft' => array($cap->edit_others_posts), 'pending' => array('edit_others_posts'), 'future' => array('edit_others_posts'), 'publish' => array('read'), 'private' => array('read', 'read_private_posts') );
 							if ( $base_caps_only )
 								$arr['read'][$_post_type][$_status] = array( $cap->edit_posts );
 							else
 								$arr['read'][$_post_type][$_status] = array( $cap->edit_others_posts );
+															
+							$status_cap = "read_published_{$_post_type}s";
+							if ( ! empty( $cap->$status_cap ) )
+								$arr['read'][$_post_type][$_status] []= $status_cap;
 						}
 					
 					} else { // op == delete / edit / other

@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.6-dev =
+* BugFix : Post previews for qualified users failed with "Not Found" error
+* BugFix : Fatal Error for logged Administrators (undefined method merge_scoped_blogcaps) in some cases
+
+
 = 1.3.5 - 13 Nov 2010 =
 * BugFix : Post Author dropdown was limited to Editors and Administrators if "Filter Users Dropdown" option enabled
 * BugFix : Category Manager role was not applied to new subcategories when assigned for "parent and sub-categories"
