@@ -40,7 +40,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 			unset($this->members[$name]);
 			
 		$this->members[$name] = new CR_Data_Source($name, $defining_module, $label_singular, $label_name, $table_basename, $col_id, $col_name, $args);
-		
+
 		$this->process( $this->members[$name] );
 		return $this->members[$name];
 	}
@@ -63,7 +63,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 			$src->table_alias = $src->table;
 
 		// default object_types array to single member matching source name
-		if ( empty($src->object_types) ) {
+		if ( empty($src->object_types) && ! empty( $src->name ) ) {		// TODO: how does any configuration land here with a nameless src CR_Data_Source object?
 			$src->object_types = array( $src->name => (object) array() );
 			
 			if ( is_admin() ) {

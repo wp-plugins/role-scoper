@@ -79,9 +79,13 @@ class CR_Roles extends AGP_Config_Items {
 
 	function process( &$role_def ) {
 		// role type was prefixed for array key, but should remove for name property
-		foreach ( $this->role_types as $role_type )
+		foreach ( $this->role_types as $role_type ) {
+			if ( empty( $role_def->name ) )		// TODO: how does any configuration land here with a nameless CR_Role object?
+				continue;
+				
 			$role_def->name = str_replace("{$role_type}_", '', $role_def->name);
-		
+		}
+			
 		if ( ! isset($role_def->valid_scopes) )
 			$role_def->valid_scopes = array('blog' => 1, 'term' => 1, 'object' => 1);
 			

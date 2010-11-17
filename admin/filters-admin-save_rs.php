@@ -16,24 +16,24 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			if ( in_array( $taxonomy, array( 'category', 'post_tag' ) ) || did_action( "pre_post_{$taxonomy}" ) )
 				continue;
 
-			$taxonomy_obj = get_taxonomy($taxonomy);
-
-			if ( ! empty($_POST['tax_input'][$taxonomy]) && is_array($_POST['tax_input'][$taxonomy]) && ( reset($_POST['tax_input'][$taxonomy]) || ( count($_POST['tax_input'][$taxonomy]) > 1 ) ) )  // complication because (as of 3.0) WP always includes a zero-valued first array element
-				$tags = $_POST['tax_input'][$taxonomy];
-			elseif ( 'auto-draft' != $post->post_status )
-				$tags = (array) get_option("default_{$taxonomy}");
-			else
-				$tags = array();
-
-			if ( $tags ) {
-				if ( ! empty($_POST['tax_input']) && is_array($_POST['tax_input'][$taxonomy]) ) // array = hierarchical, string = non-hierarchical.
-					$tags = array_filter($tags);
-
-				if ( current_user_can( $taxonomy_obj->cap->assign_terms ) ) {
-					$tags = apply_filters("pre_post_{$taxonomy}", $tags);
-					$tags = apply_filters("{$taxonomy}_pre", $tags);
-
-					wp_set_post_terms( $post_id, $tags, $taxonomy );
+			if ( $taxonomy_obj = get_taxonomy($taxonomy) ) {
+				if ( ! empty($_POST['tax_input'][$taxonomy]) && is_array($_POST['tax_input'][$taxonomy]) && ( reset($_POST['tax_input'][$taxonomy]) || ( count($_POST['tax_input'][$taxonomy]) > 1 ) ) )  // complication because (as of 3.0) WP always includes a zero-valued first array element
+					$tags = $_POST['tax_input'][$taxonomy];
+				elseif ( 'auto-draft' != $post->post_status )
+					$tags = (array) get_option("default_{$taxonomy}");
+				else
+					$tags = array();
+	
+				if ( $tags ) {
+					if ( ! empty($_POST['tax_input']) && is_array($_POST['tax_input'][$taxonomy]) ) // array = hierarchical, string = non-hierarchical.
+						$tags = array_filter($tags);
+	
+					if ( current_user_can( $taxonomy_obj->cap->assign_terms ) ) {
+						$tags = apply_filters("pre_post_{$taxonomy}", $tags);
+						$tags = apply_filters("{$taxonomy}_pre", $tags);
+	
+						wp_set_post_terms( $post_id, $tags, $taxonomy );
+					}
 				}
 			}
 		}
@@ -379,10 +379,10 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			$post_id = $_POST['post_ID'];
 			$post_type = $_POST['post_type'];
 			$selected_parent_id = isset($_POST['parent_id']) ? $_POST['parent_id'] : 0;
-		} elseif( ! empty($_GLOBALS['post']) ) {
-			$post_id = $_GLOBALS['post']->ID;
-			$post_type = $_GLOBALS['post']->post_type;
-			$selected_parent_id = $_GLOBALS['post']->parent_id;
+		} elseif( ! empty($GLOBALS['post']) ) {
+			$post_id = $GLOBALS['post']->ID;
+			$post_type = $GLOBALS['post']->post_type;
+			$selected_parent_id = $GLOBALS['post']->post_parent;
 		} else
 			return $status;	
 		

@@ -763,7 +763,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		echo "<div><label for='$id'>";
 		echo( $ui->option_captions[$id] );
 		?>
-		<input name="<?php echo($id);?>" type="text" style="width: 8em" id="<?php echo($id);?>" value="<?php echo($val);?>" />
+		<input name="<?php echo($id);?>" type="text" style="vertical-align:middle; width: 8em" id="<?php echo($id);?>" value="<?php echo($val);?>" />
 		</label>
 		</div>
 		

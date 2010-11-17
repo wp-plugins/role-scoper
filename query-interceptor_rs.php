@@ -114,9 +114,12 @@ class QueryInterceptor_RS
 
 	
 	function flt_posts_request( $request, $_wp_query ) {
-		if ( is_object( $_wp_query ) && ! empty( $_wp_query->query_vars['post_type'] ) )
+		if ( is_object( $_wp_query ) && ! empty( $_wp_query->query_vars['post_type'] ) ) {
 			$object_types = $_wp_query->query_vars['post_type'];
-		else
+
+			if ( 'any' == $object_types )
+				$object_types = '';
+		} else
 			$object_types = '';
 
 		return $this->flt_objects_request( $request, 'post', $object_types );
@@ -255,7 +258,7 @@ class QueryInterceptor_RS
 			$args = array_merge( $defaults, (array) $args );
 			extract($args);
 		}
-
+		
 		//d_echo( "<br />flt_objects_request: $request<br />" );
 		
 		// Filtering in user_has_cap sufficiently controls revision access; a match here should be for internal, pre-validation purposes
@@ -432,7 +435,7 @@ class QueryInterceptor_RS
 		// need to allow ambiguous object type for special cap requirements like comment filtering
 		$object_types = $this->_get_object_types($src, $object_types);
 		$tease_otypes = array_intersect( $object_types, $this->_get_teaser_object_types($src_name, $object_types, $args) );
-	
+		
 		if ( ! empty($src->no_object_roles) )
 			$use_object_roles = false;
 			
@@ -454,8 +457,6 @@ class QueryInterceptor_RS
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
 		}	
 		
-		//dump($otype_status_reqd_caps);
-	
 		// Since Role Scoper can restrict or expand access regardless of post_status, query must be modified such that
 		//  * the default owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" is removed
 		//  * all statuses are listed apart from owner inclusion clause (and each of these status clauses is subsequently replaced with a scoped equivalent which imposes any necessary access limits)
@@ -504,6 +505,9 @@ class QueryInterceptor_RS
 					$otype_status_reqd_caps = $matched_reqd_caps;
 			}
 		}
+
+		if ( empty( $otype_status_reqd_caps) )
+			return ' AND 1=2 ';
 		
 		$basic_status_clause = array();
 		$force_single_status = false;

@@ -244,6 +244,9 @@ class ScoperHardwayTaxonomy
 			$orderby = "ORDER BY $orderby";
 		
 		$where = '';
+		
+		// === Role Scoper MODIFICATION: if an include argument is provided, strip out non-matching terms after filtering is done. ===
+		/*
 		$inclusions = '';
 		if ( !empty($include) ) {
 			$exclude = '';
@@ -262,7 +265,9 @@ class ScoperHardwayTaxonomy
 		if ( !empty($inclusions) )
 			$inclusions .= ')';
 		$where .= $inclusions;
-	
+		*/
+		// === END Role Scoper MODIFICATION ===
+		
 		$exclusions = '';
 		
 		if ( ! empty( $exclude_tree ) ) {
@@ -372,7 +377,7 @@ class ScoperHardwayTaxonomy
 			$do_teaser = ( $scoper->is_front() && empty($skip_teaser) && scoper_get_otype_option('do_teaser', 'post') );
 		else
 			$do_teaser = false;
-			
+	
 		$query = apply_filters( 'terms_request_rs', $query_base, $taxonomies[0], array('skip_teaser' => ! $do_teaser, 'is_term_admin' => $is_term_admin ) );
 
 		// if no filering was applied because the teaser is enabled, prevent a redundant query
@@ -380,13 +385,13 @@ class ScoperHardwayTaxonomy
 			$terms = scoper_get_results($query);
 		} else
 			$terms = $results;
-			
+	
 		if ( 'count' == $fields ) {
 			$term_count = $wpdb->get_var($query);
 			return $term_count;
 		}
 			
-		if ( 'all' == $fields )
+		if ( ( 'all' == $fields ) && empty($include) )
 			update_term_cache($terms);
 			
 		// RS: don't cache an empty array, just in case something went wrong
@@ -449,7 +454,7 @@ class ScoperHardwayTaxonomy
 		// In addition, without the rs_tally_term_counts call, WP will hide categories that have no public posts (even if this user can read some of the pvt posts).
 		// Post counts will be incremented to include child categories only if $pad_counts is true
 		if ( ! defined('XMLRPC_REQUEST') && ( 'all' == $fields ) && ! $is_term_admin ) {
-			if ( ! is_admin() || ! in_array( $_GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
+			if ( ! is_admin() || ! in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
 			
 				//-- RoleScoper Modification - alternate function call (was _pad_term_counts) --//
 				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser ) );
@@ -487,6 +492,14 @@ class ScoperHardwayTaxonomy
 		// === END Role Scoper ADDITION ===
 		// ================================
 		
+		if ( ! empty($include) ) {
+			$interms = wp_parse_id_list($include);
+			foreach( $terms as $key => $term ) {
+				if ( ! in_array( $term->term_id, $interms ) )
+					unset( $terms[$key] );
+			}
+		}
+		
 		$_terms = array();
 		if ( 'id=>parent' == $fields ) {
 			while ( $term = array_shift($terms) )
@@ -501,11 +514,10 @@ class ScoperHardwayTaxonomy
 				$_terms[] = $term->name;
 			$terms = $_terms;
 		}
-	
+			
 		if ( 0 < $number && intval(@count($terms)) > $number ) {
 			$terms = array_slice($terms, $offset, $number);
 		}
-		
 		
 		// === BEGIN Role Scoper MODIFICATION: cache key is specific to user/group
 		//

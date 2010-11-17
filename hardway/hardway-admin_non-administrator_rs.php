@@ -33,7 +33,8 @@ class ScoperAdminHardway_Ltd {
 
 	// next-best way to handle any permission checks for non-Ajax operations which can't be done via has_cap filter
 	function act_check_admin_referer( $referer_name ) {
-		if ( 'update-tag_' . $_POST['tag_ID'] == $referer_name ) {
+		
+		if ( ! empty($_POST['tag_ID']) && ( 'update-tag_' . $_POST['tag_ID'] == $referer_name ) ) {
 			// filter category parent selection for Category editing
 			if ( ! isset( $_POST['tag_ID'] ) )
 				return;
@@ -354,6 +355,7 @@ class ScoperAdminHardway_Ltd {
 			//d_echo( "<br />replaced: $query<br />" );
 			
 			//rs_errlog ("<br /><br />replaced with $query<br /><br />");
+			
 			return $query;
 		}
 		

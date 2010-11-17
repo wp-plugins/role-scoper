@@ -104,9 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.6-dev =
+= 1.3.6 - 17 Nov 2010 =
 * BugFix : Post previews for qualified users failed with "Not Found" error
+* BugFix : For template calls to get_terms() / get_categories() / wp_list_categories(), include argument was not handled correctly (since 1.0)
 * BugFix : Fatal Error for logged Administrators (undefined method merge_scoped_blogcaps) in some cases
+* BugFix : Reader role restrictions not applied in some situations
 
 
 = 1.3.5 - 13 Nov 2010 =

@@ -876,6 +876,9 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 		}
 	}
 
+	if ( 'any' == $object_type )
+		return '';
+	
 	if ( ! empty($object_type) ) {
 		return $object_type;
 		

@@ -468,7 +468,7 @@ class ScoperAgentsChecklist {
 				 . '<span class="rs-keytext">' . str_replace( ' ', '&nbsp;', __('has via other scope', 'scoper') ) . '</span></span>';
 		 
 		if ( $propagation )
-			$key ['propagation']= "{<input type='checkbox' disabled='disabled' name='rs-prop_key_{$agents_subset}_{$id_prefix}' id='rs-prop_key_{$agents_subset}_{$id_prefix}' $ie_checkbox_style />}"
+			$key ['propagation']= "{<input type='checkbox' disabled='disabled' name='rs-prop_key_{$agents_subset}_{$id_prefix}' id='rs-prop_key_{$agents_subset}_{$id_prefix}' style='vertical-align:middle' />}"
 				 . '<span class="rs-keytext">' . sprintf(__('propagate to sub-%s', 'scoper'), agp_strtolower($otype_label)) . '</span>';
 	
 		if ( $any_date_limits && ! empty($object_id) ) {
