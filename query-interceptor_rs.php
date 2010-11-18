@@ -506,7 +506,9 @@ class QueryInterceptor_RS
 			}
 		}
 
-		if ( empty( $otype_status_reqd_caps) )
+		if ( ( 'post' == $src_name ) && ! array_intersect( $object_types, array_keys( array_intersect( scoper_get_option( 'use_post_types' ), array( true ) ) ) ) )
+			return $where;
+		elseif ( empty( $otype_status_reqd_caps) )
 			return ' AND 1=2 ';
 		
 		$basic_status_clause = array();
