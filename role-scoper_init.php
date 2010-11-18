@@ -877,9 +877,9 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 	}
 
 	if ( empty($object_type) ) {
-		if ( $return_default ) { // default to post type
+		if ( $return_default ) // default to post type
 			return 'post';
-	} elseif ( 'any' != $object_type ) ) {
+	} elseif ( 'any' != $object_type ) {
 		return $object_type;
 	}
 }
