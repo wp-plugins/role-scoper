@@ -1,0 +1,45 @@
+<?php
+
+if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
+	die();
+// As of WP 2.7, autosave wipes out page parent.
+if ( isset($_POST['action']) && ($_POST['action'] == 'autosave') && isset($_POST['post_type']) )
+	add_filter('query', array('ScoperAdminHardway', 'flt_autosave_bugstomper') );
+
+if ( ! is_content_administrator_rs() )
+	require_once( 'hardway-admin_non-administrator_rs.php' );
+
+// Note: we are not filtering the QuickEdit author dropdown on edit.php
+if ( strpos( $_SERVER['REQUEST_URI'], 'p-admin/post.php' ) || strpos( $_SERVER['REQUEST_URI'], 'p-admin/post-new.php' ) ) {
+	if ( scoper_get_option( 'filter_users_dropdown') ) {
+		if ( awp_ver( '3.0' ) )
+			require_once( 'hardway-users_rs.php' );
+		else	
+			require_once( 'hardway-users-legacy_rs.php' );
+	}
+}
+	
+/**
+ * ScoperAdminHardway PHP class for the WordPress plugin Role Scoper
+ * hardway-admin_rs.php
+ * 
+ * @author 		Kevin Behrens
+ * @copyright 	Copyright 2009
+ * 
+ * Used by Role Role Scoper Plugin as a container for statically-called functions
+ *
+ */
+class ScoperAdminHardway {
+	// WP autosave wipes out page parent and sets author to current user
+	function flt_autosave_bugstomper($query) {
+		global $wpdb;
+
+		if ( ( strpos($query, "PDATE $wpdb->posts ") && strpos($query, "post_parent") ) ) {
+			// as of WP 2.6, only the post_parent is being wiped.
+			$query = preg_replace( "/,\s*`post_parent`\s*=\s*'0'/", "", $query);
+		}
+
+		return $query;
+	}
+}
+?>
