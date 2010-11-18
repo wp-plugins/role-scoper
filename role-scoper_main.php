@@ -100,16 +100,15 @@ class Scoper
 		do_action('config_loaded_rs');
 	}
 	
-	function refresh_blogroles( $user = '' ) {
-		if ( ! is_object($user) )
-			$user = $GLOBALS['current_user'];
+	function refresh_blogroles() {
+		global $current_user;
 		
-		if ( method_exists( $user, 'merge_scoped_blogcaps' ) )  // workaround for fatal error on role-scoper.php bailout
-			$user->merge_scoped_blogcaps();
+		if ( method_exists( $current_user, 'merge_scoped_blogcaps' ) )  // workaround for fatal error on role-scoper.php bailout
+			$current_user->merge_scoped_blogcaps();
 		
-		if ( $user->ID ) {
-			foreach ( array_keys($user->assigned_blog_roles) as $date_key )
-				$user->blog_roles[$date_key] = $this->role_defs->add_contained_roles( $user->assigned_blog_roles[$date_key] );
+		if ( $current_user->ID ) {
+			foreach ( array_keys($current_user->assigned_blog_roles) as $date_key )
+				$current_user->blog_roles[$date_key] = $this->role_defs->add_contained_roles( $current_user->assigned_blog_roles[$date_key] );
 		}
 	}
 	

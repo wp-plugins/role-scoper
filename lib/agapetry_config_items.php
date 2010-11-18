@@ -66,11 +66,11 @@ class AGP_Config_Items {
 
 	function process_added_members(&$arr) {
 		$will_process = method_exists($this, 'process');
-				
+		
 		foreach ( array_keys($arr) as $name ) {
 			// copy key into name property
-			if ( empty($arr[$name]->name) )
-				$arr[$name]->name = $name;
+			if ( empty($this->members[$name]->name) )
+				$this->members[$name]->name = $name;
 
 			if ( $will_process )
 				$this->process( $this->members[$name] );

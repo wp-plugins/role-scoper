@@ -420,7 +420,7 @@ class QueryInterceptor_RS
 			$user = $current_user;
 			$args['user'] = $user;
 		}
-		
+
 		if ( ! $src = $this->scoper->data_sources->get($src_name) )
 			return $where;	// the specified data source is not know to Role Scoper
 			

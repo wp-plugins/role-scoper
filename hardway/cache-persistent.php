@@ -615,7 +615,10 @@ class WP_Persistent_Object_Cache {
 			return true;
 			
 		$this->cache[$group][$id] = $data;
-		unset ($this->non_existant_objects[$group][$id]);
+		
+		if ( isset($this->non_existant_objects[$group][$id]) )
+			unset ($this->non_existant_objects[$group][$id]);
+			
 		$this->dirty_objects[$group][] = $id;
 
 		return true;

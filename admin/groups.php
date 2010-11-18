@@ -23,6 +23,7 @@ $cancel = isset($_REQUEST['cancel']) ? $_REQUEST['cancel'] : '';
 
 $success_msg = '';
 $errorMessage = "";
+$all_users = array();
 $suppress_groups_list = false;
 
 $can_manage_all_groups = is_user_administrator_rs() || awp_user_can('manage_groups', BLOG_SCOPE_RS);

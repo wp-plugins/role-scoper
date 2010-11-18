@@ -678,8 +678,8 @@ class CapInterceptor_RS
 			// So... insert the object ID from POST vars
 			if ( 'post' == $src_name ) {
 				if ( ! $id = $this->scoper->data_sources->get_from_http_post('id', 'post') ) {
-	
-					if ( 'async-upload.php' != $pagenow ) {
+					
+					if ( 'async-upload.php' != $GLOBALS['pagenow'] ) {
 						if ( $attach_id = $this->scoper->data_sources->get_from_http_post('attachment_id', 'post') ) {
 							if ( $attach_id ) {
 								global $wpdb;

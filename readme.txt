@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.7-dev =
+* BugFix : On PHP 4 sites, logged non-administrators had no read/edit access based on WP role
+* BugFix : Various PHP Notices / Warnings
+
+
 = 1.3.6 - 17 Nov 2010 =
 * BugFix : Post previews for qualified users failed with "Not Found" error
 * BugFix : For template calls to get_terms() / get_categories() / wp_list_categories(), include argument was not handled correctly (since 1.0)
