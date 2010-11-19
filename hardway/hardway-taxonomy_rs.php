@@ -72,7 +72,7 @@ class ScoperHardwayTaxonomy
 		global $scoper;
 		
 		if ( $tx_obj = get_taxonomy( $taxonomies[0] ) ) {	// don't require use_taxonomies setting for link_categories or other non-post taxonomies
-			if ( array_intersect( $tx_obj->object_type, get_post_types() ) ) {
+			if ( array_intersect( $tx_obj->object_type, get_post_types( array( 'public' => true ) ) ) ) {
 				$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	
 				if ( empty( $use_taxonomies[$taxonomy] ) )

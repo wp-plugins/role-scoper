@@ -109,7 +109,7 @@ class ScoperHardway
 		$child_of = (int) $child_of;  // Role Scoper modification: null value will confuse children array check
 
 		// Make sure the post type is hierarchical
-		$hierarchical_post_types = get_post_types( array( 'hierarchical' => true ) );
+		$hierarchical_post_types = get_post_types( array( 'public' => true, 'hierarchical' => true ) );
 		if ( !in_array( $post_type, $hierarchical_post_types ) )
 			return false;
 	

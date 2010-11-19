@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.7
+Stable Tag: 1.3.8
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.8 - 19 Nov 2010 =
+* BugFix : Improper blocking of content for custom post types not selected for RS filtering (Roles > Options > Realm > Post Type Usage)
+
 
 = 1.3.7 - 18 Nov 2010 =
 * BugFix : On PHP 4 sites, logged non-administrators had no read/edit access based on WP role
