@@ -850,29 +850,17 @@ class Scoper
 		} else {
 			// query pertains to reading or editing content within certain terms, or adding terms to content
 			
-			// if we are dealing with a specific object, only return required caps which apply to it
-			if ( $object_id = scoper_get_object_id( $src_name ) ) {
-				// TODO: de-abstract this for post data source
-				$owner_id = $this->data_sources->get_from_db('owner', $src_name, $object_id);
-
-				$base_caps_only = ( $owner_id == $GLOBALS['current_user']->ID );
-					
-				$status = $this->data_sources->detect('status', $src_name, $object_id);
-
-				$object_type = $this->data_sources->detect('type', $src_name, $object_id);
-			} else {
-				$base_caps_only = true;
-				
-				if ( 'post' == $src_name ) {
-					$status = ( is_admin() ) ? 'draft' : 'publish';	// we want to retrieve basic object access caps for current access type (possible TODO: define a default_status property)
-
-					// terms query should be limited to a single object type for post.php, post-new.php, so only return caps for that object type (TODO: do this in wp-admin regardless of URI ?)
-					if ( in_array( $pagenow, array( 'post.php', 'post-new.php' ) ) )
-						$object_type = cr_find_post_type();
-				} else
-					$status = '';
-			}
+			$base_caps_only = true;
 			
+			if ( 'post' == $src_name ) {
+				$status = ( is_admin() ) ? 'draft' : 'publish';	// we want to retrieve basic object access caps for current access type (possible TODO: define a default_status property)
+
+				// terms query should be limited to a single object type for post.php, post-new.php, so only return caps for that object type (TODO: do this in wp-admin regardless of URI ?)
+				if ( in_array( $pagenow, array( 'post.php', 'post-new.php' ) ) )
+					$object_type = cr_find_post_type();
+			} else
+				$status = '';
+
 			// The return array will indicate term role enable / disable, as well as associated capabilities
 			if ( ! empty($object_type) )
 				$check_object_types = array( $object_type );

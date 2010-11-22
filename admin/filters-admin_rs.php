@@ -224,10 +224,9 @@ class ScoperAdminFilters
 		return ScoperUserEdit::editable_roles( $roles );
 	}	
 	
-
+	// Optionally, prevent anyone from editing or deleting a user whose level is higher than their own
 	function flt_has_edit_user_cap($wp_blogcaps, $orig_reqd_caps, $args) {
-		// Optionally, prevent anyone from editing a user whose level is higher than their own
-		if ( ! defined( 'DISABLE_QUERYFILTERS_RS' ) && in_array( 'edit_users', $orig_reqd_caps ) && ! empty($args[2]) ) {
+		if ( ! defined( 'DISABLE_QUERYFILTERS_RS' ) && ( in_array( 'edit_users', $orig_reqd_caps ) || in_array( 'delete_users', $orig_reqd_caps ) ) && ! empty($args[2]) ) {
 			if ( scoper_get_option('limit_user_edit_by_level') ) {
 				require_once( 'user_lib_rs.php' );
 				$wp_blogcaps = ScoperUserEdit::has_edit_user_cap( $wp_blogcaps, $orig_reqd_caps, $args );

@@ -237,8 +237,12 @@ function cr_wp_taxonomies() {
 				'labels' => (object) array( 'name' => $wp_tax->labels->name, 'singular_name' => $wp_tax->labels->singular_name  ),
 				'requires_term' => $wp_tax->hierarchical
 			);
-
+			
 			if ( is_admin() ) {
+				// temporary hardcode
+				if ( 'nav_menu' == $taxonomy )
+					$arr[$taxonomy]->requires_term = true;
+				
 				$arr[$taxonomy]->admin_actions = array( 'save_term' => "save_{$taxonomy}", 		'edit_term' => "edit_{$taxonomy}", 			'create_term' => "created_{$taxonomy}", 
 														'delete_term' => "delete_{$taxonomy}", 	'term_edit_ui' => "{$taxonomy}_edit_form" );
 				

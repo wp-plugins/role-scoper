@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.9-dev =
+* BugFix : Non-administrators could delete users with a higher role level
+* BugFix : When viewing a page, hidden categories are listed
+
+
 = 1.3.8 - 19 Nov 2010 =
 * BugFix : Improper blocking of content for custom post types not selected for RS filtering (Roles > Options > Realm > Post Type Usage)
 
