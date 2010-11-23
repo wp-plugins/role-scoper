@@ -78,12 +78,14 @@ class QueryInterceptor_RS
 	
 			} //foreach data_sources
 
-			// use late-firing filter so teaser filtering is also applied to sticky posts
-			add_filter( 'the_posts', array( &$this, 'flt_the_posts' ), 50, 2 );
-
-			// manually hook posts_request to pass on object_type value in the referenced wp_query object
-			add_filter( 'posts_request', array( &$this, 'flt_posts_request'), 50, 2 );
-			
+			if ( ! $is_administrator ) {
+				// use late-firing filter so teaser filtering is also applied to sticky posts
+				add_filter( 'the_posts', array( &$this, 'flt_the_posts' ), 50, 2 );
+				
+				// manually hook posts_request to pass on object_type value in the referenced wp_query object
+				add_filter( 'posts_request', array( &$this, 'flt_posts_request'), 50, 2 );
+			}
+				
 			// ...but don't include this hook in the filter-wrapping loop below
 			if ( isset( $rs_hooks['posts_request'] ) )
 				unset( $rs_hooks['posts_request'] );
@@ -447,16 +449,20 @@ class QueryInterceptor_RS
 			if ( $force_reqd_caps && is_array($force_reqd_caps) ) {
 				$otype_status_reqd_caps = $force_reqd_caps;
 			} else {
+				global $wpdb;
+				
 				if ( ! $required_operation )
 					$required_operation = ( 'front' == CURRENT_ACCESS_NAME_RS ) ? OP_READ_RS : OP_EDIT_RS;
 
-				if ( ! $otype_status_reqd_caps = cr_get_reqd_caps( $src_name, $required_operation ) )
+				$preview_future = strpos( $where, "$wpdb->posts.post_name =" ) || strpos( $where, "$wpdb->posts.ID =" );
+
+				if ( ! $otype_status_reqd_caps = cr_get_reqd_caps( $src_name, $required_operation, -1, -1, false, $preview_future ) )
 					return $where;
 			}
 			
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
 		}	
-		
+
 		// Since Role Scoper can restrict or expand access regardless of post_status, query must be modified such that
 		//  * the default owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" is removed
 		//  * all statuses are listed apart from owner inclusion clause (and each of these status clauses is subsequently replaced with a scoped equivalent which imposes any necessary access limits)

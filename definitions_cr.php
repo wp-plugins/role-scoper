@@ -558,9 +558,9 @@ function cr_taxonomy_role_defs() {
 }
 
 
-function cr_get_reqd_caps( $src_name, $op, $object_type = -1, $status = -1, $base_caps_only = false ) {
+function cr_get_reqd_caps( $src_name, $op, $object_type = -1, $status = -1, $base_caps_only = false, $preview_future = false ) {
 	require_once( 'reqd_caps_cr.php' );
-	return _cr_get_reqd_caps( $src_name, $op, $object_type, $status, $base_caps_only );
+	return _cr_get_reqd_caps( $src_name, $op, $object_type, $status, $base_caps_only, $preview_future );
 }
 
 ?>

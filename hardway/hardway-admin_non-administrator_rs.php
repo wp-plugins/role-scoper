@@ -229,6 +229,11 @@ class ScoperAdminHardway_Ltd {
 		&& ( ! strpos($_SERVER['SCRIPT_FILENAME'], 'p-admin/upload.php') )
 		 )  // don't filter the comment count query prior to DB storage of comment_count to post record
 		{
+			//define( 'SCOPER_NO_COMMENT_FILTERING', true );
+			if ( defined( 'SCOPER_NO_COMMENT_FILTERING' ) && empty( $GLOBALS['current_user']->allcaps['moderate_comments'] ) ) {
+				return $query;			
+			}
+			
 			//rs_errlog ("<br /> <strong>caught</strong> $query<br /> ");	
 			//d_echo( "<b>caught: <br />$query<br /></b>" );
 			

@@ -109,6 +109,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : When viewing a page, hidden categories are listed
 * BugFix : Site-wide edit_theme_options capability was not honored for Nav Menu management by non-Administrators
 * Feature: Support menu-specific restrictions for Nav Menus
+* Feature: Constant definition 'SCOPER_NO_COMMENT_FILTERING' honored in backend for users lacking site-wide moderate_comments capability
+* BugFix : Scheduled posts included in front-end listing for logged Administrators, Editors
 
 
 = 1.3.8 - 19 Nov 2010 =

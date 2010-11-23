@@ -135,12 +135,17 @@ class CapInterceptor_RS
 					return $return_caps;
 				}
 		}
+
+		//define( 'SCOPER_NO_COMMENT_FILTERING', true );
+		if ( defined( 'SCOPER_NO_COMMENT_FILTERING' ) && ( 'moderate_comments' == $orig_reqd_caps[0] ) && empty( $GLOBALS['current_user']->allcaps['moderate_comments'] ) ) {
+			return $wp_blogcaps;			
+		}
 		// =================================================== (end early exit checks) ======================================================
 		
 
 		// ============================ GLOBAL VARIABLE DECLARATIONS, ARGUMENT TRANSLATION AND STATUS DETECTION =============================
 		global $current_user, $pagenow;
-
+		
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 
 		if ( $user_id && ($user_id != $current_user->ID) )

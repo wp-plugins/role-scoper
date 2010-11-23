@@ -1,10 +1,10 @@
 <?php
 
-function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1', $base_caps_only = false ) {
+function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1', $base_caps_only = false, $preview_future = false ) {
 	if ( 'admin' == $op )
 		$op = 'delete';
-
-	if ( ( $object_type == -1 ) && ( $status == -1 ) && ! $base_caps_only ) {
+		
+	if ( ( $object_type == -1 ) && ( $status == -1 ) && ! $base_caps_only && ! $preview_future ) {
 		// only set / retrieve the static buffer for default Query_Interceptor usage
 		static $reqd_caps;
 		
@@ -64,6 +64,9 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 						if ( 'trash' == $_status )
 							continue;
 	
+						if ( ( 'future' == $_status ) && ! $preview_future )
+							continue;
+							
 						if ( ! $status_obj->protected && ! $status_obj->internal ) {
 							// read
 							$arr['read'][$_post_type][$_status] = array( 'read' );
@@ -154,10 +157,8 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 			$arr[$op] = array();
 
 		$reqd_caps[$src_name][$op] = apply_filters( 'define_required_caps_rs', $arr[$op], $src_name, $op );
-		
 	} // endif pulling from static buffer
 
-	
 	if ( ( -1 != $status ) && ( -1 != $object_type ) ) {
 		if ( isset( $reqd_caps[$src_name][$op][$object_type][$status] ) )
 			return $reqd_caps[$src_name][$op][$object_type][$status];
