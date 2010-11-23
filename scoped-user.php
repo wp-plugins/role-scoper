@@ -217,7 +217,7 @@ class WP_Scoped_User extends WP_User {
 	// wrapper for back compat with callin code that does not expect date_key dimension
 	function get_blog_roles( $role_type = 'rs' ) {
 		$blog_roles = $this->get_blog_roles_daterange( $role_type );
-		
+
 		if ( isset($blog_roles[ANY_CONTENT_DATE_RS]) && is_array($blog_roles[ANY_CONTENT_DATE_RS]) )
 			return $blog_roles[ANY_CONTENT_DATE_RS];
 		else
@@ -356,7 +356,7 @@ class WP_Scoped_User extends WP_User {
 			if ( ! empty($role_spec->role_type) && ( 'rs' == $role_spec->role_type ) && ! empty($scoper->role_defs->role_caps[$role_handle]) )
 				$this->allcaps = ( is_array($this->allcaps) ) ? array_merge($this->allcaps, $scoper->role_defs->role_caps[$role_handle]) : $scoper->role_defs->role_caps[$role_handle];	
 		}
-
+		
 		$this->allcaps['is_scoped_user'] = true; // use this to detect when something tampers with scoped allcaps array
 	}
 

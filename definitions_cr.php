@@ -465,7 +465,10 @@ function cr_taxonomy_role_caps() {
 		// in case these have been customized to a different cap name...
 		$arr["rs_{$name}_manager"][$taxonomy_obj->cap->edit_terms] = true;
 		$arr["rs_{$name}_manager"][$taxonomy_obj->cap->delete_terms] = true;
-	}	
+	}
+	
+	// temp hardcode for Nav Menus
+	$arr["rs_nav_menu_manager"]['edit_theme_options'] = true;
 	
 	return $arr;	
 }

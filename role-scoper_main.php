@@ -195,6 +195,10 @@ class Scoper
 
 			$role_defs->add( $role_name, 'wordpress', '', '', 'wp' );
 
+			// temp hardcode for site-wide Nav Menu cap
+			if ( ! empty( $caps['edit_theme_options'] ) )
+				$caps['manage_nav_menus'] = true;
+
 			$role_defs->role_caps['wp_' . $role_name] = $caps;
 		}
 		

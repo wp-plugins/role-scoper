@@ -226,7 +226,7 @@ class CR_Roles extends AGP_Config_Items {
 				}
 			}
 		}
-
+		
 		if ( $role_type && $contained_roles )
 			$contained_roles = $this->filter_keys( array_keys($contained_roles), array( 'role_type' => $role_type ), 'names_as_key' );
 
