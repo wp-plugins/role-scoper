@@ -111,6 +111,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Feature: Support menu-specific restrictions for Nav Menus
 * Feature: Constant definition 'SCOPER_NO_COMMENT_FILTERING' honored in backend for users lacking site-wide moderate_comments capability
 * BugFix : Scheduled posts included in front-end listing for logged Administrators, Editors
+* BugFix : Add New was displayed on Edit Posts form even for users lacking a qualifying WP / General role
 
 
 = 1.3.8 - 19 Nov 2010 =

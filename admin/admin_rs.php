@@ -287,6 +287,26 @@ class ScoperAdmin
 
 			$this->scoper->ignore_object_roles = false;
 		}
+		
+		if ( 'edit.php' == $GLOBALS['pagenow'] ) {
+			$_post_type = ( ! empty($_REQUEST['post_type']) ) ? $_REQUEST['post_type'] : 'post';
+			if ( $wp_type = get_post_type_object( $_post_type ) ) {
+				if ( ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) ) 
+					add_action( 'admin_footer', array( &$this, 'hide_add_new_button' ) );
+			}
+		}
+	}
+	
+	function hide_add_new_button() {
+?>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(document).ready( function($) {
+	$('.add-new-h2').hide();
+});
+/* ]]> */
+</script>
+<?php
 	}
 	
 	function build_menu() {

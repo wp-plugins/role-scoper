@@ -481,7 +481,7 @@ class WP_Persistent_Object_Cache {
 	function make_group_dir($group, $perms) {
 		$group_dir = $this->get_group_dir($group);
 		$make_dir = '';
-		foreach (split('/', $group_dir) as $subdir) {
+		foreach ( explode('/', $group_dir) as $subdir ) {
 			$make_dir .= "$subdir/";
 			if (!file_exists($this->cache_dir.$make_dir)) {
 				// kevinB: don't make an empty cache entry following unnecessary delete call
