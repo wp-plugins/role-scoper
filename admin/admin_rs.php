@@ -368,13 +368,11 @@ jQuery(document).ready( function($) {
 			}
 		}
 
-		
-		
 		// which taxonomies does this user have any administration over?
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx ) {
 			if ( taxonomy_exists($taxonomy) && empty( $use_taxonomies[$taxonomy] ) && ( 'post' == $tx->object_source ) )
 				continue;
-
+				
 			if ( is_taxonomy_used_rs( $taxonomy ) && ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) )
 				$can_admin_terms[$taxonomy] = true;
 		}

@@ -366,7 +366,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			global $scoper_xmlrpc_post_status;
 			$scoper_xmlrpc_post_status = $status;
 		}
-			
+
 		/*
 		// overcome any denials of publishing rights which were not filterable by user_has_cap	// TODO: confirm this is no longer necessary
 		if ( ('pending' == $status) && ( ('publish' == $_POST['post_status']) || ('Publish' == $_POST['original_publish'] ) ) )

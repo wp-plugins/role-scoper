@@ -262,7 +262,7 @@ class Scoper_Submittee {
 		foreach ( $reviewed_otype_options as $option_basename ) {
 			if ( isset( $scoper_default_otype_options[$option_basename] ) ) {
 				if ( $opt = $scoper_default_otype_options[$option_basename] ) {
-
+					
 					foreach ( array_keys($opt) as $src_otype ) {
 						if( is_array( $opt[$src_otype] ) ) {
 							foreach ( array_keys($opt[$src_otype]) as $taxonomy ) {

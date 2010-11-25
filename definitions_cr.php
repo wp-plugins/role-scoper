@@ -202,17 +202,17 @@ function cr_wp_taxonomies() {
 			foreach ( array_keys($use_term_roles[$src_otype]) as $taxonomy )
 				if ( $use_term_roles[$src_otype][$taxonomy] )
 					$arr_use_wp_taxonomies[$taxonomy] = true;
-			
-	$wp_taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
-	$wp_taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
+
+	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
+	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
 	
 	$post_types = get_post_types( array( 'public' => true ) );
 	$post_types []= 'nav_menu_item';
 	
 	// Detect and support additional WP taxonomies (just require activation via Role Scoper options panel)
 	global $scoper;
-	
-	foreach ( $wp_taxonomies as $taxonomy => $wp_tax ) {
+
+	foreach ( $taxonomies as $taxonomy => $wp_tax ) {
 		if ( ! isset( $arr_use_wp_taxonomies[$taxonomy] ) && ! in_array( $GLOBALS['plugin_page_cr'], array( 'rs-options', 'rs-site_options' ) ) )  // always load taxonomy ID data for Realm Options display
 			continue;
 

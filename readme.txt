@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.9
+Stable Tag: 1.3.10
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.10 - 25 Nov 2010 =
+* Compat : More Taxonomies - Category Roles could not be managed because of bug in More Taxonomies (and possibly other plugins) where category taxonomy is overriden without setting it public
+
 
 = 1.3.9 - 24 Nov 2010 =
 * BugFix : Non-administrators could delete users with a higher role level

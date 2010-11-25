@@ -59,6 +59,12 @@ function scoper_maybe_init() {
 function scoper_init() {
 	global $scoper;
 	
+	// Work around bug in More Taxonomies (and possibly other plugins) where category taxonomy is overriden without setting it public
+	foreach( array( 'category', 'post_tag' ) as $taxonomy ) {
+		if ( isset( $GLOBALS['wp_taxonomies'][$taxonomy] ) )
+			$GLOBALS['wp_taxonomies'][$taxonomy]->public = true;
+	}
+	
 	if ( IS_MU_RS ) {
 		global $scoper_sitewide_options;
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
