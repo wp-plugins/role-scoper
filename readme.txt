@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.8
+Stable Tag: 1.3.9
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -104,14 +104,15 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.9-dev =
+= 1.3.9 - 24 Nov 2010 =
 * BugFix : Non-administrators could delete users with a higher role level
 * BugFix : When viewing a page, hidden categories are listed
 * BugFix : Site-wide edit_theme_options capability was not honored for Nav Menu management by non-Administrators
 * Feature: Support menu-specific restrictions for Nav Menus
 * Feature: Constant definition 'SCOPER_NO_COMMENT_FILTERING' honored in backend for users lacking site-wide moderate_comments capability
 * BugFix : Scheduled posts included in front-end listing for logged Administrators, Editors
-* BugFix : Add New was displayed on Edit Posts form even for users lacking a qualifying WP / General role
+* BugFix : "Add New" button was displayed on Edit Posts form even for users lacking a qualifying WP / General role
+* BugFix : Category Restrictions were not applied to a post if it also had a tag in a non-hierarchical (tag-type) taxonomy 
 
 
 = 1.3.8 - 19 Nov 2010 =
