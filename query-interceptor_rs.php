@@ -1128,8 +1128,6 @@ class QueryInterceptor_RS
 				} // end foreach taxonomy
 			}
 
-			
-			
 			foreach ( array_keys($user_blog_roles) as $date_key ) {
 				if ( ! empty($all_taxonomies_qualified[$date_key]) || ( ! $_taxonomies && ! empty($user_blog_roles[$date_key][$role_handle]) ) ) {
 					if ( $date_key || $objscope_clause || ! empty($require_blog_and_obj_role) ) {
@@ -1243,16 +1241,19 @@ class QueryInterceptor_RS
 							// all taxonomy clauses concat: [taxonomy 1 clauses] [OR] [taxonomy 2 clauses] [OR] ...
 							//$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) OR ( ', $taxonomy_clauses, ' ( ', ' ) ');
 
-							// strict taxonomy clauses
-							if ( ! empty( $taxonomy_clauses[true] ) )
-								$taxonomy_clauses[true] = agp_implode(' ) AND ( ', $taxonomy_clauses[true], ' ( ', ' ) ');
-
-							// non-strict taxonomy clauses
-							if ( ! empty( $taxonomy_clauses[false] ) )
-								$taxonomy_clauses[false] = agp_implode(' ) OR ( ', $taxonomy_clauses[false], ' ( ', ' ) ');
-
+							// strict taxonomy clauses (if any are present, they must all be satisfied)
+							if ( ! empty( $taxonomy_clauses[true] ) ) {
+								$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) AND ( ', $taxonomy_clauses[true], ' ( ', ' ) ');
+							
+							// non-strict taxonomy clauses	
+							} elseif ( ! empty( $taxonomy_clauses[false] ) ) {
+								$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) OR ( ', $taxonomy_clauses[false], ' ( ', ' ) ');
+							} else {
+								$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = '1=2';
+							}
+								
 							// all taxonomy clauses concat: ( [strict taxonomy clause 1] [AND] [strict taxonomy clause 2]... ) [OR] [taxonomy 3 clauses] [OR] ...
-							$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) OR ( ', $taxonomy_clauses, ' ( ', ' ) ');
+							//$where[$date_key][$objscope_clause][TERM_SCOPE_RS] = agp_implode(' ) OR ( ', $taxonomy_clauses, ' ( ', ' ) ');
 						}
 
 						break;
