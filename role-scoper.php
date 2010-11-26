@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.3.10
+Version: 1.3.11
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 3.0
@@ -44,7 +44,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-define ('SCOPER_VERSION', '1.3.10');
+define ('SCOPER_VERSION', '1.3.11');
 define ('SCOPER_DB_VERSION', '1.1.2');
 
 /* --- ATTACHMENT FILTERING NOTE ---
@@ -87,7 +87,7 @@ if ( $prev = get_option('scoper_version') ) {
 // avoid lockout in case of editing plugin via wp-admin
 if ( defined('RS_DEBUG') && is_admin() && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) && empty( $_REQUEST['activate'] ) )
 	return;
-
+	
 define ('COLS_ALL_RS', 0);
 define ('COL_ID_RS', 1);
 define ('COLS_ID_DISPLAYNAME_RS', 2);

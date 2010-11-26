@@ -392,7 +392,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			$already_published = ( $saved_status_object->public || $saved_status_object->private );
 		else
 			$already_published = false;
-			
+		
 		// if neither the stored nor selected parent is Main, we have no beef with it
 		if ( ! empty($selected_parent_id) && ( ! empty($_post->post_parent ) || ! $already_published ) )
 			return $status;
@@ -402,14 +402,14 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			return $status;
 		
 		global $scoper_admin_filters;
-		
+
 		if ( ! $scoper_admin_filters->user_can_associate_main( $post_type ) ) {
 			// If post was previously published to another parent, allow subsequent page_parent filter to revert it
 			if ( $already_published ) {
 				if ( ! isset($scoper_admin_filters->revert_post_parent) )
 					$scoper_admin_filters->revert_post_parent = array();
 					
-				$scoper->revert_post_parent[ $post_id ] = $_post->post_parent;
+				$scoper_admin_filters->revert_post_parent[ $post_id ] = $_post->post_parent;
 				
 			} elseif ( empty($_POST['parent_id']) ) {  // This should only ever happen if the POST data is manually fudged
 				if ( $post_status_object = get_post_status_object( $status ) ) {
@@ -425,6 +425,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	// Enforce any page parent filtering which may have been dictated by the flt_post_status filter, which executes earlier.
 	function scoper_flt_page_parent ($parent_id) {
+		if ( $parent_id == $_POST['post_ID'] )	// normal revision save
+			return $parent_id;
+		
 		if ( defined( 'RVY_VERSION' ) ) {
 			global $revisionary;
 			if ( ! empty($revisionary->admin->revision_save_in_progress) )
@@ -432,7 +435,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		}
 		
 		global $scoper_admin_filters;
-
+		
 		// Did the post_status filter mark the post for parent reversion due to Main Page (un)association with insufficient blog role?
 		if ( isset($scoper_admin_filters->revert_post_parent) && isset( $scoper_admin_filters->revert_post_parent[ $_POST['post_ID'] ] ) )
 			return $scoper_admin_filters->revert_post_parent[ $_POST['post_ID'] ];

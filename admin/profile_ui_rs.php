@@ -50,8 +50,8 @@ class ScoperProfileUI {
 		} else {
 			$html .= "<div id='userprofile_rolesdiv_rs' class='rs-scoped_role_profile'>";
 			$html .= "<h3>" . __('Scoped Roles', 'scoper') . "</h3>";
-	
-			$wp_blog_roles = $user->get_blog_roles( 'wp' );	// arg: return array with additional key dimension for role duration 
+
+			$wp_blog_roles = array_intersect_key( $user->assigned_blog_roles[''], $scoper->role_defs->get_matching( 'wp' ) );
 
 			if ( ! empty($wp_blog_roles) ) {
 				$display_names = array();

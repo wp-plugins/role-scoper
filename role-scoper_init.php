@@ -58,7 +58,7 @@ function scoper_maybe_init() {
 
 function scoper_init() {
 	global $scoper;
-	
+
 	// Work around bug in More Taxonomies (and possibly other plugins) where category taxonomy is overriden without setting it public
 	foreach( array( 'category', 'post_tag' ) as $taxonomy ) {
 		if ( isset( $GLOBALS['wp_taxonomies'][$taxonomy] ) )

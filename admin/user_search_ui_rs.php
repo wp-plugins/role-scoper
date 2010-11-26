@@ -152,7 +152,7 @@ class ScoperUserSearch {
 		echo "\n" . "<script type='text/javascript' src='" . SCOPER_URLPATH . "/admin/dualListBox.js'></script>";
 		
 		$site_url = admin_url('');
-			
+
 		if ( ! $this->list_ids )
 			return;
 
@@ -278,7 +278,7 @@ class ScoperUserSearch {
 	}
 	
 	function output_html( $agents, $agent_type = 'users' ) {
-		
+
 		if ( 'groups' == $agent_type ) {
 			$reqd_caps = 'manage_groups';
 			
@@ -369,9 +369,11 @@ if ( ! empty($this->list_ids) ) :
 		<br />
 		<select name="<?php echo $this->list_ids[$key]?>[]" id="<?php echo $this->list_ids[$key]?>" multiple="multiple" style="height:100px;width:200px;">
 		<?php
-		foreach ( $agents[ $this->status[$key] ] as $value => $caption )
-			if ( ( 'users' == $agent_type ) || ( in_array( $value, $editable_group_ids ) ) )
-				echo "<option value='$value'>$caption</option>";
+		if ( ! empty($agents[ $this->status[$key] ] ) ) {
+			foreach ( $agents[ $this->status[$key] ] as $value => $caption )
+				if ( ( 'users' == $agent_type ) || ( in_array( $value, $editable_group_ids ) ) )
+					echo "<option value='$value'>$caption</option>";
+		}
 		?>
 		</select>
 		<br /> 

@@ -40,7 +40,7 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		$where .= ')';
 	} else
 		$where = '';
-	
+
 	if ( 'recommended' == $_GET['rs_target_status'] )
 		$reqd_caps = 'recommend_group_membership';
 	elseif ( 'requested' == $_GET['rs_target_status'] )

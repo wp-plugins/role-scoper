@@ -217,9 +217,6 @@ class Scoper
 		if ( $doing_cron = defined('DOING_CRON') )
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') )
 				define('DISABLE_QUERYFILTERS_RS', true);
-		
-		if ( is_admin() )
-			$this->add_admin_ui_filters( $is_administrator );
 
 		if ( ! $this->direct_file_access = strpos($_SERVER['QUERY_STRING'], 'rs_rewrite') )
 			$this->add_main_filters();
@@ -283,8 +280,11 @@ class Scoper
 
 		} // endif query filtering not disabled for this access type
 
+		if ( is_admin() )
+			$this->add_admin_ui_filters( $is_administrator );
+		
 		do_action( 'scoper_init' );
-			
+		
 		// ===== end Content Filters
 		
 	} // end function init
