@@ -104,6 +104,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.12-dev =
+* BugFix : Category Manager restrictions were not applied for WP Editors
+
+
 = 1.3.11 - 26 Nov 2010 =
 * BugFix : Page editing by user lacking site-wide Page Editor role caused page parent to revert to Main (since 1.2.9)
 * BugFix : Non-administrators could not modify or request group membership via Ajax UI (since 1.2.9)

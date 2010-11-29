@@ -710,8 +710,8 @@ class Scoper
 		extract($args);
 
 		if ( ! $qualifying_roles )  // calling function might save a little work or limit to a subset of qualifying roles
-			$qualifying_roles = $this->role_defs->qualify_roles($reqd_caps);
-			
+			$qualifying_roles = $this->role_defs->qualify_roles( $reqd_caps, 'rs', $taxonomy );
+	
 		if ( ! $this->taxonomies->is_member($taxonomy) )
 			return array( '' => array() );
 		
@@ -785,7 +785,7 @@ class Scoper
 					foreach ( array_keys($user_blog_roles) as $role_handle ) {
 						if ( isset($strict_terms['restrictions'][$role_handle]) && is_array($strict_terms['restrictions'][$role_handle]) )
 							$terms_via_this_role = array_diff( $all_terms, array_keys($strict_terms['restrictions'][$role_handle]) );
-					
+						
 						elseif ( isset($strict_terms['unrestrictions'][$role_handle]) && is_array($strict_terms['unrestrictions'][$role_handle]) )
 							$terms_via_this_role = array_intersect( $all_terms, array_keys( $strict_terms['unrestrictions'][$role_handle] ) );
 						
