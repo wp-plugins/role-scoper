@@ -1699,28 +1699,37 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 						
 						$id = $option_name . '-' . $key;
 						?>
-						<div class="agp-vspaced_input">
-						<label for="<?php echo($id);?>" title="<?php echo($key);?>">
-						<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
-						<?php 
-						if ( TERM_SCOPE_RS == $scope ) {
-							if ( $tx = get_taxonomy( $key ) )
-								$display_name = $tx->labels->name;
-							else
-								$display_name = '';
-						} else {
-							if ( $type_obj = get_post_type_object( $key ) )
-								$display_name = $type_obj->labels->name;
-							else
-								$display_name = '';
-						}
+						
+						<?php if ( 'nav_menu' == $key ) :?>
+							<input name="<?php echo($id);?>" type="hidden" id="<?php echo($id);?>" value="1" />
+						<?php else: ?>
+							<div class="agp-vspaced_input">
+							<label for="<?php echo($id);?>" title="<?php echo($key);?>">
 							
-						if ( ! $display_name )
-							$display_name = $key;
+							<input name="<?php echo($id);?>" type="checkbox" id="<?php echo($id);?>" value="1" <?php checked('1', $val);?> />
+							
+							<?php 
+							if ( TERM_SCOPE_RS == $scope ) {
+								if ( $tx = get_taxonomy( $key ) )
+									$display_name = $tx->labels->name;
+								else
+									$display_name = '';
+							} else {
+								if ( $type_obj = get_post_type_object( $key ) )
+									$display_name = $type_obj->labels->name;
+								else
+									$display_name = '';
+							}
 								
-						echo $display_name;
-
-						echo ('</label></div>');
+							if ( ! $display_name )
+								$display_name = $key;
+									
+							echo $display_name;
+	
+							echo ('</label></div>');
+	
+						endif;  // displaying checkbox UI
+						
 					} // end foreach src_otype
 				} // endif default option isset
 				

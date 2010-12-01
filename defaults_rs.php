@@ -46,7 +46,7 @@ function scoper_default_options() {
 		'strip_private_caption' => 0,
 		'display_hints' => 1,
 		'hide_non_editor_admin_divs' => 1,
-		'role_admin_blogwide_editor_only' => 0,
+		'role_admin_blogwide_editor_only' => 1,
 		'feed_link_http_auth' => 0,
 		'rss_private_feed_mode' => 'title_only',
 		'rss_nonprivate_feed_mode' => 'full_content',

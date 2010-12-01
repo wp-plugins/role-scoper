@@ -533,7 +533,7 @@ function cr_post_role_defs() {
 		if ( is_admin() )
 			$arr["rs_private_{$name}_reader"]->other_scopes_check_role = array( 'private' => "rs_private_{$name}_reader", '' => "rs_{$name}_reader" );
 	}
-
+	
 	return $arr;
 }
 

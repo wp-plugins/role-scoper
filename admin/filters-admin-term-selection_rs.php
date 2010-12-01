@@ -20,7 +20,7 @@
 
 		if ( ! isset($src->statuses) || (count($src->statuses) < 2) )
 			return $selected_terms;
-		
+			
 		if ( ! $object_id )	
 			$object_id = scoper_get_object_id( $src->name );
 		
@@ -34,7 +34,7 @@
 						$status = $scoper->data_sources->get_from_db('status', $src, $object_id);
 			}
 		}
-			
+
 		if ( ! $object_type ) {			
 			if ( ! $object_type = cr_find_object_type( $src->name, $object_id ) ) {
 				if ( defined( 'XMLRPC_REQUEST' ) )

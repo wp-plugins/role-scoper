@@ -360,10 +360,10 @@ class CR_Roles extends AGP_Config_Items {
 				// data source and object type matching only apply to RS roles, which always have a single data source and object type defined
 				if ( $src_name && ! in_array( $this->members[$role_handle]->src_name, (array) $src_name ) )
 					continue;
-				
+					
 				// the role qualifies unless its object type is a mismatch
 				if ( $object_type && ! in_array( $this->members[$role_handle]->object_type, (array) $object_type ) )
-					continue;
+					continue;	
 			}
 			
 			$good_roles[$role_handle] = 1;

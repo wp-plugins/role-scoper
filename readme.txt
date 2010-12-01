@@ -106,6 +106,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = 1.3.12-dev =
 * BugFix : Category Manager restrictions were not applied for WP Editors
+* BugFix : "Navigation Menus" checkbox displayed inappropriate in Roles > Options > Realm > Taxonomy Usage
+* Change : Default to requiring site-wide Editor or Administrator role for role/restriction assignment
 
 
 = 1.3.11 - 26 Nov 2010 =

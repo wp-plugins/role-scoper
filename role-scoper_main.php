@@ -710,8 +710,8 @@ class Scoper
 		extract($args);
 
 		if ( ! $qualifying_roles )  // calling function might save a little work or limit to a subset of qualifying roles
-			$qualifying_roles = $this->role_defs->qualify_roles( $reqd_caps, 'rs', $taxonomy );
-	
+			$qualifying_roles = $this->role_defs->qualify_roles( $reqd_caps );
+			
 		if ( ! $this->taxonomies->is_member($taxonomy) )
 			return array( '' => array() );
 		

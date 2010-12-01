@@ -199,10 +199,12 @@ class QueryInterceptor_RS
 				$GLOBALS['scoper_status']->querying_db = false;  // re-enable hardway-admin filtering
 				return $request;
 			}
-				
+			
 			$return_id_type = ( strpos( $term_col, 'term_taxonomy_id' ) ) ? COL_TAXONOMY_ID_RS : COL_ID_RS;
 
-			if ( $ids = $this->scoper->qualify_terms( $reqd_caps_by_otype[$taxonomies[0]], $taxonomies[0], '', compact('return_id_type') ) ) {	// returns term_id since COL_TAXONOMY_ID_RS is not passed as args['return_id_type']
+			$qualifying_roles = $this->scoper->role_defs->qualify_roles( $reqd_caps, 'rs', $taxonomies[0] );	// otherwise qualify_terms() will not filter out other taxonomy manager roles that also use manage_categories cap
+
+			if ( $ids = $this->scoper->qualify_terms( $reqd_caps_by_otype[$taxonomies[0]], $taxonomies[0], $qualifying_roles, compact('return_id_type') ) ) {	// returns term_id since COL_TAXONOMY_ID_RS is not passed as args['return_id_type']
 				$request = str_replace( "WHERE 1=1", "WHERE 1=1 AND $term_col IN ('" . implode( "','", $ids ) . "')", $request );
 			} else
 				$request = str_replace( "WHERE 1=1", "WHERE 1=2", $request );
