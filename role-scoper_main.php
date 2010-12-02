@@ -84,6 +84,14 @@ class Scoper
 			scoper_adjust_legacy_extension_cfg( $this->role_defs, $this->cap_defs );
 		}
 
+		add_action( 'set_current_user', array( &$this, 'credit_blogroles' ) );
+		
+		$this->credit_blogroles();
+			
+		do_action('config_loaded_rs');
+	}
+	
+	function credit_blogroles() {
 		// credit non-logged and "no role" users for any anonymous roles
 		global $current_user;
 		
@@ -96,8 +104,6 @@ class Scoper
 
 		if ( ! empty( $current_user ) && isset($current_user->assigned_blog_roles) )
 			$this->refresh_blogroles();
-
-		do_action('config_loaded_rs');
 	}
 	
 	function refresh_blogroles() {

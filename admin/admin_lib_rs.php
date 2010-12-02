@@ -40,8 +40,8 @@ class ScoperAdminLib {
 		if ( COL_ID_RS == $cols )
 			$results = scoper_get_col("SELECT user_id FROM $wpdb->user2role2object_rs WHERE scope = 'blog' AND role_type = '$role_type' AND role_name = '$role_name'");
 		else {
-			$query = "SELECT r.user_id as ID, u.display_name FROM $wpdb->user2role2object_rs AS r "
-					. " INNER JOIN $wpdb->users AS u ON r.user_id = u.ID"
+			$query = "SELECT u.* FROM $wpdb->users AS u "
+					. " INNER JOIN $wpdb->user2role2object_rs AS r ON r.user_id = u.ID"
 					. " WHERE r.scope = 'blog' AND r.role_type = '$role_type' AND r.role_name = '$role_name'";
 					
 			$results = scoper_get_results($query);
@@ -68,7 +68,7 @@ class ScoperAdminLib {
 			$cache_id = $group_id;
 			$cache = wpp_cache_get($cache_id, $cache_flag);
 			$ckey = md5( serialize($cols) . $maybe_metagroup );
-	
+
 			if ( isset($cache[$ckey]) )
 				return $cache[$ckey];
 		}
@@ -100,11 +100,14 @@ class ScoperAdminLib {
 			$results = scoper_get_results( $query );
 		}
 		
-		if ( ! $results && $maybe_metagroup ) {
-			$meta_id = scoper_get_var("SELECT group_meta_id FROM $wpdb->groups_rs WHERE $wpdb->groups_id_col IN ($group_in)");
-			if ( 0 === strpos($meta_id, 'wp_role_') ) {
-				$role_name = substr($meta_id, 8);
-				$results = ScoperAdminLib::get_blogrole_users($role_name, 'wp', $cols);
+		if ( $maybe_metagroup && ( is_array($group_id) || ! $results ) ) {
+			$meta_ids = scoper_get_col("SELECT group_meta_id FROM $wpdb->groups_rs WHERE $wpdb->groups_id_col IN ($group_in)");
+			foreach( $meta_ids as $meta_id ) {
+				if ( 0 === strpos($meta_id, 'wp_role_') ) {
+					$role_name = substr($meta_id, 8);
+					if ( $_results = ScoperAdminLib::get_blogrole_users($role_name, 'wp', $cols) )
+						$results = array_merge( $results, $_results );
+				}
 			}
 		}
 		

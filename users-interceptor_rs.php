@@ -274,6 +274,7 @@ class UsersInterceptor_RS
 				
 					// 'blog' argument forces inclusion of qualifying WP roles even if scoping with RS roles 
 					// (will later strip out non-scopable roles for term role / object role clauses)
+
 					$args['roles'] = $this->scoper->role_defs->qualify_roles($reqd_caps_arg, '', '', array( 'all_wp_caps' => true ) );
 
 					if ( $args['roles'] || ! $src_name ) {
@@ -416,7 +417,7 @@ class UsersInterceptor_RS
 		
 		// data_source 1 clauses [AND] [data_source 2 clauses] [AND] ...
 		$rs_where = agp_implode(' ) AND ( ', $rs_where, ' ( ', ' ) ');	
-		
+
 		if ( $rs_where ) {
 			if ( false !== strpos($where, $rs_where) )
 				return $where;
@@ -520,7 +521,7 @@ class UsersInterceptor_RS
 			if ( $objscope_roles ) {
 				$contained_roles = array();
 				$roles_wp = $this->scoper->role_defs->filter( $roles, array( 'role_type' => 'wp' ) );
-				
+
 				foreach ( array_keys($roles_wp) as $role_handle ) {
 					// If scoping with RS roles, this will also have the effect of disqualifying a WP blog role if all of the qualifying RS roles it contains are objscoped.
 					$contained_roles[$role_handle] = $this->scoper->role_defs->get_contained_roles( $role_handle, false, 'rs' );
@@ -591,7 +592,7 @@ class UsersInterceptor_RS
 		if ( $use_blog_roles ) {
 			if ( $admin_roles = awp_administrator_roles() )
 				$roles = ( $roles ) ? array_merge($roles, $admin_roles) : $admin_roles;
-				
+
 			if ( $roles ) {
 				$role_types = array('rs', 'wp');
 				foreach ( $role_types as $role_type ) {
@@ -694,6 +695,7 @@ class UsersInterceptor_RS
 		
 		$qry = "$qry WHERE 1=1 $id_clause $where $orderby";
 			
+
 		$qry_key = $qry . serialize($args);
 		
 		// if we've already run this query before, return the result

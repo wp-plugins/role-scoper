@@ -66,7 +66,7 @@ function _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
 		return $caps;
 
 	if ( ! $adjust_for_user ) {
-		$is_post_author = true;
+		$is_post_author = false;
 
 	} elseif ( ! $post->post_author ) {
 		$is_post_author = true;	//No author set yet so treat current user as author for cap checks

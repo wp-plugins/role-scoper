@@ -85,6 +85,7 @@ class CapInterceptor_RS
 			//if ( ! empty($_REQUEST) )
 			//	rs_errlog( serialize($_REQUEST) );
 			//rs_errlog( '' );
+
 			//rs_errlog('flt_user_has_cap');
 			//rs_errlog(serialize($orig_reqd_caps));
 			//rs_errlog(serialize($args));

@@ -802,7 +802,7 @@ class QueryInterceptor_RS
 			rs_notice ( sprintf( 'Role Scoper Runtime Error (%1$s) - Missing argument(s): %2$s', 'objects_where_scope_clauses', implode( ", ", array_keys($missing) ) ) );  
 			return ' 1=2 ';	
 		}
-		
+
 		$defaults = array_merge( $defaults, $required );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -829,12 +829,16 @@ class QueryInterceptor_RS
 					foreach( (array) $object_type as $_object_type ) {
 						if ( $type_obj = get_post_type_object( $_object_type ) ) {
 							$strip_capreqs = array_merge( $strip_capreqs, array( $type_obj->cap->edit_published_posts, $type_obj->cap->edit_private_posts ) );
-							$reqd_caps []= $type_obj->cap->edit_posts;
+							
+							if ( array_intersect( $reqd_caps, $strip_capreqs ) )
+								$reqd_caps []= $type_obj->cap->edit_posts;
 						}
 					}
 
 					$reqd_caps = array_unique( array_diff($reqd_caps, $strip_capreqs) );
 				}
+				
+				$do_revision_clause = true;
 			}	
 		}
 		
@@ -925,8 +929,17 @@ class QueryInterceptor_RS
 							$args = array_merge($args, array( 'qualifying_roles' => $owner_roles ) );
 							$scope_temp = $this->objects_where_scope_clauses($src_name, $owner_reqd_caps, $args );
 
-							if ( ( $scope_temp != $where[$cap_name]['user'] ) && ! is_null($scope_temp) ) // TODO: why is null ever returned?
-								$where[$cap_name]['owner'] = '( ' . $scope_temp . " ) AND $src_table.{$src->cols->owner} = '$user->ID'";
+							if ( ( $scope_temp != $where[$cap_name]['user'] ) && ! is_null($scope_temp) ) { // TODO: why is null ever returned?
+								$parent_clause = '';
+
+								// enable authors to view / edit / approve revisions to their published posts
+								if ( ! empty( $do_revision_clause ) && ! defined( 'HIDE_REVISIONS_FROM_AUTHOR' ) ) {
+									if ( $owner_ids = scoper_get_col( "SELECT $src_table.{$src->cols->id} FROM $src_table WHERE $src_table.{$src->cols->type} = '$object_type' AND $src_table.{$src->cols->owner} = '$user->ID'" ) )
+										$parent_clause = "OR $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ('" . implode( "','", $owner_ids ) . "')"; 
+								}
+								
+								$where[$cap_name]['owner'] = '( ' . $scope_temp . " ) AND ( $src_table.{$src->cols->owner} = '$user->ID' $parent_clause )";
+							}
 						}
 					}
 				}

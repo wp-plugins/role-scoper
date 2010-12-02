@@ -108,6 +108,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Category Manager restrictions were not applied for WP Editors
 * BugFix : "Navigation Menus" checkbox displayed inappropriate in Roles > Options > Realm > Taxonomy Usage
 * Change : Default to requiring site-wide Editor or Administrator role for role/restriction assignment
+* Compat : Revisionary - Was causing duplicate checkboxes for Pending Revision Notification in some cases
+* Compat : Revisionary - Some qualifying users were not included in Pending Revision Notification checkboxes if internal cache was disabled
+* Compat : Revisionary - All authors to see and edit revisions submitted on their posts (unless HIDE_REVISIONS_FROM_AUTHOR is defined)
+* BugFix : Invalid filtering results after other template/plugin code manually changed current user via call to wp_set_current_user
 
 
 = 1.3.11 - 26 Nov 2010 =
