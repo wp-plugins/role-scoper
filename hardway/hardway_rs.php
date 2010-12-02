@@ -494,15 +494,15 @@ class ScoperHardway
 		// temporary WP bug workaround
 		//if ( $child_of && ( $parent < 0 ) && ( ! $any_top_items ) && $first_child_of_match ) {
 		if ( $child_of && ( $parent < 0 ) && $first_child_of_match ) {
-			$first_item = reset($items);
-			
-			if ( $child_of != $first_item->$col_parent ) {
-				// As of WP 2.8.4, Walker class with botch this array because it assumes that the first element in the page array is a child of the display root
-				// To work around, we must move first element with the desired child_of up to the top of the array
-				$_items = array( $items[$first_child_of_match] );
-				
-				unset( $items[$first_child_of_match] );
-				$items = array_merge( $_items, $items );
+			if ( $first_item = reset($items) ) {
+				if ( $child_of != $first_item->$col_parent ) {
+					// As of WP 2.8.4, Walker class will botch this array because it assumes that the first element in the page array is a child of the display root
+					// To work around, we must move first element with the desired child_of up to the top of the array
+					$_items = array( $items[$first_child_of_match] );
+					
+					unset( $items[$first_child_of_match] );
+					$items = array_merge( $_items, $items );
+				}
 			}
 		}
 
