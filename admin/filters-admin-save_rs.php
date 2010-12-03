@@ -448,7 +448,12 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			$args = array();
 			$args['alternate_reqd_caps'][0] = array("create_child_{$post_type}s");
 
-			$qry_parents = "SELECT ID FROM $wpdb->posts WHERE post_type = '$post_type'";
+			if ( $descendant_ids = scoper_get_page_descendant_ids( $_POST['post_ID'] ) )
+				$exclusion_clause = "AND ID NOT IN('" . implode( "','", $descendant_ids ) . "')";
+			else
+				$exclusion_clause = '';
+			
+			$qry_parents = "SELECT ID FROM $wpdb->posts WHERE post_type = '$post_type' $exclusion_clause";
 			$qry_parents = apply_filters('objects_request_rs', $qry_parents, 'post', $post_type, $args);
 			$valid_parents = scoper_get_col($qry_parents);
 
@@ -459,6 +464,22 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		}
 			
 		return $parent_id;
+	}
+	
+	function scoper_get_page_descendant_ids($page_id, $pages = '' ) {
+		if ( empty( $pages ) )
+			$pages = scoper_get_results( "SELECT ID, post_parent FROM $wpdb->posts WHERE post_parent > 0 AND post_type NOT IN ( 'revision', 'attachment' )" );	
+
+		$descendant_ids = array();
+		foreach ( (array) $pages as $page ) {
+			if ( $page->post_parent == $page_id ) {
+				$descendant_ids[] = $page->ID;
+				if ( $children = get_page_children($page->ID, $pages) )
+					$descendant_ids = array_merge($descendant_ids, $children);
+			}
+		}
+		
+		return $descendant_ids;
 	}
 	
 	

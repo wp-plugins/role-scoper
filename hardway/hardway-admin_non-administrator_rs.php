@@ -323,7 +323,7 @@ class ScoperAdminHardway_Ltd {
 	
 			$object_type = ( 'edit.php' == $pagenow ) ? cr_find_post_type() : '';
 			$query = apply_filters( 'objects_request_rs', $query, 'post', $object_type, $args );
-
+			
 			// pre-execute the comments listing query and buffer the listed IDs for more efficient user_has_cap calls
 			if ( strpos( $query, "* FROM $comments") && empty($scoper->listed_ids['post']) ) {
 				if ( $results = scoper_get_results($query) ) {
@@ -412,8 +412,9 @@ class ScoperAdminHardway_Ltd {
 					$attached_clause = ( $admin_others_attached || $can_edit_others_blogwide ) ? '' : "AND $wpdb->posts.post_author = '{$current_user->ID}'";
 	
 					$parent_query = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1";
+
 					$parent_query = apply_filters('objects_request_rs', $parent_query, 'post', array('post', 'page') );
-	
+
 					$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) $attached_clause ) ) AND ";
 					
 					$query = substr( $query, 0, $where_pos + strlen('WHERE ') ) . $where_insert . substr($query, $where_pos + strlen('WHERE ') );
@@ -428,7 +429,6 @@ class ScoperAdminHardway_Ltd {
 		//SELECT * , IF (DATE_ADD(link_updated, INTERVAL 120 MINUTE) >= NOW(), 1,0) as recently_updated FROM wp_links WHERE 1=1 ORDER BY link_name ASC
 		if ( ( strpos($query, "FROM $links WHERE") || strpos($query, "FROM $links  WHERE") ) && strpos($query, "ELECT ") ) {
 			$query = apply_filters('objects_request_rs', $query, 'link', 'link');
-
 			return $query;
 		}
 		

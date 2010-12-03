@@ -126,8 +126,15 @@ class ScoperHardway
 				if ( $status_obj->public || $status_obj->private )
 					return array();
 			}
-		}
 			
+			if ( ! empty( $post ) && ( $post_type == $post->post_type ) ) {
+				if ( $post->post_parent );
+					$append_page = get_post( $post->post_parent );
+
+				$exclude_tree = $post->ID;
+			}
+		}
+		
 		//$scoper->last_get_pages_args = $r; // don't copy entire args array unless it proves necessary
 		$scoper->last_get_pages_depth = $depth;
 		$scoper->last_get_pages_suppress_filters = $suppress_filters;
@@ -346,7 +353,7 @@ class ScoperHardway
 		}
 		// === END Role Scoper MODIFICATION ===
 		// ====================================
-		
+
 		if ( ! empty($exclude_tree) ) {
 			$exclude = array();
 	
@@ -356,12 +363,16 @@ class ScoperHardway
 			foreach ( $children as $child )
 				$excludes[] = $child->ID;
 			$excludes[] = $exclude;
+
 			$total = count($pages);
 			for ( $i = 0; $i < $total; $i++ ) {
 				if ( in_array($pages[$i]->ID, $excludes) )
 					unset($pages[$i]);
 			}
 		}
+		
+		if ( ! empty( $append_page ) )
+			$pages []= $append_page;
 		
 		// re-index the array, just in case anyone cares
         $pages = array_values($pages);

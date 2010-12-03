@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.11
+Stable Tag: 1.3.12
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -104,14 +104,15 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.12-dev =
+= 1.3.12 - 3 Dec 2010 =
+* BugFix : Page Parent automatically changed (possibly to an invalid selection) when a page is edited by a limited user who cannot fully edit current parent
 * BugFix : Category Manager restrictions were not applied for WP Editors
-* BugFix : "Navigation Menus" checkbox displayed inappropriate in Roles > Options > Realm > Taxonomy Usage
+* BugFix : "Navigation Menus" checkbox displayed inappropriately in Roles > Options > Realm > Taxonomy Usage
+* BugFix : Invalid filtering results after other template/plugin code manually changed current user via call to wp_set_current_user
 * Change : Default to requiring site-wide Editor or Administrator role for role/restriction assignment
 * Compat : Revisionary - Was causing duplicate checkboxes for Pending Revision Notification in some cases
 * Compat : Revisionary - Some qualifying users were not included in Pending Revision Notification checkboxes if internal cache was disabled
 * Compat : Revisionary - All authors to see and edit revisions submitted on their posts (unless HIDE_REVISIONS_FROM_AUTHOR is defined)
-* BugFix : Invalid filtering results after other template/plugin code manually changed current user via call to wp_set_current_user
 
 
 = 1.3.11 - 26 Nov 2010 =
