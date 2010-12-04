@@ -357,6 +357,8 @@ class Scoper_Submittee {
 		// synchronize WP roles as requested
 		if ( ! empty( $_POST['sync_wp_roles'] ) ) {
 			foreach ( $_POST['sync_wp_roles'] as $sync_request ) {
+				$scoper->log_cap_usage( $scoper->role_defs, $scoper->cap_defs );
+				
 				$sync_handles = explode( ':', $sync_request );
 				$rs_role_handle = $sync_handles[0];
 				$wp_role_handle = $sync_handles[1];
@@ -366,7 +368,7 @@ class Scoper_Submittee {
 				// only remove caps which are defined for this RS role's data source and object type
 				$role_attributes = $scoper->role_defs->get_role_attributes( $rs_role_handle );
 				$otype_caps = $scoper->cap_defs->get_matching( $role_attributes->src_name, $role_attributes->object_type, '', STATUS_ANY_RS );
-				
+
 				// make the roledef change for all blogs if RS role def is sitewide
 				if ( IS_MU_RS && $sitewide ) {
 					global $wpdb, $blog_id;

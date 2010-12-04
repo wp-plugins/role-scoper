@@ -79,7 +79,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 		// special cases to take advantage of cached post/link
 		if ( ('post' == $src_name) ) {
 			if ( $cols && ! strpos( $cols, ',' ) )
-				return get_post_field( $cols, $object_id, 'db' );
+				return get_post_field( $cols, $object_id, 'raw' );
 			else
 				return get_post($object_id);
 				

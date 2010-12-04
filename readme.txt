@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.12
+Stable Tag: 1.3.13
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.13 - 3 Dec 2010 =
+* BugFix : Activation of "Sync WP Editor" option in RS Role Defs caused capabilites of other post types to be stripped out of WP Editor role definition 
+* Compat : Revisionary - If another plugin (Events Manager) triggers a secondary edit_posts cap check when a Revisor attempts to edit another user's unpublished post, a pending revision is generated instead of just updating the unpublished post
+
 
 = 1.3.12 - 3 Dec 2010 =
 * BugFix : Page Parent automatically changed (possibly to an invalid selection) when a page is edited by a limited user who cannot fully edit current parent

@@ -128,7 +128,7 @@ function scoper_version_updated( $prev_version ) {
 		}
 	} while ( 0 ); // end single-pass version check loop
 }
-	
+
 
 function scoper_sync_wproles($user_ids = '', $role_name_arg = '', $blog_id_arg = '' ) {
 	global $wpdb, $wp_roles;
