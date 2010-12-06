@@ -119,7 +119,7 @@ class ScoperAdminBulkParent {
 		if ( ! empty($src->cols->type) && ! empty($otype->name) ) {
 			$otype_clause = "AND {$src->cols->type} = '$otype->name'";
 			if ( 'post' == $src->name )
-				$otype_clause .= " AND {$src->cols->status} != 'auto-draft'";
+				$otype_clause .= " AND {$src->cols->status} NOT IN ('auto-draft', 'trash')";
 		} else
 			$otype_clause = '';
 		

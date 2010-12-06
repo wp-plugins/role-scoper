@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable Tag: 1.3.13
+Stable Tag: 1.3.14
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.14 - 6 Dec 2010 =
+* BugFix : Page Associate role assignments failed to make pages available for selection as Page Parent 
+* BugFix : Trashed posts were included in Post/Page Restrictions bulk editor
+* Change : Include Role Scoper help links within wp-admin for Users, Media and RS Options pages
+
 
 = 1.3.13 - 3 Dec 2010 =
 * BugFix : Activation of "Sync WP Editor" option in RS Role Defs caused capabilites of other post types to be stripped out of WP Editor role definition 

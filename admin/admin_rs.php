@@ -182,9 +182,9 @@ class ScoperAdmin
 				echo "\n" . '<script type="text/javascript">' . $js_params . '</script>';
 				echo "\n" . "<script type='text/javascript' src='" . SCOPER_URLPATH . "/admin/rs-objrole-cbox-maint.js'></script>";
 			}
-
-			add_filter( 'contextual_help_list', array(&$this, 'flt_contextual_help_list'), 10, 2 );
 		}
+		
+		add_filter( 'contextual_help_list', array(&$this, 'flt_contextual_help_list'), 10, 2 );
 		
 		if ( ( 0 === strpos( $plugin_page_cr, 'rs-' ) ) && strpos( $plugin_page_cr, 'roles' ) ) {
 			// add Ajax goodies we need for role duration/content date limit editing Bulk Role Admin
@@ -238,7 +238,7 @@ class ScoperAdmin
 					$link_section = str_replace( '_t', '', $link_section );	
 				}
 					
-		} elseif ( ('post' == $screen) || ('page' == $screen) ) {
+		} elseif ( in_array( $screen, array( 'post', 'page', 'upload', 'users' ) ) ) {
 			$link_section = $screen;
 		}
 

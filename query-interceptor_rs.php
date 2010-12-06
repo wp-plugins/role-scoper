@@ -895,7 +895,7 @@ class QueryInterceptor_RS
 				foreach ( $alternate_reqd_caps as $alternate_capset ) {
 					foreach ( $alternate_capset as $alternate_reqd_caps ) {
 						if ( $alternate_roles = $this->scoper->role_defs->qualify_roles($alternate_reqd_caps) )
-							$qualifying_roles = array_merge($qualifying_roles, $alternate_roles);
+							$qualifying_roles = array_merge($qualifying_roles, $alternate_roles);				
 					}	
 				}
 			}
@@ -906,9 +906,13 @@ class QueryInterceptor_RS
 			
 			if ( $owner_reqd_caps = $this->scoper->cap_defs->get_base_caps($reqd_caps_arg) ) {
 				$owner_roles = ( $require_full_object_role ) ? $qualifying_roles : $this->scoper->role_defs->qualify_roles($owner_reqd_caps, '', $object_type);
+				
+				if ( ! empty($alternate_roles ) )
+					$owner_roles = array_merge( $owner_roles, $alternate_roles );				
+				
 				$qualifying_object_roles = $this->scoper->confirm_object_scope( $owner_roles );		// have to pass this in for 'user' call because qualifying_roles may not include a qualifying object role (i.e. Page Contributor object role assignment)
 			}
-
+				
 			if ( $qualifying_roles || ! empty($qualifying_object_roles) ) {
 				//d_echo( "regular objects_where_scope_clauses for " . serialize( $reqd_caps ) );
 				$args = array_merge( $args, compact( 'qualifying_roles', 'qualifying_object_roles' ) );

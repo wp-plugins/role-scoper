@@ -307,7 +307,7 @@ class ScoperHardway
 			$query = apply_filters('objects_request_rs', $query, 'post', $post_type, $_args );
 
 			// Execute the filtered query
-			$pages = scoper_get_results($query);
+			$pages = scoper_get_results($query);	
 		}
 
 		if ( empty($pages) )
@@ -371,8 +371,18 @@ class ScoperHardway
 			}
 		}
 		
-		if ( ! empty( $append_page ) )
-			$pages []= $append_page;
+		if ( ! empty( $append_page ) && ! empty( $pages ) ) {
+			$found = false;
+			foreach( array_keys($pages) as $key ) { 
+				if ( $post->post_parent == $pages[$key]->ID ) {
+					$found = true;
+					break;	
+				}
+			}
+			
+			if ( empty($found) )
+				$pages []= $append_page;
+		}
 		
 		// re-index the array, just in case anyone cares
         $pages = array_values($pages);
