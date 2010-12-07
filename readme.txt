@@ -104,6 +104,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.15-dev =
+* BugFix : Spam-tagged comments were linked in Recent Comments widget
+
+
 = 1.3.14 - 6 Dec 2010 =
 * BugFix : Page Associate role assignments failed to make pages available for selection as Page Parent 
 * BugFix : Trashed posts were included in Post/Page Restrictions bulk editor
