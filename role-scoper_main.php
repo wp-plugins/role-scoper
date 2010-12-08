@@ -229,7 +229,7 @@ class Scoper
 
 		// ===== Special early exit if this is a plugin install script
 		if ( is_admin() ) {
-			if ( in_array( $GLOBALS['pagenow'], array( 'plugins.php', 'plugin-install.php', 'plugin-editor.php' ) ) ) {
+			if ( in_array( $GLOBALS['pagenow'], array( 'plugin-install.php', 'plugin-editor.php' ) ) ) {
 				// flush RS cache on activation of any plugin, in case we cached results based on its presence / absence
 				if ( ( ! empty($_POST) ) || ( ! empty($_REQUEST['action']) ) ) {
 					if ( ! empty($_POST['networkwide']) || ( 'plugin-editor.php' == $GLOBALS['pagenow'] ) )
