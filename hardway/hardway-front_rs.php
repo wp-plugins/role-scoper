@@ -47,8 +47,6 @@ class ScoperHardwayFront
 				}
 				
 				if ( strpos($query, $wpdb->comments) ) {
-					//d_echo ("<br />$query<br />");
-					
 					$query = str_replace( "post_status = 'publish'", "$wpdb->posts.post_status = 'publish'", $query );
 					
 					// theoretically, a slight performance enhancement if we can simplify the query to skip filtering of attachment comments
@@ -95,8 +93,6 @@ class ScoperHardwayFront
 						else
 							$query = str_replace( "WHERE ", "$join WHERE $where AND ", $query);
 					}
-					
-					//d_echo ("<br />$query<br />");
 				}
 			}
 		}
