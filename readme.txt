@@ -104,7 +104,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.16 - 8 Dec 2010
+= 1.3.16 - 8 Dec 2010 =
 * BugFix : Roles, Restrictions menus not visible on Plugins page
 
 
