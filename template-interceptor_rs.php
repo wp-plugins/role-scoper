@@ -138,7 +138,9 @@ class TemplateInterceptor_RS
 }
 
 function is_teaser_rs( $id = '' , $src_name = 'post' ) {
-	if ( empty($this->scoper) || ( is_home() && is_single() ) )
+	global $scoper;
+	
+	if ( empty($scoper) || ( is_home() && is_single() ) )
 		return false;
 
 	if ( ! $id && ( 'post' == $src_name ) ) {
@@ -150,13 +152,14 @@ function is_teaser_rs( $id = '' , $src_name = 'post' ) {
 		$id = $post->ID;
 	}
 	
-	global $agp_teaser_ids;
-	return ( isset( $agp_teaser_ids[$src_name][$id] ) );
+	return ( isset( $scoper->teaser_ids[$src_name][$id] ) );
 }
 
 
 function is_restricted_rs( $id = '', $src_name = 'post', $op_type = 'read', $scope_criteria = '' ) {
-	if ( empty($this->scoper) || ( is_home() && is_single() && ! $id ) )
+	global $scoper;
+	
+	if ( empty($scoper) || ( is_home() && is_single() && ! $id ) )
 		return false;
 		
 	if ( ( 'post' == $src_name ) && ! $id ) {
@@ -168,7 +171,7 @@ function is_restricted_rs( $id = '', $src_name = 'post', $op_type = 'read', $sco
 		$id = $post->ID;
 	}
 
-	$listed_ids = ( is_single() || is_page() || empty($this->scoper->listed_ids[$src_name]) ) ? array( $id => true ) : array();
+	$listed_ids = ( is_single() || is_page() || empty($scoper->listed_ids[$src_name]) ) ? array( $id => true ) : array();
 	
 	global $scoper_role_usage;
 

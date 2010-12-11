@@ -23,11 +23,11 @@ class QueryInterceptorFront_NonAdmin_RS {
 	
 	// Strips comments from teased posts/pages
 	function flt_comments_results($results) {
-		global $agp_teaser_ids;
+		global $scoper;
 	
-		if ( $results && ! empty($agp_teaser_ids) ) {
+		if ( $results && ! empty($scoper->teaser_ids) ) {
 			foreach ( $results as $key => $row )
-				if ( isset($row->comment_post_ID) && isset($agp_teaser_ids['post'][$row->comment_post_ID]) )
+				if ( isset($row->comment_post_ID) && isset($scoper->teaser_ids['post'][$row->comment_post_ID]) )
 					unset( $results[$key] );
 		}
 		

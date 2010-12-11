@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.16
+Stable Tag: 1.3.17
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.17 - 11 Dec 2010 =
+* BugFix : Template functions is_teaser_rs() and is_restricted_rs() caused fatal error
+* BugFix : Comments on teased posts were included in Recent Comments widget
+
 
 = 1.3.16 - 8 Dec 2010 =
 * BugFix : Roles, Restrictions menus not visible on Plugins page
