@@ -58,7 +58,7 @@ switch ($mode) {
 	case "edit":
 		$id = $_REQUEST['id'];
 		
-		if( ! is_user_administrator_rs() && ! current_user_can('recommend_group_membership', $id) )
+		if( ! is_user_administrator_rs() && ! current_user_can('recommend_group_membership', $id) && ! current_user_can('manage_groups', $id) )
 			wp_die(__awp('Cheatin&#8217; uh?'));
 		
 		$group = ScoperAdminLib::get_group($id);
@@ -170,7 +170,7 @@ if ( ! $errorMessage && ( ('editSubmit' == $mode) || ('add' == $mode) || ('appro
 	// members
 	$current_members = array();
 	
-	if( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) ) {
+	if( scoper_get_option( 'group_ajax' ) ) {
 		$current_members['active'] = ScoperAdminLib::get_group_members($group->ID, COL_ID_RS);
 		UserGroups_tp::update_group_members_multi_status( $group->ID, $current_members );
 	} else {
@@ -194,23 +194,26 @@ if ( ! $errorMessage && ( ('editSubmit' == $mode) || ('add' == $mode) || ('appro
 	}
 	
 	if ( $can_manage_all_groups || current_user_can('manage_groups', $group->ID) ) {
-		// group managers
-		$users = ( isset($_POST['manager']) ) ? array_fill_keys( $_POST['manager'], 'entity' ) : array();
+		$role_assigner = init_role_assigner();
 		
-		if ( ! empty($_POST['manager_csv']) ) {
-			if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( 'manager_csv', 'user' ) ) {
-				foreach ( $csv_for_item as $id )
-					$users[$id] = 'entity';
+		if ( $can_manage_all_groups ) {
+			// group managers
+			$users = ( isset($_POST['manager']) ) ? array_fill_keys( $_POST['manager'], 'entity' ) : array();
+			
+			if ( ! empty($_POST['manager_csv']) ) {
+				if ( $csv_for_item = ScoperAdminLib::agent_ids_from_csv( 'manager_csv', 'user' ) ) {
+					foreach ( $csv_for_item as $id )
+						$users[$id] = 'entity';
+				}
 			}
+			
+			$role_arg = array( 'rs_group_manager' => $users );
+			
+			$args = array( 'implicit_removal' => true );
+			$role_assigner->assign_roles( OBJECT_SCOPE_RS, 'group', $group->ID, $role_arg, ROLE_BASIS_USER, $args );
 		}
 		
-		$role_arg = array( 'rs_group_manager' => $users );
-		
-		$role_assigner = init_role_assigner();
-		$args = array( 'implicit_removal' => true );
-		$role_assigner->assign_roles( OBJECT_SCOPE_RS, 'group', $group->ID, $role_arg, ROLE_BASIS_USER, $args );
-		
-		if( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) ) {
+		if ( scoper_get_option( 'group_ajax' ) ) {
 			// group moderators
 			$users = ( isset($_POST['moderator']) ) ? array_fill_keys( $_POST['moderator'], 'entity' ) : array();
 			
@@ -414,7 +417,9 @@ $group_id = ( ! empty($group) ) ? $group->ID : 0;
 $sitewide_groups = IS_MU_RS && scoper_get_site_option( 'mu_sitewide_groups' );
 $_args = ( $sitewide_groups ) ? array( 'force_all_users' => true ) : array();
 
-if ( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) ) {
+$all_users = $scoper->users_who_can('', COLS_ID_NAME_RS, '', '', $_args );  // need this for group managers checklist even if using Ajax UI for members
+
+if ( scoper_get_option( 'group_ajax' ) ) {
 	require_once( 'user_search_ui_rs.php' );
 
 	$arr_display_names = array();
@@ -427,19 +432,19 @@ if ( awp_ver( '2.8' ) && scoper_get_option( 'group_ajax' ) ) {
 	foreach ( $status_users as $key => $users )
 		foreach ( $users as $user )
 			$arr_display_names [$key][$user->ID]= $user->display_name;
-
+	
 	global $scoper_user_search;
+	
 	$scoper_user_search->output_html( $arr_display_names, 'users' );
+	
 } else {
-	$all_users = $scoper->users_who_can('', COLS_ID_NAME_RS, '', '', $_args );
-
 	UserGroups_tp::group_members_checklist( $group_id, 'member', $all_users );
 }
 ?>
 </div>
 
 <?php 
-if ( $can_manage_all_groups ):
+if ( $can_manage_all_groups || current_user_can('manage_groups', $group->ID) ):
 
 	// blog_path will be used in caption for Group Administrator and Group Moderator listing
 	if ( $sitewide_groups ) {
@@ -457,6 +462,7 @@ if ( $can_manage_all_groups ):
 	}
 ?>
 
+<?php if ( $can_manage_all_groups ) : ?>
 <div style="clear:both;"></div>
 <div class="rs-group_admins">
 <h3><?php 
@@ -470,8 +476,10 @@ else
 UserGroups_tp::group_members_checklist( $group_id, 'manager', $all_users );
 ?>
 </div>
+<?php endif; ?>
 
 
+<?php if ( scoper_get_option( 'group_ajax' ) ) : ?>
 <div style="clear:both;"></div>
 <div class="rs-group_admins">
 <h3><?php 
@@ -485,6 +493,7 @@ else
 	UserGroups_tp::group_members_checklist( $group_id, 'moderator', $all_users );
 ?>
 </div>
+<?php endif; ?>
 
 
 <div style="clear:both;"></div>

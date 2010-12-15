@@ -22,12 +22,7 @@ class ScoperUserSearch {
 		$recommend = __( 'Recommend&nbsp;^', 'scoper' );
 		
 		if ( 'groups' == $agent_type ) {
-			if ( ! empty( $_GET['page'] ) && ( 'rs-groups' == $_GET['page'] ) && ! empty( $_GET['id'] ) )
-				$group_id = $_GET['id'];
-			else
-				$group_id = 0;
-	
-			$can_admin = is_content_administrator_rs() || current_user_can( 'manage_groups', $group_id );
+			$can_admin = is_user_administrator_rs();
 		
 			if ( $can_admin ) {
 				$this->status []= 'active';
@@ -43,7 +38,7 @@ class ScoperUserSearch {
 				$this->approval_caption []= '';
 			}
 
-			if ( scoper_get_option( 'group_recommendations' ) && ( $can_admin || ( $can_moderate = current_user_can( 'recommend_group_membership', $group_id ) ) ) ) {
+			if ( scoper_get_option( 'group_recommendations' ) && ( $can_admin || ( $can_moderate = current_user_can( 'recommend_group_membership' ) ) ) ) {
 				$this->status []= 'recommended';
 				$this->list_ids [] = 'recommended_agents_rs';
 				$this->removal_ids [] = 'unrecommended_agents_rs';
@@ -63,7 +58,7 @@ class ScoperUserSearch {
 				}	
 			}
 
-			if ( scoper_get_option( 'group_requests' ) && ( $can_admin || current_user_can( 'request_group_membership', $group_id ) ) ) {
+			if ( scoper_get_option( 'group_requests' ) && ( $can_admin || current_user_can( 'request_group_membership' ) ) ) {
 				$this->status []= 'requested';
 				$this->list_ids [] = 'requested_agents_rs';
 				$this->removal_ids [] = 'unrequested_agents_rs';
@@ -86,8 +81,13 @@ class ScoperUserSearch {
 				}
 			}
 		} else {
-			$can_admin = is_user_administrator_rs();
-		
+			if ( ! empty( $_GET['page'] ) && ( 'rs-groups' == $_GET['page'] ) && ! empty( $_GET['id'] ) )
+				$group_id = $_GET['id'];
+			else
+				$group_id = 0;
+	
+			$can_admin = is_user_administrator_rs() || current_user_can( 'manage_groups', $group_id );
+			
 			if ( $can_admin ) {
 				$this->status []= 'active';
 				$this->list_ids [] = 'current_agents_rs';

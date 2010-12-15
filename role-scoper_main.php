@@ -148,12 +148,16 @@ class Scoper
 	
 	function log_cap_usage( &$role_defs, &$cap_defs ) {
 		foreach( $role_defs->members as $role_handle => $role_def ) {
-			if ( 'post' == $role_def->src_name ) {	// TODO: also for other data sources (probably not necessary as they typically have a single object type)
-				foreach( array_keys( $role_defs->role_caps[$role_handle] ) as $cap_name ) {
-					if ( empty( $cap_defs->members[$cap_name]->object_types ) || ! in_array( $role_def->object_type, $cap_defs->members[$cap_name]->object_types ) )
+			
+			foreach( array_keys( $role_defs->role_caps[$role_handle] ) as $cap_name ) {
+				if ( empty( $cap_defs->members[$cap_name]->object_types ) || ! in_array( $role_def->object_type, $cap_defs->members[$cap_name]->object_types ) ) {
+					if ( 'post' == $role_def->src_name )
 						$cap_defs->members[$cap_name]->object_types[] = $role_def->object_type;
+						
+					elseif ( in_array( $role_def->src_name, array( 'link', 'group' ) ) )	// TODO: other data sources?
+						$cap_defs->members[$cap_name]->object_types[] = $role_def->src_name;
 				}
-			}	
+			}
 		}	
 	}
 	

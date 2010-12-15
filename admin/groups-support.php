@@ -281,17 +281,15 @@ class UserGroups_tp {
 			
 			$admin_ids = array();
 		} else {
-			$reqd_cap = ( 'moderator' == $user_class ) ? 'recommend_group_membership' : 'manage_groups';
+			$group_role_defs = ( 'moderator' == $user_class ) ? array( 'rs_group_moderator' ) : array( 'rs_group_manager' );
 			
 			if ( $group_id ) {
-				$group_role_defs = $scoper->role_defs->qualify_roles( $reqd_cap );
-
 				require_once('role_assignment_lib_rs.php');
-				$current_roles = ScoperRoleAssignments::organize_assigned_roles(OBJECT_SCOPE_RS, 'group', $group_id, array_keys($group_role_defs), ROLE_BASIS_USER);
+				$current_roles = ScoperRoleAssignments::organize_assigned_roles(OBJECT_SCOPE_RS, 'group', $group_id, $group_role_defs, ROLE_BASIS_USER);
 
 				$current_roles = agp_array_flatten($current_roles, false);
-				
-				$current_ids = ( isset($current_roles['assigned']) ) ? array_keys($current_roles['assigned']) : array();
+
+				$current_ids = ( isset($current_roles['assigned']) ) ? $current_roles['assigned'] : array();
 			} else
 				$current_ids = array();
 			
@@ -327,7 +325,7 @@ class UserGroups_tp {
 				$eligible_ids = '';
 				
 		} // endif user class is not "member" 
-
+		
 		$css_id = $user_class;
 		$args = array( 'eligible_ids' => $eligible_ids, 'via_other_scope_ids' => $admin_ids, 'suppress_extra_prefix' => true );
  		require_once('agents_checklist_rs.php');

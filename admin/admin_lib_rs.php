@@ -227,7 +227,7 @@ class ScoperAdminLib {
 			else
 				$query = "SELECT DISTINCT $wpdb->groups_id_col AS ID, $wpdb->groups_name_col AS display_name, $wpdb->groups_descript_col as descript, $wpdb->groups_meta_id_col as meta_id"
 						. " FROM $wpdb->groups_rs $join $_where ORDER BY $wpdb->groups_name_col";
-			
+					
 			if ( COL_ID_RS == $cols )
 				$cache[$ckey] = scoper_get_col($query);
 			else

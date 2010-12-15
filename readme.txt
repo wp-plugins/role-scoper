@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.18-dev =
+* BugFix : Users designated as Group Administrator for a specific group could not edit the group
+* BugFix : Currently assigned Group Administrators did were not indicated by checkbox
+
+
 = 1.3.17 - 11 Dec 2010 =
 * BugFix : Template functions is_teaser_rs() and is_restricted_rs() caused fatal error
 * BugFix : Comments on teased posts were included in Recent Comments widget

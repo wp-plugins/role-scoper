@@ -189,7 +189,7 @@ class ScoperRoleAssigner
 		
 		if ( ! $is_administrator )
 			$user_has_role = $this->_validate_assigner_roles($scope, $src_or_tx_name, $item_id, $roles);
-		
+			
 		foreach ( $roles as $role_handle => $agents ) {
 			if ( ! $is_administrator && ! $user_has_role[$role_handle] )
 				continue;

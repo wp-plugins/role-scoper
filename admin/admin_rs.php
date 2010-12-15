@@ -380,7 +380,7 @@ jQuery(document).ready( function($) {
 		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
 
 		// Users Tab
-		if ( DEFINE_GROUPS_RS && $can_manage_groups ) {
+		if ( DEFINE_GROUPS_RS ) {
 			$cap_req = ( $can_manage_groups ) ? 'read' : 'manage_groups';
 			
 			$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');

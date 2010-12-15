@@ -155,7 +155,7 @@ class ScoperAgentsChecklist {
 
 		// determine whether to show caption, show/hide checkbox and filter textbox
 		$any_display_filtering = ($agent_count[CURRENT_ITEMS_RS] > $filter_threshold) || ($agent_count[ELIGIBLE_ITEMS_RS] > $filter_threshold);
-		
+
 		if ( $agent_count[$agents_subset] > $filter_threshold ) {
 			if ( ROLE_BASIS_GROUPS == $role_basis )
 				$caption = ( CURRENT_ITEMS_RS == $agents_subset ) ? __('show current groups (%d)', 'scoper') : __('show eligible groups (%d)', 'scoper');
