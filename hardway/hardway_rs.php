@@ -265,7 +265,7 @@ class ScoperHardway
 
 		// WP core does not include private pages in query.  Include private statuses in anticipation of user-specific filtering		
 		if ( $post_status && ( ( 'publish' != $post_status ) || ( $is_front && ! $frontend_list_private ) ) )
-			$where_status = $wpdb->prepare( "AND post_status = '%s'", $post_status );	
+			$where_status = $wpdb->prepare( "post_status = '%s'", $post_status );	
 		else {
 			// since we will be applying status clauses based on content-specific roles and restrictions, only a sanity check safeguard is needed when post_status is unspecified or defaulted to "publish"			
 			$safeguard_statuses = array();
@@ -273,10 +273,10 @@ class ScoperHardway
 				if ( ( ! $is_front ) || $status_obj->private || $status_obj->public )
 					$safeguard_statuses []= $status_name;
 
-			$where_status = "AND post_status IN ('" . implode("','", $safeguard_statuses ) . "')";
+			$where_status = "post_status IN ('" . implode("','", $safeguard_statuses ) . "')";
 		}
 			
-		$query = "SELECT $fields FROM $wpdb->posts $join WHERE 1=1 AND ($where_post_type $where_status) $where $author_query ORDER BY $sort_column $sort_order";
+		$query = "SELECT $fields FROM $wpdb->posts $join WHERE 1=1 AND $where_post_type AND ( $where_status $where $author_query ) ORDER BY $sort_column $sort_order";
 
 		if ( !empty($number) )
 			$query .= ' LIMIT ' . $offset . ',' . $number;

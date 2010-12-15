@@ -747,7 +747,7 @@ class QueryInterceptor_RS
 			} else
 				$status_clause = '1=2';
 
-			if ( $status_clause ) {
+			if ( $status_clause ) {	
 				if ( $col_status && $status_name && strpos($where, $basic_status_clause[$status_name]) ) {
 					// Replace existing status clause with our scoped equivalent
 					$where = str_replace($basic_status_clause[$status_name], "$status_clause", $where);
