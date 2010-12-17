@@ -425,8 +425,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	// Enforce any page parent filtering which may have been dictated by the flt_post_status filter, which executes earlier.
 	function scoper_flt_page_parent ($parent_id) {
-		if ( $parent_id == $_POST['post_ID'] )	// normal revision save
-			return $parent_id;
+		if ( ! empty( $_POST['post_ID'] ) )
+			if ( $parent_id == $_POST['post_ID'] )	// normal revision save
+				return $parent_id;
 		
 		if ( defined( 'RVY_VERSION' ) ) {
 			global $revisionary;

@@ -173,7 +173,7 @@ class QueryInterceptor_RS
 		
 		// prevent hardway-admin filtering of any queries which may be triggered by this filter
 		$GLOBALS['scoper_status']->querying_db = true;
-		
+
 		// Note that term management capabilities (i.e. "manage_categories") are implemented via Term Roles on the Posts data source, with taxonomy as the object type
 		//
 		// if this is a term management query, no need to involve objects query filtering
@@ -216,7 +216,7 @@ class QueryInterceptor_RS
 			$args['skip_owner_clause'] = true;
 			$args['terms_reqd_caps'] = $reqd_caps_by_otype;
 			$args['taxonomies'] = $taxonomies;
-				
+			
 			$pos_where = 0;
 			$pos_suffix = 0;
 			$where = agp_parse_after_WHERE_11( $request, $pos_where, $pos_suffix );  // any existing where, orderby or group by clauses remain in $where

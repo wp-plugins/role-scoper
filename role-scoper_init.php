@@ -75,8 +75,10 @@ function scoper_init() {
 	WP_Cap_Helper_CR::force_distinct_post_caps();
 	WP_Cap_Helper_CR::force_distinct_taxonomy_caps();
 	
-	if ( is_admin() )
+	if ( is_admin() ) {
+		require_once( 'admin/admin-init_rs.php' );	// TODO: why is the require statement up top not sufficient for NGG 1.7.2 uploader?
 		scoper_admin_init();	
+	}
 		
 	//log_mem_usage_rs( 'scoper_admin_init done' );
 		

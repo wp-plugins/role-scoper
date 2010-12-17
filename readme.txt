@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.18
+Stable Tag: 1.3.19
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.19 - 17 Dec 2010 =
+* Compat : NextGEN Gallery: fatal error on file upload attempt
+
 
 = 1.3.18 - 15 Dec 2010 =
 * BugFix : Users designated as Group Administrator for a specific group could not edit the group
