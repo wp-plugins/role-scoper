@@ -210,8 +210,8 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 		$tx = $scoper->taxonomies->get($src_or_tx_name);
 		$date_col_defined = $scoper->data_sources->member_property( $tx->object_source, 'cols', 'date' );
 	} else
-		$date_col_defined = true;
-	
+		$date_col_defined = true;			
+		
 	switch ($mode) {
 		case ROLE_ASSIGNMENT_RS:
 			$assign_for = $_POST['assign_for'];

@@ -189,7 +189,7 @@ class ScoperRoleAssigner
 		
 		if ( ! $is_administrator )
 			$user_has_role = $this->_validate_assigner_roles($scope, $src_or_tx_name, $item_id, $roles);
-			
+				
 		foreach ( $roles as $role_handle => $agents ) {
 			if ( ! $is_administrator && ! $user_has_role[$role_handle] )
 				continue;
@@ -556,7 +556,7 @@ class ScoperRoleAssigner
 		extract($args);
 		
 		global $wpdb;
-
+		
 		$is_administrator = is_administrator_rs($src_or_tx_name, 'user');
 		
 		$delete_reqs = array();
@@ -678,7 +678,7 @@ class ScoperRoleAssigner
 						}
 					}
 				}
-				
+
 				if ( $insert_restriction || $propagate_restriction )
 					$this->insert_role_restrictions($scope, $max_scope, $role_handle, $src_or_tx_name, $item_id, $insert_restriction, $propagate_restriction, $args );
 			} // end foreach roles
@@ -750,7 +750,9 @@ class ScoperRoleAssigner
 				if ( ! $tx = $this->scoper->taxonomies->get($src_or_tx_name) )
 					return;
 				
-				$src = $tx->source;
+				if ( ! $src = $this->scoper->data_sources->get($tx->source) )
+					return;
+
 			} elseif ( ! $src = $this->scoper->data_sources->get($src_or_tx_name) )
 				return;
 			
