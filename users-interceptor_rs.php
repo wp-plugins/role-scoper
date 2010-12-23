@@ -234,6 +234,10 @@ class UsersInterceptor_RS
 		$caps_by_otype = $this->scoper->cap_defs->organize_caps_by_otype($reqd_caps, true, $object_src_name, $object_type);
 
 		foreach ( $caps_by_otype as $src_name => $otypes ) {
+			
+			if ( $object_type )
+				$otypes = array_intersect_key( $otypes, array( $object_type => 1 ) );
+			
 			// Cap reqs that pertain to other data sources or have no data source association
 			// will only be satisfied by blog roles.
 			$args['use_term_roles'] = $use_term_roles && ( $src_name == $object_src_name );
@@ -363,7 +367,7 @@ class UsersInterceptor_RS
 											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'object' AND $alias.assign_for IN ('entity', 'both') AND $alias.src_or_tx_name = '$src_name' AND $alias.role_type = 'rs' AND $alias.role_name IN ($role_in) $duration_clause $id_clause";
 											break;
 										case TERM_SCOPE_RS:
-											$terms_clause = ( $object_id && $args['object_terms'][$key] ) ? "AND $alias.obj_or_term_id IN ('" . implode( "', '", $args['object_terms'][$taxonomy] ) . "')" : '';
+											$terms_clause = ( $object_id && $args['object_terms'][$key] ) ? "AND $alias.obj_or_term_id IN ('" . implode( "', '", $args['object_terms'][$key] ) . "')" : '';
 											$ot_where[$user_type][$role_basis][$scope][$key] = "$alias.scope = 'term' AND $alias.assign_for IN ('entity', 'both') AND $alias.src_or_tx_name = '$key' $terms_clause AND $alias.role_type = 'rs' AND $alias.role_name IN ($role_in) $duration_clause";
 											break;
 										case BLOG_SCOPE_RS:
@@ -434,7 +438,7 @@ class UsersInterceptor_RS
 			// if no valid role clauses were constructed, required caps are invalid; no users can do it
 			$where =  ' AND 1=2';
 		}
-
+		
 		return $where;
 	} // end function flt_users_where
 	
@@ -694,7 +698,7 @@ class UsersInterceptor_RS
 		$id_clause = ( $force_all_users ) ? '' : 'AND uro.user_id > 0';
 		
 		$qry = "$qry WHERE 1=1 $id_clause $where $orderby";
-			
+		
 
 		$qry_key = $qry . serialize($args);
 		

@@ -110,11 +110,10 @@ class ScoperRoleStrings {
 	
 	function get_abbrev( $role_handle, $context = '' ) {
 		if ( strpos( $role_handle, '_reader' ) ) {
-			// TODO: support distinct captioning of status-specific object role for other custom statuses
-			//if ( ( false !== strpos( $role_handle, 'private_' ) ) && ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) )
-			//	return __('Private Readers', 'scoper');
-			//else
+			if ( ( false === strpos( $role_handle, 'private_' ) ) || ( ( OBJECT_UI_RS == $context ) && ! defined( 'DISABLE_OBJSCOPE_EQUIV_' . $role_handle ) ) )
 				return __('Readers', 'scoper');
+			else
+				return __('Private Readers', 'scoper');
 
 		} elseif ( strpos( $role_handle, '_contributor' ) )
 			return __('Contributors', 'scoper');

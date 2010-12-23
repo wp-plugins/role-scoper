@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.20
+Stable Tag: 1.3.21
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.21 - 23 Dec 2010 =
+* BugFix : Role assignment metaboxes in post edit form did not indicate implicit role assignments based on Category Roles
+
 
 = 1.3.20 - 18 Dec 2010 =
 * BugFix : Bulk assignment of Category or Taxonomy Retrictions failed when specified "for selected and sub-categories" or "for sub-categories"

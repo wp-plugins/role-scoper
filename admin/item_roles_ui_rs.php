@@ -159,7 +159,7 @@ class ScoperItemRolesUI {
 					$blog_term_role_handle = $role_handle;
 				
 				$this_args = array('skip_object_roles' => true, 'object_type' => $object_type, 'ignore_group_roles' => true );
-					
+				
 				if ( empty( $user_csv_input ) ) {
 					$this->blog_term_roles[ROLE_BASIS_USER][$role_handle] = $this->scoper->users_who_can($blog_term_role_handle, COL_ID_RS, $src_name, $object_id, $this_args );
 					//log_mem_usage_rs( "load_roles: users_who_can for $role_handle users" );
@@ -331,11 +331,6 @@ class ScoperItemRolesUI {
 		$agents_reqd_op = (isset($role_ops[OP_EDIT_RS]) ) ? OP_EDIT_RS : OP_READ_RS;
 
 		$containing_roles = $this->scoper->role_defs->get_containing_roles($role_handle);
-
-		// ... but we don't want assigned Post Readers marked up as "has via other role" because their actual stored object role is Private Post Reader
-		// (possible TODO: abstract this for other data sources, but not crucial as it doesn't affect actual access)
-		if ( ( ('rs_private_post_reader' == $role_handle) || ('rs_private_page_reader' == $role_handle) ) && ! scoper_get_option( "{$role_handle}_role_objscope" ) )
-			$containing_roles = array_diff_key( $containing_roles, array( 'rs_private_post_reader' => true, 'rs_private_page_reader' => true ) );
 
 		require_once('agents_checklist_rs.php');
 		
