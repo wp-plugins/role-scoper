@@ -22,7 +22,7 @@ class QueryInterceptorFront_RS {
 		$where = str_replace( 'WHERE ', 'AND ', $where );
 
 		$post_type = cr_find_post_type();
-
+		
 		$args = array( 'source_alias' => 'p', 'skip_teaser' => true );	// skip_teaser arg ensures unreadable posts will not be linked
 		$where = 'WHERE 1=1 ' . $query_interceptor->flt_objects_where( $where, 'post', $post_type, $args );
 

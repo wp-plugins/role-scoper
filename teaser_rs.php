@@ -98,7 +98,7 @@ class ScoperTeaser {
 					$object_type = $results[$key]->post_type;
 				else
 					$object_type = $scoper->data_sources->get_from_db('type', 'post', $id);
-					
+						
 				if ( ! in_array($object_type, $tease_otypes) )
 					continue;
 
@@ -111,9 +111,7 @@ class ScoperTeaser {
 					} else
 						$list_private[$object_type] = true;
 
-					if ( ! empty( $maybe_fudge_private ) && $list_private[$object_type] ) {
-						$results[$key]->post_status = 'publish';
-					} elseif ( $hide_ungranted_private[$object_type] || ( $maybe_strip_private && ! $list_private[$object_type] ) ) {
+					if ( $hide_ungranted_private[$object_type] || ( $maybe_strip_private && ! $list_private[$object_type] ) ) {
 						$need_reindex = true;
 						unset ( $results[$key] );
 						
@@ -121,6 +119,8 @@ class ScoperTeaser {
 						//$buffer_found_posts--;	// since we're removing this item from the teased results, decrement the paging total
 		
 						continue;
+					} elseif ( ! empty( $maybe_fudge_private ) && $list_private[$object_type] ) {
+						$results[$key]->post_status = 'publish';
 					}
 				}
 			}

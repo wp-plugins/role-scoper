@@ -569,7 +569,7 @@ class QueryInterceptor_RS
 					// must take this opportunity to add private status to the query (otherwise WP excludes private for anon user)
 					// (But don't do this if the query is for a specific status, or if teaser is configured to hide private content)
 					$check_otype = ( count($tease_otypes) && in_array('post', $tease_otypes) ) ? 'post' : $tease_otypes[0];
-
+					
 					if ( ! scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) {
 						if ( $col_status && isset( $otype_status_reqd_caps[$check_otype] ) ) {
 							$in_statuses = "'" . implode("', '", array_keys($otype_status_reqd_caps[$check_otype]) ) . "'";
@@ -938,7 +938,7 @@ class QueryInterceptor_RS
 
 								// enable authors to view / edit / approve revisions to their published posts
 								if ( ! empty( $do_revision_clause ) && ! defined( 'HIDE_REVISIONS_FROM_AUTHOR' ) ) {
-									if ( $owner_ids = scoper_get_col( "SELECT $src_table.{$src->cols->id} FROM $src_table WHERE $src_table.{$src->cols->type} = '$object_type' AND $src_table.{$src->cols->owner} = '$user->ID'" ) )
+									if ( $owner_ids = scoper_get_col( "SELECT {$src->cols->id} FROM $src->table WHERE {$src->cols->type} = '$object_type' AND {$src->cols->owner} = '$user->ID'" ) )
 										$parent_clause = "OR $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ('" . implode( "','", $owner_ids ) . "')"; 
 								}
 								

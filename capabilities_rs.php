@@ -56,7 +56,7 @@ class CR_Capabilities extends AGP_Config_Items {
 
 		foreach( $reqd_caps as $cap_name)
 			if ( $cap_def = $this->get($cap_name) )
-				if ( $cap_def->src_name && ! empty($cap_def->object_types) ) {
+				if ( ! empty($cap_def->src_name) && ! empty($cap_def->object_types) ) {
 					foreach( $cap_def->object_types as $type )
 						$object_types[$cap_def->src_name] [] = $type;
 				}
