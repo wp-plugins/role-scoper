@@ -108,7 +108,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Simple:Press - PHP warning (database error) on forum page for logged non-Editors
 * BugFix : Private pages were still accessible by direct URL (with teaser imposed) if Hidden Content Teaser enabled with "hide private posts" option enabled
 * BugFix : PHP Notice "Undefined property: stdClass::$src_name" under some configurations
-* Lang : Revised Italian Translation (Alberto Ramacciotti - http://obertfsp.com)
+* Lang : Revised Italian Translation ( Alberto Ramacciotti - http://obertfsp.com )
 
 
 = 1.3.21 - 23 Dec 2010 =
