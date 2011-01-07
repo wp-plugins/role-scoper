@@ -1236,7 +1236,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 
 if ( ! defined('RVY_VERSION' ) ) {
 	echo '<tr><td colspan="2"><div class="rs-optionhint"><p style="margin-left:4em;text-indent:-3.5em">&nbsp;';
-	printf( __('<span class="rs-green"><strong>Idea:</strong></span> For Scheduled Revisions and Pending Revisions functionality that integrates with your RS Roles and Restrictions, install %1$s Revisionary%2$s, another %3$s Agapetry&nbsp;Creations%4$s plugin.', 'role-scoper'), "<a href='" . awp_plugin_info_url("revisionary") . "'>", '</a>', "<a href='http://agapetry.net'>", '</a>' );	
+	printf( __('<span class="rs-green"><strong>Idea:</strong></span> For Scheduled Revisions and Pending Revisions functionality that integrates with your RS Roles and Restrictions, install %1$s Revisionary%2$s, another %3$s Agapetry&nbsp;Creations%4$s plugin.', 'scoper'), "<a href='" . awp_plugin_info_url("revisionary") . "'>", '</a>', "<a href='http://agapetry.net'>", '</a>' );	
 	echo '</p></div></td></tr>';
 }
 

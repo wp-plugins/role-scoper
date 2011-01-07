@@ -50,7 +50,7 @@ function scoper_default_options() {
 		'feed_link_http_auth' => 0,
 		'rss_private_feed_mode' => 'title_only',
 		'rss_nonprivate_feed_mode' => 'full_content',
-		'feed_teaser' => "View the content of this <a href='%permalink%'>article</a>",
+		'feed_teaser' => scoper_po_trigger( "View the content of this <a href='%permalink%'>article</a>" ),
 		'rs_page_reader_role_objscope' => 0,
 		'rs_page_author_role_objscope' => 0,
 		'rs_post_reader_role_objscope' => 0,

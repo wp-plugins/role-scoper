@@ -468,6 +468,8 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	}
 	
 	function scoper_get_page_descendant_ids($page_id, $pages = '' ) {
+		global $wpdb;
+		
 		if ( empty( $pages ) )
 			$pages = scoper_get_results( "SELECT ID, post_parent FROM $wpdb->posts WHERE post_parent > 0 AND post_type NOT IN ( 'revision', 'attachment' )" );	
 

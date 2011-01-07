@@ -45,7 +45,7 @@ printf(__('Spanish by %1$s, technical revision by %2$s', 'scoper'), "<a href='ht
 echo '</li><li>';
 printf(__('French by %s', 'scoper'), "<a href='http://chryjs.free.fr' target='_blank'>Chryjs</a>");
 echo '</li><li>';
-printf(__('Italian by %s', 'scoper' ), "<a href='http://obertfsp.com' target='_blank'>Alberto Ramicciotti</a>");
+printf(__('Italian by %s', 'scoper' ), "<a href='http://obertfsp.com' target='_blank'>Alberto Ramacciotti</a>");
 echo '</li></ul><p>';
 _e( 'I do try to be translator-friendly, but any untranslated captions are likely due to a flurry of recent additions and changes by the plugin developer.  Now there must be someone else who wants Role Scoper in their language...', 'scoper');
 echo '</p><p>';
