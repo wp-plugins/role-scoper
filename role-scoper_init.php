@@ -96,7 +96,7 @@ function scoper_init() {
 	// ensure that content administrators (as defined by SCOPER_CONTENT_ADMIN_CAP) have all caps for custom types by default
 	if ( is_content_administrator_rs() ) {
 		global $current_user;
-		
+
 		foreach ( get_post_types( array('public' => true, '_builtin' => false) ) as $name )
 			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
 		

@@ -95,19 +95,24 @@ class Scoper
 		// credit non-logged and "no role" users for any anonymous roles
 		global $current_user;
 		
-		if ( empty($current_user->assigned_blog_roles) ) {
-			foreach ( $this->role_defs->filter_keys( -1, array( 'anon_user_blogrole' => true ) ) as $role_handle) {
-				$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
-				$current_user->blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
+		if ( $current_user ) {
+			if ( empty($current_user->assigned_blog_roles) ) {
+				foreach ( $this->role_defs->filter_keys( -1, array( 'anon_user_blogrole' => true ) ) as $role_handle) {
+					$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
+					$current_user->blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
+				}
 			}
+	
+			if ( isset($current_user->assigned_blog_roles) )
+				$this->refresh_blogroles();
 		}
-
-		if ( ! empty( $current_user ) && isset($current_user->assigned_blog_roles) )
-			$this->refresh_blogroles();
 	}
 	
 	function refresh_blogroles() {
 		global $current_user;
+		
+		if ( empty($current_user) )
+			return;
 		
 		if ( method_exists( $current_user, 'merge_scoped_blogcaps' ) )  // workaround for fatal error on role-scoper.php bailout
 			$current_user->merge_scoped_blogcaps();
@@ -1014,7 +1019,6 @@ class Scoper
 			
 			$limit = '';
 			$u_g_clause = $user->get_user_clause('');
-			
 		} else {
 			$cache_flag = 'rs_applied_object-roles';	// v 1.1: changed cache key from "object_roles" to "object-roles" to match new key format for blog, term roles
 			$cache_id = 'all';

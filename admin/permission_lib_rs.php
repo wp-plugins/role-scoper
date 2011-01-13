@@ -145,7 +145,7 @@
 		
 		$taxonomies = array();
 		foreach ( $scoper->cap_defs->get_all() as $cap_name => $capdef )
-			if ( (OP_ADMIN_RS == $capdef->op_type) && ! empty($capdef->object_types) ) {
+			if ( isset($capdef->op_type) && (OP_ADMIN_RS == $capdef->op_type) && ! empty($capdef->object_types) ) {
 				foreach ( $capdef->object_types as $_object_type ) {
 					if ( isset( $scoper->taxonomies->members[$_object_type] ) ) {		 
 						if ( ! $taxonomy || ( $_object_type == $taxonomy ) ) {

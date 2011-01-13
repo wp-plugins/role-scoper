@@ -714,7 +714,10 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 			require_once( SCOPER_ABSPATH . '/uploads_rs.php' );
 			$uploads = scoper_get_upload_info();
 			
-			if ( false === strpos( $uploads['baseurl'], $site_url ) )
+			if ( ! got_mod_rewrite() )
+				$content_dir_notice = __('<strong>Note</strong>: Direct access to uploaded file attachments cannot be filtered because mod_rewrite is not enabled on your server.', 'scoper');
+			
+			elseif ( false === strpos( $uploads['baseurl'], $site_url ) )
 				$content_dir_notice = __('<strong>Note</strong>: Direct access to uploaded file attachments cannot be filtered because your WP_CONTENT_DIR is not in the WordPress branch.', 'scoper');
 			
 			elseif( ! ScoperRewrite::site_config_supports_rewrite() )
@@ -727,7 +730,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 			}
 		}
 
-		$disabled = defined('DISABLE_ATTACHMENT_FILTERING') || ! got_mod_rewrite() || ! empty($content_dir_notice);
+		$disabled = ! empty($content_dir_notice);
 		$attachment_filtering = ! $disabled && scoper_get_option('file_filtering', $sitewide, $customize_defaults);
 		
 		?>

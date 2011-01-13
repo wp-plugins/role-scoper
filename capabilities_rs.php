@@ -96,10 +96,11 @@ class CR_Capabilities extends AGP_Config_Items {
 		$opcaps = array();
 		
 		foreach ($caps as $cap_name) {
-			if ( isset($this->members[$cap_name]) )
-				$opcaps[$this->members[$cap_name]->op_type] []= $cap_name;
+			if ( isset($this->members[$cap_name]) ) {
+				$op_type = ( isset( $this->members[$cap_name]->op_type ) ) ? $this->members[$cap_name]->op_type : '';
+				$opcaps[$op_type] []= $cap_name;
 		
-			elseif ( $include_undefined_caps )
+			} elseif ( $include_undefined_caps )
 				$opcaps[''] []= $cap_name;
 		}
 				
@@ -179,7 +180,7 @@ class CR_Capabilities extends AGP_Config_Items {
 		if ( $status && ( $status != STATUS_ANY_RS ) ) {
 			$status_present = false;
 			foreach ( $this->members as $cap_name => $capdef )
-				if ( $capdef->status == $status ) {
+				if ( isset($capdef->status) && ( $capdef->status == $status ) ) {
 					$status_present = true;
 					break;
 				}
@@ -189,14 +190,15 @@ class CR_Capabilities extends AGP_Config_Items {
 		}
 
 		// first narrow to specified source name, object type, status and baseness
-		foreach ( $this->members as $cap_name => $capdef )
-			if ( ( $capdef->src_name == $src_name )
+		foreach ( $this->members as $cap_name => $capdef ) {
+			if ( ( isset($capdef->src_name) && $capdef->src_name == $src_name )
 			&& ( empty($object_types) || ( isset($capdef->object_types) && array_intersect( $object_types, $capdef->object_types ) ) || ( empty($strict_otype_match) && empty($capdef->object_types) ) )
 			&& ( (STATUS_ANY_RS == $status) || ( ! $status && empty($capdef->status) ) || ( isset($capdef->status) && ($status == $capdef->status) ) )
 			&& ( ! $base_caps_only || empty($capdef->base_cap) ) 
 			)
 				$arr[$cap_name] = $capdef;
-						
+		}		
+				
 		// Narrow to specified op type.  
 		// But if no cap of this op type is defined, sustitute a cap of higher op level (which also met the other criteria)
 		if ( $arr && $op_type ) {

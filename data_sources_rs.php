@@ -342,7 +342,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 			if ( isset($src->object_types[$object_type]->$vars->{$what_for}[CURRENT_ACCESS_NAME_RS] ) ) 
 				return $src->object_types[$object_type]->$vars->{$what_for}[CURRENT_ACCESS_NAME_RS];
 
-		if ( isset($src->$vars->$what_for) )
+		if ( isset($src->$vars) && is_object($src->$vars) && isset($src->$vars->$what_for) )
 			return $src->$vars->$what_for;
 		elseif ( isset($src->cols->$what_for) )
 			return $src->cols->$what_for;

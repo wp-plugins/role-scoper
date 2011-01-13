@@ -404,7 +404,7 @@ class CapInterceptor_RS
 			if ( 'post' == $src_name )
 				$cap_otype_obj = get_taxonomy( reset($cap_types) );
 			
-			if ( ( ( 'post' != $src_name ) || ( $rs_reqd_caps[0] == $cap_otype_obj->cap->manage_terms ) ) && ( count($rs_reqd_caps) == 1 ) ) {  // don't re-route if multiple caps are being required
+			if ( ( ( 'post' != $src_name ) || ( $cap_type_obj && $rs_reqd_caps[0] == $cap_otype_obj->cap->manage_terms ) ) && ( count($rs_reqd_caps) == 1 ) ) {  // don't re-route if multiple caps are being required
 				// always pass through any assigned blog caps which will not be involved in this filtering
 				$rs_reqd_caps = array_fill_keys( $rs_reqd_caps, 1 );
 				$undefined_reqd_caps = array_diff_key( $wp_blogcaps, $rs_reqd_caps);

@@ -49,7 +49,8 @@ function _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
 		return $caps;
 
 	if ( in_array( $post->post_type, array( 'revision', 'attachment' ) ) )
-		$post = get_post( $post->post_parent );	
+		if ( ! $post = get_post( $post->post_parent ) )
+			return $caps;
 
 	$use_post_types = scoper_get_option( 'use_post_types' );
 	if ( empty( $use_post_types[$post->post_type] ) )

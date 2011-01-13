@@ -11,9 +11,16 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		global $wpdb;
 		$results = $wpdb->get_results("SELECT ID, user_login FROM $wpdb->users ORDER BY user_login");
 		
-	} elseif ( $search = new WP_User_Search( $_GET['rs_user_search'] ) ) {
-		global $wpdb;
-		$results = $wpdb->get_results( "SELECT ID, user_login $search->query_from $search->query_where ORDER BY user_login" );
+	} else {
+		if ( awp_ver( '3.1-beta' ) )
+			$search = new WP_User_Query( $_GET['rs_user_search'] )
+		else
+			$search = new WP_User_Search( $_GET['rs_user_search'] )
+	
+		if ( $search ) {
+			global $wpdb;
+			$results = $wpdb->get_results( "SELECT ID, user_login $search->query_from $search->query_where ORDER BY user_login" );
+		}
 	}
 
 	if ( $results ) {	

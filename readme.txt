@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.22
+Stable Tag: 1.3.23
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,14 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.23 - 12 Jan 2011 =
+* BugFix : Under some configurations, Database Error when attempting to update a subpage
+* BugFix : Find Posts results in Media Library were not filtered
+* BugFix : Media Library count was not filtered
+* BugFix : Various PHP warnings/notices (visible in wp-admin when running with WP_DEBUG enabled)
+* Compat : Replace function calls deprecated by WP 3.1
+
 
 = 1.3.22 - 7 Jan 2011 =
 * BugFix : Under some configurations, Database Error when attempting to update a subpage

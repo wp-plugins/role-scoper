@@ -477,8 +477,10 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		foreach ( (array) $pages as $page ) {
 			if ( $page->post_parent == $page_id ) {
 				$descendant_ids[] = $page->ID;
-				if ( $children = get_page_children($page->ID, $pages) )
-					$descendant_ids = array_merge($descendant_ids, $children);
+				if ( $children = get_page_children($page->ID, $pages) ) {
+					foreach( $children as $_page )
+						$descendant_ids []= $_page->ID;
+				}
 			}
 		}
 		

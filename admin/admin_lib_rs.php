@@ -342,7 +342,7 @@ class ScoperAdminLib {
 				
 			$insert = "INSERT INTO $wpdb->user2group_rs ($wpdb->user2group_gid_col, $wpdb->user2group_uid_col, $wpdb->user2group_status_col)"
 					. " VALUES ('$group_id','$user_id','$status');";
-	
+					
 			scoper_query( $insert );
 			
 			do_action('add_group_user_rs', $group_id, $user_id, $status);	

@@ -4,7 +4,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
 if ( 'nav-menus.php' != $GLOBALS['pagenow'] ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
-	if ( false === strpos( $_SERVER['REQUEST_URI'], 'upload.php' ) )	// TODO: internal criteria to prevent application of flt_last_resort when scoped user object is not fully loaded
+	//if ( false === strpos( $_SERVER['REQUEST_URI'], 'upload.php' ) )	// TODO: internal criteria to prevent application of flt_last_resort when scoped user object is not fully loaded
 		ScoperAdminHardway_Ltd::add_filters();
 }
 
@@ -25,7 +25,9 @@ class ScoperAdminHardway_Ltd {
 		// TODO: better handling of low-level AJAX filtering
 		// URIs ending in specified filename will not be subjected to low-level query filtering
 		$nomess_uris = apply_filters( 'scoper_skip_lastresort_filter_uris', array( 'categories.php', 'themes.php', 'plugins.php', 'profile.php', 'link.php' ) );
-		$nomess_uris = array_merge($nomess_uris, array('admin-ajax.php'));
+		
+		if ( empty( $_POST['ps'] ) )	// need to filter Find Posts query in Media Library
+			$nomess_uris = array_merge($nomess_uris, array('admin-ajax.php'));
 		
 		if ( ! in_array( $GLOBALS['pagenow'], $nomess_uris ) && ! in_array( $GLOBALS['plugin_page_cr'], $nomess_uris ) )
 			add_filter('query', array('ScoperAdminHardway_Ltd', 'flt_last_resort_query') );	
@@ -424,6 +426,11 @@ class ScoperAdminHardway_Ltd {
 			}
 		}
 		
+		// Find Posts in Media Library
+		if ( strpos( $query, "ELECT ID, post_title, post_status, post_date FROM" ) ) {
+			if ( ! empty( $_POST['post_type'] ) )
+				$query = apply_filters('objects_request_rs', $query, 'post', $_POST['post_type'] );	
+		}
 		
 		// links
 		//SELECT * , IF (DATE_ADD(link_updated, INTERVAL 120 MINUTE) >= NOW(), 1,0) as recently_updated FROM wp_links WHERE 1=1 ORDER BY link_name ASC
