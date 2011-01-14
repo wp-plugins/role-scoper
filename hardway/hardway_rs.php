@@ -128,7 +128,7 @@ class ScoperHardway
 			}
 			
 			if ( ! empty( $post ) && ( $post_type == $post->post_type ) ) {
-				if ( $post->post_parent );
+				if ( $post->post_parent )
 					$append_page = get_post( $post->post_parent );
 
 				$exclude_tree = $post->ID;

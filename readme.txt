@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.23
+Stable Tag: 1.3.24
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.24 - 14 Jan 2011 =
+* BugFix : On Page Edit form, invalid blank item in Page Parent dropdown for Non-Editors with a General Role of Page Contributor / Author, caused new pages to be saved as top level 
+
 
 = 1.3.23 - 12 Jan 2011 =
 * BugFix : Under some configurations, Database Error when attempting to update a subpage
