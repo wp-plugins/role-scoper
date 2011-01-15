@@ -323,7 +323,7 @@ class ScoperHardway
 		// Role Scoper note: WP core get_pages has already updated wp_cache and pagecache with unfiltered results.
 		update_page_cache($pages);
 		
-		
+
 		// === BEGIN Role Scoper MODIFICATION: Support a disjointed pages tree with some parents hidden ========
 		if ( $child_of || empty($tease_all) ) {  // if we're including all pages with teaser, no need to continue thru tree remapping
 

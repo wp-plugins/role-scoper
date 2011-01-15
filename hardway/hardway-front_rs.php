@@ -47,8 +47,8 @@ class ScoperHardwayFront
 				}
 				
 				if ( strpos($query, $wpdb->comments) ) {
-					$query = str_replace( "post_status = 'publish'", "$wpdb->posts.post_status = 'publish'", $query );
-					
+					$query = str_replace( " post_status = 'publish'", " $wpdb->posts.post_status = 'publish'", $query );
+
 					// theoretically, a slight performance enhancement if we can simplify the query to skip filtering of attachment comments
 					if ( defined('SCOPER_NO_ATTACHMENT_COMMENTS') || ( false !== strpos( $query, 'comment_post_ID =') ) ) {
 						
@@ -120,7 +120,7 @@ class ScoperHardwayFront
 			}
 			
 			$query = str_replace( "post_status = 'publish' AND ", '', $query );
-			
+
 			$query = apply_filters( 'objects_request_rs', $query, 'post', $object_type );
 		}
 		

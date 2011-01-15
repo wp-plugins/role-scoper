@@ -63,7 +63,7 @@ class QueryInterceptorBase_RS {
 		$where = preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($wpdb->posts.post_status = 'publish' OR $wpdb->posts.post_status = 'private')", $where);
 		$where = preg_replace( "/p2.post_status\s*=\s*'publish'/", "(p2.post_status = 'publish' OR p2.post_status = 'private')", $where);
 		$where = preg_replace( "/p.post_status\s*=\s*'publish'/", "(p.post_status = 'publish' OR p.post_status = 'private')", $where);
-	
+
 		return $where;
 	}
 	

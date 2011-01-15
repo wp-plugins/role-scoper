@@ -463,8 +463,8 @@ class QueryInterceptor_RS
 			}
 			
 			$otype_status_reqd_caps = array_intersect_key($otype_status_reqd_caps, array_flip($object_types) );
-		}	
-
+		}
+		
 		// Since Role Scoper can restrict or expand access regardless of post_status, query must be modified such that
 		//  * the default owner inclusion clause "OR post_author = [user_id] AND post_status = 'private'" is removed
 		//  * all statuses are listed apart from owner inclusion clause (and each of these status clauses is subsequently replaced with a scoped equivalent which imposes any necessary access limits)
@@ -546,7 +546,7 @@ class QueryInterceptor_RS
 				
 				// Eliminate a primary plugin incompatibility by skipping this preservation of existing single status requirements if we're on the front end and the requirement is 'publish'.  
 				// (i.e. include private posts that this user has access to via RS role assignment).  
-				if ( ! $this->scoper->is_front() || ( 'publish' != $use_status ) || empty( $args['user']->ID ) || defined('SCOPER_RETAIN_PUBLISH_FILTER') ) { 
+				if ( ! $this->scoper->is_front() || ( 'publish' != $use_status ) || ( empty( $args['user']->ID ) && empty($tease_otypes) ) || defined('SCOPER_RETAIN_PUBLISH_FILTER') ) { 
 					$force_single_status = true;
 
 					foreach ( array_keys($otype_status_reqd_caps) as $_object_type )
@@ -558,7 +558,7 @@ class QueryInterceptor_RS
 			$basic_status_clause = array ( '' => '');
 		}
 		
-		
+
 		if ( empty($skip_teaser) && ! array_diff($object_types, $tease_otypes) ) {
 			if ( $status_clause_pos && $force_single_type ) {
 			
@@ -580,7 +580,7 @@ class QueryInterceptor_RS
 						}
 					}
 				}
-					
+				
 				// if a "post_status = 'publish'" clause is present, we need to filter private posts into the result set so they can be either displayed or teased as appropr
 				global $wpdb;
 				$where = preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($src_table.post_status = 'publish' OR $src_table.post_status = 'private')", $where);
