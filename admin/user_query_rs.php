@@ -3,8 +3,6 @@ global $current_user;
 
 require_once( ABSPATH . '/wp-admin/includes/user.php' );
 
-//echo "<option value='$row->ID'>test</option>";
-
 if ( isset( $_GET['rs_user_search'] )  ) {
 	
 	if ( empty( $_GET['rs_user_search'] ) ) {
@@ -13,10 +11,10 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		
 	} else {
 		if ( awp_ver( '3.1-beta' ) )
-			$search = new WP_User_Query( $_GET['rs_user_search'] )
+			$search = new WP_User_Query( $_GET['rs_user_search'] );
 		else
-			$search = new WP_User_Search( $_GET['rs_user_search'] )
-	
+			$search = new WP_User_Search( $_GET['rs_user_search'] );
+
 		if ( $search ) {
 			global $wpdb;
 			$results = $wpdb->get_results( "SELECT ID, user_login $search->query_from $search->query_where ORDER BY user_login" );

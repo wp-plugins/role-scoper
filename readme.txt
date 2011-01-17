@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.25
+Stable Tag: 1.3.26
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.26 - 17 Jan 2011 =
+* BugFix : User Search on Role Group creation/edit form did not work (since 1.3.23)
+* BugFix : Group Search on User Profile form did not work (since 1.3.23)
+
 
 = 1.3.25 - 14 Jan 2011 =
 * BugFix : Hidden Content Teaser did not include private posts or pages, regardless of "hide private" setting (since 1.3.2)
