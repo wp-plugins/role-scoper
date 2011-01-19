@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.26
+Stable Tag: 1.3.27
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -103,6 +103,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 
 == Changelog ==
+
+= 1.3.27 - 19 Jan 2011 =
+* BugFix : Hidden Content Teaser - private pages were not included for teasing to anonymous reader
+* BugFix : Hidden Content Teaser - pages with Reader restriction were not flagged in page listing
+
 
 = 1.3.26 - 17 Jan 2011 =
 * BugFix : User Search on Role Group creation/edit form did not work (since 1.3.23)
@@ -960,15 +965,17 @@ no changes from 1.2 RC
 * BugFix : In some installations, DB error for anonymous user front-end access (since rc9.9220)
 
 
-== Documentation ==
+== Other Notes ==
+
+= Documentation =
 * A slightly outdated <a href="http://agapetry.net/downloads/RoleScoper_UsageGuide.htm">Usage Guide</a> is available.  It includes both an overview of the permissions model and a How-To section with step by step directions.  Volunteer contributions to expand, revise or reformat this document are welcome.
 * Role Scoper's menus, onscreen captions and inline descriptive footnotes <a href="http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/">can be translated using poEdit</a>.  I will gladly include any user-contributed languages!.
 
-== General Plugin Compatibility Requirements ==
+= General Plugin Compatibility Requirements =
 * No other plugin or theme shall define function wp&#95;set&#95;current&#95;user() or function set&#95;current&#95;user().  A custom merge of the code may be possible in some situations.
 * No other plugin or theme shall make an include or require call to force early execution of the file pluggable.php (for the reason listed above).
 
-== Specific Plugin Compatibility Issues ==
+= Specific Plugin Compatibility Issues =
 * WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
 * Maintenance Mode : use version 5.3 or later.  Other "site down for maintenance" plugins may be incompatible due to early execution of pluggable.php and/or pre-init capability checks
 * WPML Multilingual CMS : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  

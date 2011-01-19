@@ -258,7 +258,10 @@ class ScoperHardway
 		global $current_user;
 		
 		$is_front = $scoper->is_front();
-		if ( $is_front && ! empty($current_user->ID) )
+		$is_teaser_active = $scoper->is_front() && scoper_get_otype_option('do_teaser', 'post') && scoper_get_otype_option('use_teaser', 'post', $post_type); 
+		$private_teaser = $is_teaser_active && scoper_get_otype_option('use_teaser', 'post', $post_type) && ! scoper_get_otype_option('teaser_hide_private', 'post', $post_type);
+		
+		if ( $is_front && ( ! empty($current_user->ID) || $private_teaser ) )
 			$frontend_list_private = scoper_get_otype_option('private_items_listable', 'post', 'page');  // currently using Page option for all hierarchical types
 		else
 			$frontend_list_private = false;
@@ -275,20 +278,28 @@ class ScoperHardway
 
 			$where_status = "post_status IN ('" . implode("','", $safeguard_statuses ) . "')";
 		}
-			
+		
 		$query = "SELECT $fields FROM $wpdb->posts $join WHERE 1=1 AND $where_post_type AND ( $where_status $where $author_query ) ORDER BY $sort_column $sort_order";
 
 		if ( !empty($number) )
 			$query .= ' LIMIT ' . $offset . ',' . $number;
-		
-		if ( $scoper->is_front() && scoper_get_otype_option('do_teaser', 'post') && scoper_get_otype_option('use_teaser', 'post', $post_type) && ! defined('SCOPER_TEASER_HIDE_PAGE_LISTING') ) {
+			
+		if ( $is_teaser_active && ! defined('SCOPER_TEASER_HIDE_PAGE_LISTING') ) {
 			// We are in the front end and the teaser is enabled for pages	
 
-			$pages = scoper_get_results($query);			// execute unfiltered query
+			$query = apply_filters( 'objects_request_rs', $query, 'post', $post_type, array( 'force_teaser' => true ) );
 			
+			$pages = scoper_get_results($query);			// execute unfiltered query
+
 			// Pass results of unfiltered query through the teaser filter.
 			// If listing private pages is disabled, they will be omitted completely, but restricted published pages
 			// will still be teased.  This is a slight design compromise to satisfy potentially conflicting user goals without yet another option
+			
+			$pages = apply_filters( 'objects_results_rs', $pages, 'post', (array) $post_type, array( 'request' => $query, 'force_teaser' => true, 'object_type' => $post_type ) );
+			
+			// restore buffered titles in case they were filtered previously
+			scoper_restore_property_array( $pages, $titles, 'ID', 'post_title' );
+			
 			$pages = apply_filters('objects_teaser_rs', $pages, 'post', $post_type, array('request' => $query, 'force_teaser' => true) );
 			
 			if ( $frontend_list_private ) {
@@ -307,15 +318,16 @@ class ScoperHardway
 			$query = apply_filters('objects_request_rs', $query, 'post', $post_type, $_args );
 
 			// Execute the filtered query
-			$pages = scoper_get_results($query);	
+			$pages = scoper_get_results($query);
+			
+			// restore buffered titles in case they were filtered previously
+			scoper_restore_property_array( $pages, $titles, 'ID', 'post_title' );
 		}
 
 		if ( empty($pages) )
 			// alternate hook name (WP core already applied get_pages filter)
 			return apply_filters('get_pages_rs', array(), $r);
 		
-		// restore buffered titles in case they were filtered previously
-		scoper_restore_property_array( $pages, $titles, 'ID', 'post_title' );
 		//
 		// === END Role Scoper MODIFICATION ===
 		// ====================================

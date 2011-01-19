@@ -557,37 +557,32 @@ class QueryInterceptor_RS
 			// this source doesn't define statuses
 			$basic_status_clause = array ( '' => '');
 		}
-		
 
 		if ( empty($skip_teaser) && ! array_diff($object_types, $tease_otypes) ) {
-			if ( $status_clause_pos && $force_single_type ) {
+			if ( $status_clause_pos && $force_single_type ) { // All object types potentially returned by this query will have a teaser filter applied to results, so we don't need to filter the query
 			
-				// All object types potentially returned by this query will have a teaser filter applied to results, so we don't need to filter the query
-				
-				if ( empty($user->ID) ) {
+				// override our sanity safeguard against exposing private posts to anonymous readers
+				if ( empty($user->ID) ) { 
+		
 					// Since we're dropping out of this function early in advance of teaser filtering, 
 					// must take this opportunity to add private status to the query (otherwise WP excludes private for anon user)
-					// (But don't do this if the query is for a specific status, or if teaser is configured to hide private content)
+					// (But don't do this if teaser is configured to hide private content)
 					$check_otype = ( count($tease_otypes) && in_array('post', $tease_otypes) ) ? 'post' : $tease_otypes[0];
 					
-					if ( ! scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) {
+					$post_type_obj = get_post_type_object($check_otype);
+					
+					if ( ! scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) && ( ! $post_type_obj->hierarchical || scoper_get_otype_option('private_items_listable', 'post', 'page') ) ) {
 						if ( $col_status && isset( $otype_status_reqd_caps[$check_otype] ) ) {
-							$in_statuses = "'" . implode("', '", array_keys($otype_status_reqd_caps[$check_otype]) ) . "'";
-
-							$where = str_replace( $basic_status_clause['publish'], "{$src_table}.$col_status IN ($in_statuses)", $where);
+							$status_or = "{$src_table}.$col_status = '" . implode("' OR {$src_table}.$col_status = '", array_keys($otype_status_reqd_caps[$check_otype]) ) . "'";
+							$where = str_replace( $basic_status_clause['publish'], "( $status_or )", $where);
 						} else {
 							$where = str_replace( $basic_status_clause['publish'], "1=1", $where);
 						}
 					}
 				}
-				
-				// if a "post_status = 'publish'" clause is present, we need to filter private posts into the result set so they can be either displayed or teased as appropr
-				global $wpdb;
-				$where = preg_replace( "/$wpdb->posts.post_status\s*=\s*'publish'/", "($src_table.post_status = 'publish' OR $src_table.post_status = 'private')", $where);
-				$where = preg_replace( "/$src_table.post_status\s*=\s*'publish'/", "($src_table.post_status = 'publish' OR $src_table.post_status = 'private')", $where);
-				return $where;
-			} else
-				return $where;
+			}
+
+			return $where;
 		}
 		
 		$is_administrator = is_content_administrator_rs();	// make sure administrators never have content limited
@@ -1405,11 +1400,13 @@ class QueryInterceptor_RS
 				ScoperHardway::remap_tree( $results, $ancestors, 'ID', 'post_parent', $args );
 			}
 		}
-
+		
 		if ( $this->scoper->is_front() && empty($this->skip_teaser) ) {
 			if ( $tease_otypes = $this->_get_teaser_object_types($src_name, $object_types, $args) ) {
 				require_once('teaser_rs.php');
-				return ScoperTeaser::posts_teaser_prep_results($results, $tease_otypes, array('force_teaser' => true) );
+				
+				$args['force_teaser'] = true;
+				return ScoperTeaser::posts_teaser_prep_results( $results, $tease_otypes, $args );
 			}
 			
 			// won't do anything unless teaser is enabled for object type(s)

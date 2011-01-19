@@ -7,7 +7,7 @@ class ScoperTeaser {
 	// Manipulate the results set in various ways to prepare it for teaser filtering
 	// Determine which listed items are readabled (i.e. will not be teased). Clear private status so teased items will not be hidden completely or trigger a 404
 	function posts_teaser_prep_results($results, $tease_otypes, $args = '') {
-		$defaults = array('user' => '', 'use_object_roles' => -1, 'use_term_roles' => -1, 'request' => '' );
+		$defaults = array('user' => '', 'use_object_roles' => -1, 'use_term_roles' => -1, 'request' => '', 'object_type' => '' );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 
@@ -74,9 +74,10 @@ class ScoperTeaser {
 			$request = substr($request, 0, $limitpos);
 
 		$args['skip_teaser'] = true;
-		$filtered_request = $query_interceptor->flt_objects_request($request, 'post', '', $args);
+		$filtered_request = $query_interceptor->flt_objects_request($request, 'post', $object_type, $args);
 		
 		global $scoper_teaser_filtered_ids;
+
 		$scoper_teaser_filtered_ids = scoper_get_col($filtered_request);
 		
 		if ( ! isset($scoper->teaser_ids) )
@@ -105,9 +106,11 @@ class ScoperTeaser {
 				// Defeat a WP core secondary safeguard so we can apply the teaser message rather than 404
 				if ( in_array( $results[$key]->post_status, $private_stati ) ) {
 					// don't want the teaser message (or presence in category archive listing) if we're hiding a page from listing
-					if ( 'page' == $object_type ) {  // TODO: review implementation of this option with custom types
+					$type_obj = get_post_type_object( $object_type );
+					
+					if ( $type_obj && $type_obj->hierarchical ) {  // TODO: review implementation of this option with custom types
 						if ( ! isset($list_private[$object_type]) )
-							 $list_private[$object_type] = scoper_get_otype_option( 'private_items_listable', 'post', $object_type );
+							 $list_private[$object_type] = scoper_get_otype_option( 'private_items_listable', 'post', 'page' );
 					} else
 						$list_private[$object_type] = true;
 
@@ -199,7 +202,7 @@ class ScoperTeaser {
 		// strip content from all $results rows not in $items
 		$args = array( 'teaser_prepend' => $teaser_prepend, 		'teaser_append' => $teaser_append, 	'teaser_replace' => $teaser_replace, 
 						'excerpt_teaser' => $excerpt_teaser,		'more_teaser' => $more_teaser,		'x_chars_teaser' => $x_chars_teaser );
-		
+							
 		foreach ( array_keys($results) as $key ) {
 			if ( is_array($results[$key]) )
 				$id = $results[$key]['ID'];
@@ -214,7 +217,7 @@ class ScoperTeaser {
 					
 				if ( ! in_array($object_type, $tease_otypes) )
 					continue;
-					
+						
 				ScoperTeaser::apply_teaser( $results[$key], 'post', $object_type, $args );
 			}
 		}
