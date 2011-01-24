@@ -965,17 +965,15 @@ no changes from 1.2 RC
 * BugFix : In some installations, DB error for anonymous user front-end access (since rc9.9220)
 
 
-== Other Notes ==
-
-= Documentation =
+== Documentation ==
 * A slightly outdated <a href="http://agapetry.net/downloads/RoleScoper_UsageGuide.htm">Usage Guide</a> is available.  It includes both an overview of the permissions model and a How-To section with step by step directions.  Volunteer contributions to expand, revise or reformat this document are welcome.
 * Role Scoper's menus, onscreen captions and inline descriptive footnotes <a href="http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/">can be translated using poEdit</a>.  I will gladly include any user-contributed languages!.
 
-= General Plugin Compatibility Requirements =
+== General Plugin Compatibility Requirements ==
 * No other plugin or theme shall define function wp&#95;set&#95;current&#95;user() or function set&#95;current&#95;user().  A custom merge of the code may be possible in some situations.
 * No other plugin or theme shall make an include or require call to force early execution of the file pluggable.php (for the reason listed above).
 
-= Specific Plugin Compatibility Issues =
+== Specific Plugin Compatibility Issues ==
 * WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
 * Maintenance Mode : use version 5.3 or later.  Other "site down for maintenance" plugins may be incompatible due to early execution of pluggable.php and/or pre-init capability checks
 * WPML Multilingual CMS : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  
