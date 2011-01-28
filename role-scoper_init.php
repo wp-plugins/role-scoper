@@ -853,10 +853,13 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 
 	} elseif ( ! empty( $GLOBALS['wp_query']->queried_object ) ) {
 		$object_type = $GLOBALS['wp_query']->queried_object->post_type;
-
+		
 	} elseif ( in_array( $pagenow, array( 'post-new.php', 'edit.php' ) ) ) {
 		$object_type = ! empty( $_GET['post_type'] ) ? $_GET['post_type'] : 'post';
-
+		
+	} elseif ( in_array( $pagenow, array( 'edit-tags.php' ) ) ) {
+		$object_type = ! empty( $_GET['taxonomy'] ) ? $_GET['taxonomy'] : 'category';
+		
 	} elseif ( ! empty( $_POST['post_ID'] ) ) {
 		if ( $_post = get_post( $_POST['post_ID'] ) )
 			$object_type = $_post->post_type;

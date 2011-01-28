@@ -163,7 +163,7 @@ class Scoper
 						$cap_defs->members[$cap_name]->object_types[] = $role_def->src_name;
 				}
 			}
-		}	
+		}
 	}
 	
 	function customize_role_objscope() {

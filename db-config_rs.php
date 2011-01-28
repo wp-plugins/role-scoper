@@ -43,21 +43,4 @@ $wpdb->user2group_uid_col = 		'user_id';
 $wpdb->user2group_assigner_id_col = 'assigner_id';
 $wpdb->user2group_status_col 	  = 'status';
 
-// sample integration with Vanilla (not recently tested or officially supported):
-// For groups and user2groups tables, user Vanilla forum's lum_role and lum_userrole (possible only if these are installed within WP database)
-//$wpdb->groups_rs = 		'lum_role';
-//$wpdb->user2group_rs = 	'lum_userrole';
-
-//$wpdb->groups_id_col = 		'RoleID';
-//$wpdb->groups_name_col = 		'Name';
-//$wpdb->groups_descript_col = 	'Description';
-
-//$wpdb->user2group_gid_col = 	'RoleID';
-//$wpdb->user2group_uid_col = 	'UserID';
-
-// NOTE: default value insertion for custom group tables is not yet implemented by RS
-//default values to insert into specified columns of shared tables
-//  i.e. when using Vanilla 1.03 "Roles" table for scoper groups, insert default Vanilla Member permissions: 
-//$default_value[$groups]['Permissions'] = 'a:33:{s:23:"PERMISSION_ADD_COMMENTS";i:1;s:27:"PERMISSION_START_DISCUSSION";i:1; ...
-
 ?>

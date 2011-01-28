@@ -104,6 +104,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.28-dev =
+* BugFix : Term-specific management roles did not grant editing access
+* Change : Term-specific management role also grants ability to create child terms
+
+
 = 1.3.27 - 19 Jan 2011 =
 * BugFix : Hidden Content Teaser - private pages were not included for teasing to anonymous reader
 * BugFix : Hidden Content Teaser - pages with Reader restriction were not flagged in page listing

@@ -174,7 +174,7 @@ class CapInterceptor_RS
 
 		// Establish some context by detecting object type - based on object ID if provided, or otherwise based on http variables.  May differ from cap type.
 		$object_type = cr_find_object_type( $src_name, $object_id );
-
+		
 		// TODO: also incorporate other special handling for attachments up here?
 		if ( in_array( $pagenow, array( 'media-upload.php', 'async-upload.php' ) ) ) {
 			if ( ! empty($_POST['post_ID']) )
@@ -402,15 +402,15 @@ class CapInterceptor_RS
 		// if this is a term administration request, route to user_can_admin_terms()
 		if ( $is_taxonomy_cap ) {
 			if ( 'post' == $src_name )
-				$cap_otype_obj = get_taxonomy( reset($cap_types) );
-			
-			if ( ( ( 'post' != $src_name ) || ( $cap_type_obj && $rs_reqd_caps[0] == $cap_otype_obj->cap->manage_terms ) ) && ( count($rs_reqd_caps) == 1 ) ) {  // don't re-route if multiple caps are being required
+				$cap_otype_obj = get_taxonomy( $object_type );
+
+			if ( ( ( 'post' != $src_name ) || ( $cap_otype_obj && $rs_reqd_caps[0] == $cap_otype_obj->cap->manage_terms ) ) && ( count($rs_reqd_caps) == 1 ) ) {  // don't re-route if multiple caps are being required
 				// always pass through any assigned blog caps which will not be involved in this filtering
 				$rs_reqd_caps = array_fill_keys( $rs_reqd_caps, 1 );
 				$undefined_reqd_caps = array_diff_key( $wp_blogcaps, $rs_reqd_caps);
 
 				require_once( 'admin/permission_lib_rs.php' );
-				if ( user_can_admin_terms_rs( reset($cap_types), $object_id, $user) ) {
+				if ( user_can_admin_terms_rs( $object_type, $object_id, $user) ) {
 					return array_merge($undefined_reqd_caps, $rs_reqd_caps);
 				} else {
 					return $undefined_reqd_caps;	// required caps we scrutinized are excluded from this array
@@ -768,16 +768,15 @@ class CapInterceptor_RS
 
 			// deal with term management caps
 			if ( isset($caps_by_otype['post']) ) {
-				$first_otype = key( $caps_by_otype['post'] );
-				if ( taxonomy_exists( $first_otype ) ) {
-					$_taxonomies = scoper_get_option( 'use_taxonomies' );
-					if ( ! empty( $_taxonomies[ $first_otype ] ) ) {
-						$otypes[$first_otype] = $reqd_caps;
-						$uses_taxonomies = array( $first_otype );
-					}
+				if ( $_taxonomies = array_intersect_key( scoper_get_option( 'use_taxonomies' ), $caps_by_otype['post'] ) ) {
+				
+					$uses_taxonomies = array_keys( $_taxonomies );
+				
+					foreach( $uses_taxonomies as $_taxonomy )
+						$otypes[$_taxonomy] = $reqd_caps;
 				}
 			}
-
+			
 			if ( ! isset($uses_taxonomies) )
 				$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, array_keys($otypes) );
 				
