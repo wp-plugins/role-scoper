@@ -197,8 +197,12 @@ class CapInterceptor_RS
 		if ( empty($cap_types) )
 			$cap_types = array( $object_type );
 		
-		$doing_admin_menus = is_admin() && did_action( '_admin_menu' ) && ! did_action('admin_menu');  // ! did_action('admin_notices');
+		$doing_admin_menus = is_admin() && (
+		( did_action( '_admin_menu' ) && ! did_action('admin_menu') ) 		 // menu construction
+		|| ( did_action( 'in_admin_header' ) && ! did_action('adminmenu') )	 // menu display
+		); 
 		// =====================================================================================================================================
+
 
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
 		if ( 'post' == $src_name ) {	
@@ -417,7 +421,7 @@ class CapInterceptor_RS
 				}
 			}
 		}
-
+		
 		// Workaround to deal with WP core's checking of publish cap prior to storing categories
 		// Store terms to DB in advance of any cap-checking query which may use those terms to qualify an operation		
 		if ( ! empty($_POST['action']) && ( ('editpost' == $_POST['action']) || ('autosave' == $_POST['action']) ) ) {
@@ -522,7 +526,7 @@ class CapInterceptor_RS
 		} // endif specified id might be a revision or attachment
 		// ============================== (end special handling for attachments and revisions) ==========================================
 		
-			
+	
 		// ============ SCOPED QUERY for required caps on object id (if other listed ids are known, query for them also).  Cache results to static var. ===============
 		
 		// $force_refresh = 'async-upload.php' == $pagenow;
@@ -535,7 +539,7 @@ class CapInterceptor_RS
 			$cache_where_clause = array();
 		} else
 			$force_refresh = false;
-
+			
 		// Check whether this object id was already tested for the same reqd_caps in a previous execution of this function within the same http request
 		if ( $force_refresh || ! isset($cache_tested_ids[$src_name][$object_type][$capreqs_key][$object_id]) ) {
 		//if ( ! isset($cache_tested_ids[$src_name][$object_type][$capreqs_key][$object_id]) ) {
@@ -570,12 +574,12 @@ class CapInterceptor_RS
 				$use_object_roles = ( $no_object_roles ) ? false : scoper_get_otype_option( 'use_object_roles', $src_name, $object_type );
 	
 				$this_args = array( 'object_type' => $object_type, 'user' => $user, 'otype_use_term_roles' => $use_term_roles, 'otype_use_object_roles' => $use_object_roles, 'skip_teaser' => true, 'require_full_object_role' => ! empty($this->require_full_object_role) );
-			
+
 				//rs_errlog( serialize($rs_reqd_caps) );
 				//rs_errlog( serialize($this_args) );
-
+				
 				$where = $this->query_interceptor->objects_where_role_clauses($src_name, $rs_reqd_caps, $this_args );
-
+				
 				if ( $where )
 					$where = "AND ( $where )";
 					
@@ -586,7 +590,7 @@ class CapInterceptor_RS
 
 			// run the query
 			$query = "SELECT $src_table.{$cols->id} FROM $src_table WHERE 1=1 $where AND $src_table.{$cols->id} IN ('" . implode( "', '", array_unique($listed_ids) ) . "')";
-
+			
 			if ( isset( $cache_okay_ids[$query] ) )
 				$okay_ids = $cache_okay_ids[$query];
 			else {
