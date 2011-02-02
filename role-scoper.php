@@ -246,7 +246,7 @@ if ( ! $bail ) {
 	//log_mem_usage_rs( 'user-plug_rs' );
 	
 	if ( ! defined( 'SCOPER_LATE_INIT' ) && ! defined( 'SCOPER_EARLY_INIT' ) ) {
-		if ( awp_is_plugin_active( 'more-taxonomies' ) || awp_is_plugin_active( 'ultimate-taxonomy-manager' ) )	// More Taxonomies registers taxonomies on the init action at priority 20
+		if ( awp_is_plugin_active( 'more-types' ) || awp_is_plugin_active( 'more-taxonomies' ) || awp_is_plugin_active( 'ultimate-taxonomy-manager' ) )	// More Taxonomies registers taxonomies on the init action at priority 20
 			define( 'SCOPER_LATE_INIT', true );
 	}
 

@@ -108,6 +108,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Term-specific management roles did not grant editing access
 * Change : Term-specific management role also grants ability to create child terms
 * BugFix : In wp-admin, Page menu not visible while editing a post if page editing access is not site-wide
+* Compat : More Types: support late registration of post types by automatically forcing RS to initalize later
 
 
 = 1.3.27 - 19 Jan 2011 =
