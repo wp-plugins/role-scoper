@@ -59,7 +59,13 @@
 		if ( ! $reqd_caps = cr_get_reqd_caps( $src->name, OP_EDIT_RS, $object_type, $status, $base_caps_only ) )
 			return $selected_terms;
 
-		$user_terms = $scoper->qualify_terms_daterange($reqd_caps, $taxonomy);
+		$qualifying_roles = $scoper->role_defs->qualify_roles( $reqd_caps );
+	
+		if ( $qualifying_term_assigner_roles = $scoper->role_defs->qualify_roles( array( "assign_$taxonomy" ) ) ) {
+			$qualifying_roles = array_merge( $qualifying_roles, $qualifying_term_assigner_roles );
+		}
+		
+		$user_terms = $scoper->qualify_terms_daterange( $reqd_caps, $taxonomy, $qualifying_roles );
 		
 		foreach ( array_keys($user_terms) as $date_key ) {
 			$date_clause = '';

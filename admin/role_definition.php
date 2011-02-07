@@ -100,10 +100,11 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			$object_types [$tx->name]= $tx; 	
 			
 		$use_post_types = scoper_get_option( 'use_post_types' );
+		$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 	}
 
 	foreach ( $object_types as $object_type => $otype ) {
-		if ( ( 'post' == $src_name ) && empty( $use_post_types[$object_type] ) )
+		if ( ( 'post' == $src_name ) && empty( $use_post_types[$object_type] ) && empty( $use_taxonomies[$object_type] ) )
 			continue;
 		
 		$otype_roles = array();

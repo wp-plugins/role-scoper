@@ -720,7 +720,7 @@ class Scoper
 			
 		if ( isset($args['reqd_caps']) )
 			unset($args['reqd_caps']);
-			
+
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 

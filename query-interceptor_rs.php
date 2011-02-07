@@ -217,6 +217,10 @@ class QueryInterceptor_RS
 			$args['terms_reqd_caps'] = $reqd_caps_by_otype;
 			$args['taxonomies'] = $taxonomies;
 			
+			if ( is_admin() ) {
+				$args['alternate_reqd_caps'][0] = array( "assign_$taxonomy" );
+			}
+			
 			$pos_where = 0;
 			$pos_suffix = 0;
 			$where = agp_parse_after_WHERE_11( $request, $pos_where, $pos_suffix );  // any existing where, orderby or group by clauses remain in $where
