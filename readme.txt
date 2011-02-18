@@ -55,53 +55,6 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Most Bug Reports and Plugin Compatibility issues addressed promptly following your <a href="http://agapetry.net/forum/">support forum</a> submission.
 * Author is available for professional consulting to meet your configuration, troubleshooting and customization needs.
 
-
-== Installation ==
-Role Scoper can be installed automatically via the Plugins tab in your blog administration panel.
-
-= To install manually instead: =
-1. Upload `role-scoper&#95;?.zip` to the `/wp-content/plugins/` directory
-1. Extract `role-scoper&#95;?.zip` into the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-
-
-== Frequently Asked Questions ==
-<strong>How can I prevent low-level users from seeing the Roles/Restrictions menus and Edit boxes?</strong>
-In your blog admin, navigate to Roles > Options.  In the "Content Maintenance" section, set the option "Roles and Restrictions can be set" to "by blog-wide Editors and Administrators" or "by Administrators only".  Click the Update button.
-
-
-<strong>How does Role Scoper compare to <a href="http://sourceforge.net/projects/role-manager/">Role Manager</a> or <a href="http://wordpress.org/extend/plugins/capsman/">Capability Manager</a>?</strong>
-Role Scoper's functionality is entirely different and complementary to RM and CM.  RM/CM do little more than alter WordPress' definition of the capabilities included in each role.  That's a valuable task, and in many cases will be all the role customization you need.  Since RM/CM modifications are stored in the main WordPress database, they remain even if RM/CM is deactivated.
-
-Role Scoper is useful when you want to customize access to specific content, not just blog-wide.  It will work with the WP roles as a starting point, whether customized by RM/CM or not.  To see how Role Scoper's role definitions correlate to your WordPress roles, navigate to Roles > Options > RS Role Definitions in your blog admin.  Role Scoper's modifications remain only while it stays active.
-
-
-<strong>Why are there so many options? Do I really need Role Scoper?</strong>
-It depends on what you're trying to accomplish with your WordPress installation.  Role Scoper is designed to be functionally comprehensive and flexible.  Great pains were taken to maintain performance and user-friendliness.  Yet there are simpler permission plugins out there, particularly if you only care about read access.  Review Role Scoper's feature list and decide what's important to you.
-
-<strong>Why doesn't Role Scoper limit direct access to files that I've uploaded via FTP?</strong>
-Role Scoper only filters files in the WP uploads folder (or a subfolder).  The uploads folder must be a branch of the WordPress directory tree.  The files must be formally attached to a post / page via the WordPress uploader or via the RS Attachments Utility.
-
-In your blog admin, navigate to Roles > Options > Features > Attachments > Attachments Utility.
-
-<strong>Where does Role Scoper store its settings?  How can I completely remove it from my database?</strong>
-Role Scoper creates and uses the following tables: groups&#95;rs, user2group&#95;rs, role&#95;scope&#95;rs, user2role2object&#95;rs.  All RS-specific options stored to the WordPress options table have an option name prefixed with "scoper&#95;".
-
-Due to the potential damage incurred by accidental deletion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
-
-
-== Screenshots ==
-
-1. Admin menus
-2. Role boxes in Edit Post Form
-3. Role boxes in Edit Page Form
-4. Category Restrictions
-5. Category Roles
-6. <a href="http://agapetry.net/demos/category_roles/index.html">View an html sample of the Category Roles bulk admin form</a>
-7. <a href="http://agapetry.net/demos/rs-options_demo.htm">View an html sample of Role Scoper Options</a>
-8. <a href="http://agapetry.net/news/introducing-role-scoper/">View more screenshots</a>
-
-
 == Changelog ==
 
 = 1.3.28-dev =
@@ -974,10 +927,52 @@ no changes from 1.2 RC
 = 1.0.0 - 21 March 2009 =
 * BugFix : In some installations, DB error for anonymous user front-end access (since rc9.9220)
 
+== Installation ==
+Role Scoper can be installed automatically via the Plugins tab in your blog administration panel.
+
+= To install manually instead: =
+1. Upload `role-scoper&#95;?.zip` to the `/wp-content/plugins/` directory
+1. Extract `role-scoper&#95;?.zip` into the `/wp-content/plugins/` directory
+1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Documentation ==
 * A slightly outdated <a href="http://agapetry.net/downloads/RoleScoper_UsageGuide.htm">Usage Guide</a> is available.  It includes both an overview of the permissions model and a How-To section with step by step directions.  Volunteer contributions to expand, revise or reformat this document are welcome.
 * Role Scoper's menus, onscreen captions and inline descriptive footnotes <a href="http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/">can be translated using poEdit</a>.  I will gladly include any user-contributed languages!.
+
+== Frequently Asked Questions ==
+<strong>How can I prevent low-level users from seeing the Roles/Restrictions menus and Edit boxes?</strong>
+In your blog admin, navigate to Roles > Options.  In the "Content Maintenance" section, set the option "Roles and Restrictions can be set" to "by blog-wide Editors and Administrators" or "by Administrators only".  Click the Update button.
+
+
+<strong>How does Role Scoper compare to <a href="http://sourceforge.net/projects/role-manager/">Role Manager</a> or <a href="http://wordpress.org/extend/plugins/capsman/">Capability Manager</a>?</strong>
+Role Scoper's functionality is entirely different and complementary to RM and CM.  RM/CM do little more than alter WordPress' definition of the capabilities included in each role.  That's a valuable task, and in many cases will be all the role customization you need.  Since RM/CM modifications are stored in the main WordPress database, they remain even if RM/CM is deactivated.
+
+Role Scoper is useful when you want to customize access to specific content, not just blog-wide.  It will work with the WP roles as a starting point, whether customized by RM/CM or not.  To see how Role Scoper's role definitions correlate to your WordPress roles, navigate to Roles > Options > RS Role Definitions in your blog admin.  Role Scoper's modifications remain only while it stays active.
+
+
+<strong>Why are there so many options? Do I really need Role Scoper?</strong>
+It depends on what you're trying to accomplish with your WordPress installation.  Role Scoper is designed to be functionally comprehensive and flexible.  Great pains were taken to maintain performance and user-friendliness.  Yet there are simpler permission plugins out there, particularly if you only care about read access.  Review Role Scoper's feature list and decide what's important to you.
+
+<strong>Why doesn't Role Scoper limit direct access to files that I've uploaded via FTP?</strong>
+Role Scoper only filters files in the WP uploads folder (or a subfolder).  The uploads folder must be a branch of the WordPress directory tree.  The files must be formally attached to a post / page via the WordPress uploader or via the RS Attachments Utility.
+
+In your blog admin, navigate to Roles > Options > Features > Attachments > Attachments Utility.
+
+<strong>Where does Role Scoper store its settings?  How can I completely remove it from my database?</strong>
+Role Scoper creates and uses the following tables: groups&#95;rs, user2group&#95;rs, role&#95;scope&#95;rs, user2role2object&#95;rs.  All RS-specific options stored to the WordPress options table have an option name prefixed with "scoper&#95;".
+
+Due to the potential damage incurred by accidental deletion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
+
+== Screenshots ==
+
+1. Admin menus
+2. Role boxes in Edit Post Form
+3. Role boxes in Edit Page Form
+4. Category Restrictions
+5. Category Roles
+6. <a href="http://agapetry.net/demos/category_roles/index.html">View an html sample of the Category Roles bulk admin form</a>
+7. <a href="http://agapetry.net/demos/rs-options_demo.htm">View an html sample of Role Scoper Options</a>
+8. <a href="http://agapetry.net/news/introducing-role-scoper/">View more screenshots</a>
 
 == General Plugin Compatibility Requirements ==
 * No other plugin or theme shall define function wp&#95;set&#95;current&#95;user() or function set&#95;current&#95;user().  A custom merge of the code may be possible in some situations.
