@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * role-scoper.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  * NOTE: this skeleton edition of WP_Scoped_User is loaded for anonymous users to reduce mem usage
  *

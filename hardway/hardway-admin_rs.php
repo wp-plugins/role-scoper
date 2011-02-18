@@ -24,7 +24,7 @@ if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
  * hardway-admin_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  * Used by Role Role Scoper Plugin as a container for statically-called functions
  *

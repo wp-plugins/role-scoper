@@ -28,7 +28,7 @@ if ( $scoper->is_front() || ! is_content_administrator_rs() ) {
  * hardway-taxonomy_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
  *
@@ -189,9 +189,22 @@ class ScoperHardwayTaxonomy
 		
 		
 		// === BEGIN Role Scoper MODIFICATION: cache key specific to access type and user/groups ===
-		//
+		
+		// support Quick Post Widget plugin
+		if ( isset($name) && 'quick_post_cat' == $name ) {
+			$required_operation = 'edit';
+			$post_type = 'post';
+		} elseif ( isset($name) && 'quick_post_new_cat_parent' == $name ) {
+			$is_term_admin = true;
+			$required_operation = '';
+			$post_type = '';
+		} else {
+			$required_operation = '';
+			$post_type = '';
+		}
+
 		$object_src_name = $scoper->taxonomies->member_property($taxonomies[0], 'object_source', 'name');
-		$ckey = md5( $key . serialize( $scoper->get_terms_reqd_caps($taxonomies[0], '', $is_term_admin) ) );
+		$ckey = md5( $key . serialize( $scoper->get_terms_reqd_caps($taxonomies[0], $required_operation, $is_term_admin) ) );
 		
 		global $current_user;
 		$cache_flag = 'rs_get_terms';
@@ -378,7 +391,7 @@ class ScoperHardwayTaxonomy
 		else
 			$do_teaser = false;
 	
-		$query = apply_filters( 'terms_request_rs', $query_base, $taxonomies[0], array('skip_teaser' => ! $do_teaser, 'is_term_admin' => $is_term_admin ) );
+		$query = apply_filters( 'terms_request_rs', $query_base, $taxonomies[0], array('skip_teaser' => ! $do_teaser, 'is_term_admin' => $is_term_admin, 'required_operation' => $required_operation, 'post_type' => $post_type ) );
 
 		// if no filering was applied because the teaser is enabled, prevent a redundant query
 		if ( ! empty($exclude_tree) || ($query_base != $query) || $parent || ( 'all' != $fields ) ) {
@@ -435,18 +448,19 @@ class ScoperHardwayTaxonomy
 			
 			ScoperHardway::remap_tree( $terms, $ancestors, 'term_id', 'parent', $remap_args );
 		}
+
 		//
 		// === END Role Scoper ADDITION ===
 		// ================================
-
-
+		
 		// === BEGIN Role Scoper MODIFICATION: call alternate functions 
 		// rs_tally_term_counts() replaces _pad_term_counts()
 		// rs_get_term_descendants replaces _get_term_children()
 		//
+
 		if ( ( $child_of || $hierarchical ) && ! empty($children) )
 			$terms = rs_get_term_descendants($child_of, $terms, $taxonomies[0]);
-			
+		
 		if ( ! $terms )
 			return array();
 		

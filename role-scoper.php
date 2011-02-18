@@ -11,7 +11,7 @@ License: GPL version 2 - http://www.opensource.org/licenses/gpl-license.php
 */
 
 /*
-Copyright (c) 2010, Kevin Behrens.
+Copyright (c) 2011, Kevin Behrens.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -45,7 +45,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 }
 
 define ('SCOPER_VERSION', '1.3.28-dev');
-define ('SCOPER_DB_VERSION', '1.1.2');
+define ('SCOPER_DB_VERSION', '1.1.3');
 
 /* --- ATTACHMENT FILTERING NOTE ---
 Read access to uploaded file attachments is normally filtered (via .htaccess RewriteRules) to match post/page access.
@@ -165,6 +165,7 @@ define ('OP_EDIT_RS', 'edit');
 define ('OP_PUBLISH_RS', 'publish');
 define ('OP_DELETE_RS', 'delete');
 define ('OP_ADMIN_RS', 'admin');
+define( 'OP_ASSIGN_RS', 'assign');
 
 define ('ROLE_BASIS_GROUPS', 'groups');
 define ('ROLE_BASIS_USER', 'user');

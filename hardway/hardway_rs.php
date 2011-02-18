@@ -32,7 +32,7 @@ add_filter('get_pages', array('ScoperHardway', 'flt_get_pages'), 1, 2);
  * hardway_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
  *

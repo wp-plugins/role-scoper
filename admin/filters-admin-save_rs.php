@@ -66,7 +66,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			
 		if ( 'post' == $src_name ) {		
 			global $scoper_admin_filters;
-			$is_new_object = empty( $scoper_admin_filters->logged_post_update[$object_id] ) && ( empty($scoper_admin_filters->last_post_status[$object_id]) || ( 'new' == $scoper_admin_filters->last_post_status[$object_id] ) || ( 'auto-draft' == $scoper_admin_filters->last_post_status[$object_id] ) );
+			$is_new_object = empty($scoper_admin_filters->last_post_status[$object_id]) || ( 'new' == $scoper_admin_filters->last_post_status[$object_id] ) || ( 'auto-draft' == $scoper_admin_filters->last_post_status[$object_id] );
 		} else
 			$is_new_object = true;  // for other data sources, we have to assume object is new unless it has a role or restriction stored already.
 
@@ -190,7 +190,6 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			}
 		} // endif user-modified roles/restrictions weren't already saved
 
-		// apply default roles for new object
 		if ( $is_new_object && ! $roles_customized ) {  // NOTE: this means we won't apply default roles if any roles have been manually assigned to the new object
 			scoper_inherit_parent_roles($object_id, OBJECT_SCOPE_RS, $src_name, 0, $object_type);
 		}

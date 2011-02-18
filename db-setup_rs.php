@@ -20,6 +20,13 @@ function scoper_db_setup($last_db_ver) {
 function scoper_update_schema($last_db_ver) {
 	global $wpdb;
 	
+	$charset_collate = '';
+
+	if ( ! empty($wpdb->charset) )
+		$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+	if ( ! empty($wpdb->collate) )
+		$charset_collate .= " COLLATE $wpdb->collate";
+	
 	/*--- Groups table def 
 		(complicated because (a) we support usage of pre-existing group table from other app
 		 					 (b) existing group table may include a subset of our required columns
@@ -46,7 +53,7 @@ function scoper_update_schema($last_db_ver) {
 		 	$query .= $colname . ' ' . $typedef . ',';
 
 		$query .= " PRIMARY KEY ($wpdb->groups_id_col),"
-				. " KEY meta_id ($wpdb->groups_meta_id_col, $wpdb->groups_id_col) );";
+				. " KEY meta_id ($wpdb->groups_meta_id_col, $wpdb->groups_id_col) ) $charset_collate;";
 	
 		$wpdb->query($query);
 		
@@ -69,14 +76,20 @@ function scoper_update_schema($last_db_ver) {
 			}
 		}
 		
-		if ( ! version_compare( $last_db_ver, '1.0.2', '>=') ) {
+		if ( version_compare( $last_db_ver, '1.0.2', '<') ) {
 			// DB version < 1.0.2 used varchar columns, which don't support unicode
 			$wpdb->query("ALTER TABLE $wpdb->groups_rs MODIFY COLUMN $wpdb->groups_name_col text NOT NULL");
 			$wpdb->query("ALTER TABLE $wpdb->groups_rs MODIFY COLUMN $wpdb->groups_descript_col text NOT NULL");	
 		}
 	
-		if ( ! version_compare( $last_db_ver, '1.1.1', '>=') ) {
+		if ( version_compare( $last_db_ver, '1.1.2', '<') ) {
 			$query = "ALTER TABLE $wpdb->groups_rs MODIFY $wpdb->groups_meta_id_col VARCHAR(64)";	
+			$wpdb->query($query);
+		}
+
+		if ( version_compare( $last_db_ver, '1.1.3', '<') ) {
+			$charset_collate = str_replace( 'DEFAULT', '', $charset_collate );
+			$query = "ALTER TABLE $wpdb->groups_rs CONVERT TO $charset_collate";
 			$wpdb->query($query);
 		}
 	}

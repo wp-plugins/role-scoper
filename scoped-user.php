@@ -9,7 +9,7 @@ require_once('db-config_rs.php');
  * role-scoper.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  */
 if ( ! class_exists('WP_Scoped_User') ) {

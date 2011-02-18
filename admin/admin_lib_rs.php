@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * scoper_admin_lib.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
  * These function can be used during activation, deactivation, or other 

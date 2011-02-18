@@ -334,9 +334,9 @@ function cr_taxonomy_cap_defs() {
 		$arr[ $taxonomy_obj->cap->edit_terms ] = 	(object) array( 'src_name' => 'post', 'op_type' => OP_ADMIN_RS, 'is_taxonomy_cap' => true );
 		$arr[ $taxonomy_obj->cap->delete_terms ] = 	(object) array( 'src_name' => 'post', 'op_type' => OP_ADMIN_RS, 'is_taxonomy_cap' => true );
 		
-		$arr[ "assign_$name" ] = (object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS, 'is_taxonomy_cap' => true );
+		$arr[ "assign_{$name}" ] = (object) array( 'src_name' => 'post', 'op_type' => OP_ASSIGN_RS, 'is_taxonomy_cap' => true );
 	}
-	
+
 	return $arr;
 }
 

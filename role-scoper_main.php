@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * role-scoper_main.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  */
 class Scoper
@@ -872,8 +872,11 @@ class Scoper
 			$base_caps_only = true;
 			
 			if ( 'post' == $src_name ) {
-				$status = ( is_admin() ) ? 'draft' : 'publish';	// we want to retrieve basic object access caps for current access type (possible TODO: define a default_status property)
+				if ( ! $operation )
+					$operation = ( $this->is_front() || ( 'profile.php' == $pagenow ) ) ? 'read' : 'edit';  // hack to support subscribe2 categories checklist
 
+				$status = ( 'read' == $operation ) ? 'publish' : 'draft';
+				
 				// terms query should be limited to a single object type for post.php, post-new.php, so only return caps for that object type (TODO: do this in wp-admin regardless of URI ?)
 				if ( in_array( $pagenow, array( 'post.php', 'post-new.php' ) ) )
 					$object_type = cr_find_post_type();
@@ -899,12 +902,6 @@ class Scoper
 							$enabled_object_types []= $_object_type;
 					}
 			}
-
-			if ( empty($operation) )
-				$operation = ( $this->is_front() || ( 'profile.php' == $pagenow ) ) ? 'read' : 'edit';  // hack to support subscribe2 categories checklist
-
-			if ( 'read' == $operation )
-				$status = 'publish';
 
 			foreach( $enabled_object_types as $object_type )
 				$return_caps[$object_type] = cr_get_reqd_caps( $src_name, $operation, $object_type, $status, $base_caps_only );	

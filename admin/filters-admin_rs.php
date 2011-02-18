@@ -10,7 +10,7 @@ require_once( 'admin_lib_rs.php' );
  * filters-admin_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  */
 class ScoperAdminFilters

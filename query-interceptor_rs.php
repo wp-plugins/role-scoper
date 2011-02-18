@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * query-interceptor_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2010
+ * @copyright 	Copyright 2011
  * 
  */
 
@@ -130,7 +130,7 @@ class QueryInterceptor_RS
 	// Append any limiting clauses to WHERE clause for taxonomy query
 	//$reqd_caps_by_taxonomy[tx_name][op_type] = array of cap names
 	function flt_terms_request($request, $taxonomies, $args = array()) {
-		$defaults = array( 'reqd_caps_by_otype' => array(), 'is_term_admin' => false );
+		$defaults = array( 'reqd_caps_by_otype' => array(), 'is_term_admin' => false, 'required_operation' => '', 'post_type' => '' );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 
@@ -163,14 +163,18 @@ class QueryInterceptor_RS
 			$reqd_caps_by_otype = array();
 
 			// try to determine context from URI (if taxonomy definition includes such clues)
-			foreach( $taxonomies as $taxonomy )
-				$reqd_caps_by_otype = array_merge( $reqd_caps_by_otype, $this->scoper->get_terms_reqd_caps( $taxonomy, '', $is_term_admin ) );   // NOTE: get_terms_reqd_caps() returns term management caps on edit-tags.php, otherwise post edit caps
-
+			foreach( $taxonomies as $taxonomy ) {
+				$reqd_caps_by_otype = array_merge( $reqd_caps_by_otype, $this->scoper->get_terms_reqd_caps( $taxonomy, $required_operation, $is_term_admin ) );   // NOTE: get_terms_reqd_caps() returns term management caps on edit-tags.php, otherwise post edit caps
+			}
+			
+			if ( $post_type ) 
+				$reqd_caps_by_otype = array_intersect_key( $reqd_caps_by_otype, array( $post_type => true ) );
+			
 			// if required operation still unknown, default based on access type
 			if ( ! $reqd_caps_by_otype )
 				return $request;
 		}
-		
+
 		// prevent hardway-admin filtering of any queries which may be triggered by this filter
 		$GLOBALS['scoper_status']->querying_db = true;
 
@@ -217,10 +221,9 @@ class QueryInterceptor_RS
 			$args['terms_reqd_caps'] = $reqd_caps_by_otype;
 			$args['taxonomies'] = $taxonomies;
 			
-			if ( is_admin() ) {
+			if ( is_admin() )
 				$args['alternate_reqd_caps'][0] = array( "assign_$taxonomy" );
-			}
-			
+
 			$pos_where = 0;
 			$pos_suffix = 0;
 			$where = agp_parse_after_WHERE_11( $request, $pos_where, $pos_suffix );  // any existing where, orderby or group by clauses remain in $where
@@ -228,7 +231,7 @@ class QueryInterceptor_RS
 				$request = substr($request, 0, $pos_suffix) . ' WHERE 1=1 ' .  substr($request, $pos_suffix);
 				$pos_where = $pos_suffix;
 			}
-			
+	
 			$where = $this->flt_objects_where($where, $src_name, '', $args);
 
 			if ( $pos_where === false )
@@ -377,6 +380,9 @@ class QueryInterceptor_RS
 			return array();
 
 		if ( is_feed() && defined( 'SCOPER_NO_FEED_TEASER' ) )
+			return array();
+
+		if ( ( ! empty( $args['required_operation'] ) && ( 'read' != $args['required_operation'] ) ) )
 			return array();
 			
 		if ( empty($object_types) )
@@ -625,7 +631,7 @@ class QueryInterceptor_RS
 				$otype_use_term_roles = false;
 				$otype_use_object_roles = false;
 			}
-
+			
 			//now step through all statuses and corresponding cap requirements for this otype and access type
 			// (will replace "col_status = status_name" with "col_status = status_name AND ( [scoper requirements] )
 			foreach ($status_reqd_caps as $status_name => $reqd_caps) {
@@ -671,8 +677,8 @@ class QueryInterceptor_RS
 				unset( $status_where[$status_name] );
 			else
 				$status_where[$status_name] = agp_implode(' ) OR ( ', $status_where[$status_name], ' ( ', ' ) ');
-		}	
-
+		}
+		
 		// combine identical status clauses
 		$duplicate_clause = array();
 		$replace_clause = array();
@@ -792,7 +798,7 @@ class QueryInterceptor_RS
 	function objects_where_role_clauses($src_name, $reqd_caps, $args = array() ) {	
 		$defaults = array( 'taxonomies' => array(), 'terms_query' => false, 'alternate_reqd_caps' => '', 
 						'custom_user_blogcaps' => '', 'skip_owner_clause' => false, 'require_full_object_role' => false );
-						
+									
 		// Required Args
 		// NOTE: use_object_roles is a boolean for the single object_type in question, but otype_use_object_roles is array[taxonomy] = true or false
 		$required = array_fill_keys( array( 'user', 'object_type', 'otype_use_term_roles', 'otype_use_object_roles' ), true );
