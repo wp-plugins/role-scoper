@@ -65,6 +65,7 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Feature : Category Assigner role does not grant post creation/editing capabilities but specifies categories which are assignable to any user-editable post regardless of post ownership or status
 * Compat : Quick Post Widget - categories were not filtered
 * BugFix : Default roles were not applied at Page / Post creation
+* BugFix : Did not support meta_key without meta_value in get_pages call (or vice versa)
 
 
 = 1.3.27 - 19 Jan 2011 =

@@ -233,7 +233,7 @@ class ScoperHardway
 		$join = '';
 		$where = "$exclusions $inclusions ";
 
-		if ( ! empty( $meta_key ) && ! empty($meta_value) ) {
+		if ( ! empty( $meta_key ) || ! empty($meta_value) ) {
 			$join = " INNER JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id";   // Role Scoper modification: was LEFT JOIN in WP 3.0 core (TODO: would that botch uro join results?
 			
 			// meta_key and meta_value might be slashed
