@@ -86,7 +86,7 @@ if ( scoper_get_option('display_hints') ) {
 	$style = '';
 
 	$use_post_types = scoper_get_option( 'use_post_types' );
-	
+
 	// order WP roles by display name
 	foreach ( array_keys($wp_role_names) as $wp_role_name ) {
 		$role_handle = scoper_get_role_handle( $wp_role_name, 'wp' ); 

@@ -769,7 +769,7 @@ function scoper_get_duration_clause( $content_date_comparison = '', $table_prefi
 			$clause .= " AND ( $table_prefix.content_date_limited = '0' OR ( $content_date_clause ) ) ";
 		}
 	}
-		
+	
 	return $clause;
 }
 
@@ -859,6 +859,9 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 		
 	} elseif ( in_array( $pagenow, array( 'edit-tags.php' ) ) ) {
 		$object_type = ! empty( $_GET['taxonomy'] ) ? $_GET['taxonomy'] : 'category';
+
+	} elseif ( in_array( $pagenow, array( 'admin-ajax.php' ) ) && ! empty( $_REQUEST['taxonomy'] ) ) {
+		$object_type = $_REQUEST['taxonomy'];
 		
 	} elseif ( ! empty( $_POST['post_ID'] ) ) {
 		if ( $_post = get_post( $_POST['post_ID'] ) )

@@ -66,6 +66,9 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Compat : Quick Post Widget - categories were not filtered
 * BugFix : Default roles were not applied at Page / Post creation
 * BugFix : Did not support meta_key without meta_value in get_pages call (or vice versa)
+* Change : Support post_type argument in get_terms / wp_list_terms function call
+* BugFix : Non-administrators could not delete categories
+* BugFix : Internal Cache (and therefore permissions) did not refresh when an existing user's role is changed
 
 
 = 1.3.27 - 19 Jan 2011 =

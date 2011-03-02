@@ -117,6 +117,7 @@ class ScoperAdminFilters
 		// -------- Predefined WP User/Post/Page admin actions / filters ----------
 		// user maintenace
 		add_action('profile_update', array('ScoperAdminLib', 'sync_wproles') );
+		add_action('set_user_role', array('ScoperAdminLib', 'schedule_role_sync') );
 		add_filter('user_has_cap', array(&$this, 'flt_has_edit_user_cap'), 99, 3 );
 		add_filter('editable_roles', array(&$this, 'flt_editable_roles'), 99 );
 

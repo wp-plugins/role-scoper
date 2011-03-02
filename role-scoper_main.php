@@ -852,7 +852,7 @@ class Scoper
 
 		$return_caps = array();
 
-		$is_term_admin = $is_term_admin || in_array( $pagenow, array( 'edit-tags.php', 'nav-menus.php' ) );	// possible TODO: abstract for non-WP taxonomies
+		$is_term_admin = $is_term_admin || in_array( $pagenow, array( 'edit-tags.php', 'nav-menus.php', 'admin-ajax.php' ) );	// possible TODO: abstract for non-WP taxonomies
 
 		if ( $is_term_admin ) {
 			// query pertains to the management of terms
@@ -865,7 +865,8 @@ class Scoper
 				global $scoper;
 				$cap_defs = $scoper->cap_defs->get_matching( $src_name, $taxonomy, OP_ADMIN_RS );
 				$return_caps[$taxonomy] = $cap_defs ? array_keys( $cap_defs ) : array();
-			}	 	
+			}
+
 		} else {
 			// query pertains to reading or editing content within certain terms, or adding terms to content
 			

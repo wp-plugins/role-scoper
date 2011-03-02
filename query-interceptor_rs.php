@@ -134,6 +134,8 @@ class QueryInterceptor_RS
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 
+		$post_type = (array) $post_type;
+		
 		$taxonomies = (array) $taxonomies;
 		if ( ! $taxonomies )
 			return $request;
@@ -168,7 +170,7 @@ class QueryInterceptor_RS
 			}
 			
 			if ( $post_type ) 
-				$reqd_caps_by_otype = array_intersect_key( $reqd_caps_by_otype, array( $post_type => true ) );
+				$reqd_caps_by_otype = array_intersect_key( $reqd_caps_by_otype, array_flip( $post_type ) );
 			
 			// if required operation still unknown, default based on access type
 			if ( ! $reqd_caps_by_otype )
@@ -1181,7 +1183,7 @@ class QueryInterceptor_RS
 						$where[ANY_CONTENT_DATE_RS][NO_OBJSCOPE_CLAUSE_RS][OBJECT_SCOPE_RS][$role_spec->role_type][$role_spec->role_name] = true;
 			}
 		}
-
+		
 		// DB query perf enhancement: if any terms are included regardless of post ID, don't also include those terms in ID-specific clause
 		foreach ( array_keys($where) as $date_key ) {
 			foreach ( array_keys($where[$date_key]) as $objscope_clause ) {
@@ -1302,9 +1304,9 @@ class QueryInterceptor_RS
 									$cache_obj_ids = array();
 									$post_save_refreshed = array();
 								}
-
+								
 								$objrole_subselect = "SELECT DISTINCT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause ";
-
+								
 								if ( did_action( 'save_post' ) || ! empty($_GET['doaction']) ) {
 									// make sure we don't refresh the same query multiple times following an update operation
 									if ( isset( $post_save_refreshed[$objrole_subselect] ) )

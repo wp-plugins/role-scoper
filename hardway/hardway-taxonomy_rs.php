@@ -146,7 +146,8 @@ class ScoperHardwayTaxonomy
 			'pad_counts' => false, 'offset' => '', 'search' => '', 'skip_teaser' => false,
 			
 			'depth' => 0,	
-			'remap_parents' => -1,	'enforce_actual_depth' => -1,	'remap_thru_excluded_parent' => -1
+			'remap_parents' => -1,	'enforce_actual_depth' => -1,	'remap_thru_excluded_parent' => -1,
+			'post_type' => ''
 			  );	// Role Scoper arguments added above
 
 		$args = wp_parse_args( $args, $defaults );
@@ -178,6 +179,10 @@ class ScoperHardwayTaxonomy
 	
 		if ( $parent && ! isset($children[$parent]) )
 			return array();
+			
+		if ( $post_type && is_string($post_type) )
+			$post_type = explode( ',', $post_type );
+		
 		//
 		// === END Role Scoper MODIFICATION ===
 		// ====================================
@@ -194,13 +199,13 @@ class ScoperHardwayTaxonomy
 		if ( isset($name) && 'quick_post_cat' == $name ) {
 			$required_operation = 'edit';
 			$post_type = 'post';
+			$remap_parents = true;
 		} elseif ( isset($name) && 'quick_post_new_cat_parent' == $name ) {
 			$is_term_admin = true;
 			$required_operation = '';
-			$post_type = '';
+			$remap_parents = true;
 		} else {
 			$required_operation = '';
-			$post_type = '';
 		}
 
 		$object_src_name = $scoper->taxonomies->member_property($taxonomies[0], 'object_source', 'name');
@@ -471,7 +476,7 @@ class ScoperHardwayTaxonomy
 			if ( ! is_admin() || ! in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
 			
 				//-- RoleScoper Modification - alternate function call (was _pad_term_counts) --//
-				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser ) );
+				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser, 'post_type' => $post_type ) );
 			}
 		}
 		
@@ -638,7 +643,7 @@ function &rs_get_term_descendants($requested_parent_id, $qualified_terms, $taxon
 function rs_tally_term_counts(&$terms, $taxonomy, $args = array()) {
 	global $wpdb, $scoper;
 	
-	$defaults = array ( 'pad_counts' => true, 'skip_teaser' => false );
+	$defaults = array ( 'pad_counts' => true, 'skip_teaser' => false, 'post_type' => '' );
 	$args = array_merge( $defaults, (array) $args );
 	extract($args);
 	
@@ -659,10 +664,15 @@ function rs_tally_term_counts(&$terms, $taxonomy, $args = array()) {
 	foreach ( $post_types as $_post_type )
 		if ( scoper_get_otype_option( 'use_term_roles', 'post', $_post_type ) )
 			$enabled_types []= $_post_type;
-
+			
 	if ( ! $enabled_types )
 		return;
 			
+	if ( $post_type ) {
+		$post_type = (array) $post_type;
+		$enabled_types = array_intersect( $enabled_types, $post_type );
+	}
+	
 	// Get the object and term ids and stick them in a lookup table
 	$request = "SELECT DISTINCT $wpdb->posts.ID, tt.term_taxonomy_id, tt.term_id, tr.object_id"
 			 . " FROM $wpdb->posts"
@@ -674,8 +684,9 @@ function rs_tally_term_counts(&$terms, $taxonomy, $args = array()) {
 	// no need to pass any parameters which do not pertain to the objects_request filter
 	$args = array_intersect_key( $args, array_flip( array('skip_teaser') ) );
 
-	$post_type = reset($enabled_types);
-
+	//$post_type = reset($enabled_types);
+	$post_type = $enabled_types;
+	
 	// note: don't pass in a taxonomies arg because we need to consider restrictions associated with any taxonomy to determine readable objects for terms of this taxonomy
 	$request = apply_filters('objects_request_rs', $request, 'post', $post_type, $args);
 

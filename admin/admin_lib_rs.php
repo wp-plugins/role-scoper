@@ -532,6 +532,13 @@ class ScoperAdminLib {
 	} // end sync_wproles function
 
 	function schedule_role_sync() {
+		static $done;
+		
+		if ( ! empty($done) )
+			return;	
+		
+		$done = true;
+			
 		// Role Manager / Capability Manager don't actually create the role until after the option update we're hooking on, so defer our maintenance operation
 		wpp_cache_flush();
 		add_action( 'shutdown', array('ScoperAdminLib', 'sync_all_wproles') );
