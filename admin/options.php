@@ -1970,10 +1970,6 @@ echo '<li>';
 _e('The &quot;Post Tag&quot; taxonomy cannot be used to define restrictions because tags are not mandatory. For most installations, categories are a better mechanism to define roles. Note that <strong>Role Scoper does not filter tag storage</strong> based on the editing user\'s access.  As with any other custom-defined taxonomy, use this option at your own discretion.', 'scoper');
 echo '</li>';
 
-echo '<li>';
-_e('By default, WordPress does not support page categories.  The corresponding &quot;Role Scopes&quot; option is only meaningful if the WP core or another plugin has added this support.', 'scoper');
-echo '</li>';
-
 echo '</ul>';
 echo '</div>';
 

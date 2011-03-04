@@ -279,6 +279,17 @@ class QueryInterceptor_RS
 		if ( strpos( $request, "post_type = 'revision'") )
 			return $request; 
 
+		// no need to apply objects query filtering withing NextGEN Gallery upload operation (was failing with undefined $current_user)
+		if ( is_admin() ) {
+			$nofilter_scripts = ( defined( 'NGGFOLDER' ) ) ? array( constant('NGGFOLDER') . '/admin/upload.php' ) : array();
+			if ( $nofilter_scripts = apply_filters( 'nofilter_scripts_rs', $nofilter_scripts ) ) {
+				foreach( $nofilter_scripts as $_script_name ) {
+					if ( strpos( $_SERVER['SCRIPT_NAME'], $_script_name ) )
+						return $where;
+				}
+			}
+		}
+			
 		// prevent hardway-admin filtering of any queries which may be triggered by this filter
 		$GLOBALS['scoper_status']->querying_db = true;
 			
@@ -1051,7 +1062,7 @@ class QueryInterceptor_RS
 		if ( $use_blog_roles ) {
 			foreach( array_keys($user->blog_roles) as $date_key )
 				$user_blog_roles[$date_key] = array_intersect_key( $user->blog_roles[$date_key], $qualifying_roles );
-								
+				
 			// Also include user's WP blogrole(s),
 			// but via equivalent RS role(s) to support scoping requirements (strict (i.e. restricted) terms, objects)
 			if ( $wp_qualifying_roles = $this->scoper->role_defs->qualify_roles($reqd_caps, 'wp') ) {
