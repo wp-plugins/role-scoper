@@ -35,14 +35,16 @@ function wp_set_current_user($id, $name = '') {
 
 	//scoper_version_check();
 
-	if ( $id || ( $name && get_userdatabylogin($name) ) )
+	if ( $id || ( $name && get_userdatabylogin($name) ) ) {
 		require_once('scoped-user.php');
-	else
+		$current_user = new WP_Scoped_User($id, $name);
+	} else {
 		require_once('scoped-user_anon.php');
+		$current_user = new WP_Scoped_User_Anon();
+	}
 	
 	//log_mem_usage_rs( 'required scoped-user.php' );
-		
-	$current_user = new WP_Scoped_User($id, $name);
+	
 	
 	//log_mem_usage_rs( 'new WP_Scoped_User' );
 	
@@ -64,5 +66,12 @@ function wp_set_current_user($id, $name = '') {
 	do_action('set_current_scoped_user');
 	
 	return $current_user;
+}
+
+function rs_get_user( $user_id, $name = '', $args = array() ) {
+	if ( ! class_exists( 'WP_Scoped_User' ) )
+		require_once('scoped-user.php');
+	
+	return new WP_Scoped_User( $user_id, $name, $args );
 }
 ?>

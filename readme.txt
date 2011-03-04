@@ -69,6 +69,10 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Change : Support post_type argument in get_terms / wp_list_terms function call
 * BugFix : Non-administrators could not delete categories
 * BugFix : Internal Cache (and therefore permissions) did not refresh when an existing user's role is changed
+* Compat : When plugin or theme code forces autologin, RS filtering does not reflect it until the next http request
+* Feature : Nav Menu Manager role can be assigned to users who do not have edit_theme_options capability
+* Feature : Nav Menu Manager role can be assigned site-wide
+* Feature : For Nav Menu Management, option to list only user-editable content as available items
 
 
 = 1.3.27 - 19 Jan 2011 =

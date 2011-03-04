@@ -86,12 +86,6 @@ if ( scoper_get_option('display_hints') ) {
 	} else
 		printf(__('Grant capabilities within a specific %s, potentially more than a user\'s WP role would allow.', 'scoper'), $tx->labels->singular_name );
 		
-	if ( 'nav_menu' == $taxonomy ) {
-		echo '<p>';
-		_e( '<strong>Note</strong> that as of WordPress 3.0, users also need the <strong>edit_theme_options</strong> capability in their WordPress role.', 'scoper');
-		echo '</p>';
-	}
-		
 	echo '</div>';
 }
 

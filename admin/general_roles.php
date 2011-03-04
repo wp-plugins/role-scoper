@@ -308,11 +308,17 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 	if ( ! empty($src->taxonomy_only) )
 		continue;
 
-	if ( 'post' == $src_name )
-		$use_post_types = scoper_get_option( 'use_post_types' );
+	$object_types = $src->object_types;
 		
+	if ( 'post' == $src_name ) {
+		$use_post_types = scoper_get_option( 'use_post_types' );
+
+		$use_post_types['nav_menu_item'] = true; // currently no RS Options switch for this
+		$object_types['nav_menu_item'] = (object) array( 'labels' => (object) array( 'name' => __( 'Nav Menu Manager', 'scoper' ) ) );
+	}
+			
 	$include_taxonomy_otypes = true;
-	foreach ( $src->object_types as $object_type => $otype ) {
+	foreach ( $object_types as $object_type => $otype ) {
 		if ( ( 'post' == $src_name ) && ( empty( $use_post_types[$object_type] ) ) )
 			continue;
 		

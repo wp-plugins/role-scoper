@@ -134,7 +134,8 @@ class QueryInterceptor_RS
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 
-		$post_type = (array) $post_type;
+		if ( $post_type )
+			$post_type = (array) $post_type;
 		
 		$taxonomies = (array) $taxonomies;
 		if ( ! $taxonomies )
@@ -176,7 +177,7 @@ class QueryInterceptor_RS
 			if ( ! $reqd_caps_by_otype )
 				return $request;
 		}
-
+		
 		// prevent hardway-admin filtering of any queries which may be triggered by this filter
 		$GLOBALS['scoper_status']->querying_db = true;
 
@@ -919,7 +920,7 @@ class QueryInterceptor_RS
 				
 				$qualifying_object_roles = $this->scoper->confirm_object_scope( $owner_roles );		// have to pass this in for 'user' call because qualifying_roles may not include a qualifying object role (i.e. Page Contributor object role assignment)
 			}
-				
+
 			if ( $qualifying_roles || ! empty($qualifying_object_roles) ) {
 				//d_echo( "regular objects_where_scope_clauses for " . serialize( $reqd_caps ) );
 				$args = array_merge( $args, compact( 'qualifying_roles', 'qualifying_object_roles' ) );

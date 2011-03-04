@@ -93,14 +93,13 @@ class CapInterceptor_RS
 		//}
 
 		// ============================================= (end temporary debug code) ==============================================
-		
 
 		// convert 'rs_role_name' to corresponding caps (and also make a tinkerable copy of orig_reqd_caps)
 		$orig_reqd_caps = $this->scoper->role_defs->role_handles_to_caps($orig_reqd_caps);
 		
 		
 		// ================= EARLY EXIT CHECKS (if the provided reqd_caps do not need filtering or need special case filtering ==================
-		
+
 		// Disregard caps which are not defined in Role Scoper config
 		if ( ! $rs_reqd_caps = array_intersect( $orig_reqd_caps, $this->scoper->cap_defs->get_all_keys() ) ) {
 			return $wp_blogcaps;		
@@ -142,7 +141,7 @@ class CapInterceptor_RS
 			return $wp_blogcaps;			
 		}
 		// =================================================== (end early exit checks) ======================================================
-		
+
 
 		// ============================ GLOBAL VARIABLE DECLARATIONS, ARGUMENT TRANSLATION AND STATUS DETECTION =============================
 		global $current_user, $pagenow;
@@ -150,7 +149,7 @@ class CapInterceptor_RS
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 
 		if ( $user_id && ($user_id != $current_user->ID) )
-			$user = new WP_Scoped_User($user_id);
+			$user = rs_get_user($user_id);
 		else
 			$user = $current_user;
 
@@ -166,6 +165,28 @@ class CapInterceptor_RS
 		$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );
 
 		//rs_errlog( "cap types: " . serialize($cap_types) );
+		
+		$doing_admin_menus = is_admin() && (
+		( did_action( '_admin_menu' ) && ! did_action('admin_menu') ) 		 // menu construction
+		|| ( did_action( 'in_admin_header' ) && ! did_action('adminmenu') )	 // menu display
+		); 
+
+		// for scoped menu management roles, satisfy edit_theme_options cap requirement
+		if ( ( 'edit_theme_options' == $orig_reqd_caps[0] ) && empty( $wp_blogcaps['edit_theme_options'] ) ) {
+			if ( in_array( $GLOBALS['pagenow'], array( 'nav-menus.php', 'admin-ajax.php' ) ) || $doing_admin_menus ) {
+				$key = array_search( 'edit_theme_options', $rs_reqd_caps );
+				if ( false !== $key ) {
+					$tx = get_taxonomy( 'nav_menu' );
+					$rs_reqd_caps[$key] = $tx->cap->manage_terms;
+					
+					$src_name = 'nav_menu';
+					
+					// menu-specific manager assignment does not permit deletion of the menu
+					if ( ! empty( $_REQUEST['action'] ) && ( 'delete' == $_REQUEST['action'] ) )
+						$this->skip_any_term_check = true;
+				}
+			}
+		}
 		
 		if ( ! $src_name ) {
 			// required capabilities correspond to multiple data sources
@@ -196,11 +217,6 @@ class CapInterceptor_RS
 		
 		if ( empty($cap_types) )
 			$cap_types = array( $object_type );
-		
-		$doing_admin_menus = is_admin() && (
-		( did_action( '_admin_menu' ) && ! did_action('admin_menu') ) 		 // menu construction
-		|| ( did_action( 'in_admin_header' ) && ! did_action('adminmenu') )	 // menu display
-		); 
 		// =====================================================================================================================================
 
 
@@ -212,15 +228,8 @@ class CapInterceptor_RS
 				$cap_types = array_diff( $cap_types, array( '' ) );   // ignore nullstring object_type property associated with some caps
 
 			// slight simplification: assume a single cap object type for a few cap substitution checks
-			if ( $is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' ) )
-				$cap_type_obj = get_taxonomy( reset($cap_types) );
-			else {
-				if ( count( $cap_types ) > 1 )
-					$cap_type_obj = $object_type_obj;
-				else
-					$cap_type_obj = get_post_type_object( reset($cap_types) );
-			}
-				
+			$is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' );
+
 			if ( ! $is_taxonomy_cap ) {
 				$modified_caps = false;
 				
@@ -260,8 +269,7 @@ class CapInterceptor_RS
 				}
 
 				if ( $modified_caps ) {
-					if ( $cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name ) )
-						$cap_type_obj = get_post_type_object( reset($cap_types) );
+					$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );
 				}
 			} // endif not taxonomy cap
 		} // endif caps correspond to 'post' data source
@@ -290,7 +298,7 @@ class CapInterceptor_RS
 			} elseif ( ! empty( $GLOBALS['post'] ) && ( 'auto-draft' == $GLOBALS['post']->post_status ) && ! $doing_admin_menus )
 				$this->skip_id_generation = true;	
 		}
-
+		
 		// If no object id was passed in...
 		if ( ! $object_id ) { // || ! $matched_context ) {
 		//if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {

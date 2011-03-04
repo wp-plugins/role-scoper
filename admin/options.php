@@ -183,6 +183,9 @@ $ui->section_captions = array(
 		'pages_listing' => __('Pages Listing', 'scoper'),
 		'categories_listing' =>	__('Categories Listing', 'scoper'),
 		'content_maintenance'=> __('Content Maintenance', 'scoper'),
+		'role_assignment' =>	__('Role Assignment', 'scoper'),
+		'nav_menu_management' =>	__('Nav Menu Management', 'scoper' ),
+		'media_library' => __('Media Library', 'scoper'),
 		'file_filtering' =>	__('File Filtering', 'scoper'),
 		'date_limits' =>	__('Role Date Limits', 'scoper'),
 		'internal_cache' =>	__('Internal Cache', 'scoper'),	
@@ -266,7 +269,8 @@ $ui->option_captions = array(
 	'restrictions_column' => __('Restrictions Column', 'scoper'),
 	'term_roles_column' => __('Term Roles Column', 'scoper' ),
 	'object_roles_column' => __('Object Roles Column', 'scoper'),
-	
+	'admin_nav_menu_filter_items' => __( 'List only user-editable content as available items', 'scoper' ),
+
 	'do_teaser' => __('Enable', 'scoper'),	/* NOTE: submitee.php must sync all other teaser-related options to do_teaser scope setting */
 	'admin_css_ids' => __('Limited Editing Elements', 'scoper'),
 	'limit_object_editors' => __('Limit eligible users for object-specific editing roles', 'scoper'),
@@ -274,7 +278,7 @@ $ui->option_captions = array(
 	'use_term_roles' => __('settings', 'scoper'),
 	'disabled_access_types' => __('settings', 'scoper'),
 	/* disabled_role_caps' => __('settings', 'scoper'), */
-	'user_role_caps' => __('settings', 'scoper')	/* NOTE: submitee.php must sync disabled_role_caps and user_role_caps scope setting */
+	'user_role_caps' => __('settings', 'scoper'),	/* NOTE: submitee.php must sync disabled_role_caps and user_role_caps scope setting */
 );
 
 
@@ -284,7 +288,10 @@ $ui->form_options = array(
 	'front_end' 	=> 		array( 'strip_private_caption', 'no_frontend_admin' ),
 	'pages_listing' => 		array( 'private_items_listable', 'remap_page_parents', 'enforce_actual_page_depth', 'remap_thru_excluded_page_parent' ),
 	'categories_listing' =>	array( 'remap_term_parents', 'enforce_actual_term_depth', 'remap_thru_excluded_term_parent' ),
-	'content_maintenance'=> array( 'default_private', 'sync_private', 'role_admin_blogwide_editor_only', 'admin_others_attached_files', 'admin_others_unattached_files', 'filter_users_dropdown' ),
+	'content_maintenance'=> array( 'default_private', 'sync_private', 'filter_users_dropdown' ),
+	'nav_menu_management' => array( 'admin_nav_menu_filter_items' ),
+	'role_assignment' =>	array( 'role_admin_blogwide_editor_only' ),
+	'media_library' =>		array( 'admin_others_attached_files', 'admin_others_unattached_files' ),
 	'file_filtering' =>		array( 'file_filtering', 'file_filtering_regen_key' ),
 	'date_limits' =>		array( 'role_duration_limits', 'role_content_date_limits' ),
 	'internal_cache' =>		array( 'persistent_cache' ),
@@ -642,6 +649,39 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	$hint = __('Note: this is only done if the Reader role is restricted via Post/Page edit form.', 'scoper');
 	$ui->otype_option_checkboxes( 'sync_private', $caption, $tab, $section, $hint, '<br /><br />' );
 	
+	$hint = __('If enabled, Post Author and Page Author selection dropdowns will be filtered based on scoped roles.', 'scoper');
+	$ret = $ui->option_checkbox( 'filter_users_dropdown', $tab, $section, $hint, '' );	
+	?>
+	
+	</td>
+	</tr>
+<?php endif; // any options accessable in this section
+
+
+$section = 'nav_menu_management';
+if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
+	<tr valign="top">
+	<th scope="row"><?php 				
+	echo $ui->section_captions[$tab][$section];		// --- NAV MENU MANAGEMENT SECTION ---
+	?></th><td>
+	
+	<?php
+	$hint = '';
+	$ui->option_checkbox( 'admin_nav_menu_filter_items', $tab, $section, $hint, '' );
+	?>
+		
+	</td></tr>
+<?php endif; // any options accessable in this section
+
+
+$section = 'role_assignment';
+if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
+	<tr valign="top">
+	<th scope="row"><?php 
+									// --- ROLE ASSIGNMENT SECTION ---
+	echo $ui->section_captions[$tab][$section]; ?>
+	</th><td>
+<?php
 	if ( in_array( 'role_admin_blogwide_editor_only', $ui->form_options[$tab][$section] ) ) {
 		$id = 'role_admin_blogwide_editor_only';
 		$ui->all_options []= $id;
@@ -671,28 +711,36 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		<?php if ( $ui->display_hints) _e('Specify which users can assign and restrict roles <strong>for their content</strong> - via Post/Page Edit Form or Roles/Restrictions sidebar menu.  For a description of Administrator roles, see the Advanced tab.', 'scoper');?>
 		</span>
 		</div>
-		<br />
 	<?php 
 	} // endif role_admin_blogwide_editor_only controlled in this option scope
-		
-	$hint = __('For users who are not site-wide Editors, determines Media Library visibility of files uploaded by another user and now attached to a post which the logged user can edit.', 'scoper');
-	$ret = $ui->option_checkbox( 'admin_others_attached_files', $tab, $section, $hint, '' );	
-	
-	$hint = __('For users who are not site-wide Editors, determines Media Library visibility of unattached files which were uploaded by another user.', 'scoper');
-	$ret = $ui->option_checkbox( 'admin_others_unattached_files', $tab, $section, $hint, '' );	
-	
-	echo '<br />';
-	
-	$hint = __('If enabled, Post Author and Page Author selection dropdowns will be filtered based on scoped roles.', 'scoper');
-	$ret = $ui->option_checkbox( 'filter_users_dropdown', $tab, $section, $hint, '' );	
-	?>
-	
+?>
 	</td>
 	</tr>
 <?php endif; // any options accessable in this section
 
 
+
+$section = 'media_library';
+if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
+	<tr valign="top">
+	<th scope="row"><?php 
+									// --- MEDIA LIBRARY SECTION ---
+	echo $ui->section_captions[$tab][$section]; ?>
+	</th><td>
+<?php
+	$hint = __('For users who are not site-wide Editors, determines Media Library visibility of files uploaded by another user and now attached to a post which the logged user can edit.', 'scoper');
+	$ret = $ui->option_checkbox( 'admin_others_attached_files', $tab, $section, $hint, '' );	
 	
+	$hint = __('For users who are not site-wide Editors, determines Media Library visibility of unattached files which were uploaded by another user.', 'scoper');
+	$ret = $ui->option_checkbox( 'admin_others_unattached_files', $tab, $section, $hint, '' );	
+?>
+	</td>
+	</tr>
+<?php endif; // any options accessable in this section
+	
+	
+
+
 $section = 'file_filtering';
 if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	<tr valign="top">
@@ -1539,7 +1587,6 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) : ?>
 		
 	</td></tr>
 <?php endif; // any options accessable in this section
-
 
 
 $section = 'custom_columns';

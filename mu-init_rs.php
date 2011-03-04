@@ -50,7 +50,9 @@ function scoper_default_options_sitewide() {
 		'filter_users_dropdown' => true,
 		'restrictions_column' => true,
 		'term_roles_column' => true,
-		'object_roles_column' => true
+		'object_roles_column' => true,
+		
+		'admin_nav_menu_filter_items' => true
 	);
 	return $def;	
 }

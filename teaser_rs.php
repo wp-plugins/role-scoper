@@ -74,6 +74,7 @@ class ScoperTeaser {
 			$request = substr($request, 0, $limitpos);
 
 		$args['skip_teaser'] = true;
+
 		$filtered_request = $query_interceptor->flt_objects_request($request, 'post', $object_type, $args);
 		
 		global $scoper_teaser_filtered_ids;

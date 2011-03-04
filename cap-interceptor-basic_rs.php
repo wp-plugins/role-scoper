@@ -44,7 +44,7 @@ class CapInterceptorBasic_RS
 		global $current_user;
 		
 		if ( $user_id && ( $user_id != $current_user->ID ) )
-			$user = new WP_Scoped_User( $user_id );
+			$user = rs_get_user( $user_id );
 		else
 			$user = $current_user;
 

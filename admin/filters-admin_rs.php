@@ -494,7 +494,7 @@ class ScoperAdminFilters
 		if ( $user_id == $current_user->ID )
 			$stored_groups['active'] = $current_user->groups;
 		else {
-			$user = new WP_Scoped_User($user_id, '', array( 'skip_role_merge' => 1 ) );
+			$user = rs_get_user($user_id, '', array( 'skip_role_merge' => 1 ) );
 			$stored_groups['active'] = $user->groups;
 		}
 		

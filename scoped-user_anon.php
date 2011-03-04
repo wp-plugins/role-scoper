@@ -14,7 +14,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  */
 
 if ( ! class_exists('WP_Scoped_User') ) {
-class WP_Scoped_User extends WP_User { // Special skeleton class for ANONYMOUS USERS
+class WP_Scoped_User_Anon extends WP_User { // Special skeleton class for ANONYMOUS USERS
 
 	// note: these arrays are flipped (data stored in key) for better searching performance
 	var $groups = array(); 				// 	$groups[group id] = 1
@@ -27,8 +27,8 @@ class WP_Scoped_User extends WP_User { // Special skeleton class for ANONYMOUS U
 	var $is_administrator;				//  cut down on unnecessary filtering by assuming that if a user can activate plugins, they can do anything
 	var $is_module_administrator = array();
 	
-	function WP_Scoped_User($id = 0, $name = '', $args = array()) {
-		$this->WP_User($id, $name);
+	function WP_Scoped_User_Anon() {
+		$this->WP_User(0, '');
 		
 		// initialize blog_roles arrays
 		$this->blog_roles[ANY_CONTENT_DATE_RS] = array();

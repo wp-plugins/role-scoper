@@ -59,7 +59,7 @@ function scoper_default_options() {
 		'display_user_profile_groups' => 0,
 		'display_user_profile_roles' => 0,
 		'user_role_assignment_csv' => 0,
-		'admin_others_unattached_files' => 0,
+		'admin_others_attached_files' => 0,
 		'admin_others_unattached_files' => 0,
 		'remap_page_parents' => 0,
 		'enforce_actual_page_depth' => 1,
@@ -73,7 +73,8 @@ function scoper_default_options() {
 		'role_duration_limits' => 1,
 		'role_content_date_limits' => 1,
 		'filter_users_dropdown' => 1,
-		'auto_private' => 1
+		'auto_private' => 1,
+		'admin_nav_menu_filter_items' => 0
 	);
 
 	// NOTE: scoper_get_option() applies these defaults

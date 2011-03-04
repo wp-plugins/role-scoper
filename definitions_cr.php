@@ -333,10 +333,13 @@ function cr_taxonomy_cap_defs() {
 		// in case these have been customized to a different cap name...
 		$arr[ $taxonomy_obj->cap->edit_terms ] = 	(object) array( 'src_name' => 'post', 'op_type' => OP_ADMIN_RS, 'is_taxonomy_cap' => true );
 		$arr[ $taxonomy_obj->cap->delete_terms ] = 	(object) array( 'src_name' => 'post', 'op_type' => OP_ADMIN_RS, 'is_taxonomy_cap' => true );
-		
+
 		$arr[ "assign_{$name}" ] = (object) array( 'src_name' => 'post', 'op_type' => OP_ASSIGN_RS, 'is_taxonomy_cap' => true );
 	}
-
+	
+	// workaround to support scoped Nav Menu Manager role
+	$arr['edit_theme_options'] = (object) array( 'object_types' => array( 'nav_menu' ) );
+	
 	return $arr;
 }
 
@@ -467,14 +470,11 @@ function cr_taxonomy_role_caps() {
 		// in case these have been customized to a different cap name...
 		$arr["rs_{$name}_manager"][$taxonomy_obj->cap->edit_terms] = true;
 		$arr["rs_{$name}_manager"][$taxonomy_obj->cap->delete_terms] = true;
-		$arr["rs_{$name}_manager"]["assign_$name"] = true;
+		//$arr["rs_{$name}_manager"]["assign_$name"] = true;  // this prevents crediting of Category Manager role from WP Editor caps
 		
 		$arr["rs_{$name}_assigner"]["assign_$name"] = true;
 	}
-	
-	// temp hardcode for Nav Menus
-	$arr["rs_nav_menu_manager"]['edit_theme_options'] = true;
-	
+
 	return $arr;	
 }
 
@@ -558,7 +558,8 @@ function cr_taxonomy_role_defs() {
 
 		$arr["rs_{$name}_manager"] = (object) array( 'src_name' => 'post', 'object_type' => $name, 'no_custom_caps' => true );
 		
-		$arr["rs_{$name}_assigner"] = (object) array( 'src_name' => 'post', 'object_type' => $name, 'no_custom_caps' => true );
+		if ( 'nav_menu' != $name )
+			$arr["rs_{$name}_assigner"] = (object) array( 'src_name' => 'post', 'object_type' => $name, 'no_custom_caps' => true );
 	}
 
 	return $arr;	

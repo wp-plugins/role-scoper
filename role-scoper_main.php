@@ -852,7 +852,7 @@ class Scoper
 
 		$return_caps = array();
 
-		$is_term_admin = $is_term_admin || in_array( $pagenow, array( 'edit-tags.php', 'nav-menus.php', 'admin-ajax.php' ) );	// possible TODO: abstract for non-WP taxonomies
+		$is_term_admin = $is_term_admin || in_array( $pagenow, array( 'edit-tags.php', 'admin-ajax.php' ) ) || ( 'nav_menu' == $taxonomy && ( 'nav-menus.php' == $pagenow ) );	// possible TODO: abstract for non-WP taxonomies
 
 		if ( $is_term_admin ) {
 			// query pertains to the management of terms
@@ -1003,7 +1003,7 @@ class Scoper
 			$applied_obj_roles = $this->get_applied_object_roles( $GLOBALS['current_user'] );
 		} else // -1 value passed to indicate check for all users
 			$applied_obj_roles = $this->get_applied_object_roles();
-
+			
 		return array_intersect_key( $roles, $applied_obj_roles );	
 	}
 	

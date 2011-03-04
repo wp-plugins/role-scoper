@@ -51,9 +51,20 @@ class ScoperAdminFiltersUI
 		if ( ( 'role-management.php' == $plugin_page_cr ) && empty( $_POST ) )
 			add_filter( 'capabilities_list', array(&$this, 'flt_capabilities_list') );	// capabilities_list is a Role Manager hook
 
-		if ( 'nav-menus.php' == $pagenow )
+		if ( 'nav-menus.php' == $pagenow ) {
 			add_action( 'admin_head', array(&$this, 'ui_hide_add_menu') );
+			add_filter( 'parse_query', array( $this, 'available_menu_items_parse_query' ) );
+		}
+		
+		add_action( 'admin_head', array(&$this, 'ui_hide_appearance_submenus') );
+			
 	} // end class constructor
+
+	// enable this to prevent Nav Menu Managers from adding items they cannot edit
+	function available_menu_items_parse_query( &$query ) {
+		if ( scoper_get_option( 'admin_nav_menu_filter_items' ) )
+			$query->query_vars['suppress_filters'] = false;
+	}
 	
 	function ui_hide_admin_divs() {
 		if ( ! in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) )
@@ -155,6 +166,30 @@ jQuery(document).ready( function($) {
 </script>
 <?php
 	} // end function 
+	
+
+	// In case we are fudging the edit_theme_options cap for nav menu management, keep other Appearance menu items hidden
+	function ui_hide_appearance_submenus() {
+		global $current_user;
+		
+		if ( ! empty( $current_user->allcaps['edit_theme_options'] ) )
+			return;
+?>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(document).ready( function($) {
+	$('#menu-appearance a[href!="nav-menus.php"]').hide();
+	$('#menu-appearance a[class*="wp-has-submenu"]').show();
+	
+	<?php if ( 'nav-menus.php' == $GLOBALS['pagenow'] ) :?>
+	$('#nav-menu-header .delete-action a').hide();
+	<?php endif; ?>
+});
+/* ]]> */
+</script>
+<?php
+	} // end function 
+	
 	
 	function ui_admin_footer() {
 		if ( (false !== strpos($_SERVER['HTTP_USER_AGENT'], 'msie 7') ) )

@@ -79,7 +79,7 @@ class ScoperHardwayTaxonomy
 					return $results;
 			}
 		}
-
+		
 		// no backend filter for administrators
 		$parent_or = '';
 		if ( ( is_admin() || defined('XMLRPC_REQUEST') ) ) {
@@ -174,6 +174,15 @@ class ScoperHardwayTaxonomy
 		
 		// === BEGIN Role Scoper MODIFICATION: use the $children array we already have ===		
 		//
+		if ( 'nav-menus.php' == $GLOBALS['pagenow'] ) {
+			if ( 'nav_menu' != $taxonomies[0] ) {
+				if ( ! scoper_get_option( 'admin_nav_menu_filter_items' ) )
+					return $results;
+				else
+					$hide_empty = 1;
+			}
+		}
+
 		if ( $child_of && ! isset($children[$child_of]) )
 			return array();
 	
@@ -343,7 +352,7 @@ class ScoperHardwayTaxonomy
 				$where .= " AND tt.parent = '$parent'";
 			// === END Role Scoper MODIFICATION ===
 		}
-			
+		
 		
 		// === BEGIN Role Scoper MODIFICATION: instead, manually remove truly empty cats at the bottom of this function, so we don't exclude cats with private but readable posts
 		//if ( $hide_empty && !$hierarchical )
@@ -453,7 +462,7 @@ class ScoperHardwayTaxonomy
 			
 			ScoperHardway::remap_tree( $terms, $ancestors, 'term_id', 'parent', $remap_args );
 		}
-
+		
 		//
 		// === END Role Scoper ADDITION ===
 		// ================================
@@ -479,7 +488,7 @@ class ScoperHardwayTaxonomy
 				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser, 'post_type' => $post_type ) );
 			}
 		}
-		
+
 		// Make sure we show empty categories that have children.
 		if ( $hierarchical && $hide_empty ) {
 			foreach ( $terms as $k => $term ) {
@@ -489,7 +498,7 @@ class ScoperHardwayTaxonomy
 						foreach ( $children as $child )
 							if ( $child->count )
 								continue 2;
-		
+
 					// It really is empty
 					unset($terms[$k]);
 				}
