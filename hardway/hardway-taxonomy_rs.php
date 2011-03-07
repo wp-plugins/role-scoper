@@ -31,6 +31,7 @@ if ( $scoper->is_front() || ! is_content_administrator_rs() ) {
  * @copyright 	Copyright 2011
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
+ * Used by Role Scoper Plugin as a container for statically-called functions
  *
  */	
 class ScoperHardwayTaxonomy
@@ -182,7 +183,7 @@ class ScoperHardwayTaxonomy
 					$hide_empty = 1;
 			}
 		}
-
+		
 		if ( $child_of && ! isset($children[$child_of]) )
 			return array();
 	
@@ -382,10 +383,10 @@ class ScoperHardwayTaxonomy
 				break;
 			case 'ids':
 			case 'id=>parent':
-				$selects = array('t.term_id', 'tt.parent', 'tt.count');
+				$selects = array('t.term_id', 'tt.term_taxonomy_id', 'tt.parent', 'tt.count');
 				break;
 			case 'names':
-				$selects = array('t.term_id', 'tt.parent', 'tt.count', 't.name');
+				$selects = array('t.term_id', 'tt.term_taxonomy_id', 'tt.parent', 'tt.count', 't.name');
 				break;
 			case 'count':
 				$orderby = '';
@@ -406,7 +407,7 @@ class ScoperHardwayTaxonomy
 			$do_teaser = false;
 	
 		$query = apply_filters( 'terms_request_rs', $query_base, $taxonomies[0], array('skip_teaser' => ! $do_teaser, 'is_term_admin' => $is_term_admin, 'required_operation' => $required_operation, 'post_type' => $post_type ) );
-
+		
 		// if no filering was applied because the teaser is enabled, prevent a redundant query
 		if ( ! empty($exclude_tree) || ($query_base != $query) || $parent || ( 'all' != $fields ) ) {
 			$terms = scoper_get_results($query);
@@ -481,7 +482,7 @@ class ScoperHardwayTaxonomy
 		// Replace DB-stored term counts with actual number of posts this user can read.
 		// In addition, without the rs_tally_term_counts call, WP will hide categories that have no public posts (even if this user can read some of the pvt posts).
 		// Post counts will be incremented to include child categories only if $pad_counts is true
-		if ( ! defined('XMLRPC_REQUEST') && ( 'all' == $fields ) && ! $is_term_admin ) {
+		if ( ! defined('XMLRPC_REQUEST') && in_array( $fields, array( 'all', 'ids', 'names' ) ) && ! $is_term_admin ) {
 			if ( ! is_admin() || ! in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
 			
 				//-- RoleScoper Modification - alternate function call (was _pad_term_counts) --//

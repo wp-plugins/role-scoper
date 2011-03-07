@@ -62,9 +62,13 @@ class QueryInterceptorFront_NonAdmin_RS {
 					}
 				}
 
+				/*
 				$query_base = "SELECT t.term_id FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE 1=1 AND tt.taxonomy = '$taxonomy'";
 				$query = apply_filters( 'terms_request_rs', $query_base, $taxonomy ); //, array( 'skip_teaser' => true ) );
 				$okay_ids = scoper_get_col($query);
+				*/
+
+				$okay_ids = get_terms( $taxonomy, 'fields=ids&hide_empty=1' );
 
 				if ( $remove_ids = array_diff( $item_ids, $okay_ids ) )
 					$items = array_diff_key( $items, $remove_ids );

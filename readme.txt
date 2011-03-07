@@ -74,6 +74,7 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Feature : Nav Menu Manager role can be assigned site-wide
 * Feature : For Nav Menu Management, option to list only user-editable content as available items
 * Compat : NextGEN Gallery - with versions 1.7+, error when uploading images as a non-Administrator
+* BugFix : Nav Menus displayed categories even if no posts readable
 
 
 = 1.3.27 - 19 Jan 2011 =

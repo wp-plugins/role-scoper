@@ -13,7 +13,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  *
  */
 
-if ( ! class_exists('WP_Scoped_User') ) {
+if ( ! class_exists('WP_Scoped_User_Anon') ) {
 class WP_Scoped_User_Anon extends WP_User { // Special skeleton class for ANONYMOUS USERS
 
 	// note: these arrays are flipped (data stored in key) for better searching performance
