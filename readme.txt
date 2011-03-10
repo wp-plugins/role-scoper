@@ -75,6 +75,8 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Feature : For Nav Menu Management, option to list only user-editable content as available items
 * Compat : NextGEN Gallery - with versions 1.7+, error when uploading images as a non-Administrator
 * BugFix : Nav Menus displayed categories even if no posts readable
+* Compat : Grand Flash Gallery - error when uploading images as a non-Administrator
+* Compat : Simple Fields plugin - non-Administrators could not use custom field file uploader
 
 
 = 1.3.27 - 19 Jan 2011 =

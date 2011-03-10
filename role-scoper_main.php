@@ -387,7 +387,7 @@ class Scoper
 		$is_administrator = is_content_administrator_rs();
 		$disable_queryfilters = defined('DISABLE_QUERYFILTERS_RS');
 		$frontend_admin = false;
-
+		
 		if ( ! defined('DOING_CRON') ) {
 			if ( $this->is_front() ) {
 				if ( ! $disable_queryfilters )

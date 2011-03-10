@@ -20,6 +20,12 @@ function scoper_admin_init() {
 		} elseif ( isset($_POST['rs_flush_cache']) )
 			$handler->handle_submission( 'flush' );
 	} 
+	
+	// work around conflict with Simple Fields plugin uploader
+	if ( defined( 'EASY_FIELDS_URL' ) ) {
+		if ( strpos( $_SERVER['SCRIPT_NAME'], '/wp-admin/media-upload.php' ) || strpos( $_SERVER['SCRIPT_NAME'], '/wp-admin/async-upload.php' ) )
+			define( 'DISABLE_QUERYFILTERS_RS', true );
+	}
 }
 
 

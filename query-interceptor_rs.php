@@ -279,10 +279,10 @@ class QueryInterceptor_RS
 		if ( strpos( $request, "post_type = 'revision'") )
 			return $request; 
 
-		// no need to apply objects query filtering withing NextGEN Gallery upload operation (was failing with undefined $current_user)
+		// no need to apply objects query filtering withing NextGEN Gallery / Grand Flash Gallery upload operation (was failing with undefined $current_user)
 		if ( is_admin() ) {
-			$nofilter_scripts = ( defined( 'NGGFOLDER' ) ) ? array( constant('NGGFOLDER') . '/admin/upload.php' ) : array();
-			if ( $nofilter_scripts = apply_filters( 'nofilter_scripts_rs', $nofilter_scripts ) ) {
+			$nofilter_scripts = array( '/admin/upload.php' );
+			if ( $nofilter_scripts = apply_filters( 'noqueryfilter_scripts_rs', $nofilter_scripts ) ) {
 				foreach( $nofilter_scripts as $_script_name ) {
 					if ( strpos( $_SERVER['SCRIPT_NAME'], $_script_name ) )
 						return $where;
