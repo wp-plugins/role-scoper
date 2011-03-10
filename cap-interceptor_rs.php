@@ -196,21 +196,11 @@ class CapInterceptor_RS
 		// Establish some context by detecting object type - based on object ID if provided, or otherwise based on http variables.  May differ from cap type.
 		$object_type = cr_find_object_type( $src_name, $object_id );
 		
-		// TODO: also incorporate other special handling for attachments up here?
 		if ( in_array( $pagenow, array( 'media-upload.php', 'async-upload.php' ) ) ) {
-			if ( ! empty($_POST['post_ID']) )
-				$object_id = $_POST['post_ID'];
-			elseif ( ! empty($_REQUEST['post_id']) )
-				$object_id = $_REQUEST['post_id'];
-			elseif ( ! empty($_REQUEST['attachment_id']) ) {
-				if ( $attachment = get_post( $_REQUEST['attachment_id'] ) )
-					$object_id = $attachment->post_parent;
-			}
-				
-			if ( $post = get_post($object_id) )
-				$object_type = $post->post_type;	
+			if ( ! empty($GLOBALS['post']) ) 
+				$object_type = $GLOBALS['post']->post_type;	
 		}
-		
+
 		//rs_errlog( "$src_name : $object_type (id $object_id)" );
 
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
@@ -292,7 +282,7 @@ class CapInterceptor_RS
 						$object_id = 0;
 						
 						if ( ! $doing_admin_menus )
-							$this->skip_id_generation = true;	
+							$this->skip_id_generation = true;
 					}
 				}
 			} elseif ( ! empty( $GLOBALS['post'] ) && ( 'auto-draft' == $GLOBALS['post']->post_status ) && ! $doing_admin_menus )
@@ -681,6 +671,18 @@ class CapInterceptor_RS
 		if ( $this->scoper->cap_defs->member_property( $required_cap, 'is_taxonomy_cap' ) ) {
 			if ( ! empty($_REQUEST['tag_ID']) )
 				return $_REQUEST['tag_ID'];
+		}
+		
+		global $pagenow;
+		if ( in_array( $pagenow, array( 'media-upload.php', 'async-upload.php' ) ) ) {
+			if ( ! empty($_POST['post_ID']) )
+				return $_POST['post_ID'];
+			elseif ( ! empty($_REQUEST['post_id']) )
+				return $_REQUEST['post_id'];
+			elseif ( ! empty($_REQUEST['attachment_id']) ) {
+				if ( $attachment = get_post( $_REQUEST['attachment_id'] ) )
+					return $attachment->post_parent;
+			}
 		}
 		
 		if ( ! $src_name = $this->scoper->cap_defs->member_property( $required_cap, 'src_name' ) )

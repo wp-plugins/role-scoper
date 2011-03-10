@@ -77,6 +77,7 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * BugFix : Nav Menus displayed categories even if no posts readable
 * Compat : Grand Flash Gallery - error when uploading images as a non-Administrator
 * Compat : Simple Fields plugin - non-Administrators could not use custom field file uploader
+* BugFix : When editing is based on category, could not upload files into edit form prior to saving post 
 
 
 = 1.3.27 - 19 Jan 2011 =

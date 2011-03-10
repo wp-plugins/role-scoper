@@ -258,7 +258,7 @@ class Scoper
 				
 		// ===== Content Filters to limit/enable the current user
 		$disable_queryfilters = defined('DISABLE_QUERYFILTERS_RS');
-
+		
 		if ( $disable_queryfilters ) {
 			// Some wp-admin pages need to list pages or categories based on front-end access.  Classic example is Subscribe2 categories checklist, included in Subscriber profile
 			// In that case, filtering will be applied even if wp-admin filtering is disabled.  API hook enables other plugins to defined their own "always filter" URIs.
