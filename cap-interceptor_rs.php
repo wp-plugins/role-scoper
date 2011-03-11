@@ -349,8 +349,11 @@ class CapInterceptor_RS
 					// If we are still missing required caps, credit a missing scoper-defined cap if the user has it by object role for ANY object.
 					// (i.e. don't bar user from "Edit Pages" if they have edit_pages cap for at least one page)
 					if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {
+						// prevent object-specific editing roles from allowing new object creation w/o sitewide capability
+						$add_new_check = strpos( $_SERVER['SCRIPT_NAME'], 'post-new.php' ) && ( 'post' == $src_name ) && ( reset( $rs_reqd_caps ) == $object_type_obj->cap->edit_posts );
 
-						if ( ! $this->skip_any_object_check ) {
+						if ( ( ! $this->skip_any_object_check ) && ! $add_new_check ) {
+						//if ( ! $this->skip_any_object_check ) {
 							if ( $object_caps = $this->user_can_for_any_object( $missing_caps ) )
 								$wp_blogcaps = array_merge($wp_blogcaps, $object_caps);
 								

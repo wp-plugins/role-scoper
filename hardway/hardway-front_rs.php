@@ -11,8 +11,28 @@ add_filter('get_the_category', array('ScoperHardwayFront', 'flt_get_the_category
 if ( awp_is_plugin_active('snazzy-archives') )
 	add_filter( 'query', array('ScoperHardwayFront', 'flt_snazzy_archives') );
 
+add_action( 'admin_bar_menu', array('ScoperHardwayFront', 'flt_admin_bar_menu'), 50 );
+	
+
 class ScoperHardwayFront
 {	
+	// filter "Add New" links out of admin bar if user lacks site-wide capability
+	function flt_admin_bar_menu( &$bar ) {
+		if ( is_content_administrator_rs() )
+			return;
+
+		$type = 'new-content';
+			
+		foreach( get_post_types( array( 'public' => true ), 'object' ) as $_post_type => $type_obj ) {
+			$var = 'new-' . $_post_type;
+			
+			if ( isset( $bar->menu->{$type}['children']->{$var} ) ) {
+				if ( ! cr_user_can( $type_obj->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) )
+					unset( $bar->menu->{$type}['children']->{$var} );
+			}
+		}
+	}
+
 	function flt_get_the_category( $cats, $context = '' ) {
 		if ( $context && ( 'display' != $context ) )
 			return;

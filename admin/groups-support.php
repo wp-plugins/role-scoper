@@ -267,7 +267,7 @@ class UserGroups_tp {
 				$args = array( 'any_object' => true );
 				
 				$eligible_ids = array();
-				foreach( get_post_types( array( 'public' ), 'object' ) as $_type => $_type_obj ) {
+				foreach( get_post_types( array( 'public' => true ), 'object' ) as $_type => $_type_obj ) {
 					$type_eligible_ids = $scoper->users_who_can( array( $_type_obj->cap->edit_published_posts, $_type_obj->cap->edit_others_posts ), COL_ID_RS, $_type, 0, $args );
 					$eligible_ids = array_merge( $eligible_ids, $type_eligible_ids );	
 				}

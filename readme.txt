@@ -78,6 +78,7 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Compat : Grand Flash Gallery - error when uploading images as a non-Administrator
 * Compat : Simple Fields plugin - non-Administrators could not use custom field file uploader
 * BugFix : When editing is based on category, could not upload files into edit form prior to saving post 
+* Feature : Filter "Add New" links out of WP Admin bar if user lacks site-wide capability
 
 
 = 1.3.27 - 19 Jan 2011 =
