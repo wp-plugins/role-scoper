@@ -169,7 +169,7 @@ class QueryInterceptor_RS
 			foreach( $taxonomies as $taxonomy ) {
 				$reqd_caps_by_otype = array_merge( $reqd_caps_by_otype, $this->scoper->get_terms_reqd_caps( $taxonomy, $required_operation, $is_term_admin ) );   // NOTE: get_terms_reqd_caps() returns term management caps on edit-tags.php, otherwise post edit caps
 			}
-			
+
 			if ( $post_type ) 
 				$reqd_caps_by_otype = array_intersect_key( $reqd_caps_by_otype, array_flip( $post_type ) );
 			
@@ -650,7 +650,7 @@ class QueryInterceptor_RS
 			// (will replace "col_status = status_name" with "col_status = status_name AND ( [scoper requirements] )
 			foreach ($status_reqd_caps as $status_name => $reqd_caps) {
 				if ( 'trash' == $status_name )	// in wp-admin, we need to include trash posts for the count query, but not for the listing query unless trash status is requested
-					if ( ! strpos($this->last_request[$src_name], 'COUNT') && ( empty( $_GET['post_status'] ) || ( 'trash' != $_GET['post_status'] ) ) )
+					if ( ( empty($this->last_request[$src_name]) || ! strpos($this->last_request[$src_name], 'COUNT') ) && ( empty( $_GET['post_status'] ) || ( 'trash' != $_GET['post_status'] ) ) )
 						continue;
 
 				if ( $is_administrator )

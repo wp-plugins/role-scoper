@@ -87,17 +87,17 @@ class ScoperHardwayTaxonomy
 			if ( is_content_administrator_rs() ) {
 				return $results;
 			} else {
-				$tx = $scoper->taxonomies->get($taxonomies[0]);
-				
-				// is a Category Edit form being displayed?
-				if ( ! empty( $tx->uri_vars ) )
-					$term_id = $scoper->data_sources->detect('id', $tx);
-				else
-					$term_id = $scoper->data_sources->detect('id', $tx->source);
-				
-				if ( $term_id )
-					// don't filter current parent category out of selection UI even if current user can't manage it
-					$parent_or = " OR t.term_id = (SELECT parent FROM $wpdb->term_taxonomy WHERE term_id = '$term_id') ";
+				if ( $tx = $scoper->taxonomies->get($taxonomies[0]) ) {
+					// is a Category Edit form being displayed?
+					if ( ! empty( $tx->uri_vars ) )
+						$term_id = $scoper->data_sources->detect('id', $tx);
+					else
+						$term_id = $scoper->data_sources->detect('id', $tx->source);
+					
+					if ( $term_id )
+						// don't filter current parent category out of selection UI even if current user can't manage it
+						$parent_or = " OR t.term_id = (SELECT parent FROM $wpdb->term_taxonomy WHERE term_id = '$term_id') ";
+				}
 			}
 		}
 		

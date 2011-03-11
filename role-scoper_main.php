@@ -852,7 +852,11 @@ class Scoper
 
 		$return_caps = array();
 
-		$is_term_admin = $is_term_admin || in_array( $pagenow, array( 'edit-tags.php', 'admin-ajax.php' ) ) || ( 'nav_menu' == $taxonomy && ( 'nav-menus.php' == $pagenow ) );	// possible TODO: abstract for non-WP taxonomies
+		$is_term_admin = $is_term_admin 
+		|| in_array( $pagenow, array( 'edit-tags.php' ) ) 
+		|| ( 'nav_menu' == $taxonomy && ( 'nav-menus.php' == $pagenow ) 
+		|| ( ( 'admin-ajax.php' == $pagenow ) && ( ! empty($_REQUEST['action']) && in_array( $_REQUEST['action'], array( 'add-menu-item', 'menu-locations-save' ) ) ) )
+		);	// possible TODO: abstract for non-WP taxonomies
 
 		if ( $is_term_admin ) {
 			// query pertains to the management of terms
