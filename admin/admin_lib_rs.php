@@ -40,7 +40,18 @@ class ScoperAdminLib {
 		if ( COL_ID_RS == $cols )
 			$results = scoper_get_col("SELECT user_id FROM $wpdb->user2role2object_rs WHERE scope = 'blog' AND role_type = '$role_type' AND role_name = '$role_name'");
 		else {
-			$query = "SELECT u.* FROM $wpdb->users AS u "
+			switch( $cols ) {
+				case COLS_ID_DISPLAYNAME_RS : 
+					$qcols = "u.ID, u.display_name";
+					break;
+				case COLS_ID_NAME_RS : 
+					$qcols = "u.ID, u.user_login AS display_name";	// calling code assumes display_name property for user or group object
+					break;
+				default:
+					$qcols = "u.*";
+			}
+		
+			$query = "SELECT $qcols FROM $wpdb->users AS u "
 					. " INNER JOIN $wpdb->user2role2object_rs AS r ON r.user_id = u.ID"
 					. " WHERE r.scope = 'blog' AND r.role_type = '$role_type' AND r.role_name = '$role_name'";
 					
@@ -86,12 +97,16 @@ class ScoperAdminLib {
 	        	$results = array();
 	        
 		} else {
-			if ( COLS_ID_DISPLAYNAME_RS == $cols ) 
-				$qcols = "u.ID, u.display_name";
-			elseif ( COLS_ID_NAME_RS == $cols ) 
-				$qcols = "u.ID, u.user_login AS display_name";	// calling code assumes display_name property for user or group object
-			else
-				$qcols = "u.*";
+			switch( $cols ) {
+				case COLS_ID_DISPLAYNAME_RS : 
+					$qcols = "u.ID, u.display_name";
+					break;
+				case COLS_ID_NAME_RS : 
+					$qcols = "u.ID, u.user_login AS display_name";	// calling code assumes display_name property for user or group object
+					break;
+				default:
+					$qcols = "u.*";
+			}
 
 			$query = "SELECT $qcols FROM $wpdb->users AS u"
 					. " INNER JOIN $wpdb->user2group_rs AS gu ON gu.$wpdb->user2group_uid_col = u.ID $status_clause "
@@ -115,7 +130,7 @@ class ScoperAdminLib {
 			$cache[ $ckey ] = $results;
 			wpp_cache_set($cache_id, $cache, $cache_flag);
 		}
-		
+
 		return $results;
 	}
 	
