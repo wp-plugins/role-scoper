@@ -81,6 +81,7 @@ For more information, see the <a href="http://agapetry.net/downloads/RoleScoper_
 * Feature : Filter "Add New" links out of WP Admin bar if user lacks site-wide capability
 * BugFix : Non-administrators could not add a non-hierarchical custom term to post unless they have corresponding taxonomy Manager role (since 1.3.28-dev)
 * BugFix : Duplicate entries in Author dropdown if RS editing roles have been assigned to WP role groups
+* BugFix : Non-administrators could not add a non-hierarchical custom term to post if taxonomy is included in post type registration
 
 
 = 1.3.27 - 19 Jan 2011 =

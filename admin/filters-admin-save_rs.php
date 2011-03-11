@@ -16,6 +16,10 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			if ( in_array( $taxonomy, array( 'category', 'post_tag' ) ) || did_action( "pre_post_{$taxonomy}" ) )
 				continue;
 
+			// don't filter term selection for non-hierarchical taxonomies
+			if ( empty( $GLOBALS['wp_taxonomies'][$taxonomy]->hierarchical ) )
+				continue;
+				
 			if ( $taxonomy_obj = get_taxonomy($taxonomy) ) {
 				if ( ! empty($_POST['tax_input'][$taxonomy]) && is_array($_POST['tax_input'][$taxonomy]) && ( reset($_POST['tax_input'][$taxonomy]) || ( count($_POST['tax_input'][$taxonomy]) > 1 ) ) )  // complication because (as of 3.0) WP always includes a zero-valued first array element
 					$tags = $_POST['tax_input'][$taxonomy];
@@ -489,14 +493,19 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	function scoper_flt_pre_object_terms ($selected_terms, $taxonomy, $args = array()) {
 		//rs_errlog( "scoper_flt_pre_object_terms input: " . serialize($selected_terms) );
-		
+				
 		// strip out fake term_id -1 (if applied)
 		if ( $selected_terms && is_array($selected_terms) )
 			$selected_terms = array_diff($selected_terms, array(-1, 0, '0', '-1', ''));  // not sure who is changing empty $_POST['post_category'] array to an array with nullstring element, but we have to deal with that
-
+			
 		if ( is_content_administrator_rs() || defined('DISABLE_QUERYFILTERS_RS') )
 			return $selected_terms;
-			
+
+		if ( ! is_array($selected_terms) ) {
+			// don't filter term selection for non-hierarchical taxonomies
+			if ( isset( $GLOBALS['wp_taxonomies'][$taxonomy] ) && empty( $GLOBALS['wp_taxonomies'][$taxonomy]->hierarchical ) )
+				return $selected_terms;
+		}
 
 		global $scoper, $current_user;
 			
@@ -511,7 +520,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		}
 			
 		$orig_selected_terms = $selected_terms;
-
+			
 		if ( ! is_array($selected_terms) )
 			$selected_terms = array();
 			
@@ -558,7 +567,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 			$selected_terms = $default_terms;
 		}
-
+		
 		//rs_errlog( "returning selected terms: " . serialize($selected_terms) );
 		return $selected_terms;
 	}

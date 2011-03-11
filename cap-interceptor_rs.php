@@ -436,7 +436,11 @@ class CapInterceptor_RS
 				foreach ( $uses_taxonomies as $taxonomy ) { 	// TODO: only if tx->requires_term is true?
 					if ( isset( $inserted_terms[$taxonomy][$object_id] ) )
 						continue;
-								
+					
+					// don't filter term selection for non-hierarchical taxonomies
+					if ( empty( $GLOBALS['wp_taxonomies'][$taxonomy]->hierarchical ) )
+						continue;
+					
 					$inserted_terms[$taxonomy][$object_id] = true;
 							
 					//if ( $stored_terms = wp_get_object_terms( $object_id, $taxonomy ) ) // note: this will cause trouble if WP core ever auto-stores object terms on post creation
