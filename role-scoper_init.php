@@ -928,8 +928,9 @@ function is_administrator_rs( $src_or_tx = '', $admin_type = 'content', $user = 
 		global $current_user;
 		$user = $current_user;
 		
-		if ( IS_MU_RS && function_exists('is_super_admin') && is_super_admin() )
+		if ( IS_MU_RS && function_exists('is_super_admin') && is_super_admin() ) {
 			return true;
+		}
 	}
 
 	if ( empty($user->ID) )

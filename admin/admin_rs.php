@@ -42,7 +42,12 @@ class ScoperAdmin
 			add_action('admin_head', array(&$this, 'admin_head'));
 			
 			if ( ! defined('XMLRPC_REQUEST') && ( 'async-upload.php' != $pagenow ) ) {
-				add_action('admin_menu', array(&$this,'build_menu'));
+				// New Network menu with WP 3.1
+				if ( defined( 'IS_MU_RS' ) ) {
+					add_action('network_admin_menu', 'scoper_mu_site_menu' );
+					add_action('network_admin_menu', 'scoper_mu_users_menu' );
+				} else
+					add_action('admin_init', array(&$this,'build_menu'));
 
 				if ( 'plugins.php' == $pagenow )
 					add_filter( 'plugin_row_meta', array(&$this, 'flt_plugin_action_links'), 10, 2 );
@@ -350,8 +355,9 @@ jQuery(document).ready( function($) {
 		$use_post_types = scoper_get_option( 'use_post_types' );
 		$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 
-		
-		// which object types does this user have any administration over?
+
+
+		// which object types does this user have any administration over?		
 		foreach ( $this->scoper->data_sources->get_all() as $src_name => $src ) {
 			if ( ! empty($src->no_object_roles) || ! empty($src->taxonomy_only) || ('group' == $src_name) )
 				continue;
@@ -376,7 +382,7 @@ jQuery(document).ready( function($) {
 			if ( is_taxonomy_used_rs( $taxonomy ) && ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) )
 				$can_admin_terms[$taxonomy] = true;
 		}
-
+		
 		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
 
 		// Users Tab
@@ -385,9 +391,7 @@ jQuery(document).ready( function($) {
 			
 			$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');
 
-			if ( IS_MU_RS && scoper_get_site_option( 'mu_sitewide_groups' ) )
-				add_submenu_page( "ms-admin.php", $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
-			else
+			if ( ! IS_MU_RS || ! scoper_get_site_option( 'mu_sitewide_groups' ) )
 				add_submenu_page( 'users.php', $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
 
 			// satisfy WordPress' demand that all admin links be properly defined in menu
@@ -397,6 +401,7 @@ jQuery(document).ready( function($) {
 			if ( 'rs-group_members' == $plugin_page_cr )
 				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Group Members', 'scoper'), $cap_req, 'rs-group_members', array( &$this, 'menu_handler' ) );
 		}
+
 
 		// the rest of this function pertains to Roles and Restrictions menus
 		if ( ! $is_user_administrator && ! $can_admin_terms && ! $is_user_administrator && ! $can_admin_objects )
@@ -598,11 +603,11 @@ jQuery(document).ready( function($) {
 				}
 			}
 		}
-		
+
 		// WP MU site options
-		if ( $is_option_administrator && IS_MU_RS )
+		if ( ! awp_ver( '3.1' ) && $is_option_administrator && IS_MU_RS )
 			scoper_mu_site_menu();
-		
+
 
 		// satisfy WordPress' demand that all admin links be properly defined in menu
 		if ( 'rs-object_role_edit' == $plugin_page_cr )

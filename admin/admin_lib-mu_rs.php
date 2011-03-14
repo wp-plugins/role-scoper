@@ -1,15 +1,19 @@
 <?php
 
 function scoper_mu_site_menu() {	
+	if ( ! is_option_administrator_rs() )
+		return;
+
 	$path = SCOPER_ABSPATH;
 
+	$name = ( awp_ver( '3.1' ) ) ? 'sites' : 'ms-admin';
+	
 	// RS Site Options
-	add_submenu_page("ms-admin.php", __('Role Scoper Options', 'scoper'), __('Role Options', 'scoper'), 'read', 'rs-site_options' );
+	add_submenu_page("{$name}.php", __('Role Scoper Options', 'scoper'), __('Role Options', 'scoper'), 'read', 'rs-site_options' );
 	
 	$func = "include_once('$path' . '/admin/options.php');scoper_options( true );";
-	add_action("ms-admin_page_rs-site_options", create_function( '', $func ) );	
+	add_action("{$name}_page_rs-site_options", create_function( '', $func ) );	
 
-	
 	global $scoper_default_options, $scoper_options_sitewide;
 			
 	// omit Option Defaults menu item if all options are controlled sitewide
@@ -18,11 +22,24 @@ function scoper_mu_site_menu() {
 	
 	if ( count($scoper_options_sitewide) != count($scoper_default_options) ) {
 		// RS Default Options (for per-blog settings)
-		add_submenu_page("ms-admin.php", __('Role Scoper Option Defaults', 'scoper'), __('Role Defaults', 'scoper'), 'read', 'rs-default_options' );
+		add_submenu_page("{$name}.php", __('Role Scoper Option Defaults', 'scoper'), __('Role Defaults', 'scoper'), 'read', 'rs-default_options' );
 	
 		$func = "include_once('$path' . '/admin/options.php');scoper_options( false, true );";
-		add_action("ms-admin_page_rs-default_options", create_function( '', $func ) );
+		add_action("{$name}_page_rs-default_options", create_function( '', $func ) );
 	}
+}
+
+function scoper_mu_users_menu() {
+	if ( ! defined('DEFINE_GROUPS_RS') || ! scoper_get_site_option( 'mu_sitewide_groups' ) )
+		return;
+
+	$cap_req = ( is_user_administrator_rs() || current_user_can('recommend_group_membership') ) ? 'read' : 'manage_groups';
+
+	$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');
+
+	global $scoper_admin;
+	$menu_name = ( awp_ver( '3.1' ) ) ? 'users.php' : 'ms-admin.php';
+	add_submenu_page( $menu_name, $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$scoper_admin, 'menu_handler' ) );
 }
 
 function scoper_get_blog_list( $start = 0, $num = 10 ) {

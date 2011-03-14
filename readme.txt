@@ -131,6 +131,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Non-administrators could not add a non-hierarchical custom term to post unless they have corresponding taxonomy Manager role (since 1.3.28-dev)
 * BugFix : Duplicate entries in Author dropdown if RS editing roles have been assigned to WP role groups
 * BugFix : Non-administrators could not add a non-hierarchical custom term to post if taxonomy is included in post type registration
+* BugFix : Role Options, Role Defaults menu items were available on 3.1 multisite
 
 = 1.3.27 - 19 Jan 2011 =
 * BugFix : Hidden Content Teaser - private pages were not included for teasing to anonymous reader
