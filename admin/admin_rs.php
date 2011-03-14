@@ -46,8 +46,9 @@ class ScoperAdmin
 				if ( defined( 'IS_MU_RS' ) ) {
 					add_action('network_admin_menu', 'scoper_mu_site_menu' );
 					add_action('network_admin_menu', 'scoper_mu_users_menu' );
-				} else
-					add_action('admin_init', array(&$this,'build_menu'));
+				} 
+				
+				add_action('admin_menu', array(&$this,'build_menu'));
 
 				if ( 'plugins.php' == $pagenow )
 					add_filter( 'plugin_row_meta', array(&$this, 'flt_plugin_action_links'), 10, 2 );
@@ -315,8 +316,11 @@ jQuery(document).ready( function($) {
 	}
 	
 	function build_menu() {
+		if ( strpos( $_SERVER['REQUEST_URI'], 'wp-admin/network/' ) )
+			return;
+	
 		global $plugin_page_cr;
-		
+	
 		if ( ! defined('USER_ROLES_RS') && isset( $_POST['enable_group_roles'] ) )
 			scoper_use_posted_init_options();
 

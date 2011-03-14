@@ -262,7 +262,7 @@ $ui->option_captions = array(
 	'limit_user_edit_by_level' => __('Limit User Edit by Level', 'scoper'),
 	'file_filtering' => __('Filter Uploaded File Attachments', 'scoper'),
 	'file_filtering_regen_key' => __('File Filtering Reset Key', 'scoper'),
-	'mu_sitewide_groups' => __('Share groups site-wide', 'scoper'),
+	'mu_sitewide_groups' => __('Share groups network-wide', 'scoper'),
 	'role_duration_limits' => __('Enable Role Duration Limits', 'scoper'),
 	'role_content_date_limits' => __('Enable Content Date Limits', 'scoper'),
 	'filter_users_dropdown' => __('Filter Users Dropdown', 'scoper'),
@@ -492,10 +492,13 @@ if ( scoper_get_option('display_hints', $sitewide, $customize_defaults) ) {
 		
 				echo  ' ';
 				
-				printf( __('Note that, depending on your configuration, %1$s site-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
+				if ( awp_ver( '3.1' ) )
+					_e('Note that, depending on your configuration, site-specific options may also be available.', 'scoper');
+				else
+					printf( __('Note that, depending on your configuration, %1$s site-specific options%2$s may also be available.', 'scoper'), $link_open, $link_close );
 			}
 		} else {
-			$link_open = "<a href='admin.php?page=rs-site_options'>";
+			$link_open = ( awp_ver( '3.1' ) ) ? "<a href='network/sites.php?page=rs-site_options'>" : "<a href='admin.php?page=rs-site_options'>";
 			$link_close = '</a>';
 	
 			echo ' ';
@@ -526,7 +529,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 	$ui->option_checkbox( 'define_usergroups', $tab, $section, $hint, '<br />' );
 
 	if ( IS_MU_RS ) {
-		$hint = __('If enabled, each user group will be available for role assignment in any blog.  Any existing blog-specific groups will be unavailable.  Group role assignments are still blog-specific.', 'scoper');
+		$hint = __('If enabled, each user group will be available for role assignment in any site.  Any existing site-specific groups will be unavailable.  Group role assignments are still site-specific.', 'scoper');
 		$ui->option_checkbox( 'mu_sitewide_groups', $tab, $section, $hint, '' );
 	}	
 
