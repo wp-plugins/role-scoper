@@ -236,7 +236,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = 1.3.1 - 2 Nov 2010 =
 * Compat : Role Scoping for NextGEN Gallery - Gallery Authors could not manage a gallery after creating it
 
-**1.3.RC - 8 Oct 2010**
+1.3.RC - 8 Oct 2010
+-------------------
 
 = File Attachment Filtering =
 * Feature : For File Filtering, ability to force regeneration of access keys and rewrite rules via utility URL
@@ -291,7 +292,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Lang : updated .pot file
 * Change : Raise minimum WP version to 3.0
 
-= 1.2.8 RC9 - 6 Sep 2010 =
+1.2.8 RC9 - 6 Sep 2010
+----------------------
 
 = Custom Types / Taxonomies =
 * Feature : New simple checklist enables/disables RS usage of each defined post type and taxonomy 
@@ -381,7 +383,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Syntax error when attempting to access RS Options (since 1.2)
 * BugFix : Blank options area when attempting to access General Options (since 1.2)
 
-**1.2 - 2 June 2010**
+1.2 - 2 June 2010
+-----------------
 
 = WordPress 3.0 Compatibility =
 * Compat : WP 3.0 elimination of page.php, edit-pages.php, page-new.php broke many aspects of page filtering
@@ -447,39 +450,25 @@ For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive
 
 == General Plugin Compatibility Requirements ==
 
-* No other plugin or theme shall define function wp&#95;set&#95;current&#95;user() or function set&#95;current&#95;user().  A custom merge of the code may be possible in some situations.
-* No other plugin or theme shall make an include or require call to force early execution of the file pluggable.php (for the reason listed above).
+* No other plugin or theme may define function wp&#95;set&#95;current&#95;user() or function set&#95;current&#95;user().  A custom merge of the code may be possible in some situations. See further discussion [here](http://agapetry.net/forum/role-scoper/role-scoper-vs-event-calendar-scheduler-compatibility-problem/page-1/)
+* No other plugin or theme may execute an include or require statement to force early execution of the file pluggable.php (for the reason listed above).
 
 == Specific Plugin Compatibility Issues ==
 
-* WP Super Cache : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
-* Maintenance Mode : use version 5.3 or later.  Other "site down for maintenance" plugins may be incompatible due to early execution of pluggable.php and/or pre-init capability checks
-* WPML Multilingual CMS : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  
-* QTranslate : Role Scoper ensures compatibility by disabling the caching of page and category listings.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
-* Get Recent Comments : not compatible due to direct database query. Use WP Recent Comments widget instead.
-* Flutter : As of Nov 2009, RS filtering of Flutter categories requires that the Flutter function GetCustomWritePanels (in the RCCWP_CustomWritePanel class, file plugins/fresh-page/RCCWP_CustomWritePanel.php) be modified to the following:
+**WP Super Cache** : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
 
-    function GetCustomWritePanels() 
-    { 
-        global $wpdb; 
+**Maintenance Mode** : use version 5.3 or later.  Other "site down for maintenance" plugins may be incompatible due to early execution of pluggable.php and/or pre-init capability checks
 
-        $sql = "SELECT id, name, description, display_order, capability_name, 
-type, single  FROM " . RC_CWP_TABLE_PANELS; 
+**WPML Multilingual CMS** : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  
 
-        $join = apply_filters( 'panels_join_fp', '' ); 
-        $where = apply_filters( 'panels_where_fp', '' ); 
+**QTranslate** : Role Scoper ensures compatibility by disabling the caching of page and category listings.  To enable caching, change QTranslate get&#95;pages and get&#95;terms filter priority to 2 or higher, then add the following line to wp-config.php: `define('SCOPER_QTRANSLATE_COMPAT', true);`
 
-        $sql .= " $join WHERE 1=1 $where ORDER BY display_order ASC"; 
-        $results = $wpdb->get_results($sql); 
-        if (!isset($results)) 
-                $results = array(); 
+**Get Recent Comments** : not compatible due to direct database query. Use WP Recent Comments widget instead.
 
-        return $results; 
-    }
-
-* The Events Calendar : Not compatible as of TEV 1.6.3.  For unofficial workaround, change the-events-calendar.class.php as follows :
+**The Events Calendar** : Not compatible as of TEV 1.6.3.  For unofficial workaround, change the-events-calendar.class.php as follows :
 
 change:
+
     add_filter( 'posts_join', array( $this, 'events_search_join' ) );
     add_filter( 'posts_where', array( $this, 'events_search_where' ) );
     add_filter( 'posts_orderby',array( $this, 'events_search_orderby' ) );
@@ -487,6 +476,7 @@ change:
     add_filter( 'post_limits', array( $this, 'events_search_limits' ) );
 
 to:
+
     if( ! is_admin() ) {
       add_filter( 'posts_join', array( $this, 'events_search_join' ) );
       add_filter( 'posts_where', array( $this, 'events_search_where' ) );
@@ -495,15 +485,18 @@ to:
       add_filter( 'post_limits', array( $this, 'events_search_limits' ) );
     }
     
-* PHP Execution : as of v1.0.0, mechanism to limit editing based on post author capabilities is inherently incompatible w/ Role Scoper. Edit php-execution-plugin/includes/class.php_execution.php as follows :
+**PHP Execution** : as of v1.0.0, mechanism to limit editing based on post author capabilities is inherently incompatible w/ Role Scoper. Edit php-execution-plugin/includes/class.php_execution.php as follows :
 
 change:
+
     add_filter('user_has_cap', array(&$this,'action_user_has_cap'),10,3);
-			
+	
 to:
+
     add_filter( 'map_meta_cap', array( &$this,'map_meta_cap' ), 10, 4 );
     
 replace function action_user_has_cap with :
+
     function map_meta_cap( $caps, $meta_cap, $user_id, $args ) {
         $object_id = ( is_array($args) ) ? $args[0] : $args;
         if ( ! $post = get_post( $object_id ) )
@@ -534,31 +527,32 @@ replace function action_user_has_cap with :
         return $caps;	
     }
 
-
-    
-* custom post type / taxonomy registration : If they cannot be enabled via Roles > Options > Realm, registration may be applied too late in the WordPress initialization sequence.  If you use your own register calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to wp-config.php, ABOVE the "stop editing" line :
+**custom post types / taxonomies** : If they cannot be enabled via Roles > Options > Realm, registration may be applied too late in the WordPress initialization sequence.  If you use your own register calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to wp-config.php, ABOVE the "stop editing" line :
 
     define( 'SCOPER_LATE_INIT', true );
 
-**Attachment Filtering**
+== Attachment Filtering ==
 
 Read access to uploaded file attachments is normally filtered to match post/page access.
 
 To disable this attachment filtering, disable the option in Roles > Options or copy the following line to wp-config.php:
+
     define('DISABLE&#95;ATTACHMENT&#95;FILTERING', true);
 
 To reinstate attachment filtering, remove the definition from wp-config.php and re-enable File Filtering via Roles > Options.
 
-To fail with a null response when file access is denied (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php: 
+To fail with a null response when file access is denied (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php:
+
     define ('SCOPER&#95;QUIET&#95;FILE&#95;404', true);
 
 Normally, files which are in the uploads directory but have no post/page attachment will not be blocked.  To block such files, copy the following line to wp-config.php: 
+
     define('SCOPER&#95;BLOCK&#95;UNATTACHED&#95;UPLOADS', true);
 
-
-**Hidden Content Teaser**
+== Hidden Content Teaser ==
 
 The Hidden Content Teaser may be configured to display the first X characters of a post/page if no excerpt or more tag is available.
 
 To specify the number of characters (default is 50), copy the following line to wp-config.php: 
+
     define('SCOPER&#95;TEASER&#95;NUM&#95;CHARS', 100); // set to any number of your choice
