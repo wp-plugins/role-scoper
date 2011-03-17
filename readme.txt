@@ -264,7 +264,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Role Scoping for NextGEN Gallery - Gallery Authors could not manage a gallery after creating it
 
 1.3.RC - 8 Oct 2010
--------------------
+===================
 
 = File Attachment Filtering =
 * Feature : For File Filtering, ability to force regeneration of access keys and rewrite rules via utility URL
@@ -320,7 +320,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Change : Raise minimum WP version to 3.0
 
 1.2.8 RC9 - 6 Sep 2010
-----------------------
+======================
 
 = Custom Types / Taxonomies =
 * Feature : New simple checklist enables/disables RS usage of each defined post type and taxonomy 
@@ -411,7 +411,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Blank options area when attempting to access General Options (since 1.2)
 
 1.2 - 2 June 2010
------------------
+=================
 
 = WordPress 3.0 Compatibility =
 * Compat : WP 3.0 elimination of page.php, edit-pages.php, page-new.php broke many aspects of page filtering
@@ -502,6 +502,7 @@ change:
     add_filter( 'posts_fields',	array( $this, 'events_search_fields' ) );
     add_filter( 'post_limits', array( $this, 'events_search_limits' ) );
 
+
 to:
 
     if( ! is_admin() ) {
@@ -511,13 +512,15 @@ to:
       add_filter( 'posts_fields',	array( $this, 'events_search_fields' ) );
       add_filter( 'post_limits', array( $this, 'events_search_limits' ) );
     }
-    
+
+
 **PHP Execution** : as of v1.0.0, mechanism to limit editing based on post author capabilities is inherently incompatible w/ Role Scoper. Edit php-execution-plugin/includes/class.php_execution.php as follows :
 
 change:
 
     add_filter('user_has_cap', array(&$this,'action_user_has_cap'),10,3);
-	
+
+
 to:
 
     add_filter( 'map_meta_cap', array( &$this,'map_meta_cap' ), 10, 4 );
@@ -554,6 +557,7 @@ replace function action_user_has_cap with :
         return $caps;	
     }
 
+
 **custom post types / taxonomies** : If they cannot be enabled via Roles > Options > Realm, registration may be applied too late in the WordPress initialization sequence.  If you use your own register calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to wp-config.php, ABOVE the "stop editing" line :
 
     define( 'SCOPER_LATE_INIT', true );
@@ -565,11 +569,13 @@ Read access to uploaded file attachments is normally filtered to match post/page
 To disable this attachment filtering, disable the option in Roles > Options or copy the following line to wp-config.php:
     define('DISABLE&#95;ATTACHMENT&#95;FILTERING', true);
 
+
 To reinstate attachment filtering, remove the definition from wp-config.php and re-enable File Filtering via Roles > Options.
 
 To fail with a null response when file access is denied (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php: 
 
     define ('SCOPER&#95;QUIET&#95;FILE&#95;404', true);
+
 
 Normally, files which are in the uploads directory but have no post/page attachment will not be blocked.  To block such files, copy the following line to wp-config.php: 
 

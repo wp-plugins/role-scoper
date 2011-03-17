@@ -95,7 +95,7 @@ class WP_Scoped_User_Anon extends WP_User { // Special skeleton class for ANONYM
 	
 	// return group_id as array keys
 	function _get_usergroups($args = array()) {
-		return WP_Scoped_User::get_groups_for_user( -1 );
+		return WP_Scoped_User_Anon::get_groups_for_user( -1 );
 	}
 	
 	function get_blog_roles( $role_type = 'rs' ) {
