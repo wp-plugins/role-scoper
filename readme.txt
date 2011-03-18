@@ -515,8 +515,8 @@ change:
     add_filter( 'posts_orderby',array( $this, 'events_search_orderby' ) );
     add_filter( 'posts_fields',	array( $this, 'events_search_fields' ) );
     add_filter( 'post_limits', array( $this, 'events_search_limits' ) );
-
-
+  
+    
 to:
 
     if( ! is_admin() ) {
@@ -526,15 +526,15 @@ to:
       add_filter( 'posts_fields',	array( $this, 'events_search_fields' ) );
       add_filter( 'post_limits', array( $this, 'events_search_limits' ) );
     }
-
-
+  
+    
 **PHP Execution** : as of v1.0.0, mechanism to limit editing based on post author capabilities is inherently incompatible w/ Role Scoper. Edit php-execution-plugin/includes/class.php_execution.php as follows :
 
 change:
 
     add_filter('user_has_cap', array(&$this,'action_user_has_cap'),10,3);
-
-
+  
+    
 to:
 
     add_filter( 'map_meta_cap', array( &$this,'map_meta_cap' ), 10, 4 );
@@ -570,12 +570,12 @@ replace function action_user_has_cap with :
 
         return $caps;	
     }
-
-
+  
+    
 **custom post types / taxonomies** : If they cannot be enabled via Roles > Options > Realm, registration may be applied too late in the WordPress initialization sequence.  If you use your own register calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to wp-config.php, ABOVE the "stop editing" line :
 
     define( 'SCOPER_LATE_INIT', true );
-
+    
 == Attachment Filtering ==
 
 Read access to uploaded file attachments is normally filtered to match post/page access.
@@ -589,8 +589,8 @@ To reinstate attachment filtering, remove the definition from wp-config.php and 
 To fail with a null response when file access is denied (no WP 404 screen, but still includes a 404 in response header), copy the folling line to wp-config.php: 
 
     define ('SCOPER&#95;QUIET&#95;FILE&#95;404', true);
-
-
+  
+    
 Normally, files which are in the uploads directory but have no post/page attachment will not be blocked.  To block such files, copy the following line to wp-config.php: 
 
     define('SCOPER&#95;BLOCK&#95;UNATTACHED&#95;UPLOADS', true);
