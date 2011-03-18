@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1
-Stable Tag: 1.3.27
+Stable Tag: 1.3.28
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,33 +106,45 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.28-dev =
-* BugFix : Term-specific management roles did not grant editing access
-* Change : Term-specific management role also grants ability to create child terms
-* BugFix : In wp-admin, Page menu not visible while editing a post if page editing access is not site-wide
-* Compat : More Types: support late registration of post types by automatically forcing RS to initalize later
-* Feature : Category Assigner role does not grant post creation/editing capabilities but specifies categories which are assignable to any user-editable post regardless of post ownership or status
-* Compat : Quick Post Widget - categories were not filtered
-* BugFix : Default roles were not applied at Page / Post creation
-* BugFix : Did not support meta_key without meta_value in get_pages call (or vice versa)
-* Change : Support post_type argument in get_terms / wp_list_terms function call
-* BugFix : Non-administrators could not delete categories
-* BugFix : Internal Cache (and therefore permissions) did not refresh when an existing user's role is changed
-* Compat : When plugin or theme code forces autologin, RS filtering does not reflect it until the next http request
+1.3.28 - 18 Mar 2011
+====================
+
+= WP 3.1 =
+* BugFix : Role Options, Role Defaults menu items were not available on 3.1 multisite
+* Feature : Filter "Add New" links out of WP Admin bar if user lacks site-wide capability
+
+= Navigation Menus =
 * Feature : Nav Menu Manager role can be assigned to users who do not have edit_theme_options capability
 * Feature : Nav Menu Manager role can be assigned site-wide
 * Feature : For Nav Menu Management, option to list only user-editable content as available items
-* Compat : NextGEN Gallery - with versions 1.7+, error when uploading images as a non-Administrator
 * BugFix : Nav Menus displayed categories even if no posts readable
-* Compat : Grand Flash Gallery - error when uploading images as a non-Administrator
-* Compat : Simple Fields plugin - non-Administrators could not use custom field file uploader
+
+= Miscellaneous Bug Fixes =
 * BugFix : When editing is based on category, could not upload files into edit form prior to saving post 
-* Feature : Filter "Add New" links out of WP Admin bar if user lacks site-wide capability
-* BugFix : Non-administrators could not add a non-hierarchical custom term to post unless they have corresponding taxonomy Manager role (since 1.3.28-dev)
-* BugFix : Duplicate entries in Author dropdown if RS editing roles have been assigned to WP role groups
 * BugFix : Non-administrators could not add a non-hierarchical custom term to post if taxonomy is included in post type registration
-* BugFix : Role Options, Role Defaults menu items were not available on 3.1 multisite
+* BugFix : Internal Cache (and therefore permissions) did not refresh when an existing user's role is changed
+* BugFix : Default roles were not applied at Page / Post creation
+* BugFix : In wp-admin, Page menu not visible while editing a post if page editing access is not site-wide
+* BugFix : Duplicate entries in Author dropdown if RS editing roles have been assigned to WP role groups
+* BugFix : Did not support meta_key without meta_value in get_pages call (or vice versa)
+
+= Category Listing (front end) =
 * BugFix : New categories were not listed until Role Scoper re-activation, under some configurations
+* Change : Support post_type argument in get_terms / wp_list_terms function call
+
+= Category Management =
+* Feature : Category Assigner role does not grant post creation/editing capabilities but specifies categories which are assignable to any user-editable post regardless of post ownership or status
+* BugFix : Term-specific management roles did not grant editing access
+* Change : Term-specific management role also grants ability to create child terms
+* BugFix : Non-administrators could not delete categories
+
+= Plugin Compatibility =
+* Compat : NextGEN Gallery - with versions 1.7+, error when uploading images as a non-Administrator
+* Compat : Grand Flash Gallery - error when uploading images as a non-Administrator
+* Compat : More Types: support late registration of post types by automatically forcing RS to initalize later
+* Compat : Simple Fields plugin - non-Administrators could not use custom field file uploader
+* Compat : Quick Post Widget - categories were not filtered
+* Compat : When plugin or theme code forces autologin, RS filtering does not reflect it until the next http request
 
 = 1.3.27 - 19 Jan 2011 =
 * BugFix : Hidden Content Teaser - private pages were not included for teasing to anonymous reader
@@ -470,6 +482,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable release 1.0.0 debuted on wordpress.org on 21 March 2009. 
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
+
+== Upgrade Notice ==
+
+= 1.3.28 =
+Improves Nav Menu Manager and Category Manager role assignment; filters "Add New" links out of admin bar as appropriate; fixes RS Options menus in 3.1 Multisite, fixes 6 plugin conflicts including NextGEN Gallery, and 9 other bug fixes. 
 
 == Documentation ==
 
