@@ -132,6 +132,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Duplicate entries in Author dropdown if RS editing roles have been assigned to WP role groups
 * BugFix : Non-administrators could not add a non-hierarchical custom term to post if taxonomy is included in post type registration
 * BugFix : Role Options, Role Defaults menu items were not available on 3.1 multisite
+* BugFix : New categories were not listed until Role Scoper re-activation, under some configurations
 
 = 1.3.27 - 19 Jan 2011 =
 * BugFix : Hidden Content Teaser - private pages were not included for teasing to anonymous reader

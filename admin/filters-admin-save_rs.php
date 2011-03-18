@@ -648,7 +648,10 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		
 		scoper_term_cache_flush();
 		scoper_flush_roles_cache(TERM_SCOPE_RS, '', '', $taxonomy);
-		delete_option( "{$taxonomy}_children_rs" );
+		
+		delete_option("{$taxonomy}_children");
+		delete_option("{$taxonomy}_children_rs");
+		delete_option("{$taxonomy}_ancestors_rs");
 	}
 	
 	
