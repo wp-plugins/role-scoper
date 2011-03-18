@@ -486,7 +486,7 @@ For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive
 == Upgrade Notice ==
 
 = 1.3.28 =
-Improves Nav Menu Manager and Category Manager role assignment; filters "Add New" links out of admin bar as appropriate; fixes RS Options menus in 3.1 Multisite, fixes 6 plugin conflicts including NextGEN Gallery, and 9 other bug fixes. 
+Improves Nav Menu Manager and Category Manager role assignment; filters "Add New" links out of admin bar as appropriate; fixes RS Options menus in 3.1 Multisite, fixes 6 plugin conflicts including NextGEN Gallery, and 9 other minor bug fixes. 
 
 == Documentation ==
 
