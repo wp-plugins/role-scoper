@@ -106,7 +106,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-**1.3.28 - 18 Mar 2011**
+#### 1.3.28 - 18 Mar 2011
 
 = WP 3.1 =
 * BugFix : Role Options, Role Defaults menu items were not available on 3.1 multisite
@@ -275,7 +275,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = 1.3.1 - 2 Nov 2010 =
 * Compat : Role Scoping for NextGEN Gallery - Gallery Authors could not manage a gallery after creating it
 
-**1.3.RC - 8 Oct 2010**
+#### 1.3.RC - 8 Oct 2010
 
 = File Attachment Filtering =
 * Feature : For File Filtering, ability to force regeneration of access keys and rewrite rules via utility URL
@@ -330,7 +330,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Lang : updated .pot file
 * Change : Raise minimum WP version to 3.0
 
-**1.2.8 RC9 - 6 Sep 2010**
+#### 1.2.8 RC9 - 6 Sep 2010
 
 = Custom Types / Taxonomies =
 * Feature : New simple checklist enables/disables RS usage of each defined post type and taxonomy 
@@ -420,7 +420,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Syntax error when attempting to access RS Options (since 1.2)
 * BugFix : Blank options area when attempting to access General Options (since 1.2)
 
-**1.2 - 2 June 2010**
+#### 1.2 - 2 June 2010
 
 = WordPress 3.0 Compatibility =
 * Compat : WP 3.0 elimination of page.php, edit-pages.php, page-new.php broke many aspects of page filtering
