@@ -99,6 +99,7 @@ class CapInterceptor_RS
 		
 		
 		// ================= EARLY EXIT CHECKS (if the provided reqd_caps do not need filtering or need special case filtering ==================
+		global $pagenow;
 
 		// Disregard caps which are not defined in Role Scoper config
 		if ( ! $rs_reqd_caps = array_intersect( $orig_reqd_caps, $this->scoper->cap_defs->get_all_keys() ) ) {
@@ -140,11 +141,15 @@ class CapInterceptor_RS
 		if ( defined( 'SCOPER_NO_COMMENT_FILTERING' ) && ( 'moderate_comments' == $orig_reqd_caps[0] ) && empty( $GLOBALS['current_user']->allcaps['moderate_comments'] ) ) {
 			return $wp_blogcaps;			
 		}
+		
+		if ( defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) && ( $pagenow == 'upload.php' ) && in_array( $orig_reqd_caps[0], array( 'upload_files', 'edit_others_posts', 'delete_others_posts' ) ) ) {
+			return $wp_blogcaps;
+		}		
 		// =================================================== (end early exit checks) ======================================================
 
 
 		// ============================ GLOBAL VARIABLE DECLARATIONS, ARGUMENT TRANSLATION AND STATUS DETECTION =============================
-		global $current_user, $pagenow;
+		global $current_user;
 		
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 

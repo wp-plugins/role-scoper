@@ -420,9 +420,9 @@ class ScoperAdminHardway_Ltd {
 					$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) $attached_clause ) ) AND ";
 					
 					$query = substr( $query, 0, $where_pos + strlen('WHERE ') ) . $where_insert . substr($query, $where_pos + strlen('WHERE ') );
-	
-					return $query;
 				}
+				
+				return $query;
 			}
 		}
 		

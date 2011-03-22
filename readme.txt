@@ -106,6 +106,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.29-dev =
+* BugFix : Disabling Media Library filtering via SCOPER_ALL_UPLOADS_EDITABLE constant definition broke Media Library paging for Contributors
+* BugFix : Media Library filtering was not totally disabled by SCOPER_ALL_UPLOADS_EDITABLE constant definition
+
 #### 1.3.28 - 18 Mar 2011
 
 = WP 3.1 =

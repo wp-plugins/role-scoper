@@ -281,11 +281,14 @@ class QueryInterceptor_RS
 
 		// no need to apply objects query filtering withing NextGEN Gallery / Grand Flash Gallery upload operation (was failing with undefined $current_user)
 		if ( is_admin() ) {
+			if ( defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) && ( $GLOBALS['pagenow'] == 'upload.php' ) )
+				return $request;
+
 			$nofilter_scripts = array( '/admin/upload.php' );
 			if ( $nofilter_scripts = apply_filters( 'noqueryfilter_scripts_rs', $nofilter_scripts ) ) {
 				foreach( $nofilter_scripts as $_script_name ) {
-					if ( strpos( $_SERVER['SCRIPT_NAME'], $_script_name ) )
-						return $where;
+					if ( false !== strpos( $_SERVER['SCRIPT_NAME'], $_script_name ) )
+						return $request;
 				}
 			}
 		}
@@ -330,7 +333,7 @@ class QueryInterceptor_RS
 			$rs_where = $this->flt_objects_where( '', $src_name, '', $args );
 			$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
 
-			if ( is_admin() && ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {
+			if ( is_admin() ) {
 				// The listed objects are attachments, so query filter is based on objects they inherit from
 				$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
 				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
