@@ -61,7 +61,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 		// if no alias specified, set alias property to table name
 		if ( empty($src->table_alias) )
 			$src->table_alias = $src->table;
-
+	
 		// default object_types array to single member matching source name
 		if ( empty($src->object_types) ) {
 			$src->object_types = array( $src->name => (object) array() );

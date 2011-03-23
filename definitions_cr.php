@@ -220,38 +220,40 @@ function cr_wp_taxonomies() {
 		$tx_otypes = (array) $wp_tax->object_type;
 
 		foreach ( $tx_otypes as $wp_tax_object_type ) {
-			if ( in_array($wp_tax_object_type, $post_types) )
+			if ( in_array($wp_tax_object_type, $post_types) ) {
 				$src_name = 'post';
-			elseif ( $scoper->data_sources->is_member($wp_tax_object_type) ) 
+				break;
+			} elseif ( $scoper->data_sources->is_member($wp_tax_object_type) ) {
 				$src_name = $wp_tax_object_type;
-			elseif ( ! $src_name = $scoper->data_sources->is_member_alias($wp_tax_object_type) )  // in case the 3rd party plugin uses a taxonomy->object_type property different from the src_name we use for RS data source definition
-				continue;
-				
-			// create taxonomies definition if necessary (additional properties will be set later)
-			$arr[$taxonomy] = (object) array(
-				'name' => $taxonomy,								
-				'uses_standard_schema' => 1,	'autodetected_wp_taxonomy' => 1,
-				'default_term_option' => "default_{$taxonomy}",
-				'hierarchical' => $wp_tax->hierarchical,
-				'object_source' => $src_name,
-				'labels' => (object) array( 'name' => $wp_tax->labels->name, 'singular_name' => $wp_tax->labels->singular_name  ),
-				'requires_term' => $wp_tax->hierarchical
-			);
+				break;
+			} elseif ( $src_name = $scoper->data_sources->is_member_alias($wp_tax_object_type) )  // in case the 3rd party plugin uses a taxonomy->object_type property different from the src_name we use for RS data source definition
+				break;
+		}
+		
+		// create taxonomies definition (additional properties will be set later)
+		$arr[$taxonomy] = (object) array(
+			'name' => $taxonomy,								
+			'uses_standard_schema' => 1,	'autodetected_wp_taxonomy' => 1,
+			'default_term_option' => "default_{$taxonomy}",
+			'hierarchical' => $wp_tax->hierarchical,
+			'object_source' => $src_name,
+			'labels' => (object) array( 'name' => $wp_tax->labels->name, 'singular_name' => $wp_tax->labels->singular_name  ),
+			'requires_term' => $wp_tax->hierarchical
+		);
+		
+		if ( is_admin() ) {
+			// temporary hardcode
+			if ( 'nav_menu' == $taxonomy )
+				$arr[$taxonomy]->requires_term = true;
 			
-			if ( is_admin() ) {
-				// temporary hardcode
-				if ( 'nav_menu' == $taxonomy )
-					$arr[$taxonomy]->requires_term = true;
-				
-				$arr[$taxonomy]->admin_actions = array( 'save_term' => "save_{$taxonomy}", 		'edit_term' => "edit_{$taxonomy}", 			'create_term' => "created_{$taxonomy}", 
-														'delete_term' => "delete_{$taxonomy}", 	'term_edit_ui' => "{$taxonomy}_edit_form" );
-				
-				$arr[$taxonomy]->admin_filters = array( 'pre_object_terms' => "pre_post_{$taxonomy}" );
-				
-				if ( 'nav_menu' == $taxonomy )
-					$arr[$taxonomy]->edit_url = "nav-menus.php?action=edit&menu=%d";
-			}
-		}	
+			$arr[$taxonomy]->admin_actions = array( 'save_term' => "save_{$taxonomy}", 		'edit_term' => "edit_{$taxonomy}", 			'create_term' => "created_{$taxonomy}", 
+													'delete_term' => "delete_{$taxonomy}", 	'term_edit_ui' => "{$taxonomy}_edit_form" );
+			
+			$arr[$taxonomy]->admin_filters = array( 'pre_object_terms' => "pre_post_{$taxonomy}" );
+			
+			if ( 'nav_menu' == $taxonomy )
+				$arr[$taxonomy]->edit_url = "nav-menus.php?action=edit&menu=%d";
+		}
 	} // end foreach taxonomy known to WP core
 
 	return $arr;

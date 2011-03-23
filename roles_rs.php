@@ -132,9 +132,9 @@ class CR_Roles extends AGP_Config_Items {
 		if ( ! in_array( $taxonomy, array( 'category', 'post_tag' ) ) && $one_otype_per_role ) {
 			if ( $tx = get_taxonomy( $taxonomy ) )
 				if ( ! empty( $tx->object_type ) )
-					$use_otypes = (array) $tx->object_type;
+					$use_otypes = array_unique( (array) $tx->object_type );
 		}
-		
+
 		if ( empty( $use_otypes ) )
 			$use_otypes = array_keys($src->object_types);
 
@@ -152,7 +152,7 @@ class CR_Roles extends AGP_Config_Items {
 				$otype_roles[$object_type] = $roles;
 			}
 		}
-
+		
 		//note: term roles are defined with src_name property corresponding to their object source (i.e. manage_categories has src_name 'post')
 		if ( $taxonomy ) {
 			if ( $roles = $this->get_matching( 'rs', $src->name, $taxonomy ) ) {

@@ -668,7 +668,7 @@ function rs_tally_term_counts(&$terms, $taxonomy, $args = array()) {
 	}
 
 	$tx_obj = get_taxonomy( $taxonomy );
-	$post_types = (array) $tx_obj->object_type;
+	$post_types = array_unique( (array) $tx_obj->object_type );
 
 	$enabled_types = array();
 	foreach ( $post_types as $_post_type )
