@@ -1045,10 +1045,10 @@ class QueryInterceptor_RS
 			$user_qualifies_for_obj_roles = ( $user->ID || defined( 'SCOPER_ANON_METAGROUP' ) );
 
 		$where = array();
-		
+
 		if ( $otype_use_term_roles && is_array($otype_use_term_roles) ) {
 			$_taxonomies = array_keys( array_intersect( $otype_use_term_roles, array( 1, '1', true ) ) );
-
+			
 			// taxonomies arg is for limiting; default is to include all associated taxonomies in where clause
 			if ( $taxonomies )
 				$_taxonomies = array_intersect( $_taxonomies, $taxonomies );
@@ -1059,7 +1059,7 @@ class QueryInterceptor_RS
 			}
 		} else
 			$_taxonomies = array();
-
+		
 		$user_blog_roles = array( '' => array() );
 		
 		if ( $use_blog_roles ) {

@@ -112,6 +112,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Bulk Admin forms for Taxonomy Roles / Restrictions did not include roles for associated post types if association is defined by both register_taxonomy() and register_taxonomy_for_object_type()
 * Compat : Relevanssi - Fatal Error on tag search under some configurations
 * BugFix : Grammatically customized capability names were not mirrored in RS Role Definitions
+* BugFix : Link Category Manager role assignments were ineffective
 
 #### 1.3.28 - 18 Mar 2011
 

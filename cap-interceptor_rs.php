@@ -168,7 +168,7 @@ class CapInterceptor_RS
 		$is_taxonomy_cap = false;
 		$src_name = '';
 		$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );
-
+		
 		//rs_errlog( "cap types: " . serialize($cap_types) );
 		
 		$doing_admin_menus = is_admin() && (
@@ -208,8 +208,13 @@ class CapInterceptor_RS
 
 		//rs_errlog( "$src_name : $object_type (id $object_id)" );
 
+		if ( is_admin() && ( 'edit-tags.php' == $GLOBALS['pagenow'] ) && ( 'link_category' == $_REQUEST['taxonomy'] ) ) {
+			$src_name = 'link';
+			$object_type = 'link_category';
+		}
+
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
-		
+			
 		if ( empty($cap_types) )
 			$cap_types = array( $object_type );
 		// =====================================================================================================================================
@@ -577,8 +582,8 @@ class CapInterceptor_RS
 
 			// since the objects_where_role_clauses() output itself is not id-specific, also statically buffer it per reqd_caps
 			if ( $force_refresh || ! isset( $cache_where_clause[$src_name][$object_type][$capreqs_key] ) ) {
-
-				$use_term_roles = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );
+				$check_otype = ( 'link_category' == $object_type ) ? 'link' : $object_type;
+				$use_term_roles = scoper_get_otype_option( 'use_term_roles', $src_name, $check_otype );
 
 				$no_object_roles = $this->scoper->data_sources->member_property($src_name, 'no_object_roles');
 				$use_object_roles = ( $no_object_roles ) ? false : scoper_get_otype_option( 'use_object_roles', $src_name, $object_type );

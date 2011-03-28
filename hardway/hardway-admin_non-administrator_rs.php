@@ -42,7 +42,13 @@ class ScoperAdminHardway_Ltd {
 				return;
 			
 			$taxonomy = $_POST['taxonomy'];
+			
+			if ( ! $tx = get_taxonomy($taxonomy) )
+				return;
 				
+			if ( ! $tx->hierarchical )
+				return;
+			
 			$stored_term = get_term_by( 'id', $_POST['tag_ID'], $taxonomy );
 
 			$selected_parent = $_POST['parent'];
