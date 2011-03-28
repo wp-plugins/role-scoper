@@ -310,6 +310,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		
 		// if post status has changed to or from private (or is a new private post), flush htaccess file rules for file attachment filtering
 		if ( scoper_get_option( 'file_filtering' ) ) {
+			/*
 			if ( $new_restriction_settings ) {
 				$maybe_flush_file_rules = true;
 			} else {
@@ -327,13 +328,14 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				} elseif ( isset($_POST['post_status']) && ( 'private' == $_POST['post_status'] ) )
 					$maybe_flush_file_rules = true;	
 			}
+			*/
 			
-			if ( $maybe_flush_file_rules ) {
+			//if ( $maybe_flush_file_rules ) {
 				global $wpdb;
 				if ( scoper_get_var( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = '$object_id' LIMIT 1" ) ) {   // no need to flush file rules unless this post has at least one attachment
 					scoper_flush_file_rules();
 				}
-			}
+			//}
 		}
 		
 		if ( ( 'post' == $src_name ) && $post_type_obj->hierarchical ) {

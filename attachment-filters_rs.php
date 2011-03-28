@@ -94,8 +94,8 @@ class AttachmentFilters_RS {
 		//rs_errlog('_user_can_read_file');
 		
 		$file_path = $uploads['basedir'] . "/$file";
-		
-		
+
+
 		//rs_errlog("$file_path exists.");	
 		
 		global $wpdb, $wp_query;
