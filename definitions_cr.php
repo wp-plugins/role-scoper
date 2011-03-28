@@ -131,8 +131,6 @@ function cr_add_post_types( &$data_source_members ) {
 			$arr['ignore_object_hierarchy'] = true;
 		}	
 
-		$arr['plural_name'] = plural_name_from_cap_rs( $post_type_obj );
-
 		$data_source_members['post']->object_types[$name] = (object) $arr;
 	}
 }
@@ -240,8 +238,6 @@ function cr_wp_taxonomies() {
 			if ( 'nav_menu' == $taxonomy )
 				$arr[$taxonomy]->edit_url = "nav-menus.php?action=edit&menu=%d";
 		}
-		
-		$arr[$taxonomy]->plural_name = plural_name_from_cap_rs( $wp_tax );
 	} // end foreach taxonomy known to WP core
 
 	return $arr;

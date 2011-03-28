@@ -125,8 +125,11 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 		if ( ! $otype_roles )
 			continue;
 
-		$plural_name = $otype->plural_name;
-
+		if ( 'post' == $src_name )
+			$plural_name = plural_name_from_cap_rs( get_post_type_object($object_type) );
+		else
+			$plural_name = '';
+		
 		foreach ( $otype_roles as $object_type => $roles ) {
 			//display each role which has capabilities for this object type
 			echo '<br />';
@@ -224,7 +227,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 				// abbreviate type caps and reorder display
 				$show_cap_names = array();
 				foreach($available_cap_names as $cap_name) {
-					if ( strpos( $cap_name, "_{$plural_name}" ) ) {
+					if ( $plural_name && strpos( $cap_name, "_{$plural_name}" ) ) {
 						$display = str_replace( "_{$plural_name}", '', $cap_name );
 						$display = sprintf( __( '%s...', 'scoper' ), $display );
 					} else
