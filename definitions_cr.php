@@ -131,10 +131,11 @@ function cr_add_post_types( &$data_source_members ) {
 			$arr['ignore_object_hierarchy'] = true;
 		}	
 
+		$arr['plural_name'] = plural_name_from_cap_rs( $post_type_obj );
+
 		$data_source_members['post']->object_types[$name] = (object) $arr;
 	}
 }
-
 
 function cr_taxonomies() {
 	$arr = array();
@@ -186,22 +187,7 @@ function cr_taxonomies() {
 function cr_wp_taxonomies() {
 	$arr = array();
 
-	// in case they were generated before custom types, taxonomies were added
-	scoper_refresh_default_otype_options();
-	
-	global $scoper_default_otype_options;
-	$stored_tx_usage = (array) scoper_get_option( 'use_term_roles' );
-	$default_tx_usage = $scoper_default_otype_options['use_term_roles'];
-	$use_term_roles = array_merge( $default_tx_usage, $stored_tx_usage );
-	
-	// note: use_term_roles elements are auto-created (and thus eligible for scoping activation via Roles > Realm) based on registered WP taxonomies
-	$arr_use_wp_taxonomies = array();
-	
-	foreach( array_keys($use_term_roles) as $src_otype ) 
-		if ( is_array( $use_term_roles[$src_otype] ) )
-			foreach ( array_keys($use_term_roles[$src_otype]) as $taxonomy )
-				if ( $use_term_roles[$src_otype][$taxonomy] )
-					$arr_use_wp_taxonomies[$taxonomy] = true;
+	$arr_use_wp_taxonomies = scoper_get_option( 'use_taxonomies' );
 
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
 	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
@@ -254,6 +240,8 @@ function cr_wp_taxonomies() {
 			if ( 'nav_menu' == $taxonomy )
 				$arr[$taxonomy]->edit_url = "nav-menus.php?action=edit&menu=%d";
 		}
+		
+		$arr[$taxonomy]->plural_name = plural_name_from_cap_rs( $wp_tax );
 	} // end foreach taxonomy known to WP core
 
 	return $arr;
@@ -304,8 +292,8 @@ function cr_post_cap_defs() {
 		$post_caps = array(
 			$cap->read_private_posts =>		(object) array( 'src_name' => 'post', 'op_type' => OP_READ_RS, 		'base_cap' => 'read', 				'status' => 'private' ),	
 			$cap->edit_posts => 			(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'no_custom_remove' => true ),
-			$cap->edit_others_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS, 		'base_cap' => $cap->edit_posts, 		'no_custom_remove' => true  ),
-			$cap->edit_private_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'base_cap' => $cap->edit_posts, 		'status' => 'private' ),
+			$cap->edit_others_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS, 		'base_cap' => $cap->edit_posts, 	'no_custom_remove' => true  ),
+			$cap->edit_private_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'base_cap' => $cap->edit_posts, 	'status' => 'private' ),
 			$cap->edit_published_posts => 	(object) array( 'src_name' => 'post', 'op_type' => OP_EDIT_RS,		'status' => 'publish' ),
 			$cap->delete_posts =>  			(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS ),
 			$cap->delete_others_posts =>  	(object) array( 'src_name' => 'post', 'op_type' => OP_DELETE_RS, 	'base_cap' => $cap->delete_posts ),
@@ -314,8 +302,10 @@ function cr_post_cap_defs() {
 			$cap->publish_posts => 			(object) array( 'src_name' => 'post', 'op_type' => OP_PUBLISH_RS )
 		);
 
-		if ( $post_type_obj->hierarchical )
-			$post_caps["create_child_{$name}s"] = (object) array( 'src_name' => 'post', 'op_type' => OP_ASSOCIATE_RS, 'no_custom_add' => true, 'no_custom_remove' => true, 'defining_module' => 'role-scoper', 'src_name' => 'post', 'object_types' => array( $name ) );
+		if ( $post_type_obj->hierarchical ) {
+			$plural_name = plural_name_from_cap_rs( $post_type_obj );
+			$post_caps["create_child_{$plural_name}"] = (object) array( 'src_name' => 'post', 'op_type' => OP_ASSOCIATE_RS, 'no_custom_add' => true, 'no_custom_remove' => true, 'defining_module' => 'role-scoper', 'src_name' => 'post', 'object_types' => array( $name ) );
+		}
 			
 		$arr = array_merge( $arr, $post_caps );
 	}
@@ -445,8 +435,10 @@ function cr_post_role_caps() {
 		// Note: create_child_pages should only be present in associate role, which is used as an object-assigned alternate to blog-wide edit role
 		// This way, blog-assignment of author role allows user to create new pages, but only as subpages of pages they can edit (or for which Associate role is object-assigned)
 		if ( $post_type_obj->hierarchical ) {
+			$plural_name = plural_name_from_cap_rs( $post_type_obj );
+		
 			$arr["rs_{$name}_associate"] = array( 
-				"create_child_{$name}s" => true,
+				"create_child_{$plural_name}" => true,
 				'read' => true
 			);
 		}

@@ -35,20 +35,6 @@ class Scoper
 		if ( defined( 'RVY_VERSION' ) )
 			$this->cap_interceptor = (object) array();	// legacy support for Revisionary < 1.1 which set flags on this object property
 	}
-
-	function any_custom_registrations() {
-		if ( ! awp_ver( '2.9' ) )
-			return array();
-		
-		$any_custom['type'] = (bool) get_post_types( array( 'public' => true, '_builtin' => false ) );
-
-		if ( awp_ver( '3.0' ) )
-			$any_custom['taxonomy'] = (bool) get_taxonomies( array( 'public' => true, '_builtin' => false ) );
-		else
-			$any_custom['taxonomy'] = (bool) get_custom_taxonomies_rs();
-			
-		return $any_custom;
-	}
 	
 	function load_config() {
 		require_once('lib/agapetry_config_items.php');
@@ -1074,7 +1060,7 @@ function cr_user_can( $reqd_caps, $object_id = 0, $user_id = 0, $meta_flags = ar
 	if ( function_exists('is_super_admin') && is_super_admin() ) 
 		return true;
 		
-	if ( is_content_administrator_rs() )
+	if ( is_content_administrator_rs() || ! function_exists( '_cr_user_can' ) )
 		return current_user_can( $reqd_caps );
 
 	return _cr_user_can( $reqd_caps, $object_id, $user_id, $meta_flags );

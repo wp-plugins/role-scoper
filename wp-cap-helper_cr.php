@@ -1,5 +1,26 @@
 <?php
 
+// test_cap = 'edit_posts' or 'manage_terms'
+// default_cap_prefix = 'edit_' or 'manage_'
+//
+// note: valid usage is after force_distinct_post_caps() and force_distinct_taxonomy_caps have been applied to object
+function plural_name_from_cap_rs( $type_obj ) {
+	if ( isset( $type_obj->cap->edit_posts ) ) {
+		$test_cap = $type_obj->cap->edit_posts;
+		$default_cap_prefix = 'edit_';
+	} elseif( isset( $type_obj->cap->manage_terms ) ) {
+		$test_cap = $type_obj->cap->manage_terms;
+		$default_cap_prefix = 'manage_';
+	} else
+		return isset( $type_obj->name ) ? $type_obj->name . 's' : '';
+
+	if ( ( 0 === strpos( $test_cap, $default_cap_prefix ) ) 
+	&& ( false === strpos( $test_cap, '_', strlen($default_cap_prefix) ) ) )
+		return substr( $test_cap, strlen($default_cap_prefix) );
+	else
+		return $type_obj->name . 's';
+} 
+
 class WP_Cap_Helper_CR {
 	function establish_status_caps() {
 		global $wp_post_types;
@@ -11,6 +32,8 @@ class WP_Cap_Helper_CR {
 		$stati = get_post_stati( array( 'internal' => false ), 'object' );
 
 		foreach( $post_types as $post_type ) {
+			$plural_name = plural_name_from_cap_rs( $wp_post_types[$post_type] );
+
 			// copy existing cap values so we don't overwrite them
 			$type_caps = (array) $wp_post_types[$post_type]->cap;
 			
@@ -40,14 +63,14 @@ class WP_Cap_Helper_CR {
 					if ( empty( $type_caps[$posts_cap_name] ) ) {
 						if ( ! empty( $status_obj->customize_caps ) ) {	// TODO: RS Options to set this
 							// this status is built in or was marked for full enforcement of custom capabilities
-							$type_caps[$posts_cap_name] = "{$op}_{$status_string}_{$post_type}s";
+							$type_caps[$posts_cap_name] = "{$op}_{$status_string}_{$plural_name}";
 						} else {
 							// default to this post type's own equivalent private or published cap
 							if ( $status_obj->private )
-								$type_caps[$posts_cap_name] = "{$op}_private_{$post_type}s";
+								$type_caps[$posts_cap_name] = "{$op}_private_{$plural_name}";
 								
 							elseif ( $status_obj->public )
-								$type_caps[$posts_cap_name] = "{$op}_published_{$post_type}s";
+								$type_caps[$posts_cap_name] = "{$op}_published_{$plural_name}";
 						}
 					}
 				} // end foreach op (read/edit/delete)
@@ -58,9 +81,9 @@ class WP_Cap_Helper_CR {
 					if ( empty( $type_caps[$posts_cap_name] ) ) {
 						if ( ! empty( $status_obj->customize_caps ) ) {	// TODO: RS Options to set this
 							// this status was marked for full enforcement of custom capabilities
-							$type_caps[$posts_cap_name] = "set_{$status}_{$post_type}s";
+							$type_caps[$posts_cap_name] = "set_{$status}_{$plural_name}";
 						} elseif( $status_obj->public || $status_obj->private ) {
-							$type_caps[$posts_cap_name] = "publish_{$post_type}s";
+							$type_caps[$posts_cap_name] = "publish_{$plural_name}";
 						}
 					}
 				}
@@ -68,10 +91,10 @@ class WP_Cap_Helper_CR {
 			} // end foreach front end status 
 			
 			if ( empty( $type_caps['delete_posts'] ) )
-				$type_caps['delete_posts'] = "delete_{$post_type}s";
+				$type_caps['delete_posts'] = "delete_{$plural_name}";
 							
 			if ( empty( $type_caps['delete_others_posts'] ) )
-				$type_caps['delete_others_posts'] = "delete_others_{$post_type}s";
+				$type_caps['delete_others_posts'] = "delete_others_{$plural_name}";
 
 			if ( $is_attachment_type )
 				$post_type = 'attachment';
@@ -97,15 +120,18 @@ class WP_Cap_Helper_CR {
 		foreach( array_keys($wp_post_types) as $post_type ) {
 			if ( empty( $use_post_types[$post_type] ) )
 				continue;
-	
-			$wp_post_types[$post_type]->capability_type = $post_type;
-				
+
+			if ( 'post' === $wp_post_types[$post_type]->capability_type )
+				$wp_post_types[$post_type]->capability_type = $post_type;
+
 			$type_caps = (array) $wp_post_types[$post_type]->cap;
+			
+			/* $plural_name =  */	// as of WP 3.1, no basis for determinining this unless type-specific caps are set
 			
 			// don't allow any capability defined for this type to match any capability defined for post or page (unless this IS post or page type)
 			foreach( $type_caps as $cap_property => $type_cap )
 				foreach( array( 'post', 'page' ) as $generic_type )
-					if ( ( $post_type != $generic_type ) & in_array( $type_cap, $generic_caps[$generic_type] ) )
+					if ( ( $post_type != $generic_type ) && in_array( $type_cap, $generic_caps[$generic_type] ) )
 						$type_caps[$cap_property] = str_replace( 'post', $post_type, $cap_property );
 	
 			$wp_post_types[$post_type]->cap = (object) $type_caps;
@@ -141,11 +167,13 @@ class WP_Cap_Helper_CR {
 	
 			$tx_caps = (array) $wp_taxonomies[$taxonomy]->cap;
 	
+			$plural_name = $taxonomy . 's';	// as of WP 3.1, no basis for determinining this unless type-specific caps are set
+	
 			// don't allow any capability defined for this taxonomy to match any capability defined for category or post tag (unless this IS category or post tag)
 			foreach( $tx_specific_caps as $cap_property => $replacement_cap_format ) {
 				if ( ! empty($tx_caps[$cap_property]) && in_array( $tx_caps[$cap_property], $used_values ) )
-					$wp_taxonomies[$taxonomy]->cap->$cap_property = str_replace( 'terms', "{$taxonomy}s", $replacement_cap_format );
-					
+					$wp_taxonomies[$taxonomy]->cap->$cap_property = str_replace( 'terms', $plural_name, $replacement_cap_format );
+
 				$used_values []= $tx_caps[$cap_property];
 			}
 		}

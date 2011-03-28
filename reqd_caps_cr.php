@@ -39,6 +39,8 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 				if ( ( -1 == $object_type ) && empty( $use_post_types[$_post_type] ) )
 					continue;
 				
+				$plural_name = plural_name_from_cap_rs( $post_type_obj );
+				
 				$cap = $post_type_obj->cap;
 		
 				if ( 'read' != $op ) {
@@ -78,7 +80,7 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 									
 								// read_{$_status}_posts (if defined)
 								if ( 'publish' != $_status ) {
-									$status_cap = "read_{$_status}_{$_post_type}s";
+									$status_cap = "read_{$_status}_{$plural_name}";
 									if ( ! empty( $cap->$status_cap ) )
 										$arr['read'][$_post_type][$_status] []= $status_cap;
 								}
@@ -94,7 +96,7 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 							else
 								$arr['read'][$_post_type][$_status] = array( $cap->edit_others_posts );
 															
-							$status_cap = "read_published_{$_post_type}s";
+							$status_cap = "read_published_{$plural_name}";
 							if ( ! empty( $cap->$status_cap ) )
 								$arr['read'][$_post_type][$_status] []= $status_cap;
 						}

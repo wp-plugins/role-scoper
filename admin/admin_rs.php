@@ -386,18 +386,17 @@ jQuery(document).ready( function($) {
 			if ( is_taxonomy_used_rs( $taxonomy ) && ( is_administrator_rs($tx->source, 'user') || $this->user_can_admin_terms($taxonomy) ) )
 				$can_admin_terms[$taxonomy] = true;
 		}
-		
-		$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
 
 		// Users Tab
 		if ( DEFINE_GROUPS_RS ) {
+			$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
 			$cap_req = ( $can_manage_groups ) ? 'read' : 'manage_groups';
-			
-			$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');
-
-			if ( ! IS_MU_RS || ! scoper_get_site_option( 'mu_sitewide_groups' ) )
+		
+			if ( ! IS_MU_RS || ! scoper_get_site_option( 'mu_sitewide_groups' ) ) {
+				$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');
 				add_submenu_page( 'users.php', $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
-
+			}
+				
 			// satisfy WordPress' demand that all admin links be properly defined in menu
 			if ( 'rs-default_groups' == $plugin_page_cr )
 				add_submenu_page('users.php', __('User Groups', 'scoper'), __('Default Groups', 'scoper'), $cap_req, 'rs-default_groups', array( &$this, 'menu_handler' ) );

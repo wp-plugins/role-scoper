@@ -73,6 +73,9 @@ class CR_Data_Sources extends AGP_Config_Items {
 
 		foreach ( array_keys($src->object_types) as $name )
 			$src->object_types[$name]->name = $name;
+			
+			if ( empty( $src->object_types[$name]->plural_name ) )
+				$src->object_types[$name]->plural_name = $name . 's';  // will be changed for WP post types based on capability names
 	}
 	
 	function get_object($src_name, $object_id, $cols = '') {

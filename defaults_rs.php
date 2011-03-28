@@ -76,10 +76,11 @@ function scoper_default_options() {
 		'auto_private' => 1,
 		'admin_nav_menu_filter_items' => 0
 	);
-
+	
 	// NOTE: scoper_get_option() applies these defaults
 	if ( in_array( $GLOBALS['plugin_page_cr'], array( 'rs-options', 'rs-site_options' ) ) ) {
 		$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) );
+
 		foreach ( $post_types as $type )
 			$def['use_post_types'][$type] = 1;
 			

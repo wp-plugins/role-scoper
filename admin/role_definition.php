@@ -96,8 +96,10 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 
 	if ( 'post' == $src_name ) {
 		global $wp_taxonomies;
-		foreach ( $wp_taxonomies as $tx )
-			$object_types [$tx->name]= $tx; 	
+		foreach ( $wp_taxonomies as $tx ) {
+			if ( $_tx = $scoper->taxonomies->get($tx->name) )  // use RS taxonomy object so we can pull plural_name property
+				$object_types [$tx->name] = $_tx; 	
+		}
 			
 		$use_post_types = scoper_get_option( 'use_post_types' );
 		$use_taxonomies = scoper_get_option( 'use_taxonomies' );
@@ -122,6 +124,8 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 		
 		if ( ! $otype_roles )
 			continue;
+
+		$plural_name = $otype->plural_name;
 
 		foreach ( $otype_roles as $object_type => $roles ) {
 			//display each role which has capabilities for this object type
@@ -220,8 +224,8 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 				// abbreviate type caps and reorder display
 				$show_cap_names = array();
 				foreach($available_cap_names as $cap_name) {
-					if ( strpos( $cap_name, "_{$object_type}s" ) ) {
-						$display = str_replace( "_{$object_type}s", '', $cap_name );
+					if ( strpos( $cap_name, "_{$plural_name}" ) ) {
+						$display = str_replace( "_{$plural_name}", '', $cap_name );
 						$display = sprintf( __( '%s...', 'scoper' ), $display );
 					} else
 						$display = $cap_name;

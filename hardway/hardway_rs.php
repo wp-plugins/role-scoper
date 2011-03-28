@@ -311,7 +311,10 @@ class ScoperHardway
 			$_args = array( 'skip_teaser' => true );
 
 			if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
-				$_args['alternate_reqd_caps'][0] = array( "create_child_{$post_type}s" );
+				if ( $post_type_obj = get_post_type_object( $post_type ) ) {
+					$plural_name = plural_name_from_cap_rs( $post_type_obj );
+					$_args['alternate_reqd_caps'][0] = array( "create_child_{$plural_name}" );
+				}
 			}
 
 			// Pass query through the request filter

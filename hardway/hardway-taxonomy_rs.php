@@ -31,7 +31,6 @@ if ( $scoper->is_front() || ! is_content_administrator_rs() ) {
  * @copyright 	Copyright 2011
  * 
  * Used by Role Scoper Plugin as a container for statically-called functions
- * Used by Role Scoper Plugin as a container for statically-called functions
  *
  */	
 class ScoperHardwayTaxonomy
@@ -259,9 +258,10 @@ class ScoperHardwayTaxonomy
 			$orderby = 't.slug';
 		else if ( 'term_group' == $_orderby )
 			$orderby = 't.term_group';
-		else if ( 'none' == $_orderby )
+		else if ( 'none' == $_orderby ) {
 			$orderby = '';
-		else if ( empty($_orderby) || 'id' == $_orderby )
+			$order = '';
+		} else if ( empty($_orderby) || 'id' == $_orderby )
 			$orderby = 't.term_id';
 		elseif ( 'order' == $_orderby )
 			$orderby = 't.term_order';

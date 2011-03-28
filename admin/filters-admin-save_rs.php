@@ -194,6 +194,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			}
 		} // endif user-modified roles/restrictions weren't already saved
 
+		// apply default roles for new object
 		if ( $is_new_object && ! $roles_customized ) {  // NOTE: this means we won't apply default roles if any roles have been manually assigned to the new object
 			scoper_inherit_parent_roles($object_id, OBJECT_SCOPE_RS, $src_name, 0, $object_type);
 		}
@@ -446,11 +447,13 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 		// Make sure the selected parent is valid.  Merely an anti-hacking precaution to deal with manually fudged POST data
 		if ( $parent_id && ! empty($_POST['post_type']) ) {
+			global $scoper, $wpdb;
+			
 			$post_type = $_POST['post_type'];
-
-			global $wpdb;
+			$plural_name = $scoper->data_sources->member_property( 'post', 'object_types', $post_type, 'plural_name' );
+			
 			$args = array();
-			$args['alternate_reqd_caps'][0] = array("create_child_{$post_type}s");
+			$args['alternate_reqd_caps'][0] = array("create_child_{$plural_name}");
 
 			if ( $descendant_ids = scoper_get_page_descendant_ids( $_POST['post_ID'] ) )
 				$exclusion_clause = "AND ID NOT IN('" . implode( "','", $descendant_ids ) . "')";

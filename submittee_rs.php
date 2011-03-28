@@ -217,8 +217,6 @@ class Scoper_Submittee {
 					$value[$key] = isset($_POST[$postvar]) ? $_POST[$postvar] : '';
 				}	
 			}
-			elseif ( 'role_type' == $option_basename )
-				$value = $scoper_role_types[$value];
 			elseif ( 'mu_sitewide_groups' == $option_basename ) {
 				$current_setting = get_site_option( 'scoper_mu_sitewide_groups' );
 				if ( $current_setting != $value ) {

@@ -13,7 +13,7 @@ class ScoperOptionUI {
 	var $all_otype_options;
 	var $def_otype_options;
 	var $display_hints;
-		
+	
 	function ScoperOptionUI( $sitewide, $customize_defaults ) {
 		$this->sitewide = $sitewide;
 		$this->customize_defaults = $customize_defaults;

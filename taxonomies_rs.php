@@ -66,6 +66,9 @@ class CR_Taxonomies extends AGP_Config_Items {
 			else
 				$tx->requires_term = false;
 		}
+		
+		if ( empty($tx->plural_name) )
+			$tx->plural_name = $tx->name . 's';  // will be changed for WP taxonomies based on capability names
 	}
 	
 	// standard taxonomy query variables using WP taxonomy schema with objects filtering or term id filtering

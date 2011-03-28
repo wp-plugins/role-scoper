@@ -401,7 +401,7 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 	// make sure we indicate object roles disabled if object type usage is completely disabled
 	if ( 'use_object_roles' == $option_main_key ) {
 		if ( ( 'post' == $src_name ) && $object_type ) {
-			$use_object_types = scoper_get_option( 'use_object_types' );
+			$use_object_types = scoper_get_option( 'use_post_types' );
 			if ( ( ! empty($use_object_types) ) && empty( $use_object_types[$object_type] ) )	// since default is to enable all object types, don't interfere if no use_object_types option is stored
 				return false;
 		}
