@@ -271,6 +271,16 @@ class CapInterceptor_RS
 				if ( $modified_caps ) {
 					$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );
 				}
+				
+				// as of WP 3.1, addition of new nav menu items requires edit_posts capability (otherwise nav menu item is orphaned with no menu relationship)
+				if ( is_admin() && strpos( $_SERVER['SCRIPT_NAME'], 'nav-menus.php' ) ) {
+					if ( 'edit_posts' == $orig_reqd_caps[0] ) {
+						$type_obj = get_taxonomy( 'nav_menu' );
+						$rs_reqd_caps[0] = $type_obj->cap->manage_terms;
+						$modified_caps = true;
+					}
+				}
+				
 			} // endif not taxonomy cap
 		} // endif caps correspond to 'post' data source
 		//====================================== (end subvert misguided capability requirements) =============================================

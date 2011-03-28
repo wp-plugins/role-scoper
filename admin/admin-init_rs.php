@@ -52,7 +52,7 @@ function get_posted_object_terms_cr( $taxonomy ) {
 	if ( 'category' == $taxonomy ) {
 		if ( ! empty($_POST['post_category']) )
 			return $_POST['post_category'];
-			
+
 	} elseif( 'post_tag' == $taxonomy ) {
 		if ( ! empty($_POST['tags_input']) )
 			return $_POST['tags_input'];

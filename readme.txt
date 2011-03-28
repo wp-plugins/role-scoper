@@ -113,6 +113,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Relevanssi - Fatal Error on tag search under some configurations
 * BugFix : Grammatically customized capability names were not mirrored in RS Role Definitions
 * BugFix : Link Category Manager role assignments were ineffective
+* BugFix : Nav Menu Managers could not add new menu items if they lacked a site-wide edit_posts capability
 
 #### 1.3.28 - 18 Mar 2011
 
