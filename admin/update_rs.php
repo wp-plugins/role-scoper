@@ -9,6 +9,12 @@ function scoper_version_updated( $prev_version ) {
 
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		// file filtering rules were not written for new attachments if restriction was based solely on category restrictions
+		if ( version_compare( $prev_version, '1.3.29-beta', '<') ) {
+			scoper_flush_site_rules();
+			scoper_expire_file_rules();
+		}
+	
 		// Delete any roles or restrictions inappropriately stored for attachments, revisions or auto-drafts
 		if ( version_compare( $prev_version, '1.3', '<') ) {
 			global $wpdb;	
