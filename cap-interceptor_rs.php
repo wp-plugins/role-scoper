@@ -361,7 +361,7 @@ class CapInterceptor_RS
 					if ( ! $this->skip_any_term_check ) {
 						if ( $tax_caps = $this->user_can_for_any_term($missing_caps) )
 							$wp_blogcaps = array_merge($wp_blogcaps, $tax_caps);
-							
+
 						//rs_errlog( "can for any term: " . serialize($tax_caps) );
 					} else
 						$this->skip_any_term_check = false;  // this is a one-time flag
@@ -795,7 +795,13 @@ class CapInterceptor_RS
 		$grant_caps = array();
 
 		$caps_by_otype = $this->scoper->cap_defs->organize_caps_by_otype($reqd_caps);
-
+		
+		// temp workaround
+		if ( 'manage_categories' == $reqd_caps[0] && isset( $caps_by_otype['post']['link'] ) ) {
+			$caps_by_otype['link']['link_category'] = $caps_by_otype['post']['link'];
+			unset( $caps_by_otype['post']['link'] );
+		}
+		
 		foreach ( $caps_by_otype as $src_name => $otypes ) {
 			$object_types = $this->scoper->data_sources->member_property($src_name, 'object_types');
 		
@@ -807,33 +813,19 @@ class CapInterceptor_RS
 				unset( $otypes[''] );
 			}
 
-			// deal with term management caps
-			if ( isset($caps_by_otype['post']) ) {
-				if ( $_taxonomies = array_intersect_key( scoper_get_option( 'use_taxonomies' ), $caps_by_otype['post'] ) ) {
-				
-					$uses_taxonomies = array_keys( $_taxonomies );
-				
-					foreach( $uses_taxonomies as $_taxonomy )
-						$otypes[$_taxonomy] = $reqd_caps;
-				}
-			}
+			$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, array_keys($otypes) );
 			
-			if ( ! isset($uses_taxonomies) )
-				$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, array_keys($otypes) );
-				
 			// this ensures we don't credit term roles on custom taxonomies which have been disabled
-			$uses_taxonomies = array_intersect( $uses_taxonomies, $this->scoper->taxonomies->get_all_keys() );
-				
-			if ( empty($uses_taxonomies) )
+			if ( ! $uses_taxonomies = array_intersect( $uses_taxonomies, $this->scoper->taxonomies->get_all_keys() ) )
 				continue;
-					
+
 			foreach ( $otypes as $this_otype_caps ) { // keyed by object_type
 				$caps_by_op = $this->scoper->cap_defs->organize_caps_by_op($this_otype_caps);
-
+				
 				foreach ( $caps_by_op as $this_op_caps ) { // keyed by op_type
 					$roles = $this->scoper->role_defs->qualify_roles($this_op_caps);
 					
-					foreach ($uses_taxonomies as $taxonomy) {
+					foreach ( $uses_taxonomies as $taxonomy ) {
 						if ( ! isset($user->term_roles[$taxonomy]) )
 							$user->term_roles[$taxonomy] = $user->get_term_roles_daterange($taxonomy);				// call daterange function populate term_roles property - possible perf enhancement for subsequent code even though we don't conider content_date-limited roles here
 

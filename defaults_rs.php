@@ -165,7 +165,7 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 		$def['use_term_roles']['post:page']['category'] = 0;  // Wordpress core does not categorize pages by default
 	
 	$def['use_term_roles']['link:link']['link_category'] = 1; // Use Link Category roles by default
-	
+
 	$def['private_items_listable']['post:page'] = 1;
 	
 	$def['admin_css_ids'] ['post:post'] = 'password-span; slugdiv; edit-slug-box; authordiv; commentstatusdiv; trackbacksdiv; postcustom; revisionsdiv';	// this applied for all object types other than post

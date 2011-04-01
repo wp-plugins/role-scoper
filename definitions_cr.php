@@ -167,7 +167,8 @@ function cr_taxonomies() {
 			'requires_term' => true, 'uses_standard_schema' => true, 'hierarchical' => false, 'default_term_option' => 'default_link_category', 'object_source' => 'link'
 		); // end outer array
 		
-		$arr[$name]->admin_actions = (object) array( 'term_edit_ui' => 'edit_link_category_form' );
+		$arr[$name]->admin_actions = (object) array( 'save_term' => "save_{$name}", 	'edit_term' => "edit_{$name}", 			'create_term' => "created_{$name}", 
+													'delete_term' => "delete_{$name}", 	'term_edit_ui' => 'edit_link_category_form' );
 
 		$arr[$name]->admin_filters = (object) array( 'pre_object_terms' => 'pre_link_category' );		// not actually applied as of WP 3.0
 		
@@ -464,7 +465,7 @@ function cr_taxonomy_role_caps() {
 		
 		$arr["rs_{$name}_assigner"]["assign_$name"] = true;
 	}
-
+	
 	return $arr;	
 }
 

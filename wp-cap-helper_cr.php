@@ -155,6 +155,8 @@ class WP_Cap_Helper_CR {
 	
 		$used_values = array_unique( $used_values );
 	
+		$use_taxonomies['nav_menu'] = true;
+	
 		foreach( array_keys($wp_taxonomies) as $taxonomy ) {
 			if ( 'yes' == $wp_taxonomies[$taxonomy]->public ) {	// clean up a GD Taxonomies quirk (otherwise wp_get_taxonomy_object will fail when filtering for public => true)
 				$wp_taxonomies[$taxonomy]->public = true;
@@ -162,7 +164,7 @@ class WP_Cap_Helper_CR {
 			} elseif ( ( '' === $wp_taxonomies[$taxonomy]->public ) && ( ! empty( $wp_taxonomies[$taxonomy]->query_var_bool ) ) ) { // clean up a More Taxonomies quirk (otherwise wp_get_taxonomy_object will fail when filtering for public => true)
 				$wp_taxonomies[$taxonomy]->public = true;
 			}
-			if ( empty( $use_taxonomies[$taxonomy] ) || empty( $wp_taxonomies[$taxonomy]->public ) || in_array( $taxonomy, $core_taxonomies ) )
+			if ( empty( $use_taxonomies[$taxonomy] ) || in_array( $taxonomy, $core_taxonomies ) )
 				continue;
 	
 			$tx_caps = (array) $wp_taxonomies[$taxonomy]->cap;

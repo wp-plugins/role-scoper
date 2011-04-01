@@ -798,12 +798,15 @@ function scoper_get_taxonomy_usage( $src_name, $object_types = '' ) {
 	$taxonomies = array();
 	$object_types = (array) $object_types;
 
-	foreach( $object_types as $object_type )
-		if ( $use_taxonomies = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type ) )
-			$taxonomies = array_merge( $taxonomies, array_intersect( (array) $use_taxonomies, array( 1 ) ) );  // array cast prevents PHP warning on first-time execution following update to RS 1.2
-	
-			
+	foreach( $object_types as $object_type ) {
+		if ( taxonomy_exists( $object_type ) )
+			$use_taxonomies = array( $object_type => 1 );	// taxonomy management roles are always applied
+		else
+			$use_taxonomies = scoper_get_otype_option( 'use_term_roles', $src_name, $object_type );
 
+		$taxonomies = array_merge( $taxonomies, array_intersect( (array) $use_taxonomies, array( 1 ) ) );  // array cast prevents PHP warning on first-time execution following update to RS 1.2
+	}
+	
 	if ( $taxonomies ) {
 		// make sure we indicate non-usage of term roles for taxonomies that are completely disabled for RS
 		if ( 'post' == $src_name ) {

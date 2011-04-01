@@ -115,6 +115,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Link Category Manager role assignments were ineffective
 * BugFix : Nav Menu Managers could not add new menu items if they lacked a site-wide edit_posts capability
 * BugFix : File Attachment Filtering rules were not updated for new attachments, under some configurations
+* BugFix : Link Category Manager role assignments were ineffective if no other category management roles were assigned
+* BugFix : Link Category listing in edit-tags.php did not refresh after editing a name / description
 
 #### 1.3.28 - 18 Mar 2011
 
