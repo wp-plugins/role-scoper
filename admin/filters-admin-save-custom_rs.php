@@ -3,6 +3,8 @@
 class ScoperCustomAdminFiltersSave {
 	// called by scoper_mnt_save_object for non-post data sources
 	function log_object_save( $src_name, $object_id, $is_new_object, $col_parent, $set_parent ) {
+		global $wpdb;
+		
 		$is_new_object = true;
 		
 		$qry = "SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE scope = 'object' AND src_or_tx_name = '$src_name' AND obj_or_term_id = '$object_id'";

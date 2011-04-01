@@ -81,6 +81,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 		// parent settings can affect the auto-assignment of propagating roles/restrictions
 		$last_parent = 0;
+		$set_parent = 0;
 		
 		if ( $col_parent = $scoper->data_sources->member_property($src_name, 'cols', 'parent') )
 			if ( isset($_POST[$col_parent]) ) 

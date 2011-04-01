@@ -522,7 +522,7 @@ class ScoperAdminHardway_Ltd {
 			if ( !is_array($cache) )
 				$cache = array();
 		
-			if ( isset( $cache[ $key ] ) )
+			if ( isset( $cache[ $ckey ] ) )
 				//alternate filter name (WP core already called get_bookmarks filter)
 				return apply_filters('get_bookmarks_rs', $cache[ $ckey ], $r);
 		}
