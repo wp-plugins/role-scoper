@@ -117,6 +117,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : File Attachment Filtering rules were not updated for new attachments, under some configurations
 * BugFix : Link Category Manager role assignments were ineffective if no other category management roles were assigned
 * BugFix : Link Category listing in edit-tags.php did not refresh after editing a name / description
+* BugFix : When creating or editing a link, no selectable link categories for non-administrators (since 1.3.28)
 
 #### 1.3.28 - 18 Mar 2011
 

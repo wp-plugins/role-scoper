@@ -871,9 +871,11 @@ class Scoper
 				// terms query should be limited to a single object type for post.php, post-new.php, so only return caps for that object type (TODO: do this in wp-admin regardless of URI ?)
 				if ( in_array( $pagenow, array( 'post.php', 'post-new.php' ) ) )
 					$object_type = cr_find_post_type();
-			} else
+			} else {
+				$operation = 'edit';
 				$status = '';
-
+			}
+				
 			// The return array will indicate term role enable / disable, as well as associated capabilities
 			if ( ! empty($object_type) )
 				$check_object_types = array( $object_type );
