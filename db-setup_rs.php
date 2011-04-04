@@ -92,6 +92,13 @@ function scoper_update_schema($last_db_ver) {
 			$query = "ALTER TABLE $wpdb->groups_rs CONVERT TO $charset_collate";
 			$wpdb->query($query);
 		}
+		
+		if ( version_compare( $last_db_ver, '1.1.4', '<') ) {
+			$charset_collate = str_replace( 'DEFAULT', '', $charset_collate );
+			$wpdb->query( "ALTER TABLE $wpdb->role_scope_rs CONVERT TO $charset_collate" );
+			$wpdb->query( "ALTER TABLE $wpdb->user2role2object_rs CONVERT TO $charset_collate" );
+			$wpdb->query( "ALTER TABLE $wpdb->user2group_rs CONVERT TO $charset_collate" );
+		}
 	}
 	
 	

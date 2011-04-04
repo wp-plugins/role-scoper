@@ -45,7 +45,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 }
 
 define ('SCOPER_VERSION', '1.3.29-beta');
-define ('SCOPER_DB_VERSION', '1.1.3');
+define ('SCOPER_DB_VERSION', '1.1.4');
 
 /* --- ATTACHMENT FILTERING NOTE ---
 Read access to uploaded file attachments is normally filtered (via .htaccess RewriteRules) to match post/page access.
