@@ -61,30 +61,27 @@ function cr_data_sources() {
 		$arr['post']->edit_url = 'post.php?action=edit&amp;post=%d';  // xhtml validation fails with &post=
 	}
 	
+	$name = 'link';		
+	$arr[$name] = (object) array(
+	'table_basename' => 'links',		
+	'cols' => (object) array(
+		'id' => 'link_id', 				'name' => 'link_name', 			'type' => '', 
+		'owner' => 'link_owner',		'status' => ''
+		),
+
+	'no_object_roles' => true
+	); // end outer array
+
+	$arr[$name]->admin_actions = (object) array(	
+	'save_object' => '',			'edit_object' => 'edit_link', 
+	'create_object' => 'add_link',	'delete_object' => 'delete_link' );
+
+	if ( $is_admin ) {
+		$arr['link']->labels = (object) array( 'name' => __('Links'), 'singular_name' => __('Link') );
+		$arr['link']->edit_url = 'link.php?action=edit&amp;link_id=%s';
+	}
+		
 	if ( $is_admin || defined('XMLRPC_REQUEST') ) {
-		$name = 'link';		
-		$arr[$name] = (object) array(
-		'table_basename' => 'links',		
-		'cols' => (object) array(
-			'id' => 'link_id', 				'name' => 'link_name', 			'type' => '', 
-			'owner' => 'link_owner',		'status' => ''
-			),
-		
-		'query_hooks' => (object) array( 'request' => 'links_request' ),	
-	
-		'no_object_roles' => true
-		); // end outer array
-
-		$arr[$name]->admin_actions = (object) array(	
-		'save_object' => '',			'edit_object' => 'edit_link', 
-		'create_object' => 'add_link',	'delete_object' => 'delete_link' );
-
-		if ( $is_admin ) {
-			$arr['link']->labels = (object) array( 'name' => __('Links'), 'singular_name' => __('Link') );
-			$arr['link']->edit_url = 'link.php?action=edit&amp;link_id=%s';
-		}
-		
-		
 		//groups table 
 		// scoper-defined table can be customized via db-config_rs.php
 		$name = 'group';
@@ -161,23 +158,29 @@ function cr_taxonomies() {
 	$arr = array_merge( $arr, cr_wp_taxonomies() );
 	
 	// link filtering is only for management in wp-admin
-	if ( $is_admin || defined('XMLRPC_REQUEST') ) {
-		$name = 'link_category';  // note: also requires 'data_sources' definition
-		$arr[$name] = (object) array(
-			'requires_term' => true, 'uses_standard_schema' => true, 'hierarchical' => false, 'default_term_option' => 'default_link_category', 'object_source' => 'link'
-		); // end outer array
-		
-		$arr[$name]->admin_actions = (object) array( 'save_term' => "save_{$name}", 	'edit_term' => "edit_{$name}", 			'create_term' => "created_{$name}", 
-													'delete_term' => "delete_{$name}", 	'term_edit_ui' => 'edit_link_category_form' );
+	$name = 'link_category';  // note: also requires 'data_sources' definition
+	$arr[$name] = (object) array(
+		'requires_term' => true, 'uses_standard_schema' => true, 'hierarchical' => false, 'default_term_option' => 'default_link_category', 'object_source' => 'link'
+	); // end outer array
+	
+	$arr[$name]->admin_actions = (object) array( 'save_term' => "save_{$name}", 	'edit_term' => "edit_{$name}", 			'create_term' => "created_{$name}", 
+												'delete_term' => "delete_{$name}", 	'term_edit_ui' => 'edit_link_category_form' );
 
-		$arr[$name]->admin_filters = (object) array( 'pre_object_terms' => 'pre_link_category' );		// not actually applied as of WP 3.0
-		
+	$arr[$name]->admin_filters = (object) array( 'pre_object_terms' => 'pre_link_category' );		// not actually applied as of WP 3.0
+	
+	if ( $is_admin ) {
 		// WP displays as "Category"
 		$arr[$name]->labels = (object) array( 'name' => __('Link Categories'), 'singular_name' => __('Link Category') );
-		
-		$arr[$name]->edit_url = 'link-category.php?action=edit&amp;cat_ID=%d';
-		$arr[$name]->uri_vars = (object) array( 'id' => 'cat_ID' );
-		$arr[$name]->http_post_vars = (object) array( 'id' => 'cat_ID' );	
+	
+		if ( awp_ver( '3.1' ) ) {
+			$arr[$name]->edit_url = 'edit-tags.php?action=edit&amp;taxonomy=link_category&amp;tag_ID=%d';
+			$arr[$name]->uri_vars = (object) array( 'id' => 'tag_ID' );
+			$arr[$name]->http_post_vars = (object) array( 'id' => 'tag_ID' );
+		} else {
+			$arr[$name]->edit_url = 'link-category.php?action=edit&amp;cat_ID=%d';
+			$arr[$name]->uri_vars = (object) array( 'id' => 'cat_ID' );
+			$arr[$name]->http_post_vars = (object) array( 'id' => 'cat_ID' );
+		}	
 	}
 	
 	return $arr;
@@ -337,6 +340,9 @@ function cr_taxonomy_cap_defs() {
 function cr_role_caps() {
 	// separate array is friendlier to php array function
 	$arr = array(
+		'rs_link_reader' => array(
+			'read' => true
+		),
 		'rs_link_editor' => array(
 			'manage_links' => true
 		),
@@ -475,6 +481,7 @@ function cr_taxonomy_role_caps() {
 //note: rs_ is a role type prefix which is required for array key, but will be stripped off for name property
 function cr_role_defs() {
 	$arr = array(
+		'rs_link_reader' =>			(object) array( 'src_name' => 'link', 'anon_user_blogrole' => true ),
 		'rs_link_editor' =>			(object) array( 'src_name' => 'link' ),
 		'rs_group_manager' =>		(object) array( 'src_name' => 'group' )
 	); // end role_defs array

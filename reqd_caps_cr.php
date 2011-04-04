@@ -138,6 +138,7 @@ function _cr_get_reqd_caps( $src_name, $op, $object_type = '-1', $status = '-1',
 			
 		break;
 		case 'link' :
+			$arr['read']['link'][''] = array( 'read' );
 			$arr['edit']['link'][''] = array( 'manage_links' );		// object types with a single status store nullstring status key
 			//$arr['admin']['link'][''] = array( 'manage_links' );
 			

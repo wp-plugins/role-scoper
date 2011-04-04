@@ -712,7 +712,7 @@ class Scoper
 
 		if ( ! $qualifying_roles )  // calling function might save a little work or limit to a subset of qualifying roles
 			$qualifying_roles = $this->role_defs->qualify_roles( $reqd_caps );
-			
+
 		if ( ! $this->taxonomies->is_member($taxonomy) )
 			return array( '' => array() );
 		
@@ -724,7 +724,7 @@ class Scoper
 		// If the taxonomy does not require objects to have at least one term, there are no strict terms.
 		if ( ! $this->taxonomies->member_property($taxonomy, 'requires_term') )
 			$ignore_restrictions = true;
-
+			
 		if ( ! is_array($qualifying_roles) )
 			$qualifying_roles = array($qualifying_roles => 1);	
 
@@ -746,9 +746,9 @@ class Scoper
 
 		if ( ! isset($user->term_roles[$taxonomy]) )
 			$user->get_term_roles_daterange($taxonomy);  // returns term_id for categories
-
+	
 		$good_terms = array( '' => array() );
-			
+		
 		if ( $user->term_roles[$taxonomy] ) {
 			foreach ( array_keys($user->term_roles[$taxonomy]) as $date_key ) {
 				//narrow down to roles which satisfy this call AND are owned by current user
@@ -792,7 +792,7 @@ class Scoper
 						
 						else
 							$terms_via_this_role = $all_terms;
-							
+	
 						if( $good_terms[$date_key] )
 							$good_terms[$date_key] = array_merge( $good_terms[$date_key], $terms_via_this_role );
 						else

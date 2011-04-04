@@ -18,15 +18,17 @@ if ( $scoper->is_front() )
 if ( $scoper->is_front() || ! is_content_administrator_rs() )
 	require_once('hardway-taxonomy_rs.php');
 
-
+if ( $scoper->data_sources->is_member('link') )
+	require_once( 'hardway-bookmarks_rs.php' );
+	
+	
 // flt_get_pages is required on the front end (even for administrators) to enable the inclusion of private pages
 // flt_get_pages also needed for inclusion of private pages in some 3rd party plugin config UI (Simple Section Nav)
 
 // flt_get_terms '' so private posts are included in count, as basis for display when hide_empty arg is used
 
-
 add_filter('get_pages', array('ScoperHardway', 'flt_get_pages'), 1, 2);
-
+	
 /**
  * ScoperHardway PHP class for the WordPress plugin Role Scoper
  * hardway_rs.php
