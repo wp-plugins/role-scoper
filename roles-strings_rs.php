@@ -98,6 +98,9 @@ class ScoperRoleStrings {
 					if ( strpos( $role_handle, "_{$name}_" ) ) {
 						if ( strpos( $role_handle, '_manager' ) )
 							return sprintf( __( '%s Manager', 'scoper' ), $tx_obj->labels->singular_name );
+							
+						if ( strpos( $role_handle, '_assigner' ) )
+							return sprintf( __( '%s Assigner', 'scoper' ), $tx_obj->labels->singular_name );
 					}
 				}
 				

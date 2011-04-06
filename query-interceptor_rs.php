@@ -913,7 +913,7 @@ class QueryInterceptor_RS
 			rs_errlog( '' );
 			*/
 
-			if ( $alternate_reqd_caps ) { // $alternate_reqd_caps[setnum] = array of cap_names
+			if ( $alternate_reqd_caps && is_array( $alternate_reqd_caps ) ) { // $alternate_reqd_caps[setnum] = array of cap_names
 				foreach ( $alternate_reqd_caps as $alternate_capset ) {
 					foreach ( $alternate_capset as $alternate_reqd_caps ) {
 						if ( $alternate_roles = $this->scoper->role_defs->qualify_roles($alternate_reqd_caps) )

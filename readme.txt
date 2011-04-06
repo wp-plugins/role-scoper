@@ -120,6 +120,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : When creating or editing a link, no selectable link categories for non-administrators (since 1.3.28)
 * Change : Convert all RS database tables to utf8 collation to eliminate query errors on some servers
 * Feature : Front-end visibility of Links can be restricted or assigned per-category
+* Lang : Translation string for Assigner roles
 
 #### 1.3.28 - 18 Mar 2011
 
