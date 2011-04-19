@@ -121,6 +121,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Change : Convert all RS database tables to utf8 collation to eliminate query errors on some servers
 * Feature : Front-end visibility of Links can be restricted or assigned per-category
 * Lang : Translation string for Assigner roles
+* Compat : Role Scopring for NGG - Nuisance error message when installing / updating any plugin
+* BugFix : Internal Cache was unavailable for new WP 3.1 installations
+* Compat : Revisionary - users who can edit pages but not posts were not available for membership in Pending Revision Monitors group
+* Compat : WP CMS Tree View (and other plugins which create posts) - propagating role assignments were not applied to new pages
+
 
 #### 1.3.28 - 18 Mar 2011
 

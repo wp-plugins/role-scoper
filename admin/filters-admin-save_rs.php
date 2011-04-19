@@ -83,9 +83,15 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		$last_parent = 0;
 		$set_parent = 0;
 		
-		if ( $col_parent = $scoper->data_sources->member_property($src_name, 'cols', 'parent') )
-			if ( isset($_POST[$col_parent]) ) 
-				$set_parent = $_POST[$col_parent];
+		if ( $col_parent = $scoper->data_sources->member_property($src_name, 'cols', 'parent') ) {
+			if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
+				if ( isset($_POST[$col_parent]) ) 
+					$set_parent = $_POST[$col_parent];
+			} else {
+				if ( isset($object->$col_parent) ) // this should also work for handling regular WP edit form, but leaving existing code above until further testing
+					$set_parent = $object->$col_parent;
+			}
+		}
 	
 		// Determine whether this object is new (first time this RS filter has run for it, though the object may already be inserted into db)
 		if ( 'post' == $src_name ) {

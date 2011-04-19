@@ -278,6 +278,14 @@ class WP_Persistent_Object_Cache {
 			$this->cache_dir = WP_CONTENT_DIR.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR;
 		}
 		
+		if ( ! file_exists( $this->cache_dir ) ) {
+			if ( @ mkdir( $this->cache_dir ) ) {
+				$stat = stat(WP_CONTENT_DIR);
+				$dir_perms = $stat['mode'] & 0007777; // Get the permission bits.
+				@ chmod( $this->cache_dir, $dir_perms );
+			}
+		}
+		
 		if (is_writable($this->cache_dir) && @ is_dir($this->cache_dir)) {
 				$this->cache_enabled = true;
 		} else {
@@ -287,7 +295,7 @@ class WP_Persistent_Object_Cache {
 		}
 
 		// put the entire RS cache in a subfolder to avoid clashing with other plugins
-		//	
+		//
 		if ( $use_subdir ) { // support init to root cache folder for one-time flush on version update before using subfolder
 			$this->cache_dir = $this->cache_dir . 'rs/';
 			

@@ -29,9 +29,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
-	
-if ( in_array( $GLOBALS['pagenow'], array( 'index-extra.php', 'update.php' ) ) )
-	return;
 
 if ( defined( 'SCOPER_VERSION' ) ) {
 	// don't allow two copies of RS to run simultaneously
@@ -46,6 +43,10 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 
 define ('SCOPER_VERSION', '1.3.29-beta');
 define ('SCOPER_DB_VERSION', '1.1.4');
+
+// No filtering on dashboard Ajax or plugin installation/update, but run this check after defining version to prevent nuisance error message from Role Scoping for NGG
+if ( in_array( $GLOBALS['pagenow'], array( 'index-extra.php', 'update.php' ) ) )
+	return;
 
 /* --- ATTACHMENT FILTERING NOTE ---
 Read access to uploaded file attachments is normally filtered (via .htaccess RewriteRules) to match post/page access.

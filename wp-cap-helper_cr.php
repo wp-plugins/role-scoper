@@ -132,7 +132,7 @@ class WP_Cap_Helper_CR {
 			foreach( $type_caps as $cap_property => $type_cap )
 				foreach( array( 'post', 'page' ) as $generic_type )
 					if ( ( $post_type != $generic_type ) && in_array( $type_cap, $generic_caps[$generic_type] ) )
-						$type_caps[$cap_property] = str_replace( 'post', $post_type, $cap_property );
+						$type_caps[$cap_property] = str_replace( $generic_type, $post_type, $cap_property );
 	
 			$wp_post_types[$post_type]->cap = (object) $type_caps;
 		}

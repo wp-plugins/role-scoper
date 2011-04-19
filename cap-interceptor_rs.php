@@ -167,9 +167,7 @@ class CapInterceptor_RS
 		// note the data source and object type(s) which are associated with the required caps (based on inclusion in RS Role Definitions)
 		$is_taxonomy_cap = false;
 		$src_name = '';
-		$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );
-		
-		//rs_errlog( "cap types: " . serialize($cap_types) );
+		$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );	  // note: currently only needed for src_name determination
 		
 		$doing_admin_menus = is_admin() && (
 		( did_action( '_admin_menu' ) && ! did_action('admin_menu') ) 		 // menu construction
@@ -214,19 +212,11 @@ class CapInterceptor_RS
 		}
 
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
-			
-		if ( empty($cap_types) )
-			$cap_types = array( $object_type );
 		// =====================================================================================================================================
 
 
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
 		if ( 'post' == $src_name ) {	
-			//dump($cap_types);
-
-			if ( count($cap_types) > 1 )
-				$cap_types = array_diff( $cap_types, array( '' ) );   // ignore nullstring object_type property associated with some caps
-
 			// slight simplification: assume a single cap object type for a few cap substitution checks
 			$is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' );
 
@@ -267,10 +257,6 @@ class CapInterceptor_RS
 						$modified_caps = true;
 					}
 				}
-
-				if ( $modified_caps ) {
-					$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );
-				}
 				
 				// as of WP 3.1, addition of new nav menu items requires edit_posts capability (otherwise nav menu item is orphaned with no menu relationship)
 				if ( is_admin() && strpos( $_SERVER['SCRIPT_NAME'], 'nav-menus.php' ) ) {
@@ -289,8 +275,6 @@ class CapInterceptor_RS
 			require_once( 'revisionary-helper_rs.php' );
 			$rs_reqd_caps = Rvy_Helper::convert_post_edit_caps( $rs_reqd_caps, $object_type );
 		}
-
-		//$matched_context = in_array( $object_type, $cap_types );
 
 		//rs_errlog( "matched context for $object_id : $matched_context" );
 		
@@ -517,8 +501,6 @@ class CapInterceptor_RS
 						if ( $_parent = get_post($_post->post_parent) ) {
 							$object_type = $_parent->post_type;
 							$object_type_obj = get_post_type_object( $object_type );
-
-							$cap_types = array( $object_type );
 
 							if ( 'post' != $_parent->post_type ) {
 								// Compensate for WP's requirement of posts cap for attachment editing, regardless of whether it's attached to a post or page							
