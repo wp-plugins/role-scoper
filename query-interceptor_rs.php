@@ -115,7 +115,7 @@ class QueryInterceptor_RS
 	//}
 
 	
-	function flt_posts_request( $request, $_wp_query ) {
+	function flt_posts_request( $request, $_wp_query = false ) {
 		if ( is_object( $_wp_query ) && ! empty( $_wp_query->query_vars['post_type'] ) ) {
 			$object_types = $_wp_query->query_vars['post_type'];
 
