@@ -392,9 +392,12 @@ jQuery(document).ready( function($) {
 			$can_manage_groups = DEFINE_GROUPS_RS && ( $is_user_administrator || current_user_can('recommend_group_membership') );
 			$cap_req = ( $can_manage_groups ) ? 'read' : 'manage_groups';
 		
+			$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');
+
 			if ( ! IS_MU_RS || ! scoper_get_site_option( 'mu_sitewide_groups' ) ) {
-				$groups_caption = ( defined( 'GROUPS_CAPTION_RS' ) ) ? GROUPS_CAPTION_RS : __('Role Groups', 'scoper');
 				add_submenu_page( 'users.php', $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
+			} elseif ( IS_MU_RS && ! awp_ver( '3.1' ) ) {
+				add_submenu_page( "ms-admin.php", $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$this, 'menu_handler' ) );
 			}
 				
 			// satisfy WordPress' demand that all admin links be properly defined in menu

@@ -32,7 +32,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 if ( defined( 'SCOPER_VERSION' ) ) {
 	// don't allow two copies of RS to run simultaneously
-	if ( is_admin() && ( 'plugins.php' == $GLOBALS['pagenow'] ) && empty( $_REQUEST['deactivate'] ) ) {
+	if ( is_admin() && isset($GLOBALS['pagenow']) && ( 'plugins.php' == $GLOBALS['pagenow'] ) && empty( $_REQUEST['deactivate'] ) ) {
 		$message = sprintf( __( '<strong>Error:</strong> Multiple copies of Role Scoper activated. Only version %1$s (in folder "%2$s") is functional.', 'scoper' ), SCOPER_VERSION, SCOPER_FOLDER );
 		
 		add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade" style="color: black">' . $message . '</div>\';'));
@@ -45,7 +45,7 @@ define ('SCOPER_VERSION', '1.3.29-beta');
 define ('SCOPER_DB_VERSION', '1.1.4');
 
 // No filtering on dashboard Ajax or plugin installation/update, but run this check after defining version to prevent nuisance error message from Role Scoping for NGG
-if ( in_array( $GLOBALS['pagenow'], array( 'index-extra.php', 'update.php' ) ) )
+if ( isset($GLOBALS['pagenow']) && in_array( $GLOBALS['pagenow'], array( 'index-extra.php', 'update.php' ) ) )
 	return;
 
 /* --- ATTACHMENT FILTERING NOTE ---
@@ -86,7 +86,7 @@ if ( $prev = get_option('scoper_version') ) {
 }
 
 // avoid lockout in case of editing plugin via wp-admin
-if ( defined('RS_DEBUG') && is_admin() && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) && empty( $_REQUEST['activate'] ) )
+if ( defined('RS_DEBUG') && is_admin() && isset($GLOBALS['pagenow']) && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) && empty( $_REQUEST['activate'] ) )
 	return;
 	
 define ('COLS_ALL_RS', 0);

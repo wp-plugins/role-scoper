@@ -128,7 +128,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : WP-SNAP (and other plugins which apply the posts_request filter without passing wp_query object) - PHP Warning for missing argument 2
 * BugFix : Manually resized images were not protected by File Filtering
 * BugFix : non-Administrators cannot modify moderate/edit comments with WP 3.1
-
+* BugFix : Role Groups edit form unavailable from WP 3.0 Multisite "Super Admin" menu (since 1.3.28)
+* BugFix : PHP Warnings on admin dashboard (since 1.3.28)
 
 #### 1.3.28 - 18 Mar 2011
 
