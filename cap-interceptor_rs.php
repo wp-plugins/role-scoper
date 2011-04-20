@@ -164,6 +164,14 @@ class CapInterceptor_RS
 			
 		$object_id = ( isset($args[2]) ) ? (int) $args[2] : 0;
 
+		// WP passes comment ID with 'edit_comment' metacap
+		if ( $object_id && ( 'edit_comment' == $args[0] ) ) {
+			if ( $comment = get_comment( $object_id ) )
+				$object_id = $comment->comment_post_ID;
+			else
+				$object_id = 0;
+		}
+
 		// note the data source and object type(s) which are associated with the required caps (based on inclusion in RS Role Definitions)
 		$is_taxonomy_cap = false;
 		$src_name = '';

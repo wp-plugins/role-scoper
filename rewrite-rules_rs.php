@@ -168,10 +168,10 @@ class ScoperRewrite {
 			//dump($row->guid);
 
 			if ( false !== strpos( $row->guid, $baseurl ) ) {	// no need to include any attachments which are not in the uploads folder
-				$file_path =  str_replace( $baseurl, '', $row->guid );
+				$rel_path =  str_replace( $baseurl, '', $row->guid );
 				
 				// escape spaces
-				$file_path =  str_replace( ' ', '\s', $file_path );
+				$file_path =  str_replace( ' ', '\s', $rel_path );
 				
 				// escape horiz tabs (yes, at least one user has them in filenames)
 				$file_path =  str_replace( chr(9), '\t', $file_path );
@@ -189,12 +189,20 @@ class ScoperRewrite {
 				if ( $pos_ext = strrpos( $file_path, '\.' ) ) {
 					$thumb_path = substr( $file_path, 0, $pos_ext );
 					$ext = substr( $file_path, $pos_ext + 2 );	
-							
+
 					$new_rules .= "RewriteCond %{REQUEST_URI} ^(.*)/$thumb_path" . '-[0-9]{2,4}x[0-9]{2,4}\.' . $ext . "$ [NC]\n";
 					$new_rules .= "RewriteCond %{QUERY_STRING} !^(.*)rs_file_key=$key(.*)\n";
 					$new_rules .= $main_rewrite_rule;
+					
+					// if resized image file(s) exist, include rules for them
+					$guid_pos_ext = strrpos( $rel_path, '.' );
+					$pattern = $uploads['path'] . '/' . substr( $rel_path, 0, $guid_pos_ext ) . '-??????????????' . substr( $rel_path, $guid_pos_ext );
+					if ( glob( $pattern ) ) {
+						$new_rules .= "RewriteCond %{REQUEST_URI} ^(.*)/$thumb_path" . '-[0-9,a-f]{14}\.' . $ext . "$ [NC]\n";
+						$new_rules .= "RewriteCond %{QUERY_STRING} !^(.*)rs_file_key=$key(.*)\n";
+						$new_rules .= $main_rewrite_rule;
+					}
 				}
-						
 			}
 		} // end foreach protected attachment
 

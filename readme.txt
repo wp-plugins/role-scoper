@@ -126,6 +126,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Revisionary - users who can edit pages but not posts were not available for membership in Pending Revision Monitors group
 * Compat : CMS Tree Page View (and other plugins which create posts) - propagating role assignments were not applied to new pages
 * Compat : WP-SNAP (and other plugins which apply the posts_request filter without passing wp_query object) - PHP Warning for missing argument 2
+* BugFix : Manually resized images were not protected by File Filtering
+* BugFix : non-Administrators cannot modify moderate/edit comments with WP 3.1
 
 
 #### 1.3.28 - 18 Mar 2011

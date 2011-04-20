@@ -102,8 +102,11 @@ class AttachmentFilters_RS {
 
 		$file_url = $uploads['baseurl'] . "/$file";
 
-		// Resized copies have -NNNxNNN suffix, but the base filename is stored as attachment.  Strip the suffix out for db query.
+		// auto-resized copies have -NNNxNNN suffix, but the base filename is stored as attachment.  Strip the suffix out for db query.
 		$orig_file_url = preg_replace( "/-[0-9]{2,4}x[0-9]{2,4}./", '.', $file_url );
+	
+		// manually resized copies have -?????????????? suffix, but the base filename is stored as attachment.  Strip the suffix out for db query.
+		$orig_file_url = preg_replace( "/-[0-9,a-z]{14}./", '.', $orig_file_url );
 
 		$qry = "SELECT * FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent > 0 AND guid = '$orig_file_url'";
 		$results = scoper_get_results( $qry );
