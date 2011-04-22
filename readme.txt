@@ -3,8 +3,8 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
-Tested up to: 3.1
-Stable Tag: 1.3.28
+Tested up to: 3.1.1
+Stable Tag: 1.3.29
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,30 +106,39 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.29-dev =
-* BugFix : Disabling Media Library filtering via SCOPER_ALL_UPLOADS_EDITABLE constant definition broke Media Library paging for Contributors
-* BugFix : Media Library filtering was not totally disabled by SCOPER_ALL_UPLOADS_EDITABLE constant definition
-* BugFix : Bulk Admin forms for Taxonomy Roles / Restrictions did not include roles for associated post types if association is defined by both register_taxonomy() and register_taxonomy_for_object_type()
-* Compat : Relevanssi - Fatal Error on tag search under some configurations
-* BugFix : Grammatically customized capability names were not mirrored in RS Role Definitions
-* BugFix : Link Category Manager role assignments were ineffective
-* BugFix : Nav Menu Managers could not add new menu items if they lacked a site-wide edit_posts capability
-* BugFix : File Attachment Filtering rules were not updated for new attachments, under some configurations
-* BugFix : Link Category Manager role assignments were ineffective if no other category management roles were assigned
-* BugFix : Link Category listing in edit-tags.php did not refresh after editing a name / description
-* BugFix : When creating or editing a link, no selectable link categories for non-administrators (since 1.3.28)
-* Change : Convert all RS database tables to utf8 collation to eliminate query errors on some servers
-* Feature : Front-end visibility of Links can be restricted or assigned per-category
-* Lang : Translation string for Assigner roles
-* Compat : Role Scoping for NGG - Nuisance error message when installing / updating any plugin
-* BugFix : Internal Cache was unavailable for new WP 3.1 installations
-* Compat : Revisionary - users who can edit pages but not posts were not available for membership in Pending Revision Monitors group
-* Compat : CMS Tree Page View (and other plugins which create posts) - propagating role assignments were not applied to new pages
-* Compat : WP-SNAP (and other plugins which apply the posts_request filter without passing wp_query object) - PHP Warning for missing argument 2
-* BugFix : Manually resized images were not protected by File Filtering
+#### 1.3.29 - 21 Apr 2011
+
+= Misc. Bug Fixes =
 * BugFix : non-Administrators cannot modify moderate/edit comments with WP 3.1
 * BugFix : Role Groups edit form unavailable from WP 3.0 Multisite "Super Admin" menu (since 1.3.28)
+* BugFix : Grammatically customized capability names were not mirrored in RS Role Definitions
+* BugFix : Internal Cache was unavailable for new WP 3.1 installations
+* BugFix : Nav Menu Managers could not add new menu items if they lacked a site-wide edit_posts capability
+* BugFix : Bulk Admin forms for Taxonomy Roles / Restrictions did not include roles for associated post types if association is defined by both register_taxonomy() and register_taxonomy_for_object_type()
 * BugFix : PHP Warnings on admin dashboard (since 1.3.28)
+* Change : Convert all RS database tables to utf8 collation to eliminate query errors on some servers
+* Lang : Translation string for Assigner roles
+
+= File Attachment Filtering =
+* BugFix : File Attachment Filtering rules were not updated for new attachments, under some configurations
+* BugFix : Manually resized images were not protected by File Filtering
+
+= Media Library =
+* BugFix : Disabling Media Library filtering via SCOPER_ALL_UPLOADS_EDITABLE constant definition broke Media Library paging for Contributors
+* BugFix : Media Library filtering was not totally disabled by SCOPER_ALL_UPLOADS_EDITABLE constant definition
+
+= Link Access =
+* Feature : Front-end visibility of Links can be restricted or assigned per-category
+* BugFix : When creating or editing a link, no selectable link categories for non-administrators (since 1.3.28)
+* BugFix : Link Category Manager role assignments were ineffective
+* BugFix : Link Category listing in edit-tags.php did not refresh after editing a name / description
+
+= Plugin Compatibility =
+* Compat : Relevanssi - Fatal Error on tag search under some configurations
+* Compat : CMS Tree Page View (and other plugins which create posts) - propagating role assignments were not applied to new pages
+* Compat : WP-SNAP (and other plugins which apply the posts_request filter without passing wp_query object) - PHP Warning for missing argument 2
+* Compat : Revisionary - users who can edit pages but not posts were not available for membership in Pending Revision Monitors group
+* Compat : Role Scoping for NGG - Nuisance error message when installing / updating any plugin
 
 #### 1.3.28 - 18 Mar 2011
 
@@ -505,6 +514,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.29 =
+Comment editing for non-Admins in 3.1; DB errors from collation mismatch; Per-category Link visiblity; File Filtering not applied to new attachments; File Filtering for manually resized images; Manage Nav Menus w/o siteside edit; Role Groups menu in WP 3.0 MS; CMS Tree and 4 other plugin conflicts
 
 = 1.3.28 =
 Improves Nav Menu Manager and Category Manager role assignment; filters "Add New" links out of admin bar as appropriate; fixes RS Options menus in 3.1 Multisite, fixes 6 plugin conflicts including NextGEN Gallery, and 9 other bug fixes. 
