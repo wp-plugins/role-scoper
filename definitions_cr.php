@@ -190,7 +190,7 @@ function cr_taxonomies() {
 function cr_wp_taxonomies() {
 	$arr = array();
 
-	$arr_use_wp_taxonomies = scoper_get_option( 'use_taxonomies' );
+	$arr_use_wp_taxonomies = array_intersect( (array) scoper_get_option( 'use_taxonomies' ), array( true, 1, '1' ) );
 
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
 	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );

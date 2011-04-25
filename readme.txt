@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1.1
-Stable Tag: 1.3.30
+Stable Tag: 1.3.31
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -105,6 +105,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.31 - 25 Apr 2011 =
+* BugFix : Custom taxonomies could not be fully disabled, causing various access failures (including non-display of Edit Flow post status in Publish metabox)
+* Change : Default to late initialization, for compatibility with plugins/themes which register post types / taxonomies without specifying early execution priority.
+* Change : When a custom type/taxonomy is auto-enabled for RS filtering, display a dashboard warning to Administrator, explaining the need to assign type-specific roles.
 
 = 1.3.30 - 25 Apr 2011 =
 * Compat : Fatal error when another plugin defines pluggable function 'set_current_user' (call to undefined function plural_name_from_cap_rs)
@@ -517,6 +522,12 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.31 =
+All changes relate to Custom Post Types / Taxonomies: better compat with CPT / Taxonomy registrations; Dashboard hint on type-specific Role assignments for RS-filtered Post Types; Custom Taxonomies could not be fully disabled, so various access failures (including conflict with Edit Flow plugin)
+
+= 1.3.30 =
+Fatal error when another plugin defines pluggable function 'set_current_user' (call to undefined function plural_name_from_cap_rs).  If you are not seeing this error, you don't need the update.
 
 = 1.3.29 =
 Comment editing for non-Admins in 3.1; DB errors from collation mismatch; Per-category Link visiblity; File Filtering not applied to new attachments; File Filtering for manually resized images; Manage Nav Menus w/o siteside edit; Role Groups menu in WP 3.0 MS; CMS Tree and 4 other plugin conflicts

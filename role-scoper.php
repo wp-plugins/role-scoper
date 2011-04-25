@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.3.30
+Version: 1.3.31
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 3.0
@@ -41,7 +41,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-define ('SCOPER_VERSION', '1.3.30');
+define ('SCOPER_VERSION', '1.3.31');
 define ('SCOPER_DB_VERSION', '1.1.4');
 
 // No filtering on dashboard Ajax or plugin installation/update, but run this check after defining version to prevent nuisance error message from Role Scoping for NGG
@@ -246,15 +246,10 @@ if ( ! $bail ) {
 	require_once('user-plug_rs.php');
 
 	//log_mem_usage_rs( 'user-plug_rs' );
-	
-	if ( ! defined( 'SCOPER_LATE_INIT' ) && ! defined( 'SCOPER_EARLY_INIT' ) ) {
-		if ( awp_is_plugin_active( 'more-types' ) || awp_is_plugin_active( 'more-taxonomies' ) || awp_is_plugin_active( 'ultimate-taxonomy-manager' ) )	// More Taxonomies registers taxonomies on the init action at priority 20
-			define( 'SCOPER_LATE_INIT', true );
-	}
+
+	$priority = ( defined( 'SCOPER_EARLY_INIT' ) ) ? 1 : 50;
 
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
-	$priority = ( defined( 'SCOPER_LATE_INIT' ) && ! defined( 'SCOPER_EARLY_INIT' ) ) ? 50 : 1;
-
 	add_action('set_current_user', 'scoper_maybe_init', $priority + 1);
 	add_action('init', 'scoper_log_init_action', $priority);
 }

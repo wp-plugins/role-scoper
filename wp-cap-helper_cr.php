@@ -108,7 +108,8 @@ class WP_Cap_Helper_CR {
 		global $wp_post_types;
 		
 		$type_caps = array();
-		
+		$customized = array();
+
 		//scoper_refresh_default_otype_options();
 		
 		$use_post_types = scoper_get_option( 'use_post_types' );
@@ -131,10 +132,31 @@ class WP_Cap_Helper_CR {
 			// don't allow any capability defined for this type to match any capability defined for post or page (unless this IS post or page type)
 			foreach( $type_caps as $cap_property => $type_cap )
 				foreach( array( 'post', 'page' ) as $generic_type )
-					if ( ( $post_type != $generic_type ) && in_array( $type_cap, $generic_caps[$generic_type] ) )
+					if ( ( $post_type != $generic_type ) && in_array( $type_cap, $generic_caps[$generic_type] ) && ( 'read' != $type_cap ) ) {
 						$type_caps[$cap_property] = str_replace( $generic_type, $post_type, $cap_property );
+						$customized[$post_type] = true;
+					}
 	
 			$wp_post_types[$post_type]->cap = (object) $type_caps;
+		}
+		
+		// One-time message alerting Administrators that custom types were auto-enabled for RS filtering
+		if ( $customized ) {
+			$logged = ( ! empty($_POST['rs_defaults'] ) ) ? array() : (array) get_option( 'scoper_log_customized_types' );
+			if ( $new_customized = array_diff_key( $customized, $logged ) ) {
+				$labels = array();
+				foreach( array_keys($new_customized) as $post_type ) {
+					$type_obj = get_post_type_object( $post_type );
+					$labels[$post_type] = ( ! empty($type_obj->labels->name) ) ? $type_obj->labels->name : $post_type;
+					$label_str = implode( ', ', $labels );
+				}
+				
+				$msg_format = __( 'The following Custom Post Types are enabled for RS filtering: <strong>%1$s</strong>. Non-administrators will be unable to edit them until you either disable filtering (<strong>Roles > Options > Realm > Post Type Usage</strong>) or assign type-specific Roles (<strong>Roles > General</strong>).  Disregard this message if you have already assigned the roles.', 'scoper' );
+				$message = sprintf( $msg_format, $label_str ); 
+				add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade" style="color: black">' . $message . '</div>\';'));
+				
+				update_option( 'scoper_log_customized_types', array_merge( $customized, $new_customized ) );
+			}
 		}
 	}
 	
@@ -146,6 +168,8 @@ class WP_Cap_Helper_CR {
 		// note: we are allowing the 'assign_terms' property to retain its default value of 'edit_posts'.  The RS user_has_cap filter will convert it to the corresponding type-specific cap as needed.
 		$tx_specific_caps = array( 'edit_terms' => 'manage_terms', 'manage_terms' => 'manage_terms', 'delete_terms' => 'manage_terms' );
 		$used_values = array();
+		
+		$customized = array();
 		
 		// currently, disallow category and post_tag cap use by custom taxonomies, but don't require category and post_tag to have different caps
 		$core_taxonomies = array( 'category' );
@@ -173,10 +197,32 @@ class WP_Cap_Helper_CR {
 	
 			// don't allow any capability defined for this taxonomy to match any capability defined for category or post tag (unless this IS category or post tag)
 			foreach( $tx_specific_caps as $cap_property => $replacement_cap_format ) {
-				if ( ! empty($tx_caps[$cap_property]) && in_array( $tx_caps[$cap_property], $used_values ) )
+				if ( ! empty($tx_caps[$cap_property]) && in_array( $tx_caps[$cap_property], $used_values ) ) {
 					$wp_taxonomies[$taxonomy]->cap->$cap_property = str_replace( 'terms', $plural_name, $replacement_cap_format );
-
+					$customized[$taxonomy] = true;
+				}
+					
 				$used_values []= $tx_caps[$cap_property];
+			}
+		}
+		
+		// One-time message alerting Administrators that custom taxonomies were auto-enabled for RS filtering
+		if ( $customized ) {
+			$logged = ( ! empty($_POST['rs_defaults'] ) ) ? array() : (array) get_option( 'scoper_log_customized_taxonomies' );
+			if ( $new_customized = array_diff_key( $customized, $logged ) ) {
+				$labels = array();
+
+				foreach( array_keys($new_customized) as $taxonomy ) {
+					$tx_obj = get_taxonomy( $taxonomy );
+					$labels[$taxonomy] = ( ! empty($tx_obj->labels->name) ) ? $tx_obj->labels->name : $taxonomy;
+					$label_str = implode( ', ', $labels );
+				}
+				
+				$msg_format = __( 'The following Custom Taxonomies are enabled for RS filtering: <strong>%1$s</strong>. Non-administrators will be unable to manage them until you either disable filtering (<strong>Roles > Options > Realm > Taxonomy Usage</strong>) or assign taxonomy-specific Roles (<strong>Roles > General</strong>). Disregard this message if you have already assigned the roles.', 'scoper' );
+				$message = sprintf( $msg_format, $label_str ); 
+				add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade" style="color: black">' . $message . '</div>\';'));
+				
+				update_option( 'scoper_log_customized_taxonomies', array_merge( $customized, $new_customized ) );
 			}
 		}
 	}

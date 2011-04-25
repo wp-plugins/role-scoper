@@ -1707,7 +1707,7 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 									// --- TAXONOMY / OBJECT TYPE USAGE SECTION ---
 	$section = 'taxonomy_usage';
 	echo $ui->section_captions[$tab][$section];
-	echo '<br /><span style="font-size: 0.9em; font-style: normal; font-weight: normal">(&nbsp;<a href="#scoper_notes">' . __('see notes', 'scoper') . '</a>&nbsp;)</span>';
+	echo '<br />';
 	?></th><td>
 	<?php
 		// note: update_wp_taxonomies gets special handling in submitee.php, doesn't need to be included in $ui->all_options array
@@ -1787,18 +1787,29 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 				} // endif default option isset
 				
 			} // endif displaying this option in form
+			
+			if ( 'term' == $scope ) {
+				if ( get_taxonomies( array( '_builtin' => false, 'public' => true ) ) ) {
+					echo '<div>';
+					printf( __( '<strong>NOTE:</strong> Non-Administrators need a %1$sTaxonomy-specific Role assignment%2$s to manage Custom Taxonomies selected here.', 'scoper' ), "<a href='admin.php?page=rs-general_roles'>", '</a>' );
+					echo '</div>';
+				}
+			} else {
+				if ( get_post_types( array( '_builtin' => false, 'public' => true ) ) ) {
+					echo '<div>';
+					printf( __( '<strong>NOTE:</strong> Non-Administrators need a %1$sType-specific Role assignment%2$s to manage Custom Post Types selected here.', 'scoper' ), "<a href='admin.php?page=rs-general_roles'>", '</a>' );
+					echo '</div><br />';
+				}
+			}
+			
 		} // end foreach scope
 		
-		if ( defined( 'SCOPER_LATE_INIT' ) ) {	
+		if ( ! defined( 'SCOPER_EARLY_INIT' ) ) {	
 			echo '<div>';
-			_e( '<strong>NOTE:</strong> Role Scoper is operating in late-initialization mode, for compatibility with plugins which define taxonomies or post types late in the WordPress initialization sequence.  If this causes Role Scoper to conflict with other plugins, find a different taxonomy/post type plugin.', 'scoper' );
+			_e( '<strong>NOTE:</strong> Role Scoper is operating in late-initialization mode, for compatibility with plugins which register taxonomies or post types on the "init" hook without specifying early execution priority.  If other plugins internally query posts (or post editing capabilities) on the "init" action, those results will not be filtered.  In that event, find a way to register your taxonomies/post types earlier and add the following to wp-config.php:', 'scoper' );
+			echo '<div id="rs-type-tx-help">';
+			echo ( "<pre>&nbsp;&nbsp;define( 'SCOPER_EARLY_INIT', true );</pre>" );
 			echo '</div>';
-		} else {
-			$js_call = "agp_set_display('rs-type-tx-help', 'block');agp_set_display('rs-type-tx-help-link', 'none');";
-			echo "<a href=\"javascript:void(0)\" id=\"rs-type-tx-help-link\" onclick=\"$js_call\">" . __( 'problems with types / taxonomies ?', 'scoper' ) . '</a>';
-			echo '<div id="rs-type-tx-help" style="display:none">';
-			_e( '<strong>NOTE:</strong> If your custom Taxonomies or Post Types are not shown above, they are not being defined properly.  Try a different taxonomy/post type plugin.  If they are displayed but cannot be enabled/disabled, they may be defined too late in the WordPress initialization sequence.  If you use your own registration calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to <strong>wp-config.php</strong>, ABOVE the "stop editing" line:', 'scoper' );
-			echo ( "<br /><pre>&nbsp;&nbsp;define( 'SCOPER_LATE_INIT', true );</pre>" );
 			echo '</div>';
 		}
 	?>

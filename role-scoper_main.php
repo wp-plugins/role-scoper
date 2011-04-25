@@ -221,7 +221,7 @@ class Scoper
 
 		if ( ! $this->direct_file_access = strpos($_SERVER['QUERY_STRING'], 'rs_rewrite') )
 			$this->add_main_filters();
-
+			
 		// ===== Special early exit if this is a plugin install script
 		if ( is_admin() ) {
 			if ( in_array( $GLOBALS['pagenow'], array( 'plugin-install.php', 'plugin-editor.php' ) ) ) {
