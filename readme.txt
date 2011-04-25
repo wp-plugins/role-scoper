@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1.1
-Stable Tag: 1.3.29
+Stable Tag: 1.3.30
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -105,6 +105,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.30 - 25 Apr 2011 =
+* Compat : Fatal error when another plugin defines pluggable function 'set_current_user' (call to undefined function plural_name_from_cap_rs)
 
 #### 1.3.29 - 21 Apr 2011
 

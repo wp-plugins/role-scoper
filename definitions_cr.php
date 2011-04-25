@@ -1,4 +1,5 @@
 <?php
+require_once( 'wp-cap-helper_cr.php' );
 
 function cr_access_types() {
 	$arr = array( 'front' => (object) array(), 'admin' => (object) array() );

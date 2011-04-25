@@ -109,10 +109,6 @@ class ScoperHardwayTaxonomy
 		// (although the terms_where filter does support multiple taxonomies and this function could be made to do so)
 		if ( ! $single_taxonomy )
 				return $results;
-
-		// link category roles / restrictions are only scoped for management (TODO: abstract this)
-		if ( $single_taxonomy && ( 'link_category' == $taxonomies[0] ) && $scoper->is_front() )
-			return $results;
 			
 		// depth is not really a get_terms arg, but remap exclude arg to exclude_tree if wp_list_terms called with depth=1
 		if ( ! empty($args['exclude']) && empty($args['exclude_tree']) && ! empty($args['depth']) && ( 1 == $args['depth'] ) )
@@ -345,7 +341,7 @@ class ScoperHardwayTaxonomy
 		if ( !empty($name__like) )
 			$where .= " AND t.name LIKE '{$name__like}%'";
 		
-		if ( '' != $parent ) {
+		if ( '' !== $parent ) {
 			$parent = (int) $parent;
 			
 			// === BEGIN Role Scoper MODIFICATION: otherwise termroles only work if parent terms also have role
