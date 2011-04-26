@@ -211,7 +211,7 @@ class CapInterceptor_RS
 			if ( ! empty($GLOBALS['post']) ) 
 				$object_type = $GLOBALS['post']->post_type;	
 		}
-
+		
 		//rs_errlog( "$src_name : $object_type (id $object_id)" );
 
 		if ( is_admin() && ( 'edit-tags.php' == $GLOBALS['pagenow'] ) && ( 'link_category' == $_REQUEST['taxonomy'] ) ) {
@@ -222,7 +222,7 @@ class CapInterceptor_RS
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
 		// =====================================================================================================================================
 
-
+		
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
 		if ( 'post' == $src_name ) {	
 			// slight simplification: assume a single cap object type for a few cap substitution checks

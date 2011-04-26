@@ -77,6 +77,9 @@ class ScoperRoleStrings {
 					if ( strpos( $role_handle, "_{$custype->name}_" ) ) {
 						$label = $custype->labels->singular_name;
 						
+						if ( ! $label )
+							$label = $custype->name;
+						
 						if ( strpos( $role_handle, '_editor' ) )
 							return ( defined( 'SCOPER_PUBLISHER_CAPTION' ) ) ? sprintf( __( '%s Publisher', 'scoper' ), $label ) : sprintf( __( '%s Editor', 'scoper' ), $label );
 						elseif ( strpos( $role_handle, '_revisor' ) )
@@ -96,11 +99,16 @@ class ScoperRoleStrings {
 				
 				foreach( $taxonomies as $name => $tx_obj ) {
 					if ( strpos( $role_handle, "_{$name}_" ) ) {
+						$label = $tx_obj->labels->singular_name;
+						
+						if ( ! $label )
+							$label = $tx_obj->name;
+					
 						if ( strpos( $role_handle, '_manager' ) )
-							return sprintf( __( '%s Manager', 'scoper' ), $tx_obj->labels->singular_name );
+							return sprintf( __( '%s Manager', 'scoper' ), $label );
 							
 						if ( strpos( $role_handle, '_assigner' ) )
-							return sprintf( __( '%s Assigner', 'scoper' ), $tx_obj->labels->singular_name );
+							return sprintf( __( '%s Assigner', 'scoper' ), $label );
 					}
 				}
 				

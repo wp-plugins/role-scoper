@@ -106,6 +106,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.34-dev =
+* BugFix : Non-Administrators could not edit categories if Post Tags enabled for RS filtering
+
 = 1.3.33 - 26 Apr 2011 =
 * BugFix : Links Widgets and other get_bookmarks() output was hidden from non-Administrators on the front end (since 1.3.30)
 

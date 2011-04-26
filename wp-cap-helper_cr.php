@@ -182,6 +182,9 @@ class WP_Cap_Helper_CR {
 		$use_taxonomies['nav_menu'] = true;
 	
 		foreach( array_keys($wp_taxonomies) as $taxonomy ) {
+			if ( 'post_tag' == $taxonomy )	// complication due to default use of "manage_categories" cap for both categories and tags
+				continue;
+		
 			if ( 'yes' == $wp_taxonomies[$taxonomy]->public ) {	// clean up a GD Taxonomies quirk (otherwise wp_get_taxonomy_object will fail when filtering for public => true)
 				$wp_taxonomies[$taxonomy]->public = true;
 			
