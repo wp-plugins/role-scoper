@@ -21,8 +21,8 @@ class ScoperHardwayBookmarks {
 	
 		$r = wp_parse_args( $args, $defaults );
 		extract( $r, EXTR_SKIP );
-		
-		
+
+
 		// === BEGIN RoleScoper ADDITION: exemption for content administrators
 		if ( is_content_administrator_rs() )
 			return $results;

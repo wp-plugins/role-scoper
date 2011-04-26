@@ -20,8 +20,8 @@ if ( $scoper->is_front() || ! is_content_administrator_rs() )
 
 if ( $scoper->data_sources->is_member('link') )
 	require_once( 'hardway-bookmarks_rs.php' );
-	
-	
+
+
 // flt_get_pages is required on the front end (even for administrators) to enable the inclusion of private pages
 // flt_get_pages also needed for inclusion of private pages in some 3rd party plugin config UI (Simple Section Nav)
 
