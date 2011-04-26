@@ -51,7 +51,7 @@ function scoper_maybe_init() {
 	if ( defined('INIT_ACTION_DONE_RS') )
 		scoper_init();
 	else {
-		$priority = ( defined( 'SCOPER_LATE_INIT' ) && ! defined( 'SCOPER_EARLY_INIT' ) ) ? 50 : 3;
+		$priority = ( defined( 'SCOPER_EARLY_INIT' ) ) ? 3 : 50;
 		add_action('init', 'scoper_init', $priority);
 	}
 }

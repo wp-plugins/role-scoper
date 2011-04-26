@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1.1
-Stable Tag: 1.3.31
+Stable Tag: 1.3.32
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -105,6 +105,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.32 - 26 Apr 2011 =
+* BugFix : Filtering could not be disabled for some Custom Post Types / Taxonomies (via Roles > Options > Realm)
 
 = 1.3.31 - 25 Apr 2011 =
 * BugFix : Custom taxonomies could not be fully disabled, causing various access failures (including non-display of Edit Flow post status in Publish metabox)
@@ -522,6 +525,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.32 =
+Bug Fix : Filtering could not be disabled for some Custom Post Types / Taxonomies
 
 = 1.3.31 =
 All changes relate to Custom Post Types / Taxonomies: better compat with CPT / Taxonomy registrations; Dashboard hint on type-specific Role assignments for RS-filtered Post Types; Custom Taxonomies could not be fully disabled, so various access failures (including conflict with Edit Flow plugin)
