@@ -1414,7 +1414,7 @@ class QueryInterceptor_RS
 		if ( ! $object_types || ( is_array($object_types) && count($object_types) > 1 ) )
 			$object_type = cr_find_post_type();
 		else
-			$object_type = intval( $object_types );
+			$object_type = strval( $object_types );
 
 		if ( ( 'edit.php' == $GLOBALS['pagenow'] ) && ! is_content_administrator_rs() ) {
 			$post_type_obj = get_post_type_object( $object_type );

@@ -158,14 +158,13 @@ function cr_taxonomies() {
 	
 	$arr = array_merge( $arr, cr_wp_taxonomies() );
 	
-	// link filtering is only for management in wp-admin
 	$name = 'link_category';  // note: also requires 'data_sources' definition
 	$arr[$name] = (object) array(
 		'requires_term' => true, 'uses_standard_schema' => true, 'hierarchical' => false, 'default_term_option' => 'default_link_category', 'object_source' => 'link'
-	); // end outer array
+	);
 	
-	$arr[$name]->admin_actions = (object) array( 'save_term' => "save_{$name}", 	'edit_term' => "edit_{$name}", 			'create_term' => "created_{$name}", 
-												'delete_term' => "delete_{$name}", 	'term_edit_ui' => 'edit_link_category_form' );
+	$arr[$name]->admin_actions = (object) array( 'save_term' => "save_term", 	'edit_term' => "edit_term", 			'create_term' => "created_term", 
+												'delete_term' => "delete_term", 'term_edit_ui' => 'edit_link_category_form' );
 
 	$arr[$name]->admin_filters = (object) array( 'pre_object_terms' => 'pre_link_category' );		// not actually applied as of WP 3.0
 	
@@ -197,6 +196,8 @@ function cr_wp_taxonomies() {
 	
 	$post_types = get_post_types( array( 'public' => true ) );
 	$post_types []= 'nav_menu_item';
+
+	$support_retrictions = apply_filters( 'restrictable_taxonomies_rs', array( 'post_status' => true ) );	// for Edit Flow plugin
 	
 	// Detect and support additional WP taxonomies (just require activation via Role Scoper options panel)
 	global $scoper;
@@ -227,16 +228,16 @@ function cr_wp_taxonomies() {
 			'hierarchical' => $wp_tax->hierarchical,
 			'object_source' => $src_name,
 			'labels' => (object) array( 'name' => $wp_tax->labels->name, 'singular_name' => $wp_tax->labels->singular_name  ),
-			'requires_term' => $wp_tax->hierarchical
+			'requires_term' => $wp_tax->hierarchical || isset( $support_retrictions[$taxonomy] )
 		);
-		
+
 		if ( is_admin() ) {
 			// temporary hardcode
 			if ( 'nav_menu' == $taxonomy )
 				$arr[$taxonomy]->requires_term = true;
 			
-			$arr[$taxonomy]->admin_actions = array( 'save_term' => "save_{$taxonomy}", 		'edit_term' => "edit_{$taxonomy}", 			'create_term' => "created_{$taxonomy}", 
-													'delete_term' => "delete_{$taxonomy}", 	'term_edit_ui' => "{$taxonomy}_edit_form" );
+			$arr[$taxonomy]->admin_actions = array( 'save_term' => "save_term", 		'edit_term' => "edit_term", 			'create_term' => "created_term", 
+													'delete_term' => "delete_term", 	'term_edit_ui' => "{$taxonomy}_edit_form" );
 			
 			$arr[$taxonomy]->admin_filters = array( 'pre_object_terms' => "pre_post_{$taxonomy}" );
 			

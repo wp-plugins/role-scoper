@@ -21,10 +21,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * 
  */
  
-// flag some options as arrays to ensure application of default element values, even if no array value is stored as option
-//global $scoper_option_arrays;
-//$scoper_option_arrays = array_fill_keys( array( 'use_post_types', 'use_taxonomies' ), true );
- 
+$GLOBALS['rs_default_disable_taxonomies'] = (array) apply_filters( 'default_disable_taxonomies_rs', array_fill_keys( array( 'link_category', 'post_tag', 'post_format', 'ngg_tag' ), true ) );
+$GLOBALS['rs_forbidden_taxonomies'] = (array) apply_filters( 'forbidden_taxonomies_rs', array_fill_keys( array( 'post_status', 'following_users', 'unfollowing_users', 'following_usergroups' ), true ) );   // avoid extreme config confusion with these Edit Flow taxonomies
+
 function scoper_default_options() {
 	$def = array(
 		'persistent_cache' => 1,
@@ -84,12 +83,12 @@ function scoper_default_options() {
 		foreach ( $post_types as $type )
 			$def['use_post_types'][$type] = 1;
 			
-		foreach ( get_taxonomies( array( 'public' => true ) ) as $taxonomy ) {
-			if ( ! in_array( $taxonomy, array( 'link_category', 'ngg_tag', 'nav_menu' ) ) )
+		foreach ( array_diff( get_taxonomies( array( 'public' => true ) ), array_keys($GLOBALS['rs_forbidden_taxonomies']) ) as $taxonomy ) {
+			if ( isset( $GLOBALS['rs_default_disable_taxonomies'][$taxonomy] ) )
+				$def['use_taxonomies'][$taxonomy] = 0;
+			else
 				$def['use_taxonomies'][$taxonomy] = 1;
 		}
-	
-		$def['use_taxonomies']['post_tag'] = 0;
 	}
 	
 	return $def;
@@ -145,12 +144,12 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 		$def['use_object_roles']["post:{$type}"] = 1;
 	} // end foreach post type
 	
-	$taxonomies = get_taxonomies( array( 'public' => true ), 'object' );
+	$taxonomies = array_diff_key( get_taxonomies( array( 'public' => true ), 'object' ), $GLOBALS['rs_forbidden_taxonomies'] );
 	$taxonomies ['nav_menu']= get_taxonomy( 'nav_menu' );
 
 	$post_types []= 'nav_menu_item';
 	
-	foreach ( $taxonomies as $taxonomy => $taxonomy_obj ) {			
+	foreach ( $taxonomies as $taxonomy => $taxonomy_obj ) {
 		$_object_types = (array) $taxonomy_obj->object_type;
 		
 		foreach( $_object_types as $object_type ) {

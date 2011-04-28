@@ -381,15 +381,17 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 			$taxonomies = get_taxonomies( array( 'public' => true ) );
 			$taxonomies[] = 'nav_menu';
 
-			foreach ( $taxonomies as $taxonomy ) {
-				if ( ! in_array( $taxonomy, array( 'link_category', 'ngg_tag' ) ) )
-					$default_taxonomies[$taxonomy] = 1;
-			}
-	
-			$default_taxonomies['post_tag'] = 0;
+			foreach ( $taxonomies as $taxonomy )
+				$default_taxonomies[$taxonomy] = ( isset( $GLOBALS['rs_default_disable_taxonomies'][$taxonomy] ) ) ? 0 : 1;
 		}
 		
-		$optval = array_merge( $default_taxonomies, (array) $optval );
+		$optval = array_diff_key( array_merge( $default_taxonomies, (array) $optval ), $GLOBALS['rs_forbidden_taxonomies'] );  // remove forbidden taxonomies, even if previously stored
+	} elseif ( 'use_term_roles' == $option_basename ) {
+		if ( $optval ) {
+			foreach( array_keys($optval) as $key ) {
+				$optval[$key] = array_diff_key( $optval[$key], $GLOBALS['rs_forbidden_taxonomies'] ); // remove forbidden taxonomies, even if previously stored
+			}
+		}
 	}
 	
 	return $optval;
@@ -442,6 +444,7 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 		$retval = array();
 		
 	$otype_options[$key] = $retval;
+	
 	return $retval;
 }
 
@@ -994,6 +997,6 @@ function scoper_get_administrator_cap( $admin_type ) {
 		$cap_name = $default_cap[$admin_type];
 		
 	return $cap_name;
-} 
+}
 
 ?>

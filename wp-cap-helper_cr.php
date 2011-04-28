@@ -121,7 +121,7 @@ class WP_Cap_Helper_CR {
 		foreach( array_keys($wp_post_types) as $post_type ) {
 			if ( empty( $use_post_types[$post_type] ) )
 				continue;
-
+				
 			if ( 'post' === $wp_post_types[$post_type]->capability_type )
 				$wp_post_types[$post_type]->capability_type = $post_type;
 
@@ -151,7 +151,7 @@ class WP_Cap_Helper_CR {
 					$label_str = implode( ', ', $labels );
 				}
 				
-				$msg_format = __( 'The following Custom Post Types are enabled for RS filtering: <strong>%1$s</strong>. Non-administrators will be unable to edit them until you either disable filtering (<strong>Roles > Options > Realm > Post Type Usage</strong>) or assign type-specific Roles (<strong>Roles > General</strong>).  Disregard this message if you have already assigned the roles.', 'scoper' );
+				$msg_format = __( 'The following Custom Post Types are enabled for RS filtering: <strong>%1$s</strong>. Non-administrators will be unable to edit them until you either disable filtering (<strong>Roles > Options > Realm > Post Type Usage</strong>) or assign type-specific Roles (<strong>Roles > General</strong>).  Disregard this message if you have already done so.', 'scoper' );
 				$message = sprintf( $msg_format, $label_str ); 
 				add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade" style="color: black">' . $message . '</div>\';'));
 				
@@ -191,6 +191,7 @@ class WP_Cap_Helper_CR {
 			} elseif ( ( '' === $wp_taxonomies[$taxonomy]->public ) && ( ! empty( $wp_taxonomies[$taxonomy]->query_var_bool ) ) ) { // clean up a More Taxonomies quirk (otherwise wp_get_taxonomy_object will fail when filtering for public => true)
 				$wp_taxonomies[$taxonomy]->public = true;
 			}
+			
 			if ( empty( $use_taxonomies[$taxonomy] ) || in_array( $taxonomy, $core_taxonomies ) )
 				continue;
 	
@@ -202,7 +203,9 @@ class WP_Cap_Helper_CR {
 			foreach( $tx_specific_caps as $cap_property => $replacement_cap_format ) {
 				if ( ! empty($tx_caps[$cap_property]) && in_array( $tx_caps[$cap_property], $used_values ) ) {
 					$wp_taxonomies[$taxonomy]->cap->$cap_property = str_replace( 'terms', $plural_name, $replacement_cap_format );
-					$customized[$taxonomy] = true;
+					
+					if ( 'nav_menu' != $taxonomy )
+						$customized[$taxonomy] = true;	// WP default is for nav menus editable only by administrator, so no need for notice
 				}
 					
 				$used_values []= $tx_caps[$cap_property];
@@ -221,7 +224,7 @@ class WP_Cap_Helper_CR {
 					$label_str = implode( ', ', $labels );
 				}
 				
-				$msg_format = __( 'The following Custom Taxonomies are enabled for RS filtering: <strong>%1$s</strong>. Non-administrators will be unable to manage them until you either disable filtering (<strong>Roles > Options > Realm > Taxonomy Usage</strong>) or assign taxonomy-specific Roles (<strong>Roles > General</strong>). Disregard this message if you have already assigned the roles.', 'scoper' );
+				$msg_format = __( 'The following Custom Taxonomies are enabled for RS filtering: <strong>%1$s</strong>. Non-administrators will be unable to manage them until you either disable filtering (<strong>Roles > Options > Realm > Taxonomy Usage</strong>) or assign taxonomy-specific Roles (<strong>Roles > General</strong>). Disregard this message if you have already done so.', 'scoper' );
 				$message = sprintf( $msg_format, $label_str ); 
 				add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade" style="color: black">' . $message . '</div>\';'));
 				

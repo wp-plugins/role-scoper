@@ -133,9 +133,12 @@ class ScoperHardwayBookmarks {
 				$orderby = 'rand()';
 				break;
 			default:
-				$orderby = "link_" . $orderby;
+				$orderparams = array();
+				foreach ( explode(',', $orderby) as $ordparam )
+					$orderparams[] = 'link_' . trim($ordparam);
+				$orderby = implode(',', $orderparams);
 		}
-	
+
 		if ( 'link_id' == $orderby )
 			$orderby = "$wpdb->links.link_id";
 	

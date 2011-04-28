@@ -587,7 +587,10 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	// This handler is meant to fire whenever a term is inserted or updated.
 	// If the client does use such a hook, we will force it by calling internally from mnt_create and mnt_edit
-	function scoper_mnt_save_term($taxonomy, $args, $term_id, $term = '') {
+	function scoper_mnt_save_term($deprecated_taxonomy, $args, $term_id, $unused_tt_id = '', $taxonomy = '') {
+		if ( ! $taxonomy )
+			$taxonomy = $deprecated_taxonomy;
+
 		static $saved_terms;
 		
 		if ( ! isset($saved_terms) )

@@ -3,8 +3,8 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
-Tested up to: 3.1.1
-Stable Tag: 1.3.33
+Tested up to: 3.1.2
+Stable Tag: 1.3.34
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,8 +106,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.34-dev =
+= 1.3.34 - 28 Apr 2011 =
+* Compat : Edit Flow - if 'post_status' taxonomy enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
 * BugFix : Non-Administrators could not edit categories if Post Tags enabled for RS filtering
+* BugFix : Links were not displayed to non-Administrators if multiple sort fields specified in get_bookmarks() call
 
 = 1.3.33 - 26 Apr 2011 =
 * BugFix : Links Widgets and other get_bookmarks() output was hidden from non-Administrators on the front end (since 1.3.30)
@@ -531,6 +533,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.34 =
+Fixes conflict w/ Edit Flow plugin: if 'post_status' taxonomy was enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
 
 = 1.3.33 =
 Bug Fix : Links Widgets and other get_bookmarks() output was hidden from non-Administrators on the front end (since 1.3.30)

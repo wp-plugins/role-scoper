@@ -36,8 +36,10 @@ class ScoperAdminFilters
 		// see core_default_data_sources() and Scoped_Data_Sources::process() for default hook names
 		foreach ( $scoper->data_sources->get_all() as $src_name => $src ) {
 			if ( ! empty($src->admin_actions) )
-				foreach ( $src->admin_actions as $rs_hook => $original_hook )
+				foreach ( $src->admin_actions as $rs_hook => $original_hook ) {
 					$rs_actions[$original_hook] = (object) array( 'name' => "{$rs_hook}_rs", 'rs_args' => "'$src_name', '' " );	
+					$rs_actions[$original_hook]->orig_num_args = ( 'save_post' == $original_hook ) ? 2 : 1;
+				}
 			
 			if ( ! empty($src->admin_filters) )
 				foreach ( $src->admin_filters as $rs_hook => $original_hook )
@@ -46,8 +48,10 @@ class ScoperAdminFilters
 			// also register hooks that are specific to one object type
 			foreach ( $src->object_types as $object_type => $otype_def ) {
 				if ( ! empty($otype_def->admin_actions) ) {
-					foreach ( $otype_def->admin_actions as $rs_hook => $original_hook )
-						$rs_actions[$original_hook] = (object) array( 'name' => "{$rs_hook}_rs", 'rs_args' => "'$src_name', array( 'object_type' => '$object_type' ) " );	
+					foreach ( $otype_def->admin_actions as $rs_hook => $original_hook ) {
+						$rs_actions[$original_hook] = (object) array( 'name' => "{$rs_hook}_rs", 'rs_args' => "'$src_name', array( 'object_type' => '$object_type' ) " );
+						$rs_actions[$original_hook]->orig_num_args = ( 'save_post' == $original_hook ) ? 2 : 1;
+					}
 				}
 				
 				if ( ! empty($otype_def->admin_filters) )
@@ -61,9 +65,12 @@ class ScoperAdminFilters
 		// see core_default_taxonomies() and Scoped_Taxonomies::process() for default hook names
 		foreach ( $scoper->taxonomies->get_all() as $taxonomy => $tx ) {
 			if ( ! empty($tx->admin_actions) )
-				foreach ( $tx->admin_actions as $rs_hook => $original_hook )
-					$rs_actions[$original_hook] = (object) array( 'name' => "{$rs_hook}_rs", 'rs_args' => "'$taxonomy', '' " );
-
+				foreach ( $tx->admin_actions as $rs_hook => $original_hook ) {
+					if ( ! isset( $rs_actions[$original_hook] ) ) {  // default term hooks changed from edit_{$taxonomy} to edit_term, etc.  WP passes taxonomy.  Keeping rs-passed taxonomy as 1st arg for back compat.
+						$rs_actions[$original_hook] = (object) array( 'name' => "{$rs_hook}_rs", 'rs_args' => "'$taxonomy', '' " );
+						$rs_actions[$original_hook]->orig_num_args = ( 'term_edit_ui' == $rs_hook ) ? 1 : 3;
+					}
+				}
 			if ( ! empty($tx->admin_filters) )
 				foreach ( $tx->admin_filters as $rs_hook => $original_hook )
 					$rs_filters[$original_hook] = (object) array( 'name' => "{$rs_hook}_rs", 'rs_args' => "'$taxonomy', '' " );
@@ -75,12 +82,11 @@ class ScoperAdminFilters
 		
 		foreach ( $rs_actions as $original_hook => $rs_hook ) {
 			if ( ! $original_hook ) continue;
-			$orig_hook_numargs = ( 'save_post' == $original_hook ) ? 2 : 1;	// TODO: abstract
-			$arg_str = agp_get_lambda_argstring($orig_hook_numargs);
+			$arg_str = agp_get_lambda_argstring( $rs_hook->orig_num_args );
 			$comma = ( $rs_hook->rs_args ) ? ',' : '';
 			$func = "do_action( '$rs_hook->name', $rs_hook->rs_args $comma $arg_str );";
 			//echo "adding action: $original_hook -> $func <br />";
-			add_action( $original_hook, create_function( $arg_str, $func ), $hook_order, $orig_hook_numargs );	
+			add_action( $original_hook, create_function( $arg_str, $func ), $hook_order, $rs_hook->orig_num_args );	
 		}
 		
 		foreach ( $rs_filters as $original_hook => $rs_hook ) {
@@ -409,14 +415,20 @@ class ScoperAdminFilters
 		}
 	}
 	
-	function mnt_create_term($taxonomy, $args, $term_id, $term = '') {
-		$this->mnt_save_term($taxonomy, $args, $term_id, $term);
-		
+	function mnt_create_term($deprecated_taxonomy, $args, $term_id, $unused_tt_id = '', $taxonomy = '') {
+		if ( ! $taxonomy )
+			$taxonomy = $deprecated_taxonomy;
+
+		$this->mnt_save_term( $taxonomy, $args, $term_id, $unused_tt_id, $taxonomy );
+
 		scoper_term_cache_flush();
 		delete_option( "{$taxonomy}_children_rs" );
 	}
 	
-	function mnt_edit_term($taxonomy, $args, $term_ids, $term = '') {
+	function mnt_edit_term($deprecated_taxonomy, $args, $term_ids, $unused_tt_id = '', $taxonomy = '') {
+		if ( ! $taxonomy )
+			$taxonomy = $deprecated_taxonomy;
+
 		static $edited_terms;
 		
 		if ( ! isset($edited_terms) )
@@ -433,23 +445,26 @@ class ScoperAdminFilters
 			$edited_terms[$taxonomy][$term_id] = 1;
 			
 			// call save handler directly in case it's not registered to a hook
-			$this->mnt_save_term($taxonomy, $term_id, $term);
+			$this->mnt_save_term( $taxonomy, $args, $term_id, $unused_tt_id, $taxonomy );
 		}
 	}
 	
 	// This handler is meant to fire whenever a term is inserted or updated.
 	// If the client does use such a hook, we will force it by calling internally from mnt_create and mnt_edit
-	function mnt_save_term($taxonomy, $args, $term_id, $term = '') {
+	function mnt_save_term($deprecated_taxonomy, $args, $term_id, $unused_tt_id = '', $taxonomy = '') {
 		require_once('filters-admin-save_rs.php');
-		scoper_mnt_save_term($taxonomy, $args, $term_id, $term);
+		scoper_mnt_save_term( $deprecated_taxonomy, $args, $term_id, $unused_tt_id, $taxonomy );
 	}
 
-	function mnt_delete_term($taxonomy, $args, $term_id) {
+	function mnt_delete_term($deprecated_taxonomy, $args, $term_id, $unused_tt_id = '', $taxonomy = '') {
 		global $wpdb;
 	
 		if ( ! $term_id )
 			return;
 		
+		if ( ! $taxonomy )
+			$taxonomy = $deprecated_taxonomy;
+
 		// could defer role/cache maint to speed potential bulk deletion, but script may be interrupted before admin_footer
 		$this->item_deletion_aftermath( TERM_SCOPE_RS, $taxonomy, $term_id );
 

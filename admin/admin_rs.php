@@ -502,7 +502,7 @@ jQuery(document).ready( function($) {
 			add_submenu_page($roles_menu, __('General Roles', 'scoper'), __('General', 'scoper'), 'read', 'rs-general_roles', array( &$this, 'menu_handler' ) );
 			
 		$first_pass = true;
-
+		
 		$submenu_types = ( $object_submenus_first ) ? array( 'object', 'term' ) : array( 'term', 'object' );
 		foreach ( $submenu_types as $scope ) {
 			if ( 'term' == $scope ) {
@@ -511,15 +511,9 @@ jQuery(document).ready( function($) {
 					// Will only allow assignment to terms for which current user has admin cap
 					// Term Roles page also prevents assignment or removal of roles current user doesn't have
 					foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx ) {
-						
 						if ( empty($can_admin_terms[$taxonomy]) )
 							continue;
-						
-						if ( $require_blogwide_editor ) {
-							if ( ! $this->scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) )
-								continue;
-						}
-						
+
 						$show_roles_menu = true;
 
 						add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $tx->labels->singular_name ), $tx->labels->name, 'read', "rs-$taxonomy-roles_t", array( &$this, 'menu_handler' ) );

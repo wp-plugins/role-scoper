@@ -56,7 +56,7 @@ class Scoper
 			if ( ! $this->access_types->is_member($access_name) )
 				define('DISABLE_QUERYFILTERS_RS', true);
 		}
-
+		
 		// populate data_sources, taxonomies, cap_defs, role_defs arrays
 		foreach( array_keys($this->definitions) as $topic )
 			$this->load_definition( $topic );	

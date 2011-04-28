@@ -48,7 +48,7 @@ class QueryInterceptorFront_NonAdmin_RS {
 				$item_types[ $item->type ][ $item->object ] [$key] = $item->object_id;
 		} 
 		
-		$teaser_enabled = scoper_get_otype_option( 'use_teaser', 'post' );
+		$teaser_enabled = scoper_get_otype_option( 'do_teaser', 'post' );
 		
 		// remove unreadable terms	
 		if ( isset( $item_types['taxonomy'] ) ) {
@@ -56,7 +56,7 @@ class QueryInterceptorFront_NonAdmin_RS {
 				if ( $teaser_enabled ) {
 					if ( $taxonomy_obj = get_taxonomy( $taxonomy ) ) {
 						foreach( $taxonomy_obj->object_type as $post_type ) {	// don't remove a term if it is associated with a post type that's being teased
-							if ( scoper_get_otype_option( 'do_teaser', 'post', $post_type ) )
+							if ( scoper_get_otype_option( 'use_teaser', 'post', $post_type ) )
 								continue 2;
 						}
 					}
@@ -82,7 +82,7 @@ class QueryInterceptorFront_NonAdmin_RS {
 				$okay_ids = scoper_get_col( "SELECT ID FROM $wpdb->posts WHERE post_type = '$post_type' $where AND ID IN ('" . implode("','", $item_ids ) . "')" );
 				
 				if ( $remove_ids = array_diff( $item_ids, $okay_ids ) ) {
-					if ( $teaser_enabled && scoper_get_otype_option( 'do_teaser', 'post', $post_type ) ) {
+					if ( $teaser_enabled && scoper_get_otype_option( 'use_teaser', 'post', $post_type ) ) {
 						require_once( 'teaser_rs.php' );
 						$teaser_prepend = ScoperTeaser::get_teaser_text( 'prepend', 'name', 'post', $post_type );
 						$teaser_append = ScoperTeaser::get_teaser_text( 'append', 'name', 'post', $post_type );

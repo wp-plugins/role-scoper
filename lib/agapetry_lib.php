@@ -63,7 +63,6 @@ function agp_merge_md_array($arr_default, $arr_custom, $key_dimensions = 1, $cur
 		return $arr_custom;
 	}
 }
-
 // adapted from http://us.php.net/manual/en/function.array-unique.php#86210
 function agp_array_unique_md($arr) {
 	array_walk($arr, create_function('&$value', '$value = serialize($value);'));
