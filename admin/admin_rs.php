@@ -418,88 +418,100 @@ jQuery(document).ready( function($) {
 		// determine the official WP-registered URL for roles and restrictions menus
 		$object_submenus_first = false;
 
-		if ( ! empty($can_admin_terms['category']) ) {
-			$roles_menu = 'rs-category-roles_t';
-			$restrictions_menu = 'rs-category-restrictions_t';
-
-		} elseif ( ! empty($can_admin_objects['post']['post']) ) {
-			$roles_menu = 'rs-post-roles';
-			$restrictions_menu = 'rs-post-restrictions';
-			$object_submenus_first = true;
+		$use_users_menu = ( defined( 'OZH_MENU_VER' ) && ! defined( 'SCOPER_FORCE_ROLES_MENU' ) ) || defined( 'SCOPER_FORCE_USERS_MENU' );
+		$tweak_menu = false;
+		
+		if ( $use_users_menu ) {
+			$roles_menu = 'users.php';
+			$restrictions_menu = 'users.php';
 			
-		} elseif ( ! empty($can_admin_objects['post']['page']) ) {  // TODO: handle custom types here?
-			$roles_menu = 'rs-page-roles';
-			$restrictions_menu = 'rs-page-restrictions';
-			$object_submenus_first = true;
+			if ( $is_option_administrator )
+				add_submenu_page($roles_menu, __('Role Options', 'scoper'), __('Role Options', 'scoper'), 'read', 'rs-options', array( &$this, 'menu_handler' ) );
+		} else {
+			if ( ! empty($can_admin_terms['category']) ) {
+				$roles_menu = 'rs-category-roles_t';
+				$restrictions_menu = 'rs-category-restrictions_t';
 
-		} elseif ( $can_admin_terms && $this->scoper->taxonomies->member_property( key($can_admin_terms),  'requires_term' ) ) {
-			$taxonomy = key($can_admin_terms);
-			$roles_menu = "rs-$taxonomy-roles_t";
-			$restrictions_menu = "rs-$taxonomy-restrictions_t";
+			} elseif ( ! empty($can_admin_objects['post']['post']) ) {
+				$roles_menu = 'rs-post-roles';
+				$restrictions_menu = 'rs-post-restrictions';
+				$object_submenus_first = true;
+				
+			} elseif ( ! empty($can_admin_objects['post']['page']) ) {  // TODO: handle custom types here?
+				$roles_menu = 'rs-page-roles';
+				$restrictions_menu = 'rs-page-restrictions';
+				$object_submenus_first = true;
 
-		} elseif ( $can_admin_objects ) {
-			$src_name = key($can_admin_objects);
-			$object_type = key($can_admin_objects[$src_name]);
-			
-			if ( ( $src_name != $object_type ) && ( 'post' != $src_name ) ) {
-				$roles_menu = "rs-{$object_type}-roles_{$src_name}";
-				$restrictions_menu = "rs-{$object_type}-restrictions_{$src_name}";
+			} elseif ( $can_admin_terms && $this->scoper->taxonomies->member_property( key($can_admin_terms),  'requires_term' ) ) {
+				$taxonomy = key($can_admin_terms);
+				$roles_menu = "rs-$taxonomy-roles_t";
+				$restrictions_menu = "rs-$taxonomy-restrictions_t";
+
+			} elseif ( $can_admin_objects ) {
+				$src_name = key($can_admin_objects);
+				$object_type = key($can_admin_objects[$src_name]);
+				
+				if ( ( $src_name != $object_type ) && ( 'post' != $src_name ) ) {
+					$roles_menu = "rs-{$object_type}-roles_{$src_name}";
+					$restrictions_menu = "rs-{$object_type}-restrictions_{$src_name}";
+				} else {
+					$roles_menu = "rs-$object_type-roles";
+					$restrictions_menu = "rs-$object_type-restrictions";
+				}
+
+				$object_submenus_first = true;
 			} else {
-				$roles_menu = "rs-$object_type-roles";
-				$restrictions_menu = "rs-$object_type-restrictions";
+				// shouldn't ever need this
+				$roles_menu = 'rs-roles-post';
+				$restrictions_menu = 'rs-restrictions-post';
+				$object_submenus_first = true;
 			}
 
-			$object_submenus_first = true;
-		} else {
-			// shouldn't ever need this
-			$roles_menu = 'rs-roles-post';
-			$restrictions_menu = 'rs-restrictions-post';
-			$object_submenus_first = true;
-		}
+			if ( $general_roles )
+				$roles_menu = 'rs-general_roles';
 
-		if ( $general_roles )
-			$roles_menu = 'rs-general_roles';
+			if ( $is_option_administrator )
+				$roles_menu = 'rs-options';  // option administrators always have RS Options as top level roles submenu
 
-
-		if ( $is_option_administrator )
-			$roles_menu = 'rs-options';  // option administrators always have RS Options as top level roles submenu
-
-		if ( $is_user_administrator ) { 
-			if ( empty( $restrictions_menu ) )
-				$restrictions_menu =  'rs-category-restrictions_t';  // If RS Realms are customized, the can_admin_terms / can_admin_objects result can override this default, even for user administrators
-		}
-		
-		// Register the menus with WP using URI and links determined above
-		global $menu;
-		$tweak_menu = false; // don't mess with menu order unless we know we can get away with it in current WP version
+			if ( $is_user_administrator ) { 
+				if ( empty( $restrictions_menu ) )
+					$restrictions_menu =  'rs-category-restrictions_t';  // If RS Realms are customized, the can_admin_terms / can_admin_objects result can override this default, even for user administrators
+			}
 			
-		//  Manually set menu indexes for positioning below Users menu,
-		//  but not if Flutter (a.k.a. Fresh Page) plugin is active.  It re-indexes menu items 
-		if ( ! defined( 'SCOPER_DISABLE_MENU_TWEAK' ) ) {
-			//if ( awp_ver('2.9') ) {
-				// review each WP version for menu indexes until there's a clean way to force menu proximity to 'Users'
-				if ( isset( $menu[70] ) && $menu[70][2] == 'users.php' ) {  // WP 2.9 and 3.0
-					$tweak_menu = true;
-					$restrictions_menu_key = 71;
-					$roles_menu_key = 72;
-				}
-			//}
+			// Register the menus with WP using URI and links determined above
+			global $menu;
+				
+			//  Manually set menu indexes for positioning below Users menu,
+			//  but not if Flutter (a.k.a. Fresh Page) plugin is active.  It re-indexes menu items 
+			if ( ! defined( 'SCOPER_DISABLE_MENU_TWEAK' ) ) {
+				//if ( awp_ver('2.9') ) {
+					// review each WP version for menu indexes until there's a clean way to force menu proximity to 'Users'
+					if ( isset( $menu[70] ) && $menu[70][2] == 'users.php' ) {  // WP 2.9 and 3.0
+						$tweak_menu = true;
+						$restrictions_menu_key = 71;
+						$roles_menu_key = 72;
+					}
+				//}
+			}
+			
+			$roles_cap = 'read'; // we apply other checks within this function to confirm the menu is valid for current user
+			$restrictions_caption = __('Restrictions', 'scoper');
+			$roles_caption = __('Roles', 'scoper');
+
+			if ( $tweak_menu ) {
+				add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/restrictions.png', $restrictions_menu_key );
+				add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/roles.png', $roles_menu_key );
+			} else {
+				add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/restrictions.png' );
+				add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/roles.png' );
+			}
+			
+		} // endif putting roles and restrictions links in Users menu
+
+		if ( $general_roles ) {
+			$menu_label = ( $use_users_menu ) ? __('General Roles', 'scoper') : __('General', 'scoper');
+			add_submenu_page($roles_menu, __('General Roles', 'scoper'), $menu_label, 'read', 'rs-general_roles', array( &$this, 'menu_handler' ) );
 		}
-
-		$roles_cap = 'read'; // we apply other checks within this function to confirm the menu is valid for current user
-		$restrictions_caption = __('Restrictions', 'scoper');
-		$roles_caption = __('Roles', 'scoper');
-
-		if ( $tweak_menu ) {
-			add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/restrictions.png', $restrictions_menu_key );
-			add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/roles.png', $roles_menu_key );
-		} else {
-			add_menu_page($restrictions_caption, __('Restrictions', 'scoper'), 'read', $restrictions_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/restrictions.png' );
-			add_menu_page($roles_caption, __('Roles', 'scoper'), $roles_cap, $roles_menu, array(&$this, 'menu_handler'), SCOPER_URLPATH . '/admin/images/menu/roles.png' );
-		}
-
-		if ( $general_roles )
-			add_submenu_page($roles_menu, __('General Roles', 'scoper'), __('General', 'scoper'), 'read', 'rs-general_roles', array( &$this, 'menu_handler' ) );
 			
 		$first_pass = true;
 		
@@ -516,12 +528,14 @@ jQuery(document).ready( function($) {
 
 						$show_roles_menu = true;
 
-						add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $tx->labels->singular_name ), $tx->labels->name, 'read', "rs-$taxonomy-roles_t", array( &$this, 'menu_handler' ) );
+						$menu_label = ( $use_users_menu ) ? sprintf(__('%s Roles', 'scoper'), $tx->labels->singular_name ) : $tx->labels->name;
+						add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $tx->labels->singular_name ), $menu_label, 'read', "rs-$taxonomy-roles_t", array( &$this, 'menu_handler' ) );
 
 						if ( ! empty($tx->requires_term) ) {
 							$show_restrictions_menu = true;
 
-							add_submenu_page($restrictions_menu, sprintf(__('%s restrictions', 'scoper'), $tx->labels->singular_name), $tx->labels->name, 'read', "rs-$taxonomy-restrictions_t", array( &$this, 'menu_handler' ) );
+							$menu_label = ( $use_users_menu ) ? sprintf(__('%s Restrictions', 'scoper'), $tx->labels->singular_name ) : $tx->labels->name;
+							add_submenu_page($restrictions_menu, sprintf(__('%s Restrictions', 'scoper'), $tx->labels->singular_name), $menu_label, 'read', "rs-$taxonomy-restrictions_t", array( &$this, 'menu_handler' ) );
 						}
 					} // end foreach taxonomy
 				} // endif can admin terms
@@ -559,9 +573,11 @@ jQuery(document).ready( function($) {
 							$item_label_singular = $this->interpret_src_otype($src_otype, 'singular_name');
 							$item_label = $this->interpret_src_otype($src_otype);
 							
-							add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $item_label_singular), $item_label, 'read', $roles_page, array( &$this, 'menu_handler' ) );
-							
-							add_submenu_page($restrictions_menu, sprintf(__('%s Restrictions', 'scoper'), $item_label_singular), $item_label, 'read', $restrictions_page, array( &$this, 'menu_handler' ) );	
+							$menu_label = ( $use_users_menu ) ? sprintf(__('%s Roles', 'scoper'), $item_label_singular) : $item_label;
+							add_submenu_page($roles_menu, sprintf(__('%s Roles', 'scoper'), $item_label_singular), $menu_label, 'read', $roles_page, array( &$this, 'menu_handler' ) );
+
+							$menu_label = ( $use_users_menu ) ? sprintf(__('%s Restrictions', 'scoper'), $item_label_singular) : $item_label;
+							add_submenu_page($restrictions_menu, sprintf(__('%s Restrictions', 'scoper'), $item_label_singular), $menu_label, 'read', $restrictions_page, array( &$this, 'menu_handler' ) );
 						} // end foreach obj type
 					} // end foreach data source
 				} // endif can admin objects

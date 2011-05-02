@@ -106,6 +106,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.35-dev =
+* Change : Put RS menu links in Users menu if OZH Admin Menus plugin active or SCOPER_FORCE_USERS_MENU constant defined
+
 = 1.3.34 - 28 Apr 2011 =
 * Compat : Edit Flow - if 'post_status' taxonomy enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
 * BugFix : Non-Administrators could not edit categories if Post Tags enabled for RS filtering
