@@ -3,7 +3,9 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-if ( 'nav-menus.php' != $GLOBALS['pagenow'] ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
+if ( 'nav-menus.php' == $GLOBALS['pagenow'] ) {	// nav-menus.php only needs admin_referer check.  TODO: split this file
+	add_action( 'check_admin_referer', array('ScoperAdminHardway_Ltd', 'act_check_admin_referer') );
+} else {
 	//if ( false === strpos( $_SERVER['REQUEST_URI'], 'upload.php' ) )	// TODO: internal criteria to prevent application of flt_last_resort when scoped user object is not fully loaded
 		ScoperAdminHardway_Ltd::add_filters();
 }
@@ -69,10 +71,25 @@ class ScoperAdminHardway_Ltd {
 
 		} elseif ( 'update-nav_menu' == $referer_name ) {
 			$tx = get_taxonomy( 'nav_menu' );
-			if ( ! cr_user_can( $tx->cap->manage_terms, $_REQUEST['menu'], 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) ) ) {
-				wp_die( __('You do not have permission to create new Navigation Menus', 'scoper') );
-			}
 			
+			if ( ! cr_user_can( $tx->cap->manage_terms, $_REQUEST['menu'], 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) ) ) {
+				if ( $_REQUEST['menu'] )
+					wp_die( __('You do not have permission to update that Navigation Menu', 'scoper') );
+				else
+					wp_die( __('You do not have permission to create new Navigation Menus', 'scoper') );
+			}
+		
+		} elseif ( false !== strpos( $referer_name, 'delete-menu_item_' ) ) {
+			if ( scoper_get_option( 'admin_nav_menu_filter_items' ) ) {
+				$menu_item_id = substr( $referer_name, strlen( 'delete-menu_item_' ) );
+				require_once( SCOPER_ABSPATH . '/admin/filters-admin-nav_menus_rs.php' );
+				_rs_mnt_modify_nav_menu_item( $menu_item_id, 'delete' );
+			}
+		} elseif ( $referer_name == 'move-menu_item' ) {
+			if ( scoper_get_option( 'admin_nav_menu_filter_items' ) ) {
+				require_once( SCOPER_ABSPATH . '/admin/filters-admin-nav_menus_rs.php' );
+				_rs_mnt_modify_nav_menu_item( $_REQUEST['menu-item'], 'move' );
+			}
 		} elseif ( 'add-bookmark' == $referer_name ) {
 			require_once( 'hardway-admin-links_rs.php' );
 			$link_category = ! empty( $_POST['link_category'] ) ? $_POST['link_category'] : array();

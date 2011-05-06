@@ -225,11 +225,20 @@ class WP_Scoped_User extends WP_User {
 	}
 	
 	function get_blog_roles_daterange( $role_type = 'rs', $args = array() ) {
-		$defaults = array( 'enforce_duration_limits' => true, 'retrieve_content_date_limits' => true, 'include_role_duration_key' => false );
+		$defaults = array( 'enforce_duration_limits' => true, 'retrieve_content_date_limits' => true, 'include_role_duration_key' => false, 'no_cache' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 		
-		if ( $enforce_duration_limits && $retrieve_content_date_limits && ! $include_role_duration_key ) {
+		if ( $enforce_duration_limits = $enforce_duration_limits && scoper_get_option( 'role_duration_limits' ) ) {
+			$duration_clause = ( $enforce_duration_limits ) ? scoper_get_duration_clause() : '';
+			$no_cache = $no_cache || strpos( $duration_clause, 'start_date_gmt' ) || strpos( $duration_clause, 'end_date_gmt' );
+		} else {
+			$duration_clause = '';
+		}
+		
+		$no_cache = $no_cache || $include_role_duration_key || ! $retrieve_content_date_limits;
+
+		if ( ! $no_cache ) {
 			$cache_flag = "{$role_type}_blog-roles";		// changed cache key from "blog_roles" to "blog-roles" to prevent retrieval of arrays stored without date_key dimension
 			$cache = $this->cache_get( $cache_flag );
 			if ( is_array($cache) ) {
@@ -240,8 +249,6 @@ class WP_Scoped_User extends WP_User {
 		global $wpdb;
 		
 		$u_g_clause = $this->get_user_clause('uro');
-		
-		$duration_clause = ( $enforce_duration_limits ) ? scoper_get_duration_clause() : '';
 		
 		$extra_cols = ( $include_role_duration_key ) ? ", uro.date_limited, uro.start_date_gmt, uro.end_date_gmt" : '';
 		
@@ -260,7 +267,7 @@ class WP_Scoped_User extends WP_User {
 				$role_handles[$date_key] [ scoper_get_role_handle( $row->role_name, $role_type ) ] = true;
 		}
 
-		if ( $enforce_duration_limits && $retrieve_content_date_limits && ! $include_role_duration_key )
+		if ( ! $no_cache )
 			$this->cache_set($role_handles, $cache_flag);
 		
 		return $role_handles;
@@ -278,13 +285,22 @@ class WP_Scoped_User extends WP_User {
 
 	// returns array[role name] = array of term ids for which user has the role assigned (based on current role basis)
 	function get_term_roles_daterange( $taxonomy = 'category', $role_type = 'rs', $args = array() ) {
-		$defaults = array( 'enforce_duration_limits' => true, 'retrieve_content_date_limits' => true, 'include_role_duration_key' => false );
+		$defaults = array( 'enforce_duration_limits' => true, 'retrieve_content_date_limits' => true, 'include_role_duration_key' => false, 'no_cache' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 			
 		global $wpdb;
 		
-		if ( $enforce_duration_limits && $retrieve_content_date_limits && ! $include_role_duration_key ) {
+		if ( $enforce_duration_limits = $enforce_duration_limits && scoper_get_option( 'role_duration_limits' ) ) {
+			$duration_clause = ( $enforce_duration_limits ) ? scoper_get_duration_clause() : '';
+			$no_cache = $no_cache || strpos( $duration_clause, 'start_date_gmt' ) || strpos( $duration_clause, 'end_date_gmt' );
+		} else {
+			$duration_clause = '';
+		}
+		
+		$no_cache = $no_cache || $include_role_duration_key || ! $retrieve_content_date_limits;
+
+		if ( ! $no_cache ) {
 			$cache_flag = "{$role_type}_term-roles_{$taxonomy}";	// changed cache key from "term_roles" to "term-roles" to prevent retrieval of arrays stored without date_key dimension
 		
 			$tx_term_roles = $this->cache_get($cache_flag);
@@ -294,8 +310,6 @@ class WP_Scoped_User extends WP_User {
 		if ( ! is_array($tx_term_roles) ) {
 			// no need to check for this on cache retrieval, since a role_type change results in a rol_defs change, which triggers a full scoper cache flush
 			$tx_term_roles = array( '' => array() );
-			
-			$duration_clause = ( $enforce_duration_limits ) ? scoper_get_duration_clause() : '';
 			
 			$u_g_clause = $this->get_user_clause('uro');
 
@@ -318,7 +332,7 @@ class WP_Scoped_User extends WP_User {
 				}
 			}
 			
-			if ( $enforce_duration_limits && $retrieve_content_date_limits && ! $include_role_duration_key )
+			if ( ! $no_cache )
 				$this->cache_set($tx_term_roles, $cache_flag);
 		}
 		

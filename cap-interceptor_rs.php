@@ -171,7 +171,7 @@ class CapInterceptor_RS
 			else
 				$object_id = 0;
 		}
-
+		
 		// note the data source and object type(s) which are associated with the required caps (based on inclusion in RS Role Definitions)
 		$is_taxonomy_cap = false;
 		$src_name = '';
@@ -204,20 +204,24 @@ class CapInterceptor_RS
 			return $wp_blogcaps;		
 		}
 
-		// Establish some context by detecting object type - based on object ID if provided, or otherwise based on http variables.  May differ from cap type.
-		$object_type = cr_find_object_type( $src_name, $object_id );
+		// slight simplification: assume a single cap object type for a few cap substitution checks
+		$is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' );
 		
+		// Establish some context by detecting object type - based on object ID if provided, or otherwise based on http variables.
 		if ( in_array( $pagenow, array( 'media-upload.php', 'async-upload.php' ) ) ) {
 			if ( ! empty($GLOBALS['post']) ) 
 				$object_type = $GLOBALS['post']->post_type;	
-		}
 		
-		//rs_errlog( "$src_name : $object_type (id $object_id)" );
-
-		if ( is_admin() && ( 'edit-tags.php' == $GLOBALS['pagenow'] ) && ( 'link_category' == $_REQUEST['taxonomy'] ) ) {
+		} elseif ( is_admin() && ( 'edit-tags.php' == $GLOBALS['pagenow'] ) && ( 'link_category' == $_REQUEST['taxonomy'] ) ) {
 			$src_name = 'link';
 			$object_type = 'link_category';
+		} elseif ( $is_taxonomy_cap ) {
+			$object_types = (array) $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'object_types' );
+			$object_type = reset( $object_types );
 		}
+	
+		if ( empty($object_type) )
+			$object_type = cr_find_object_type( $src_name, $object_id );
 
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
 		// =====================================================================================================================================
@@ -225,9 +229,6 @@ class CapInterceptor_RS
 		
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
 		if ( 'post' == $src_name ) {	
-			// slight simplification: assume a single cap object type for a few cap substitution checks
-			$is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' );
-
 			if ( ! $is_taxonomy_cap ) {
 				$modified_caps = false;
 				
@@ -278,7 +279,7 @@ class CapInterceptor_RS
 			} // endif not taxonomy cap
 		} // endif caps correspond to 'post' data source
 		//====================================== (end subvert misguided capability requirements) =============================================
-
+		
 		if ( defined( 'RVY_VERSION' ) ) {
 			require_once( 'revisionary-helper_rs.php' );
 			$rs_reqd_caps = Rvy_Helper::convert_post_edit_caps( $rs_reqd_caps, $object_type );
@@ -413,7 +414,6 @@ class CapInterceptor_RS
 			}
 		}
 		
-
 		// Note: At this point, we have a nonzero object_id...
 		
 		// if this is a term administration request, route to user_can_admin_terms()

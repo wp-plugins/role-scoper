@@ -107,7 +107,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.3.35-dev =
-* Change : Put RS menu links in Users menu if OZH Admin Menus plugin active or SCOPER_FORCE_USERS_MENU constant defined
+* Compat : Put RS menu links in Users menu if OZH Admin Menus plugin active or SCOPER_FORCE_USERS_MENU constant defined
+* BugFix : Role Duration Limits were not applied to General Roles or Term Roles if Internal Cache enabled
+* BugFix : Non-Administrators could not edit Navigation Menus based on Nav Menu Manger role assignment
+* Feature : Navigation Menus option "List only user-editable content as available items" also filters editing/deletion/ordering of existing menu items 
 
 = 1.3.34 - 28 Apr 2011 =
 * Compat : Edit Flow - if 'post_status' taxonomy enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility

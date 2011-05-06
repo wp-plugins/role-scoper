@@ -338,7 +338,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 			continue;
 
 		echo "<br /><h4><a name='$object_type'></a><strong>";
-		printf( __('Modify role assignments for %s', 'scoper'), agp_strtolower( $otype->labels->name ) );
+		printf( __('Modify role assignments for %s', 'scoper'), $otype->labels->name );
 		echo '</strong></h4>';
 
 		//display each role eligible for group/user assignment

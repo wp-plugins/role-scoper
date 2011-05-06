@@ -150,6 +150,13 @@ class ScoperAdminFilters
 			
 		add_filter( 'pre_post_tax_input', array(&$this, 'flt_tax_input'), 50, 1);
 
+		if ( ( 'nav-menus.php' == $GLOBALS['pagenow'] ) && scoper_get_option( 'admin_nav_menu_filter_items' ) ) {
+			add_action( 'admin_head', array( &$this, 'act_nav_menu_header' ) );
+			
+			if ( ! empty( $_POST ) )
+				add_action( 'pre_post_update', array(&$this, 'mnt_pre_post_update') );
+		}
+
 		// Filtering of terms selection:
 		add_action('check_admin_referer', array(&$this, 'act_detect_post_presave')); // abuse referer check to work around a missing hook
 
@@ -334,6 +341,21 @@ class ScoperAdminFilters
 		scoper_mnt_save_object($src_name, $args, $object_id, $object);
 	}
 	
+	function act_nav_menu_header() {
+		if ( ! is_content_administrator_rs() ) {
+			require_once( 'filters-admin-nav_menus_rs.php' );
+			_rs_disable_uneditable_items_ui();
+		}
+	}
+	
+	function mnt_pre_post_update( $object_id ) {
+		if ( ! is_content_administrator_rs() ) {
+			// don't allow modification of menu items for posts which user can't edit  (not currently feasible since WP fires update for each menu item even if unmodified)
+			require_once( 'filters-admin-nav_menus_rs.php' );
+			_rs_mnt_modify_nav_menu_item( $object_id, 'edit' );
+		}
+	}
+	
 	// This handler is meant to fire only on updates, not new inserts
 	function mnt_edit_object($src_name, $args, $object_id, $object = '') {
 		static $edited_objects;
@@ -360,6 +382,12 @@ class ScoperAdminFilters
 	
 		if ( ! $object_id )
 			return;
+
+		// don't allow deletion of menu items for posts which user can't edit
+		if ( ( 'nav-menus.php' == $GLOBALS['pagenow'] ) && ! is_content_administrator_rs() && ! empty( $_POST ) && scoper_get_option( 'admin_nav_menu_filter_items' ) ) {
+			require_once( 'filters-admin-nav_menus_rs.php' );
+			_rs_mnt_modify_nav_menu_item( $object_id, 'delete' );
+		}
 
 		// could defer role/cache maint to speed potential bulk deletion, but script may be interrupted before admin_footer
 		$this->item_deletion_aftermath( OBJECT_SCOPE_RS, $src_name, $object_id );
