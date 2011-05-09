@@ -118,7 +118,6 @@ if ( defined('RS_DEBUG') ) {
 	
 //log_mem_usage_rs( 'plugin load' );
 
-
 //if ( version_compare( phpversion(), '5.2', '<' ) )	// some servers (Ubuntu) return irregular version string format
 if ( ! function_exists("array_fill_keys") )
 	require_once('lib/php4support_rs.php');

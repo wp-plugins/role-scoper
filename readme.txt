@@ -111,6 +111,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Role Duration Limits were not applied to General Roles or Term Roles if Internal Cache enabled
 * BugFix : Non-Administrators could not edit Navigation Menus based on Nav Menu Manger role assignment
 * Feature : Navigation Menus option "List only user-editable content as available items" also filters editing/deletion/ordering of existing menu items 
+* BugFix : Empty Categories/Terms were hidden from Nav Manus for non-Administrators (unless they had a non-empty sub-term)
 
 = 1.3.34 - 28 Apr 2011 =
 * Compat : Edit Flow - if 'post_status' taxonomy enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
@@ -334,7 +335,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = 1.3.1 - 2 Nov 2010 =
 * Compat : Role Scoping for NextGEN Gallery - Gallery Authors could not manage a gallery after creating it
 
-#### 1.3 - 8 Oct 2010
+#### 1.3 - 2 Nov 2010
 
 = File Attachment Filtering =
 * Feature : For File Filtering, ability to force regeneration of access keys and rewrite rules via utility URL
