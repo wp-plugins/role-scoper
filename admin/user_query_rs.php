@@ -1,6 +1,4 @@
 <?php
-global $current_user;
-
 require_once( ABSPATH . '/wp-admin/includes/user.php' );
 
 if ( isset( $_GET['rs_user_search'] )  ) {
@@ -52,12 +50,10 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		$reqd_caps = 'request_group_membership';
 	else
 		$reqd_caps = 'manage_groups';
-		
-	global $current_user;
-	
+
 	// determine all currently stored groups (of any status) for user in question (not necessarily logged user)
 	if ( ! empty( $_GET['rs_agent_id'] ) )
-		$user_groups = $current_user->get_groups_for_user( $_GET['rs_agent_id'], array( 'status' => 'any' ) );
+		$user_groups = $GLOBALS['current_rs_user']->get_groups_for_user( $_GET['rs_agent_id'], array( 'status' => 'any' ) );
 	else
 		$user_groups = array();
 		

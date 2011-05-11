@@ -68,11 +68,6 @@
 			return true;
 
 		global $scoper;
-		
-		if ( ! is_object($user) ) {
-			global $current_user;
-			$user = $current_user;
-		}
 																	// TODO: is this necessary?
 		$is_new_object = ( ! $object_id && ( false !== $object_id ) ) || ( ( 'post' == $src_name ) && ! empty($GLOBALS['post']) && ( 'auto-draft' == $GLOBALS['post']->post_status ) );
 		
@@ -137,8 +132,7 @@
 		global $scoper;
 			
 		if ( ! is_object($user) ) {
-			global $current_user;
-			$user = $current_user;
+			$user = $GLOBALS['current_rs_user'];
 		}
 		
 		$qualifying_caps = array();
@@ -181,7 +175,7 @@
 		// does current user have any term-specific admin caps for term admin?
 		if ( $taxonomies ) {
 			foreach ( array_keys($taxonomies) as $taxonomy ) {
-				if ( ! isset($current_user->term_roles[$taxonomy]) )
+				if ( ! isset($user->term_roles[$taxonomy]) )
 					$user->get_term_roles_daterange($taxonomy);		// call daterange function populate term_roles property - possible perf enhancement for subsequent code even though we don't conider content_date-limited roles here
 				
 				if ( ! empty($user->term_roles[$taxonomy][ANY_CONTENT_DATE_RS]) ) {
@@ -203,7 +197,7 @@
 		if ( is_administrator_rs($src_name) )
 			return true;
 
-		global $scoper, $current_user;
+		global $scoper, $current_rs_user;
 
 		$defaults = array( 'require_others_cap' => false, 'status' => '' );
 		$args = array_merge( $defaults, (array) $args );
@@ -214,7 +208,7 @@
 		if ( $status )
 			$cap_defs = array_merge( $cap_defs, $scoper->cap_defs->get_matching( $src_name, $object_type, OP_EDIT_RS, $status, ! $require_others_cap ) );
 			
-		foreach ( array_keys($current_user->blog_roles[ANY_CONTENT_DATE_RS]) as $role_handle )
+		foreach ( array_keys($current_rs_user->blog_roles[ANY_CONTENT_DATE_RS]) as $role_handle )
 			if ( isset($scoper->role_defs->role_caps[$role_handle]) )
 				if ( ! array_diff_key( $cap_defs, $scoper->role_defs->role_caps[$role_handle] ) )
 					return true;

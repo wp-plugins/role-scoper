@@ -47,25 +47,14 @@ function scoper_log_init_action() {
 }
 
 function scoper_act_set_current_user() {
-	if ( ! empty($GLOBALS['current_user']) ) {
-		$id = $GLOBALS['current_user']->ID;
-		$user_vars = get_object_vars( $GLOBALS['current_user'] );
-	} else {
-		$id = 0;
-		$user_vars = array();
-	}
+	$id = ( ! empty($GLOBALS['current_user']) ) ? $GLOBALS['current_user']->ID : 0;
 
 	if ( $id ) {
 		require_once('scoped-user.php');
-		$GLOBALS['current_user'] = new WP_Scoped_User($id);
+		$GLOBALS['current_rs_user'] = new WP_Scoped_User($id);
 	} else {
 		require_once('scoped-user_anon.php');
-		$GLOBALS['current_user'] = new WP_Scoped_User_Anon();
-	}
-	
-	// restore any properties set by a custom-plugged set_current_user() function or previously applied action handler
-	foreach( array_keys($user_vars) as $var ) {
-		$GLOBALS['current_user']->$var = $user_vars[$var];
+		$GLOBALS['current_rs_user'] = new WP_Scoped_User_Anon();
 	}
 
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
@@ -116,16 +105,18 @@ function scoper_init() {
 	
 	// ensure that content administrators (as defined by SCOPER_CONTENT_ADMIN_CAP) have all caps for custom types by default
 	if ( is_content_administrator_rs() ) {
-		global $current_user;
+		global $current_rs_user;
 
 		foreach ( get_post_types( array('public' => true, '_builtin' => false) ) as $name )
-			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
+			$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
 		
 		foreach ( get_taxonomies( array('public' => true, '_builtin' => false) ) as $name )
-			$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
+			$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
 
-		if ( method_exists( $current_user, 'merge_scoped_blogcaps' ) )
-			$current_user->merge_scoped_blogcaps();
+		if ( method_exists( $current_rs_user, 'merge_scoped_blogcaps' ) ) {
+			$current_rs_user->merge_scoped_blogcaps();
+			$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
+		}
 	}
 	
 	if ( ! empty($_GET['action']) && ( 'expire_file_rules' == $_GET['action'] ) ) {

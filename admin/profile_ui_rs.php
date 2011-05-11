@@ -15,10 +15,10 @@ class ScoperProfileUI {
 		$blog_roles = $user->get_blog_roles_daterange( 'rs', array( 'include_role_duration_key' => true, 'enforce_duration_limits' => false ) );	// arg: return array with additional key dimension for role duration 
 		
 		// for Administrators, display any custom post General Roles which were auto-assigned to maintain default editing rights
-		global $current_user;
-		if ( $current_user == $user ) {
+		global $current_rs_user;
+		if ( $current_rs_user->ID == $user->ID ) {
 			if ( is_content_administrator_rs() )
-				$blog_roles[''][''] = ( isset($blog_roles['']['']) ) ? array_merge( $current_user->assigned_blog_roles[''] ) : $current_user->assigned_blog_roles[''];
+				$blog_roles[''][''] = ( isset($blog_roles['']['']) ) ? array_merge( $current_rs_user->assigned_blog_roles[''] ) : $current_rs_user->assigned_blog_roles[''];
 		}
 		
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx )	
@@ -138,7 +138,7 @@ class ScoperProfileUI {
 		
 		global $profileuser;
 
-		$viewing_own_profile = ( ! empty($profileuser) && ( $profileuser->ID == $current_user->ID ) );
+		$viewing_own_profile = ( ! empty($profileuser) && ( $profileuser->ID == $current_rs_user->ID ) );
 		
 		if ( ! $viewing_own_profile ) {
 			if ( $require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only') ) {
@@ -333,13 +333,13 @@ class ScoperProfileUI {
 		if ( ! $all_groups = ScoperAdminLib::get_all_groups(UNFILTERED_RS) )
 			return;
 
-		global $current_user, $profileuser;
+		global $current_rs_user, $profileuser;
 		$user_id = $profileuser->id;
 		
 		$editable_ids = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS);
 		
-		if ( $user_id == $current_user->ID )
-			$stored_groups = array_keys($current_user->groups);
+		if ( $user_id == $current_rs_user->ID )
+			$stored_groups = array_keys($current_rs_user->groups);
 		else {
 			$user = new WP_Scoped_User($user_id, '', array( 'skip_role_merge' => 1 ) );
 			$stored_groups = array_keys($user->groups);
@@ -378,8 +378,8 @@ class ScoperProfileUI {
 
 			$group_ids = array();
 			$group_ids['active'] = $stored_groups;
-			$group_ids['recommended'] = $current_user->get_groups_for_user( $user_id, array( 'status' => 'recommended' ) );
-			$group_ids['requested'] = $current_user->get_groups_for_user( $user_id, array( 'status' => 'requested' ) );
+			$group_ids['recommended'] = $current_rs_user->get_groups_for_user( $user_id, array( 'status' => 'recommended' ) );
+			$group_ids['requested'] = $current_rs_user->get_groups_for_user( $user_id, array( 'status' => 'requested' ) );
 
 			foreach ( $group_ids as $key => $ids ) {
 				foreach ( $ids as $group_id ) {

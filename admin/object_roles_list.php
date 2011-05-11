@@ -17,9 +17,9 @@ global $scoper, $wpdb, $current_user;
 
 if ( $viewing_user ) {
 	if ( ! is_object($viewing_user) ) {
-		global $current_user;
-		if ( $viewing_user == $current_user->ID )
-			$viewing_user = $current_user;
+		global $current_rs_user;
+		if ( $viewing_user == $current_rs_user->ID )
+			$viewing_user = $current_rs_user;
 		else
 			$viewing_user = new WP_Scoped_User($viewing_user);
 	}

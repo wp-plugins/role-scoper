@@ -3,7 +3,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die( 'This page cannot be called directly.' );
 
-global $scoper, $wpdb, $current_user;
+global $scoper, $wpdb, $current_rs_user;
 
 $role_assigner = init_role_assigner();
 
@@ -72,7 +72,7 @@ $date_key = '';	// temp
 
 foreach( $scoper->role_defs->get_matching('rs') as $role_handle => $role_def) {  // user can only view/assign roles they have
 	// instead of hiding unowned roles, just make them uneditable
-	//if ( $is_administrator || ! array_diff(array_keys($scoper->role_defs->role_caps[$role_handle]), $current_user->allcaps) ) {
+	//if ( $is_administrator || ! array_diff(array_keys($scoper->role_defs->role_caps[$role_handle]), $current_rs_user->allcaps) ) {
 		$role_defs[$role_handle] = $role_def;
 		$role_codes[$role_handle] = $i; 
 		$i++;
@@ -385,7 +385,7 @@ foreach ( $scoper->data_sources->get_all() as $src_name => $src) {
 
 				// Does current user have this role blog-wide?
 				$is_admin_module = isset($otype_source[$object_type]) ? $otype_source[$object_type] : '';
-				if ( is_administrator_rs($is_admin_module, 'user') || array_intersect_key( array($role_handle=>1), $current_user->blog_roles[$date_key]) ) {
+				if ( is_administrator_rs($is_admin_module, 'user') || array_intersect_key( array($role_handle=>1), $current_rs_user->blog_roles[$date_key]) ) {
 					$checked = ( $err && isset($_POST['roles']) && in_array($val, $_POST['roles']) ) ? 'checked="checked"' : '';
 					$skip_if_val = REMOVE_ASSIGNMENT_RS;
 					$js_call = "agp_uncheck('" . implode(',', array_keys($roles)) . "',this.id,'assign_for','$skip_if_val');";

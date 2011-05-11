@@ -220,10 +220,10 @@ class ScoperHardwayTaxonomy
 		$object_src_name = $scoper->taxonomies->member_property($taxonomies[0], 'object_source', 'name');
 		$ckey = md5( $key . serialize( $scoper->get_terms_reqd_caps($taxonomies[0], $required_operation, $is_term_admin) ) );
 		
-		global $current_user;
+		global $current_rs_user;
 		$cache_flag = 'rs_get_terms';
 
-		$cache = $current_user->cache_get( $cache_flag );
+		$cache = $current_rs_user->cache_get( $cache_flag );
 		
 		if ( false !== $cache ) {
 			if ( !is_array($cache) )
@@ -552,7 +552,7 @@ class ScoperHardwayTaxonomy
 		//
 		if ( ! $no_cache ) {
 			$cache[ $ckey ] = $terms;
-			$current_user->cache_set( $cache, $cache_flag );
+			$current_rs_user->cache_set( $cache, $cache_flag );
 		}
 		
 		// RS Modification: alternate filter name (get_terms filter is already applied by WP)

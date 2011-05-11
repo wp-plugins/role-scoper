@@ -217,9 +217,9 @@ jQuery(document).ready( function($) {
 		if ( ! is_user_administrator_rs() && ! scoper_get_option( 'display_user_profile_roles' ) )
 			return;
 		
-		global $profileuser, $current_user;
+		global $profileuser, $current_rs_user;
 
-		$profile_user_rs = ( $profileuser->ID == $current_user->ID ) ? $current_user : new WP_Scoped_User($profileuser->ID);
+		$profile_user_rs = ( $profileuser->ID == $current_rs_user->ID ) ? $current_rs_user : new WP_Scoped_User($profileuser->ID);
 		
 		include_once('profile_ui_rs.php');
 		ScoperProfileUI::display_ui_user_roles($profile_user_rs);

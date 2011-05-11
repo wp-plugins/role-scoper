@@ -41,12 +41,12 @@ class CapInterceptorBasic_RS
 
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 
-		global $current_user;
+		global $current_rs_user;
 		
-		if ( $user_id && ( $user_id != $current_user->ID ) )
+		if ( $user_id && ( $user_id != $current_rs_user->ID ) )
 			$user = rs_get_user( $user_id );
 		else
-			$user = $current_user;
+			$user = $current_rs_user;
 
 		$object_id = (int) $args[2];		
 		

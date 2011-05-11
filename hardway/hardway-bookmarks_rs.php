@@ -30,12 +30,12 @@ class ScoperHardwayBookmarks {
 			
 		// === BEGIN RoleScoper MODIFICATION: wp-cache key and flag specific to access type and user/groups --//
 		//
-		global $current_user;
+		global $current_rs_user;
 		$ckey = md5 ( serialize( $r ) . CURRENT_ACCESS_NAME_RS );
 		
 		$cache_flag = 'rs_get_bookmarks';
 		
-		$cache = $current_user->cache_get( $cache_flag );
+		$cache = $current_rs_user->cache_get( $cache_flag );
 		
 		if ( false !== $cache ) {
 			if ( !is_array($cache) )
@@ -160,7 +160,7 @@ class ScoperHardwayBookmarks {
 
 		// cache key and flag specific to access type and user/groups
 		$cache[ $ckey ] = $results;
-		$current_user->cache_set( $cache, $cache_flag );
+		$current_rs_user->cache_set( $cache, $cache_flag );
 		
 		// alternate hook name (WP core already applied get_bookmarks)
 		$links = apply_filters('get_bookmarks_rs', $results, $r);

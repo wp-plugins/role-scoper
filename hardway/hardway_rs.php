@@ -52,7 +52,7 @@ class ScoperHardway
 
 		// === BEGIN Role Scoper ADDITION: global var; various special case exemption checks ===
 		//
-		global $scoper, $current_user;
+		global $scoper, $current_rs_user;
 		
 		// need to skip cache retrieval if QTranslate is filtering get_pages with a priority of 1 or less
 		$no_cache = ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate');
@@ -152,10 +152,9 @@ class ScoperHardway
 		$key = md5( serialize( compact(array_keys($defaults)) ) );
 		$ckey = md5 ( $key . CURRENT_ACCESS_NAME_RS );
 		
-		global $current_user;
 		$cache_flag = 'rs_get_pages';
 
-		$cache = $current_user->cache_get($cache_flag);
+		$cache = $current_rs_user->cache_get($cache_flag);
 		
 		if ( false !== $cache ) {
 			if ( !is_array($cache) )
@@ -257,13 +256,11 @@ class ScoperHardway
 		$where_post_type = $wpdb->prepare( "post_type = '%s'", $post_type );
 		$where_status = '';
 		
-		global $current_user;
-		
 		$is_front = $scoper->is_front();
 		$is_teaser_active = $scoper->is_front() && scoper_get_otype_option('do_teaser', 'post') && scoper_get_otype_option('use_teaser', 'post', $post_type); 
 		$private_teaser = $is_teaser_active && scoper_get_otype_option('use_teaser', 'post', $post_type) && ! scoper_get_otype_option('teaser_hide_private', 'post', $post_type);
 		
-		if ( $is_front && ( ! empty($current_user->ID) || $private_teaser ) )
+		if ( $is_front && ( ! empty($current_rs_user->ID) || $private_teaser ) )
 			$frontend_list_private = scoper_get_otype_option('private_items_listable', 'post', 'page');  // currently using Page option for all hierarchical types
 		else
 			$frontend_list_private = false;
@@ -409,7 +406,7 @@ class ScoperHardway
 		//
 		if ( ! $no_cache ) {
 			$cache[ $ckey ] = $pages;
-			$current_user->cache_set($cache, $cache_flag);
+			$current_rs_user->cache_set($cache, $cache_flag);
 		}
 
 		// alternate hook name (WP core already applied get_pages filter)

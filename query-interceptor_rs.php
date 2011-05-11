@@ -447,8 +447,7 @@ class QueryInterceptor_RS
 		//echo "<br />$where<br />";
 		
 		if ( ! is_object($user) ) {
-			global $current_user;
-			$user = $current_user;
+			$user = $GLOBALS['current_rs_user'];
 			$args['user'] = $user;
 		}
 
@@ -690,7 +689,7 @@ class QueryInterceptor_RS
 				$check_otype = ( count($tease_otypes) && in_array('post', $tease_otypes) ) ? 'post' : $tease_otypes[0];
 
 			// extra line of defense: even if upstream logic goes wrong, never disclose a private item to anon user (but if the where clause was passed in with explicit status=private, must include our condition)
-			if ( ('private' == $status_name) && ! $force_single_status && empty($current_user->ID) && ( ! $tease_otypes || scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) )
+			if ( ('private' == $status_name) && ! $force_single_status && empty($GLOBALS['current_user']->ID) && ( ! $tease_otypes || scoper_get_otype_option('teaser_hide_private', $src_name, $check_otype) ) )
 				unset( $status_where[$status_name] );
 			else
 				$status_where[$status_name] = agp_implode(' ) OR ( ', $status_where[$status_name], ' ( ', ' ) ');
@@ -863,10 +862,9 @@ class QueryInterceptor_RS
 				$do_revision_clause = true;
 			}	
 		}
-		
+
 		if ( ! is_object($user) ) {		// TODO: can we skip this now that user is a required arg?
-			global $current_user;
-			$user = $current_user;
+			$user = $GLOBALS['current_rs_user'];
 		}
 		
 		if ( ! $src = $this->scoper->data_sources->get($src_name) ) {

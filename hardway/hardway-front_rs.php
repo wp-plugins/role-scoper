@@ -185,13 +185,13 @@ class ScoperHardwayFront
 		$args = wp_parse_args( $args, $defaults );
 		extract($args, EXTR_SKIP);
 		
-		global $scoper, $current_user;
+		global $scoper, $current_rs_user;
 
 		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
 		$ckey = md5( serialize( compact(array_keys($defaults)) ) . serialize( $taxonomies ) . $filter_key );
 		$cache_flag = 'rs_get_terms';
 
-		if ( $cache = $current_user->cache_get( $cache_flag ) )
+		if ( $cache = $current_rs_user->cache_get( $cache_flag ) )
 			if ( isset( $cache[ $ckey ] ) )
 				return apply_filters('get_tags_rs', $cache[ $ckey ], 'post_tag', $args);
 				
@@ -277,7 +277,7 @@ class ScoperHardwayFront
 		$results = scoper_get_results( $qry );
 
 		$cache[ $ckey ] = $results;
-		$current_user->cache_set( $cache, $cache_flag );
+		$current_rs_user->cache_set( $cache, $cache_flag );
 		
 		$results = apply_filters('get_tags_rs', $results, 'post_tag', $args);
 

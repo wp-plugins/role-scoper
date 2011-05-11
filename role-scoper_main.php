@@ -79,33 +79,33 @@ class Scoper
 	
 	function credit_blogroles() {
 		// credit non-logged and "no role" users for any anonymous roles
-		global $current_user;
+		global $current_rs_user;
 		
-		if ( $current_user ) {
-			if ( empty($current_user->assigned_blog_roles) ) {
+		if ( $current_rs_user ) {
+			if ( empty($current_rs_user->assigned_blog_roles) ) {
 				foreach ( $this->role_defs->filter_keys( -1, array( 'anon_user_blogrole' => true ) ) as $role_handle) {
-					$current_user->assigned_blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
-					$current_user->blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
+					$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
+					$current_rs_user->blog_roles[ANY_CONTENT_DATE_RS][$role_handle] = true;
 				}
 			}
 	
-			if ( isset($current_user->assigned_blog_roles) )
+			if ( isset($current_rs_user->assigned_blog_roles) )
 				$this->refresh_blogroles();
 		}
 	}
 	
 	function refresh_blogroles() {
-		global $current_user;
+		global $current_rs_user;
 		
-		if ( empty($current_user) )
+		if ( empty($current_rs_user) )
 			return;
 		
-		if ( method_exists( $current_user, 'merge_scoped_blogcaps' ) )  // workaround for fatal error on role-scoper.php bailout
-			$current_user->merge_scoped_blogcaps();
+		$current_rs_user->merge_scoped_blogcaps();
+		$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
 		
-		if ( $current_user->ID ) {
-			foreach ( array_keys($current_user->assigned_blog_roles) as $date_key )
-				$current_user->blog_roles[$date_key] = $this->role_defs->add_contained_roles( $current_user->assigned_blog_roles[$date_key] );
+		if ( $current_rs_user->ID ) {
+			foreach ( array_keys($current_rs_user->assigned_blog_roles) as $date_key )
+				$current_rs_user->blog_roles[$date_key] = $this->role_defs->add_contained_roles( $current_rs_user->assigned_blog_roles[$date_key] );
 		}
 	}
 	
@@ -454,9 +454,9 @@ class Scoper
 
 			$ckey = md5( $ckey . serialize($args['reqd_caps_by_otype']) ); ; // can vary based on request URI
 		
-			global $current_user;
+			global $current_rs_user;
 			$cache_flag = 'rs_scoper_get_terms';
-			$cache = $current_user->cache_get($cache_flag);
+			$cache = $current_rs_user->cache_get($cache_flag);
 		} else {			
 			$cache_flag = "all_terms";
 			$cache_id = 'all';
@@ -518,7 +518,7 @@ class Scoper
 
 		if ( $results || empty( $_POST ) ) { // todo: why do we get an empty array for unfiltered request for object terms early in POST processing? (on submission of a new post by a contributor)
 			if ( $filtering )
-				$current_user->cache_force_set( $cache, $cache_flag );
+				$current_rs_user->cache_force_set( $cache, $cache_flag );
 			else
 				wpp_cache_force_set( $cache_id, $cache, $cache_flag );	
 		}
@@ -717,8 +717,7 @@ class Scoper
 			return array( '' => array() );
 		
 		if ( ! is_object($user) ) {
-			global $current_user;
-			$user = $current_user;
+			$user = $GLOBALS['current_rs_user'];
 		}
 		
 		// If the taxonomy does not require objects to have at least one term, there are no strict terms.
@@ -992,7 +991,7 @@ class Scoper
 		if ( is_object($user) )
 			$applied_obj_roles = $this->get_applied_object_roles( $user );
 		elseif ( empty($user) ) {
-			$applied_obj_roles = $this->get_applied_object_roles( $GLOBALS['current_user'] );
+			$applied_obj_roles = $this->get_applied_object_roles( $GLOBALS['current_rs_user'] );
 		} else // -1 value passed to indicate check for all users
 			$applied_obj_roles = $this->get_applied_object_roles();
 			

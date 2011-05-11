@@ -138,7 +138,7 @@ class CapInterceptor_RS
 		}
 
 		//define( 'SCOPER_NO_COMMENT_FILTERING', true );
-		if ( defined( 'SCOPER_NO_COMMENT_FILTERING' ) && ( 'moderate_comments' == $orig_reqd_caps[0] ) && empty( $GLOBALS['current_user']->allcaps['moderate_comments'] ) ) {
+		if ( defined( 'SCOPER_NO_COMMENT_FILTERING' ) && ( 'moderate_comments' == $orig_reqd_caps[0] ) && empty( $GLOBALS['current_rs_user']->allcaps['moderate_comments'] ) ) {
 			return $wp_blogcaps;			
 		}
 		
@@ -149,14 +149,14 @@ class CapInterceptor_RS
 
 
 		// ============================ GLOBAL VARIABLE DECLARATIONS, ARGUMENT TRANSLATION AND STATUS DETECTION =============================
-		global $current_user;
+		global $current_rs_user;
 		
 		$user_id = ( isset($args[1]) ) ? $args[1] : 0;
 
-		if ( $user_id && ($user_id != $current_user->ID) )
+		if ( $user_id && ($user_id != $current_rs_user->ID) )
 			$user = rs_get_user($user_id);
 		else
-			$user = $current_user;
+			$user = $current_rs_user;
 
 		// currently needed for filtering async-upload.php
 		if ( empty($user->blog_roles ) || empty($user->blog_roles[''] ) )
@@ -527,7 +527,7 @@ class CapInterceptor_RS
 						}
 					} elseif ( 'attachment' == $_post->post_type ) {
 						// special case for unattached uploads: uploading user should have their way with them
-						if ( $_post->post_author == $current_user->ID ) {
+						if ( $_post->post_author == $current_rs_user->ID ) {
 							$rs_reqd_caps[0] = 'read';
 
 							if ( $restore_caps = array_diff($orig_reqd_caps, array_keys($rs_reqd_caps) ) )  // restore original reqd_caps which we substituted for the type-specific scoped query
@@ -774,8 +774,7 @@ class CapInterceptor_RS
 	// is overly narrow access, not overly open.
 	function user_can_for_any_term($reqd_caps, $user = '') {
 		if ( ! is_object($user) ) {
-			global $current_user;
-			$user = $current_user;
+			$user = $GLOBALS['current_rs_user'];
 		}
 		
 		// Instead of just intersecting the missing reqd_caps with termcaps from all term_roles,
@@ -845,8 +844,7 @@ class CapInterceptor_RS
 		}
 
 		if ( ! is_object($user) ) {
-			global $current_user;
-			$user = $current_user;
+			$user = $GLOBALS['current_rs_user'];
 		}
 	
 		if ( $roles = $this->scoper->qualify_object_roles( $reqd_caps, '', $user, true ) )  // arg: convert 'edit_others', etc. to equivalent owner base cap
@@ -865,7 +863,7 @@ function _cr_user_can( $reqd_caps, $object_id = 0, $user_id = 0, $meta_flags = a
 		$user = new WP_User($user_id);  // don't need Scoped_User because only using allcaps property (which contain WP blogcaps).  flt_user_has_cap will instantiate new WP_Scoped_User based on the user_id we pass
 	else
 		$user = wp_get_current_user();
-
+	
 	if ( empty($user) )
 		return false;
 

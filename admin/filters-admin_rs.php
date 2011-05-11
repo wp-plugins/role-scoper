@@ -529,13 +529,13 @@ class ScoperAdminFilters
 		if ( empty( $_POST['rs_editing_user_groups'] ) ) // otherwise we'd delete group assignments if another plugin calls do_action('profile_update') unexpectedly
 			return;
 
-		global $current_user;
+		global $current_rs_user;
 		
 		$editable_group_ids = array();
 		$stored_groups = array();
 		
-		if ( $user_id == $current_user->ID )
-			$stored_groups['active'] = $current_user->groups;
+		if ( $user_id == $current_rs_user->ID )
+			$stored_groups['active'] = $current_rs_user->groups;
 		else {
 			$user = rs_get_user($user_id, '', array( 'skip_role_merge' => 1 ) );
 			$stored_groups['active'] = $user->groups;
@@ -572,7 +572,7 @@ class ScoperAdminFilters
 	}
 	
 	function update_user_groups_multi_status( $user_id, $stored_groups, $editable_group_ids ) {
-		global $current_user;
+		global $current_rs_user;
 		
 		$posted_groups = array();
 		
@@ -592,7 +592,7 @@ class ScoperAdminFilters
 		if ( $can_moderate ) {
 			$posted_groups['recommended'] = ! empty($_POST['recommended_agents_rs_csv']) ? explode( ',', trim($_POST['recommended_agents_rs_csv'], '') ) : array();
 
-			$stored_groups['recommended'] = $current_user->get_groups_for_user( $current_user->ID, array( 'status' => 'recommended' ) );
+			$stored_groups['recommended'] = $current_rs_user->get_groups_for_user( $current_rs_user->ID, array( 'status' => 'recommended' ) );
 			
 			$editable_group_ids['recommended'] = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => 'recommend_group_membership' ) );
 		
@@ -600,7 +600,7 @@ class ScoperAdminFilters
 				$editable_group_ids['recommended'] = array_unique( $editable_group_ids['recommended'] + $editable_group_ids['active'] );
 		}
 
-		$stored_groups['requested'] = $current_user->get_groups_for_user( $current_user->ID, array( 'status' => 'requested' ) );
+		$stored_groups['requested'] = $current_rs_user->get_groups_for_user( $current_rs_user->ID, array( 'status' => 'requested' ) );
 
 		$editable_group_ids['requested'] = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => 'request_group_membership' ) );
 
@@ -703,7 +703,7 @@ class ScoperAdminFilters
 			} else {
 				$reqd_caps = ( 'author' === $top_pages_locked ) ? array( $post_type_obj->cap->publish_posts ) : array( $post_type_obj->cap->edit_others_posts );
 				$roles = $GLOBALS['scoper']->role_defs->qualify_roles($reqd_caps);
-				return array_intersect_key($roles, $GLOBALS['current_user']->blog_roles[ANY_CONTENT_DATE_RS]);
+				return array_intersect_key($roles, $GLOBALS['current_rs_user']->blog_roles[ANY_CONTENT_DATE_RS]);
 			}
 		}
 	}		

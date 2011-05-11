@@ -196,8 +196,8 @@ class ScoperAdminLib {
 		if ( $filtering ) {
 			$cache_flag = 'usergroups';
 			
-			global $current_user;
-			$cache = $current_user->cache_get($cache_flag);
+			global $current_rs_user;
+			$cache = $current_rs_user->cache_get($cache_flag);
 		
 		} else {
 			$cache_flag = 'all_usergroups';
@@ -208,7 +208,7 @@ class ScoperAdminLib {
 		$ckey = md5( $cols . $reqd_caps );
 		
 		if ( ! isset($cache[$ckey]) ) {
-			global $wpdb, $current_user;
+			global $wpdb;
 			
 			if ( $filtering && ! is_user_administrator_rs() && ! cr_user_can($reqd_caps, 0, 0, array( 'skip_any_object_check' => true, 'skip_any_term_check' => true, 'skip_id_generation' => true ) ) ) {
 				$duration_clause = scoper_get_duration_clause();
@@ -228,7 +228,7 @@ class ScoperAdminLib {
 						. " ON uro.obj_or_term_id = {$wpdb->groups_rs}.{$wpdb->groups_id_col}"
 						. " AND uro.src_or_tx_name = 'group' AND uro.scope = 'object' $role_clause $duration_clause";
 	
-				$_where = "WHERE uro.user_id = $current_user->ID";
+				$_where = "WHERE uro.user_id = $current_rs_user->ID";
 			} else {
 				$join = '';
 				$_where = 'WHERE 1=1 ';
@@ -250,7 +250,7 @@ class ScoperAdminLib {
 		}
 
 		if ( $filtering )
-			$current_user->cache_set($cache, $cache_flag);
+			$current_rs_user->cache_set($cache, $cache_flag);
 		else
 			wpp_cache_set($cache_id, $cache, $cache_flag);
 		

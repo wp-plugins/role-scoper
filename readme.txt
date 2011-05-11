@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1.2
-Stable Tag: 1.3.34
+Stable Tag: 1.3.35
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,13 +106,14 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.35-dev =
-* Compat : Put RS menu links in Users menu if OZH Admin Menus plugin active or SCOPER_FORCE_USERS_MENU constant defined
-* BugFix : Role Duration Limits were not applied to General Roles or Term Roles if Internal Cache enabled
+= 1.3.35 - 11 May 2011 =
+* BugFix : Empty Categories/Terms were hidden from Nav Manus for non-Administrators (unless they had a non-empty sub-term)
 * BugFix : Non-Administrators could not edit Navigation Menus based on Nav Menu Manger role assignment
 * Feature : Navigation Menus option "List only user-editable content as available items" also filters editing/deletion/ordering of existing menu items 
-* BugFix : Empty Categories/Terms were hidden from Nav Manus for non-Administrators (unless they had a non-empty sub-term)
+* BugFix : Role Duration Limits were not applied to General Roles or Term Roles if Internal Cache enabled
 * Compat : Don't define pluggable function set_current_user(), to avoid conflict with other plugins that define it
+* Compat : Don't cast global $current_user as a custom subclass, to avoid conflict with other plugins that do so
+* Compat : Put RS menu links in Users menu if OZH Admin Menus plugin active or SCOPER_FORCE_USERS_MENU constant defined
 
 = 1.3.34 - 28 Apr 2011 =
 * Compat : Edit Flow - if 'post_status' taxonomy enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
@@ -542,6 +543,9 @@ For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive
 
 == Upgrade Notice ==
 
+= 1.3.35 =
+Fixes conflict w/ plugins which define pluggable functions; Nav Menu filtering bug fixes and enhancements; better OZH Admin Menus compatibility
+
 = 1.3.34 =
 Fixes conflict w/ Edit Flow plugin: if 'post_status' taxonomy was enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
 
@@ -568,16 +572,9 @@ Improves Nav Menu Manager and Category Manager role assignment; filters "Add New
 * A slightly outdated [Usage Guide](http://agapetry.net/downloads/RoleScoper_UsageGuide.htm) is available.  It includes both an overview of the permissions model and a How-To section with step by step directions.  Volunteer contributions to expand, revise or reformat this document are welcome.
 * Role Scoper's menus, onscreen captions and inline descriptive footnotes [can be translated using poEdit](http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/).  I will gladly include any user-contributed languages!.
 
-== General Plugin Compatibility Requirements ==
-
-* No other plugin or theme may define function wp&#95;set&#95;current&#95;user() or function set&#95;current&#95;user().  A custom merge of the code may be possible in some situations. See further discussion [here](http://agapetry.net/forum/role-scoper/role-scoper-vs-event-calendar-scheduler-compatibility-problem/page-1/)
-* No other plugin or theme may execute an include or require statement to force early execution of the file pluggable.php (for the reason listed above).
-
-== Specific Plugin Compatibility Issues ==
+== Plugin Compatibility Issues ==
 
 **WP Super Cache** : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
-
-**Maintenance Mode** : use version 5.3 or later.  Other "site down for maintenance" plugins may be incompatible due to early execution of pluggable.php and/or pre-init capability checks
 
 **WPML Multilingual CMS** : plugin creates a separate post / page / category for each translation.  Role Scoper does not automatically synchronize role assignments or restrictions for new translations, but they can be set manually by an Administrator.  
 
@@ -649,11 +646,6 @@ replace function action_user_has_cap with :
 
         return $caps;	
     }
-  
-    
-**custom post types / taxonomies** : If they cannot be enabled via Roles > Options > Realm, registration may be applied too late in the WordPress initialization sequence.  If you use your own register calls, hook them to the init action with a priority of 1 or 2.  Otherwise, force Role Scoper to initialize later (and possibly break compatibility with other plugins) by adding this to wp-config.php, ABOVE the "stop editing" line :
-
-    define( 'SCOPER_LATE_INIT', true );
     
 == Attachment Filtering ==
 
