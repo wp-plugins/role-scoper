@@ -238,7 +238,7 @@ if ( ! $bail ) {
 
 	$priority = ( defined( 'SCOPER_EARLY_INIT' ) ) ? 1 : 50;
 
-	add_action( 'set_current_user', 'scoper_act_set_current_user', 1 );
+	add_action( 'set_current_user', 'scoper_act_set_current_user', 99 );
 	
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
 	add_action('init', 'scoper_log_init_action', $priority);
