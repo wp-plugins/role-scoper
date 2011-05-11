@@ -47,7 +47,13 @@ function scoper_log_init_action() {
 }
 
 function scoper_act_set_current_user() {
-	$id = ( ! empty($GLOBALS['current_user']) ) ? $GLOBALS['current_user']->ID : 0;
+	if ( ! empty($GLOBALS['current_user']) ) {
+		$id = $GLOBALS['current_user']->ID;
+		$user_vars = get_object_vars( $GLOBALS['current_user'] );
+	} else {
+		$id = 0;
+		$user_vars = array();
+	}
 
 	if ( $id ) {
 		require_once('scoped-user.php');
@@ -55,6 +61,11 @@ function scoper_act_set_current_user() {
 	} else {
 		require_once('scoped-user_anon.php');
 		$GLOBALS['current_user'] = new WP_Scoped_User_Anon();
+	}
+	
+	// restore any properties set by a custom-plugged set_current_user() function or previously applied action handler
+	foreach( array_keys($user_vars) as $var ) {
+		$GLOBALS['current_user']->$var = $user_vars[$var];
 	}
 
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
