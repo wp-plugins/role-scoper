@@ -202,15 +202,6 @@ if ( is_admin() || defined('XMLRPC_REQUEST') ) {
 
 //log_mem_usage_rs( 'initial requires' );
 
-// If someone else plugs set_current_user, we're going to take our marbles and go home - but first make sure they can't play either.
-// set_current_user() is a crucial entry point to instantiate extended class WP_Scoped_User and set it as global current_user.
-// There's no way to know that another set_current_user replacement will retain the set_current_user hook.
-if ( function_exists('wp_set_current_user') || function_exists('set_current_user') ) {  //if is_administrator_rs exists, then these functions scoped_user.php somehow already executed (and plugged set_current_user) 
-	require_once( 'error_rs.php' );
-	scoper_startup_error();
-	$bail = 1;
-}
-
 if ( ! $bail ) {
 	require_once('defaults_rs.php');
 	
@@ -242,14 +233,13 @@ if ( ! $bail ) {
 
 	// rs_blog_roles option has never been active in any RS release; leave commented here in case need arises
 	//define ( 'RS_BLOG_ROLES', scoper_get_option('rs_blog_roles') );
-	require_once('user-plug_rs.php');
 
 	//log_mem_usage_rs( 'user-plug_rs' );
 
 	$priority = ( defined( 'SCOPER_EARLY_INIT' ) ) ? 1 : 50;
 
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
-	add_action('set_current_user', 'scoper_maybe_init', $priority + 1);
+	add_action( 'set_current_user', 'scoper_act_set_current_user' );
 	add_action('init', 'scoper_log_init_action', $priority);
 }
 ?>

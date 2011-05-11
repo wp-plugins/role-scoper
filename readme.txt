@@ -112,6 +112,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Non-Administrators could not edit Navigation Menus based on Nav Menu Manger role assignment
 * Feature : Navigation Menus option "List only user-editable content as available items" also filters editing/deletion/ordering of existing menu items 
 * BugFix : Empty Categories/Terms were hidden from Nav Manus for non-Administrators (unless they had a non-empty sub-term)
+* Compat : Don't define pluggable function set_current_user(), to avoid conflict with other plugins that define it
 
 = 1.3.34 - 28 Apr 2011 =
 * Compat : Edit Flow - if 'post_status' taxonomy enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility

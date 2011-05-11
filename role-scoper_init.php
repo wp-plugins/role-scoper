@@ -46,8 +46,18 @@ function scoper_log_init_action() {
 		require_once('xmlrpc_rs.php');
 }
 
-// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
-function scoper_maybe_init() {
+function scoper_act_set_current_user() {
+	$id = ( ! empty($GLOBALS['current_user']) ) ? $GLOBALS['current_user']->ID : 0;
+
+	if ( $id ) {
+		require_once('scoped-user.php');
+		$GLOBALS['current_user'] = new WP_Scoped_User($id);
+	} else {
+		require_once('scoped-user_anon.php');
+		$GLOBALS['current_user'] = new WP_Scoped_User_Anon();
+	}
+
+	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
 	if ( defined('INIT_ACTION_DONE_RS') )
 		scoper_init();
 	else {
@@ -113,6 +123,13 @@ function scoper_init() {
 	}
 
 	//log_mem_usage_rs( 'scoper->init() done' );
+}
+
+function rs_get_user( $user_id, $name = '', $args = array() ) {
+	if ( ! class_exists( 'WP_Scoped_User' ) )
+		require_once('scoped-user.php');
+	
+	return new WP_Scoped_User( $user_id, $name, $args );
 }
 
 function scoper_load_textdomain() {

@@ -3,9 +3,6 @@ function scoper_startup_error( $msg_id = '' ) {
 	// this is the normal situation on first pass after activation
 	if ( 'wp_role_type' == $msg_id ) {
 		awp_notice('Role Scoper cannot operate because the "WP" Role Type is no longer supported.  Please re-activate <a href="http://downloads.wordpress.org/plugin/role-scoper/download/">Role Scoper version 1.2.8 or earlier</a>, set Roles > Options > Role&nbsp;Type to "RS", then re-establish Roles and Restrictions before upgrading.  <strong>All content is hidden until you deactivate this Role Scoper version.</strong>', 'role-scoper' );
-		
-	} elseif ( ( 'plugins.php' != $GLOBALS['pagenow'] ) || ( function_exists('is_plugin_active') && is_plugin_active(SCOPER_FOLDER . '/' . SCOPER_BASENAME) ) ) {
-		awp_notice('Role Scoper cannot operate because another plugin or theme has already declared the function "set_current_user" or forced early execution of "pluggable.php".  <strong>All content is currently hidden</strong>.  Please remove the offending plugin, or deactivate Role Scoper to revert to blog-wide Wordpress roles.', 'role-scoper' );
 	}
 
 	// To prevent inadverant content exposure, default to blocking all content if another plugin steals wp_set_current_user definition.
