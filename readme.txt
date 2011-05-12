@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1.2
-Stable Tag: 1.3.36
+Stable Tag: 1.3.37
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,7 +106,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.37-dev =
+= 1.3.37 - 11 May 2011 =
 * BugFix : Fatal Error on front end access when a Post Tag is present in displayed Nav Menu
 
 = 1.3.36 - 11 May 2011 =
