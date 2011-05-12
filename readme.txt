@@ -106,6 +106,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.37-dev =
+* BugFix : Fatal Error on front end access when a Post Tag is present in displayed Nav Menu
+
 = 1.3.36 - 11 May 2011 =
 * Compat : Role Scoping for NextGEN Gallery and custom template code using $current_user->groups, $current_user->blog_roles or $current_user->term_roles was broken by 1.3.35
 

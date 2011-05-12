@@ -41,7 +41,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-define ('SCOPER_VERSION', '1.3.36');
+define ('SCOPER_VERSION', '1.3.37-dev');
 define ('SCOPER_DB_VERSION', '1.1.4');
 
 // No filtering on dashboard Ajax or plugin installation/update, but run this check after defining version to prevent nuisance error message from Role Scoping for NGG

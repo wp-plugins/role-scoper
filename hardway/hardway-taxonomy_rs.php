@@ -79,7 +79,7 @@ class ScoperHardwayTaxonomy
 					return $results;
 			}
 		}
-		
+
 		// no backend filter for administrators
 		$parent_or = '';
 		if ( ( is_admin() || defined('XMLRPC_REQUEST') ) ) {

@@ -185,6 +185,9 @@ class ScoperHardwayFront
 		$args = wp_parse_args( $args, $defaults );
 		extract($args, EXTR_SKIP);
 		
+		if ( 'ids' == $fields )
+			return $results;
+		
 		global $scoper, $current_rs_user;
 
 		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
