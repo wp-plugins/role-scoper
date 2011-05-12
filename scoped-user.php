@@ -336,9 +336,9 @@ class WP_Scoped_User extends WP_User {
 				$this->cache_set($tx_term_roles, $cache_flag);
 		}
 		
-		if ( $enforce_duration_limits && $retrieve_content_date_limits && ! $include_role_duration_key ) {
+		if ( $retrieve_content_date_limits && ! $include_role_duration_key ) {  // normal usage (only internal call to skip this block is for user profile)
 			$this->assigned_term_roles[$taxonomy] = $tx_term_roles;
-		
+
 			global $scoper;
 			if ( ! empty($scoper) ) { // this method is only called after Scoper is initialized, but include this sanity check
 				foreach( array_keys($this->assigned_term_roles[$taxonomy]) as $date_key ) {
@@ -347,9 +347,15 @@ class WP_Scoped_User extends WP_User {
 					
 					$this->term_roles[$taxonomy][$date_key] = $scoper->role_defs->add_contained_term_roles( $this->assigned_term_roles[$taxonomy][$date_key] );
 				}
+				
+				// support legacy template code using $current_user->term_roles or $current_user->assigned_term_roles
+				if ( $this->ID == $GLOBALS['current_user']->ID ) {
+					$GLOBALS['current_user']->assigned_term_roles[$taxonomy] = $this->assigned_term_roles[$taxonomy];
+					$GLOBALS['current_user']->term_roles[$taxonomy] = $this->term_roles[$taxonomy];
+				}
 			}
 		}
-				
+		
 		return $tx_term_roles;
 	}
 	

@@ -52,6 +52,11 @@ function scoper_act_set_current_user() {
 	if ( $id ) {
 		require_once('scoped-user.php');
 		$GLOBALS['current_rs_user'] = new WP_Scoped_User($id);
+		
+		// other properties (blog_roles, assigned_term_roles, term_roles) will be set as populated
+		foreach( array( 'groups', 'assigned_blog_roles' ) as $var ) {
+			$GLOBALS['current_user']->$var = $GLOBALS['current_rs_user']->$var;
+		}
 	} else {
 		require_once('scoped-user_anon.php');
 		$GLOBALS['current_rs_user'] = new WP_Scoped_User_Anon();
@@ -113,10 +118,9 @@ function scoper_init() {
 		foreach ( get_taxonomies( array('public' => true, '_builtin' => false) ) as $name )
 			$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
 
-		if ( method_exists( $current_rs_user, 'merge_scoped_blogcaps' ) ) {
-			$current_rs_user->merge_scoped_blogcaps();
-			$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
-		}
+		$current_rs_user->merge_scoped_blogcaps();
+		$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
+		$GLOBALS['current_user']->assigned_blog_roles = $current_rs_user->assigned_blog_roles;
 	}
 	
 	if ( ! empty($_GET['action']) && ( 'expire_file_rules' == $_GET['action'] ) ) {

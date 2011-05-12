@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1.2
-Stable Tag: 1.3.35
+Stable Tag: 1.3.36
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -105,6 +105,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.36 - 11 May 2011 =
+* Compat : Role Scoping for NextGEN Gallery and custom template code using $current_user->groups, $current_user->blog_roles or $current_user->term_roles was broken by 1.3.35
 
 = 1.3.35 - 11 May 2011 =
 * BugFix : Empty Categories/Terms were hidden from Nav Manus for non-Administrators (unless they had a non-empty sub-term)

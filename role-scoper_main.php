@@ -103,6 +103,10 @@ class Scoper
 		$current_rs_user->merge_scoped_blogcaps();
 		$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
 		
+		foreach( array( 'groups', 'blog_roles', 'assigned_blog_roles' ) as $var ) {
+			$GLOBALS['current_user']->$var = $current_rs_user->$var;
+		}
+
 		if ( $current_rs_user->ID ) {
 			foreach ( array_keys($current_rs_user->assigned_blog_roles) as $date_key )
 				$current_rs_user->blog_roles[$date_key] = $this->role_defs->add_contained_roles( $current_rs_user->assigned_blog_roles[$date_key] );
@@ -745,7 +749,7 @@ class Scoper
 
 		if ( ! isset($user->term_roles[$taxonomy]) )
 			$user->get_term_roles_daterange($taxonomy);  // returns term_id for categories
-	
+
 		$good_terms = array( '' => array() );
 		
 		if ( $user->term_roles[$taxonomy] ) {
