@@ -25,8 +25,11 @@ class WP_Scoped_User extends WP_User {
 	function WP_Scoped_User($id = 0, $name = '', $args = array()) {
 		//log_mem_usage_rs( 'begin WP_Scoped_User' );
 		
-		$this->WP_User($id, $name);
-		
+		if ( awp_ver( '3.2-dev' ) )
+			$this->__construct( $id, $name );
+		else
+			$this->WP_User( $id, $name );
+
 		// without this, logged users have no read access to blogs they're not registered for
 		if ( IS_MU_RS && $id && ! is_admin() && empty( $this->allcaps ) )
 			$this->caps['subscriber'] = true;

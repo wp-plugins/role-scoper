@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.1.2
-Stable Tag: 1.3.37
+Stable Tag: 1.3.38
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -105,6 +105,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.38 - 13 May 2011 =
+* BugFix : One-line change to eliminate a Fatal Error on WP 3.2 Beta
 
 = 1.3.37 - 11 May 2011 =
 * BugFix : Fatal Error on front end access when a Post Tag is present in displayed Nav Menu
@@ -549,6 +552,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.38 =
+One-line change to eliminates a Fatal Error on WP 3.2 Beta
 
 = 1.3.35 =
 Fixes conflict w/ plugins which define pluggable functions; Nav Menu filtering bug fixes and enhancements; better OZH Admin Menus compatibility
