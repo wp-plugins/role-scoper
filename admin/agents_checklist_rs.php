@@ -19,7 +19,7 @@ require_once( 'admin_ui_lib_rs.php' );
 class ScoperAgentsChecklist {
 	function all_agents_checklist( $role_bases, $agents, $args, $class = 'rs-agents' ) {
 		if ( MULTISITE && scoper_get_site_option( 'mu_sitewide_groups' ) )
-			$groups_url = ( awp_ver('3.1') ) ? 'network/admin.php?page=rs-groups' : 'ms-admin.php?page=rs-groups';
+			$groups_url = ( awp_ver('3.1') ) ? 'network/users.php?page=rs-groups' : 'ms-admin.php?page=rs-groups';
 		else
 			$groups_url = 'admin.php?page=rs-groups';
 
