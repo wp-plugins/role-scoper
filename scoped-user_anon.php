@@ -28,7 +28,10 @@ class WP_Scoped_User_Anon extends WP_User { // Special skeleton class for ANONYM
 	var $is_module_administrator = array();
 	
 	function WP_Scoped_User_Anon() {
-		$this->WP_User(0, '');
+		if ( awp_ver( '3.2-dev' ) )
+			$this->__construct(0, '');
+		else
+			$this->WP_User(0, '');
 		
 		// initialize blog_roles arrays
 		$this->blog_roles[ANY_CONTENT_DATE_RS] = array();
