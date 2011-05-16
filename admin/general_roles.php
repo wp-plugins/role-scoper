@@ -24,16 +24,10 @@ if ( USER_ROLES_RS && ( $is_administrator ) ) {
 }
 
 if ( GROUP_ROLES_RS && ( $is_administrator ) ) {
-	$groups_url = 'admin.php?page=rs-groups';
-
 	if ( $agents[ROLE_BASIS_GROUPS] = ScoperAdminLib::get_all_groups(UNFILTERED_RS) ) {
 		$role_bases []= ROLE_BASIS_GROUPS;
 		$agent_list_prefix[ROLE_BASIS_GROUPS] = __('Groups') . ': ';
-		//$edit_groups_link = sprintf(_ x('%1$s define user groups%2$s', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
-		$edit_groups_link = sprintf(__('%1$s define user groups%2$s', 'scoper'), "<a href='$groups_url'>", '</a>');
-	} else
-		$edit_groups_link = sprintf(__('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'scoper'), "<a href='$groups_url'>", '</a>');
-		//$edit_groups_link = sprintf(_ x('<strong>Note:</strong> To assign roles to user groups, first %1$s define the group(s)%2$s.', 'Args are link open, close tags', 'scoper'), "<a href='$groups_url'>", '</a>');
+	}
 }
 
 if ( empty($role_bases) )

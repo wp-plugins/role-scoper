@@ -106,6 +106,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.40-dev =
+* BugFix : Bad link to Role Groups edit form from group selection checklist when Sitewide Groups enabled on a Multisite Installation
+
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
 
