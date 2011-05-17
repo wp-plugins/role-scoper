@@ -20,15 +20,15 @@ require_once('groups-support.php');
 wp_nonce_field( 'scoper-assign-termroles' );
 
 if ( isset($_POST['rs_submit']) ) {
-	$groups = ( isset($_POST['group']) ) ? $_POST['group'] : array();
+	$stored_groups = ( isset($_POST['group']) ) ? $_POST['group'] : array();
 
-	scoper_update_option( 'default_groups', $groups );
-
+	scoper_update_option( 'default_groups', $stored_groups );
+	
 	echo '<div id="message" class="updated fade"><p>';
-	printf(__('Default Groups Updated: %s groups', 'scoper'), count($groups) );
+	printf(__('Default Groups Updated: %s groups', 'scoper'), count($stored_groups) );
 	echo '</p></div>';
-}
-
+} else
+	$stored_groups = scoper_get_option( 'default_groups' );
 
 if ( ! $all_groups = ScoperAdminLib::get_all_groups(UNFILTERED_RS) )
 	return;	
@@ -36,7 +36,7 @@ if ( ! $all_groups = ScoperAdminLib::get_all_groups(UNFILTERED_RS) )
 if ( $editable_ids = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS) ) {
 	echo "<div id='default_groupsdiv_rs' style='margin-top:1em'>";
 	
-	if ( ! $stored_groups = scoper_get_option( 'default_groups' ) ) {
+	if ( ! $stored_groups ) {
 		$stored_groups = array();
 		echo '<p><strong>';
 		_e( 'No default groups defined.', 'scoper' );

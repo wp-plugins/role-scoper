@@ -40,6 +40,16 @@ function scoper_mu_users_menu() {
 	global $scoper_admin;
 	$menu_name = ( awp_ver( '3.1' ) ) ? 'users.php' : 'ms-admin.php';
 	add_submenu_page( $menu_name, $groups_caption, $groups_caption, $cap_req, 'rs-groups', array( &$scoper_admin, 'menu_handler' ) );
+	
+	if ( scoper_get_option( 'mu_sitewide_groups' ) ) {
+		global $plugin_page_cr;
+		// satisfy WordPress' demand that all admin links be properly defined in menu
+		if ( 'rs-default_groups' == $plugin_page_cr )
+			add_submenu_page($menu_name, __('User Groups', 'scoper'), __('Default Groups', 'scoper'), $cap_req, 'rs-default_groups', array( &$scoper_admin, 'menu_handler' ) );
+
+		if ( 'rs-group_members' == $plugin_page_cr )
+			add_submenu_page($menu_name, __('User Groups', 'scoper'), __('Group Members', 'scoper'), $cap_req, 'rs-group_members', array( &$scoper_admin, 'menu_handler' ) );
+	}
 }
 
 function scoper_get_blog_list( $start = 0, $num = 10 ) {

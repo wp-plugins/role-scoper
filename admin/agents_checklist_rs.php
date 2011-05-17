@@ -148,9 +148,13 @@ class ScoperAgentsChecklist {
 		
 		if ( empty($eligible_ids) )
 			$agent_count[ELIGIBLE_ITEMS_RS] = count($all_agents) - count( $stored_assignments );
-		elseif ( $eligible_ids != array(-1) )
+		elseif ( $eligible_ids != array(-1) ) {
+			foreach( array_keys($all_agents) as $_key ) {
+				$all_agent_ids[$all_agents[$_key]->ID] = true;
+			}
+			$eligible_ids = array_intersect_key( $eligible_ids, $all_agent_ids );
 			$agent_count[ELIGIBLE_ITEMS_RS] = count( array_diff_key($eligible_ids, $stored_assignments) );
-		else
+		} else
 			$agent_count[ELIGIBLE_ITEMS_RS] = 0;
 					
 		$default_hide_filtered_list = ( $default_hide_threshold && ( $agent_count[$agents_subset] > $default_hide_threshold ) );

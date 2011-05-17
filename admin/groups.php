@@ -246,8 +246,13 @@ if ( ! $errorMessage && ( ('editSubmit' == $mode) || ('add' == $mode) || ('appro
 	echo( $groups_caption );
 
 	if( $can_manage_all_groups ) {
-		$url_def = "admin.php?page=rs-default_groups'";
-		$url_members = "admin.php?page=rs-group_members'";
+		if ( MULTISITE && scoper_get_option('mu_sitewide_groups') )
+			$url = ( awp_ver('3.1') ) ? 'users.php' : 'ms-admin.php';
+		else
+			$url = 'admin.php';
+		
+		$url_def = "$url?page=rs-default_groups'";
+		$url_members = "$url?page=rs-group_members'";
 		echo ' <span style="font-size: 0.6em; font-style: normal">( ';
 		echo '<a href="#new">' . __('add new') . '</a>';
 		echo " &middot; <a href='$url_def'>" . __('set defaults') . '</a>';
