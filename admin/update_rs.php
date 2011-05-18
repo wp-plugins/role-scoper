@@ -21,8 +21,8 @@ function scoper_version_updated( $prev_version ) {
 			scoper_query( "DELETE FROM $wpdb->user2role2object_rs WHERE role_type = 'wp' AND scope='blog' AND obj_or_term_id = '0'" );
 			scoper_sync_wproles();
 
-			scoper_query( "DELETE FROM $wpdb->role_scope_rs WHERE src_or_tx_name = 'post' AND obj_or_term_id IN ( SELECT ID FROM wp_posts WHERE post_type IN ('attachment', 'revision') OR post_status = 'auto-draft' )" );
-			scoper_query( "DELETE FROM $wpdb->user2role2object_rs WHERE src_or_tx_name = 'post' AND obj_or_term_id IN ( SELECT ID FROM wp_posts WHERE post_type IN ('attachment', 'revision') OR post_status = 'auto-draft' )" );
+			scoper_query( "DELETE FROM $wpdb->role_scope_rs WHERE src_or_tx_name = 'post' AND obj_or_term_id IN ( SELECT ID FROM $wpdb->posts WHERE post_type IN ('attachment', 'revision') OR post_status = 'auto-draft' )" );
+			scoper_query( "DELETE FROM $wpdb->user2role2object_rs WHERE src_or_tx_name = 'post' AND obj_or_term_id IN ( SELECT ID FROM $wpdb->posts WHERE post_type IN ('attachment', 'revision') OR post_status = 'auto-draft' )" );
 		}
 
 		// 1.3.RC4 changed RS cache path to subfolder, so flush the root-stored cache one last time (only for MU / Multisite due to potentially large # of folders, files)
