@@ -316,9 +316,6 @@ jQuery(document).ready( function($) {
 	}
 	
 	function build_menu() {
-		static $done = false;
-		if ( $done ) { return; } else { $done = true; }
-
 		if ( strpos( $_SERVER['REQUEST_URI'], 'wp-admin/network/' ) )
 			return;
 	

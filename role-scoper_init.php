@@ -63,9 +63,13 @@ function scoper_act_set_current_user() {
 	}
 
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
-	if ( defined('INIT_ACTION_DONE_RS') )
+	if ( ! empty( $GLOBALS['scoper'] ) )
+		return;
+	elseif ( defined('INIT_ACTION_DONE_RS') )
 		scoper_init();
 	else {
+		static $done = false;
+		if ( $done ) { return; } else { $done = true; }
 		$priority = ( defined( 'SCOPER_EARLY_INIT' ) ) ? 3 : 50;
 		add_action('init', 'scoper_init', $priority);
 	}
@@ -102,11 +106,12 @@ function scoper_init() {
 
 	//log_mem_usage_rs( 'require role-scoper_main' );
 	
-	if ( empty($scoper) )		// set_current_user may have already triggered scoper creation and role_cap load
+	if ( empty($scoper) ) {		// set_current_user may have already triggered scoper creation and role_cap load
 		$scoper = new Scoper();
 
-	//log_mem_usage_rs( 'new Scoper done' );
-	$scoper->init();
+		//log_mem_usage_rs( 'new Scoper done' );
+		$scoper->init();
+	}
 	
 	// ensure that content administrators (as defined by SCOPER_CONTENT_ADMIN_CAP) have all caps for custom types by default
 	if ( is_content_administrator_rs() ) {
