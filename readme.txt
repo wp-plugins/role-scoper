@@ -111,6 +111,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Default Groups could not be defined on Multisite installations
 * BugFix : Default Groups Edit Form did not refresh following update
 * BugFix : "Eligible Groups" count above groups checklists wrong under some configurations
+* BugFix : Needless ALTER TABLE statements, PHP warnings on plugin activation
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
