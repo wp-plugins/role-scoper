@@ -86,9 +86,11 @@ if ( $prev = get_option('scoper_version') ) {
 }
 
 // avoid lockout in case of editing plugin via wp-admin
-if ( defined('RS_DEBUG') && is_admin() && isset($GLOBALS['pagenow']) && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) && empty( $_REQUEST['activate'] ) )
-	return;
-	
+if ( defined('RS_DEBUG') && is_admin() && isset($GLOBALS['pagenow']) && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) ) {
+	if ( empty( $_REQUEST['action'] ) || ! in_array( $_REQUEST['action'], array( 'activate', 'deactivate' ) ) )
+		return;
+}
+
 define ('COLS_ALL_RS', 0);
 define ('COL_ID_RS', 1);
 define ('COLS_ID_DISPLAYNAME_RS', 2);
@@ -131,12 +133,19 @@ define( 'IS_MU_RS', awp_is_mu() );
 
 require_once('role-scoper_init.php');	// Contains activate, deactivate, init functions. Adds mod_rewrite_rules.
 
-
 // register these functions before any early exits so normal activation/deactivation can still run with RS_DEBUG
-require_once('role-scoper_activation.php');	// Contains activate, deactivate, init functions (and also awp_plugin_is_active)
 register_activation_hook(__FILE__, 'scoper_activate');
 register_deactivation_hook(__FILE__, 'scoper_deactivate');
 
+function scoper_activate() {
+	require_once('role-scoper_activation.php');
+	_scoper_activate();
+}
+
+function scoper_deactivate() {
+	require_once('role-scoper_activation.php');
+	_scoper_deactivate();
+}
 
 // define URL
 define ('SCOPER_BASENAME', plugin_basename(__FILE__) );

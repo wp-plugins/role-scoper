@@ -6,7 +6,6 @@ require_once('db-config_rs.php');
 	
 global $wpdb;
 
-
 function scoper_db_setup($last_db_ver) {
 	scoper_update_schema($last_db_ver);
 	
@@ -44,8 +43,8 @@ function scoper_update_schema($last_db_ver) {
 	if($tables = $wpdb->get_col('SHOW TABLES;'))
 		foreach($tables as $table)
 			if ($table == $wpdb->groups_rs)
-				break;	
-				
+				break;
+
 	if ( $table != $wpdb->groups_rs ) { //group table doesn't already exist
 		 $query = "CREATE TABLE IF NOT EXISTS " . $wpdb->groups_rs . ' (';
 		 

@@ -1,10 +1,12 @@
 <?php
-if ( ! function_exists( 'scoper_activate' ) ) {
-function scoper_activate() {
+if ( ! function_exists( '_scoper_activate' ) ) {
+function _scoper_activate() {
 	// set_current_user may have triggered DB setup already
 	if ( empty ($GLOBALS['scoper_db_setup_done']) ) {
 		require_once('db-setup_rs.php');
-		scoper_db_setup('');  // TODO: is it safe to call get_option here to pass in last DB version, avoiding unnecessary ALTER TABLE statement?
+		$ver = (array) get_option( 'scoper_version' );
+		$db_ver = ( isset( $ver['db_version'] ) ) ? $ver['db_version'] : '';
+		scoper_db_setup( $db_ver );
 	}
 	
 	require_once('admin/admin_lib_rs.php');
@@ -15,8 +17,8 @@ function scoper_activate() {
 }
 }
 
-if ( ! function_exists( 'scoper_deactivate' ) ) {
-function scoper_deactivate() {
+if ( ! function_exists( '_scoper_deactivate' ) ) {
+function _scoper_deactivate() {
 	if ( function_exists( 'wpp_cache_flush' ) )
 		wpp_cache_flush_all_sites();
 	

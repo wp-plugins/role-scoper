@@ -117,15 +117,17 @@ function scoper_init() {
 	if ( is_content_administrator_rs() ) {
 		global $current_rs_user;
 
-		foreach ( get_post_types( array('public' => true, '_builtin' => false) ) as $name )
-			$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
-		
-		foreach ( get_taxonomies( array('public' => true, '_builtin' => false) ) as $name )
-			$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
+		if ( ! empty($current_rs_user) ) { // user object not set when scoper_init() is manually invoked to support htaccess rule generation on plugin activation
+			foreach ( get_post_types( array('public' => true, '_builtin' => false) ) as $name )
+				$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
+			
+			foreach ( get_taxonomies( array('public' => true, '_builtin' => false) ) as $name )
+				$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
 
-		$current_rs_user->merge_scoped_blogcaps();
-		$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
-		$GLOBALS['current_user']->assigned_blog_roles = $current_rs_user->assigned_blog_roles;
+			$current_rs_user->merge_scoped_blogcaps();
+			$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
+			$GLOBALS['current_user']->assigned_blog_roles = $current_rs_user->assigned_blog_roles;
+		}
 	}
 	
 	if ( ! empty($_GET['action']) && ( 'expire_file_rules' == $_GET['action'] ) ) {
