@@ -41,7 +41,7 @@ class ScoperAdminFiltersItemUI {
 		if ( empty($post) )
 			return;	
 
-		require_once('filters-admin-term-selection_rs.php');		
+		require_once(dirname(__FILE__).'/filters-admin-term-selection_rs.php');		
 ?>
 <script type="text/javascript">
 /* <![CDATA[ */
@@ -116,7 +116,7 @@ jQuery(document).ready( function($) {
 	
 	function init_item_roles_ui() {
 		if ( empty($this->item_roles_ui) ) {
-			include_once('item_roles_ui_rs.php');
+			include_once( dirname(__FILE__).'/item_roles_ui_rs.php');
 			$this->item_roles_ui = new ScoperItemRolesUI();
 		}
 	}

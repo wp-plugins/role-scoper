@@ -3,7 +3,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once( 'admin_lib_rs.php' );
+require_once( dirname(__FILE__).'/admin_lib_rs.php' );
 
 /**
  * ScoperAdminFiltersUI PHP class for the WordPress plugin Role Scoper
@@ -28,7 +28,7 @@ class ScoperAdminFiltersUI
 		$item_edit_scripts []= 'admin-ajax.php';
 
 		if ( in_array( $pagenow, $item_edit_scripts ) || in_array( $plugin_page_cr, $item_edit_scripts ) ) {
-			require_once( 'filters-admin-ui-item_rs.php' );
+			require_once( dirname(__FILE__).'/filters-admin-ui-item_rs.php' );
 			global $scoper_admin_filters_item_ui;
 			$scoper_admin_filters_item_ui = new ScoperAdminFiltersItemUI();
 		}
@@ -200,7 +200,7 @@ jQuery(document).ready( function($) {
 		if ( ! is_user_administrator_rs() && ! scoper_get_option( 'display_user_profile_groups' ) )
 			return;
 			
-		include_once('profile_ui_rs.php');
+		include_once( dirname(__FILE__).'/profile_ui_rs.php');
 		ScoperProfileUI::display_ui_user_groups();
 	} // end function act_edit_user_groups
 	
@@ -209,7 +209,7 @@ jQuery(document).ready( function($) {
 		if ( ! $group_id )
 			return;
 
-		include_once('profile_ui_rs.php');
+		include_once( dirname(__FILE__).'/profile_ui_rs.php');
 		ScoperProfileUI::display_ui_group_roles($group_id);
 	}
 	
@@ -221,7 +221,7 @@ jQuery(document).ready( function($) {
 
 		$profile_user_rs = ( $profileuser->ID == $current_rs_user->ID ) ? $current_rs_user : new WP_Scoped_User($profileuser->ID);
 		
-		include_once('profile_ui_rs.php');
+		include_once( dirname(__FILE__).'/profile_ui_rs.php');
 		ScoperProfileUI::display_ui_user_roles($profile_user_rs);
 	}
 	

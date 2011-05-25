@@ -10,7 +10,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 global $scoper;
 
-require_once( 'hardway_rs.php' );
+require_once( dirname(__FILE__).'/hardway_rs.php' );
 require_once( SCOPER_ABSPATH . '/lib/ancestry_lib_rs.php' );
 
 // flt_get_pages is required on the front end (even for administrators) to enable the inclusion of private pages

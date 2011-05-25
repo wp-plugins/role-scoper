@@ -3,7 +3,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once( 'admin_lib_rs.php' );
+require_once( dirname(__FILE__).'/admin_lib_rs.php' );
 	
 /**
  * ScoperAdminFilters PHP class for the WordPress plugin Role Scoper
@@ -191,7 +191,7 @@ class ScoperAdminFilters
 	
 	// make sure pre filter is applied for all custom taxonomies regardless of term selection
 	function custom_taxonomies_helper( $post_id, $post ) {
-		require_once( 'filters-admin-save_rs.php' );
+		require_once( dirname(__FILE__).'/filters-admin-save_rs.php' );
 		scoper_force_custom_taxonomy_filters( $post_id, $post );	
 	}	
 	
@@ -207,7 +207,7 @@ class ScoperAdminFilters
 		if ( 'active' == $status )
 			return;
 			
-		require_once( 'group-notification_rs.php' );
+		require_once( dirname(__FILE__).'/group-notification_rs.php' );
 			
 		if ( 'requested' == $status )
 			return ScoperGroupNotification::membership_request_notify( $user_id, $group_id );
@@ -219,7 +219,7 @@ class ScoperAdminFilters
 		if ( $status == $prev_status )
 			return;
 			
-		require_once( 'group-notification_rs.php' );
+		require_once( dirname(__FILE__).'/group-notification_rs.php' );
 
 		if ( ! $prev_status )
 			return $this->new_group_user_notification( $user_id, $group_id, $status );
@@ -234,7 +234,7 @@ class ScoperAdminFilters
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) || ! scoper_get_option('limit_user_edit_by_level') )
 			return $roles;
 		
-		require_once( 'user_lib_rs.php' );
+		require_once( dirname(__FILE__).'/user_lib_rs.php' );
 		return ScoperUserEdit::editable_roles( $roles );
 	}	
 	
@@ -242,7 +242,7 @@ class ScoperAdminFilters
 	function flt_has_edit_user_cap($wp_blogcaps, $orig_reqd_caps, $args) {
 		if ( ! defined( 'DISABLE_QUERYFILTERS_RS' ) && ( in_array( 'edit_users', $orig_reqd_caps ) || in_array( 'delete_users', $orig_reqd_caps ) ) && ! empty($args[2]) ) {
 			if ( scoper_get_option('limit_user_edit_by_level') ) {
-				require_once( 'user_lib_rs.php' );
+				require_once( dirname(__FILE__).'/user_lib_rs.php' );
 				$wp_blogcaps = ScoperUserEdit::has_edit_user_cap( $wp_blogcaps, $orig_reqd_caps, $args );
 			}
 		}
@@ -275,7 +275,7 @@ class ScoperAdminFilters
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) )
 			return $status;
 		
-		require_once('filters-admin-save_rs.php');
+		require_once( dirname(__FILE__).'/filters-admin-save_rs.php');
 		return scoper_flt_post_status($status);
 	}
 	
@@ -284,7 +284,7 @@ class ScoperAdminFilters
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) )
 			return $parent_id;
 	
-		require_once('filters-admin-save_rs.php');
+		require_once( dirname(__FILE__).'/filters-admin-save_rs.php');
 		return scoper_flt_page_parent($parent_id);
 	}
 	
@@ -320,7 +320,7 @@ class ScoperAdminFilters
 		if ( defined( 'DISABLE_QUERYFILTERS_RS' ) || did_action('tdomf_create_post_start') )  // don't filter out a category that was added by TDO Mini Forms
 			return $selected_terms;
 		
-		require_once('filters-admin-save_rs.php');
+		require_once( dirname(__FILE__).'/filters-admin-save_rs.php');
 		return scoper_flt_pre_object_terms($selected_terms, $taxonomy, $args);
 	}
 	
@@ -337,13 +337,13 @@ class ScoperAdminFilters
 			}
 		}
 
-		require_once('filters-admin-save_rs.php');
+		require_once( dirname(__FILE__).'/filters-admin-save_rs.php');
 		scoper_mnt_save_object($src_name, $args, $object_id, $object);
 	}
 	
 	function act_nav_menu_header() {
 		if ( ! is_content_administrator_rs() ) {
-			require_once( 'filters-admin-nav_menus_rs.php' );
+			require_once( dirname(__FILE__).'/filters-admin-nav_menus_rs.php' );
 			_rs_disable_uneditable_items_ui();
 		}
 	}
@@ -351,7 +351,7 @@ class ScoperAdminFilters
 	function mnt_pre_post_update( $object_id ) {
 		if ( ! is_content_administrator_rs() ) {
 			// don't allow modification of menu items for posts which user can't edit  (not currently feasible since WP fires update for each menu item even if unmodified)
-			require_once( 'filters-admin-nav_menus_rs.php' );
+			require_once( dirname(__FILE__).'/filters-admin-nav_menus_rs.php' );
 			_rs_mnt_modify_nav_menu_item( $object_id, 'edit' );
 		}
 	}
@@ -385,7 +385,7 @@ class ScoperAdminFilters
 
 		// don't allow deletion of menu items for posts which user can't edit
 		if ( ( 'nav-menus.php' == $GLOBALS['pagenow'] ) && ! is_content_administrator_rs() && ! empty( $_POST ) && scoper_get_option( 'admin_nav_menu_filter_items' ) ) {
-			require_once( 'filters-admin-nav_menus_rs.php' );
+			require_once( dirname(__FILE__).'/filters-admin-nav_menus_rs.php' );
 			_rs_mnt_modify_nav_menu_item( $object_id, 'delete' );
 		}
 
@@ -480,7 +480,7 @@ class ScoperAdminFilters
 	// This handler is meant to fire whenever a term is inserted or updated.
 	// If the client does use such a hook, we will force it by calling internally from mnt_create and mnt_edit
 	function mnt_save_term($deprecated_taxonomy, $args, $term_id, $unused_tt_id = '', $taxonomy = '') {
-		require_once('filters-admin-save_rs.php');
+		require_once( dirname(__FILE__).'/filters-admin-save_rs.php');
 		scoper_mnt_save_term( $deprecated_taxonomy, $args, $term_id, $unused_tt_id, $taxonomy );
 	}
 
@@ -660,7 +660,7 @@ class ScoperAdminFilters
 	}
 	
 	function flt_default_term( $default_term_id, $taxonomy = 'category' ) {
-		require_once('filters-admin-term-selection_rs.php');
+		require_once( dirname(__FILE__).'/filters-admin-term-selection_rs.php');
 
 		// support an array of default IDs (but don't require it)
 		$term_ids = (array) $default_term_id;
@@ -714,7 +714,7 @@ function init_role_assigner() {
 	global $scoper_role_assigner;
 
 	if ( ! isset($scoper_role_assigner) ) {
-		require_once('role_assigner_rs.php');
+		require_once( dirname(__FILE__).'/role_assigner_rs.php');
 		$scoper_role_assigner = new ScoperRoleAssigner();
 	}
 	

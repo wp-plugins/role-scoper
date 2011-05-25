@@ -3,13 +3,13 @@ if ( ! function_exists( '_scoper_activate' ) ) {
 function _scoper_activate() {
 	// set_current_user may have triggered DB setup already
 	if ( empty ($GLOBALS['scoper_db_setup_done']) ) {
-		require_once('db-setup_rs.php');
+		require_once( dirname(__FILE__).'/db-setup_rs.php');
 		$ver = (array) get_option( 'scoper_version' );
 		$db_ver = ( isset( $ver['db_version'] ) ) ? $ver['db_version'] : '';
 		scoper_db_setup( $db_ver );
 	}
 	
-	require_once('admin/admin_lib_rs.php');
+	require_once( dirname(__FILE__).'/admin/admin_lib_rs.php');
 	ScoperAdminLib::sync_wproles();
 
 	scoper_flush_site_rules();
@@ -33,7 +33,7 @@ function _scoper_deactivate() {
 		}
 	}
 
-	require_once('role-scoper_init.php');
+	require_once( dirname(__FILE__).'/role-scoper_init.php');
 	scoper_clear_site_rules();
 	scoper_clear_all_file_rules();
 }

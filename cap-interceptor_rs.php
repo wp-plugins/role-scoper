@@ -130,7 +130,7 @@ class CapInterceptor_RS
 		
 		// custom workaround to reveal all private / restricted content in all blogs if logged into main blog 
 		if ( defined( 'SCOPER_MU_MAIN_BLOG_RULES' ) ) {
-			include_once( 'mu-custom.php' );
+			include_once( dirname(__FILE__).'/mu-custom.php' );
 			if ( ! array_diff( $orig_reqd_caps, array( 'read', 'read_private_pages', 'read_private_posts' ) ) )
 				if ( $return_caps = ScoperMU_Custom::current_user_logged_into_main( $wp_blogcaps, $orig_reqd_caps ) ) {
 					return $return_caps;
@@ -256,7 +256,7 @@ class CapInterceptor_RS
 				// (but don't mess if this cap requirement is part of an edit_post metacap check for a specific post)
 				if ( ! $object_id && ( count($rs_reqd_caps) == 1 ) ) {
 					if( in_array( reset($rs_reqd_caps), array( 'edit_others_posts' ) ) ) {
-						require_once( 'lib/agapetry_wp_admin_lib.php' ); // function awp_metaboxes_started()
+						require_once( dirname(__FILE__).'/lib/agapetry_wp_admin_lib.php' ); // function awp_metaboxes_started()
 		
 						if ( ! awp_metaboxes_started( $object_type ) && ( 'revision.php' != $pagenow ) && ( 'revisions' != $GLOBALS['plugin_page_cr'] ) ) // don't enable contributors to view/restore revisions
 							$rs_reqd_caps[0] = $object_type_obj->cap->edit_posts;   // don't enable contributors to view/restore revisions
@@ -281,7 +281,7 @@ class CapInterceptor_RS
 		//====================================== (end subvert misguided capability requirements) =============================================
 		
 		if ( defined( 'RVY_VERSION' ) ) {
-			require_once( 'revisionary-helper_rs.php' );
+			require_once( dirname(__FILE__).'/revisionary-helper_rs.php' );
 			$rs_reqd_caps = Rvy_Helper::convert_post_edit_caps( $rs_reqd_caps, $object_type );
 		}
 
@@ -426,7 +426,7 @@ class CapInterceptor_RS
 				$rs_reqd_caps = array_fill_keys( $rs_reqd_caps, 1 );
 				$undefined_reqd_caps = array_diff_key( $wp_blogcaps, $rs_reqd_caps);
 
-				require_once( 'admin/permission_lib_rs.php' );
+				require_once( dirname(__FILE__).'/admin/permission_lib_rs.php' );
 				if ( user_can_admin_terms_rs( $object_type, $object_id, $user) ) {
 					return array_merge($undefined_reqd_caps, $rs_reqd_caps);
 				} else {
@@ -460,7 +460,7 @@ class CapInterceptor_RS
 
 					$stored_terms = $this->scoper->get_terms($taxonomy, UNFILTERED_RS, COL_ID_RS, $object_id);
 					
-					require_once( 'admin/filters-admin-save_rs.php' );   // todo: is this already included by now?
+					require_once( dirname(__FILE__).'/admin/filters-admin-save_rs.php' );   // todo: is this already included by now?
 					$selected_terms = cr_get_posted_object_terms( $taxonomy );
 							
 					if ( $set_terms = $GLOBALS['scoper_admin_filters']->flt_pre_object_terms($selected_terms, $taxonomy) ) {
@@ -498,7 +498,7 @@ class CapInterceptor_RS
 	
 			if ( $_post = get_post($object_id) ) {
 				if ( 'revision' == $_post->post_type ) {
-					require_once( 'lib/revisions_lib_rs.php' );					
+					require_once( dirname(__FILE__).'/lib/revisions_lib_rs.php' );					
 					$revisions = rs_get_post_revisions($_post->post_parent, 'inherit', array( 'fields' => constant('COL_ID_RS'), 'return_flipped' => true ) );						
 				}
 

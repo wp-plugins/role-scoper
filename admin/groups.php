@@ -13,7 +13,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * It allows to manage Groups by editing, adding or deleting
  ************************************************************/
 
-require_once('groups-support.php');
+require_once( dirname(__FILE__).'/groups-support.php');
 
 global $wpdb;
 global $scoper;
@@ -425,7 +425,7 @@ $_args = ( $sitewide_groups ) ? array( 'force_all_users' => true ) : array();
 $all_users = $scoper->users_who_can('', COLS_ID_NAME_RS, '', '', $_args );  // need this for group managers checklist even if using Ajax UI for members
 
 if ( scoper_get_option( 'group_ajax' ) ) {
-	require_once( 'user_search_ui_rs.php' );
+	require_once( dirname(__FILE__).'/user_search_ui_rs.php' );
 
 	$arr_display_names = array();
 

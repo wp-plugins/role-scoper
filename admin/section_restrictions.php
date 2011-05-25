@@ -14,7 +14,7 @@ $is_administrator = is_administrator_rs($tx, 'user');
 if ( ! $scoper_admin->user_can_admin_terms($taxonomy) )
 	wp_die(__awp('Cheatin&#8217; uh?'));
 
-require_once( 'admin-bulk_rs.php' );
+require_once( dirname(__FILE__).'/admin-bulk_rs.php' );
 $role_assigner = init_role_assigner();
 
 $nonce_id = 'scoper-assign-roles';

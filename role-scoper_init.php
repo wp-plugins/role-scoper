@@ -2,19 +2,19 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('hardway/cache-persistent.php');
+require_once( dirname(__FILE__).'/hardway/cache-persistent.php');
 
 //if ( ! awp_ver( '3.0' ) )
-//	require_once( 'wp-legacy_rs.php' );
+//	require_once( dirname(__FILE__).'/wp-legacy_rs.php' );
 
 // As of WP 3.0, this is not set until admin_header is loaded, and remains unset for non-admin urls.  To simplify subsequent checks, set it early and universally.
 $GLOBALS['plugin_page_cr'] = ( is_admin() && isset( $_GET['page'] ) ) ? $_GET['page'] : '';
 
 if ( is_admin() )
-	require_once( 'admin/admin-init_rs.php' );
+	require_once( dirname(__FILE__).'/admin/admin-init_rs.php' );
 	
 if ( IS_MU_RS )
-	require_once( 'mu-init_rs.php' );
+	require_once( dirname(__FILE__).'/mu-init_rs.php' );
 
 if ( IS_MU_RS || defined('SCOPER_FORCE_FILE_INCLUSIONS') ) {
 	// workaround to avoid file error on get_home_path() call
@@ -34,23 +34,23 @@ add_filter( 'options_rs', 'scoper_apply_constants', 99 );
 function scoper_log_init_action() {
 	define ( 'INIT_ACTION_DONE_RS', true );
 
-	require_once('db-config_rs.php');
+	require_once( dirname(__FILE__).'/db-config_rs.php');
 	
-	$func = "require('db-config_rs.php');";
+	$func = "require('" . dirname(__FILE__) . "/db-config_rs.php');";
 	add_action( 'switch_blog', create_function( '', $func ) );
 	
 	if ( is_admin() )
 		scoper_load_textdomain();
 
 	elseif ( defined('XMLRPC_REQUEST') )
-		require_once('xmlrpc_rs.php');
+		require_once( dirname(__FILE__).'/xmlrpc_rs.php');
 }
 
 function scoper_act_set_current_user() {
 	$id = ( ! empty($GLOBALS['current_user']) ) ? $GLOBALS['current_user']->ID : 0;
 
 	if ( $id ) {
-		require_once('scoped-user.php');
+		require_once( dirname(__FILE__).'/scoped-user.php');
 		$GLOBALS['current_rs_user'] = new WP_Scoped_User($id);
 		
 		// other properties (blog_roles, assigned_term_roles, term_roles) will be set as populated
@@ -58,7 +58,7 @@ function scoper_act_set_current_user() {
 			$GLOBALS['current_user']->$var = $GLOBALS['current_rs_user']->$var;
 		}
 	} else {
-		require_once('scoped-user_anon.php');
+		require_once( dirname(__FILE__).'/scoped-user_anon.php');
 		$GLOBALS['current_rs_user'] = new WP_Scoped_User_Anon();
 	}
 
@@ -89,20 +89,20 @@ function scoper_init() {
 		$scoper_sitewide_options = apply_filters( 'sitewide_options_rs' , $scoper_sitewide_options );	
 	}
 
-	require_once( 'wp-cap-helper_cr.php' );
+	require_once( dirname(__FILE__).'/wp-cap-helper_cr.php' );
 	WP_Cap_Helper_CR::establish_status_caps();
 	WP_Cap_Helper_CR::force_distinct_post_caps();
 	WP_Cap_Helper_CR::force_distinct_taxonomy_caps();
 	
 	if ( is_admin() ) {
-		require_once( 'admin/admin-init_rs.php' );	// TODO: why is the require statement up top not sufficient for NGG 1.7.2 uploader?
+		require_once( dirname(__FILE__).'/admin/admin-init_rs.php' );	// TODO: why is the require statement up top not sufficient for NGG 1.7.2 uploader?
 		scoper_admin_init();	
 	}
 		
 	//log_mem_usage_rs( 'scoper_admin_init done' );
 		
-	require_once('scoped-user.php');
-	require_once('role-scoper_main.php');
+	require_once( dirname(__FILE__).'/scoped-user.php');
+	require_once( dirname(__FILE__).'/role-scoper_main.php');
 
 	//log_mem_usage_rs( 'require role-scoper_main' );
 	
@@ -131,7 +131,7 @@ function scoper_init() {
 	}
 	
 	if ( ! empty($_GET['action']) && ( 'expire_file_rules' == $_GET['action'] ) ) {
-		require_once( 'attachment-helper_rs.php' );
+		require_once( dirname(__FILE__).'/attachment-helper_rs.php' );
 		scoper_requested_file_rule_expire();
 	}
 
@@ -140,7 +140,7 @@ function scoper_init() {
 
 function rs_get_user( $user_id, $name = '', $args = array() ) {
 	if ( ! class_exists( 'WP_Scoped_User' ) )
-		require_once('scoped-user.php');
+		require_once( dirname(__FILE__).'/scoped-user.php');
 	
 	return new WP_Scoped_User( $user_id, $name, $args );
 }
@@ -191,7 +191,7 @@ function scoper_set_conditional_defaults() {
 function scoper_refresh_default_options() {
 	global $scoper_default_options;
 
-	require_once( 'defaults_rs.php');
+	require_once( dirname(__FILE__).'/defaults_rs.php');
 	$scoper_default_options = apply_filters( 'default_options_rs', scoper_default_options() );
 	
 	if ( IS_MU_RS )
@@ -201,7 +201,7 @@ function scoper_refresh_default_options() {
 function scoper_refresh_default_otype_options() {
 	global $scoper_default_otype_options;
 	
-	require_once( 'defaults_rs.php');
+	require_once( dirname(__FILE__).'/defaults_rs.php');
 	$scoper_default_otype_options = apply_filters( 'default_otype_options_rs', scoper_default_otype_options() );
 	
 	// compat workaround for old versions of Role Scoping for NGG which use old otype option key structure
@@ -364,7 +364,7 @@ function scoper_get_option($option_basename, $sitewide = -1, $get_default = fals
 				static $hardcode_option_defaults;
 			
 				if ( empty($hardcode_option_defaults) ) {
-					require_once( 'defaults_rs.php');
+					require_once( dirname(__FILE__).'/defaults_rs.php');
 					$hardcode_option_defaults = scoper_default_options();
 				}
 					
@@ -511,11 +511,11 @@ function scoper_mod_rewrite_rules ( $rules ) {
 	if ( ! isset($scoper) || is_null($scoper) )
 		scoper_init();
 	
-	require_once( 'rewrite-rules_rs.php' );
+	require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 
 	if ( IS_MU_RS ) {
 		if ( $file_filtering ) {
-			require_once( 'rewrite-mu_rs.php' );
+			require_once( dirname(__FILE__).'/rewrite-mu_rs.php' );
 			$rules = ScoperRewriteMU::insert_site_rules( $rules );
 		}
 	} else {
@@ -531,28 +531,28 @@ function scoper_mod_rewrite_rules ( $rules ) {
 }
 
 function scoper_flush_site_rules() {
-	require_once( 'rewrite-rules_rs.php' );
+	require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 	ScoperRewrite::update_site_rules( true );
 }
 
 function scoper_clear_site_rules() {
-	require_once( 'rewrite-rules_rs.php' );
+	require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 	remove_filter('mod_rewrite_rules', 'scoper_mod_rewrite_rules');
 	ScoperRewrite::update_site_rules( false );
 }
 
 function scoper_flush_file_rules() {
-	require_once( 'rewrite-rules_rs.php' );
+	require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 	ScoperRewrite::update_blog_file_rules();
 }
 
 
 function scoper_clear_all_file_rules() {
 	if ( IS_MU_RS ) {
-		require_once( 'rewrite-mu_rs.php' );
+		require_once( dirname(__FILE__).'/rewrite-mu_rs.php' );
 		ScoperRewriteMU::clear_all_file_rules();
 	} else {
-		require_once( 'rewrite-rules_rs.php' );
+		require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 		ScoperRewrite::update_blog_file_rules( false );
 	} 
 }
@@ -579,7 +579,7 @@ function scoper_version_check() {
 	if ( empty($ver['db_version']) || version_compare( SCOPER_DB_VERSION, $ver['db_version'], '!=') ) {
 		$ver_change = true;
 		
-		require_once('db-setup_rs.php');
+		require_once( dirname(__FILE__).'/db-setup_rs.php');
 		scoper_db_setup($ver['db_version']);
 	}
 
@@ -589,7 +589,7 @@ function scoper_version_check() {
 		if ( version_compare( SCOPER_VERSION, $ver['version'], '!=') ) {
 			$ver_change = true;
 
-			require_once('admin/update_rs.php');
+			require_once( dirname(__FILE__).'/admin/update_rs.php');
 			scoper_version_updated( $ver['version'] );
 
 			scoper_check_revision_settings();
@@ -597,7 +597,7 @@ function scoper_version_check() {
 		
 	} else {
 		// first-time install (or previous install was totally wiped)
-		require_once( 'admin/update_rs.php');
+		require_once( dirname(__FILE__).'/admin/update_rs.php');
 		scoper_set_default_rs_roledefs();
 	}
 
@@ -659,7 +659,7 @@ function scoper_role_handles_to_names($role_handles) {
 
 function rs_notice($message) {
 	if ( defined( 'RS_DEBUG' ) ) {
-		require_once( 'error_rs.php' );
+		require_once( dirname(__FILE__).'/error_rs.php' );
 		awp_notice( $message, 'Role Scoper' );
 	}
 }

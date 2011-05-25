@@ -20,7 +20,7 @@ class AttachmentInterceptor_RS {
 			return;
 		}
 
-		require_once('attachment-filters_rs.php');
+		require_once( dirname(__FILE__).'/attachment-filters_rs.php');
 		AttachmentFilters_RS::parse_query_for_direct_access( $query );
 	}
 	
@@ -34,7 +34,7 @@ class AttachmentInterceptor_RS {
 		if ( is_attachment_rs() ) {
 			//rs_errlog( 'IS an attachment:' );
 			
-			require_once('attachment-template_rs.php');
+			require_once( dirname(__FILE__).'/attachment-template_rs.php');
 			AttachmentTemplate_RS::attachment_access();
 		}
 	}

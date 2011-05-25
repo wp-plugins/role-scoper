@@ -16,12 +16,12 @@ function scoper_startup_error( $msg_id = '' ) {
 		add_filter('option_sticky_posts', create_function('$a', "return false;"), 99);
 
 		// Also run interference for all custom-defined where_hook, request_filter or results_filter
-		require_once('role-scoper_main.php');
+		require_once( dirname(__FILE__).'/role-scoper_main.php');
 		
 		global $scoper, $wpdb, $current_user;
 		$buffer_user = $current_user;
 		
-		require_once( 'role-scoper_init.php' );
+		require_once( dirname(__FILE__).'/role-scoper_init.php' );
 		
 		$scoper = new Scoper();
 		$scoper->load_config();

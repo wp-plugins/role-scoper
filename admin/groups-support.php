@@ -285,7 +285,7 @@ class UserGroups_tp {
 			$group_role_defs = ( 'moderator' == $user_class ) ? array( 'rs_group_moderator' ) : array( 'rs_group_manager' );
 			
 			if ( $group_id ) {
-				require_once('role_assignment_lib_rs.php');
+				require_once( dirname(__FILE__).'/role_assignment_lib_rs.php');
 				$current_roles = ScoperRoleAssignments::organize_assigned_roles(OBJECT_SCOPE_RS, 'group', $group_id, $group_role_defs, ROLE_BASIS_USER);
 
 				$current_roles = agp_array_flatten($current_roles, false);
@@ -329,7 +329,7 @@ class UserGroups_tp {
 		
 		$css_id = $user_class;
 		$args = array( 'eligible_ids' => $eligible_ids, 'via_other_scope_ids' => $admin_ids, 'suppress_extra_prefix' => true );
- 		require_once('agents_checklist_rs.php');
+ 		require_once( dirname(__FILE__).'/agents_checklist_rs.php');
 		ScoperAgentsChecklist::agents_checklist( ROLE_BASIS_USER, $all_users, $css_id, $current_ids, $args);
 	}
 	

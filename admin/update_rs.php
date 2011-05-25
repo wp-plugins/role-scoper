@@ -129,7 +129,7 @@ function scoper_version_updated( $prev_version ) {
 		} else break;
 		
 		if ( version_compare( $prev_version, '1.0.0', '<') ) {
-			include( 'update-legacy_rs.php' );
+			include( dirname(__FILE__).'/update-legacy_rs.php' );
 			scoper_version_updated_from_legacy( $prev_version );
 		}
 	} while ( 0 ); // end single-pass version check loop

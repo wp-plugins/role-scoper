@@ -8,16 +8,16 @@ if ( isset($_POST['action']) && ($_POST['action'] == 'autosave') && isset($_POST
 	add_filter('query', array('ScoperAdminHardway', 'flt_autosave_bugstomper') );
 
 if ( ! is_content_administrator_rs() )
-	require_once( 'hardway-admin_non-administrator_rs.php' );
+	require_once( dirname(__FILE__).'/hardway-admin_non-administrator_rs.php' );
 
 // Note: we are not filtering the QuickEdit author dropdown on edit.php
 if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
 	if ( scoper_get_option( 'filter_users_dropdown') )
-		require_once( 'hardway-users_rs.php' );
+		require_once( dirname(__FILE__).'/hardway-users_rs.php' );
 }
 
 //if ( ! awp_ver('2.7-dev') )
-//	require_once('hardway-admin-legacy_rs.php');
+//	require_once( dirname(__FILE__).'/hardway-admin-legacy_rs.php');
 	
 /**
  * ScoperAdminHardway PHP class for the WordPress plugin Role Scoper

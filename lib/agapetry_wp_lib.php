@@ -2,13 +2,13 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('agapetry_wp_core_lib.php');
+require_once( dirname(__FILE__).'/agapetry_wp_core_lib.php');
 
 // ( derived from WP core _get_term_hierarchy() )
 // Removed option buffering since hierarchy is user-specific (get_terms query will be wp-cached anyway)
 // Also adds support for taxonomies that don't use wp_term_taxonomy schema
 function rs_get_terms_children( $taxonomy, $option_value = '' ) {
-	require_once( 'ancestry_lib_rs.php' );
+	require_once( dirname(__FILE__).'/ancestry_lib_rs.php' );
 	return ScoperAncestry::get_terms_children( $taxonomy, $option_value );
 }
 

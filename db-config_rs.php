@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('role-scoper_init.php');
+require_once( dirname(__FILE__).'/role-scoper_init.php');
 	
 global $sitewide_groups;
 

@@ -13,7 +13,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * It allows to manage the groups members (users) 
  ****************************************************/ 
 
-require_once('groups-support.php');
+require_once( dirname(__FILE__).'/groups-support.php');
 
 $mode = $_REQUEST['mode'];
 

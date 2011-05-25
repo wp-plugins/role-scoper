@@ -1,6 +1,6 @@
 <?php
 
-require_once( 'rewrite-rules_rs.php' );
+require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 
 /**
  * ScoperRewriteMU PHP class for the WordPress plugin Role Scoper
@@ -88,7 +88,7 @@ class ScoperRewriteMU {
 		
 		$strip_path = str_replace( '\\', '/', trailingslashit(ABSPATH) );
 				
-		require_once( 'analyst_rs.php' );
+		require_once( dirname(__FILE__).'/analyst_rs.php' );
 		
 		$new_rules .= "\n#Run file requests through blog-specific .htaccess to support filtering.  Files that pass through filtering will be redirected by default WP rules.\n";
 		
@@ -133,7 +133,7 @@ class ScoperRewriteMU {
 		foreach ( $blog_ids as $id ) {
 			switch_to_blog( $id );
 
-			require_once( 'uploads_rs.php' );
+			require_once( dirname(__FILE__).'/uploads_rs.php' );
 			$uploads = scoper_get_upload_info();
 			$htaccess_path = trailingslashit($uploads['basedir']) . '.htaccess';
 			if ( file_exists( $htaccess_path ) )

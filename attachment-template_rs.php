@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once( 'attachment-interceptor_rs.php' );
+require_once( dirname(__FILE__).'/attachment-interceptor_rs.php' );
 
 class AttachmentTemplate_RS {
 	// Filter attachment page content prior to display by attachment template.
@@ -46,7 +46,7 @@ class AttachmentTemplate_RS {
 	function impose_post_teaser(&$object, $post_type, $use_teaser_type = 'fixed') {
 		global $current_user, $scoper, $wp_query;
 
-		require_once('teaser_rs.php');
+		require_once( dirname(__FILE__).'/teaser_rs.php');
 		
 		$teaser_replace = array();
 		$teaser_prepend = array();

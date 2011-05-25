@@ -2,8 +2,8 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once( 'admin_ui_lib_rs.php' );
-require_once( 'role_assignment_lib_rs.php' );
+require_once( dirname(__FILE__).'/admin_ui_lib_rs.php' );
+require_once( dirname(__FILE__).'/role_assignment_lib_rs.php' );
 
 class ScoperItemRolesUI {
 	var $scoper;
@@ -332,7 +332,7 @@ class ScoperItemRolesUI {
 
 		$containing_roles = $this->scoper->role_defs->get_containing_roles($role_handle);
 
-		require_once('agents_checklist_rs.php');
+		require_once( dirname(__FILE__).'/agents_checklist_rs.php');
 		
 		$args = array( 'suppress_extra_prefix' => true, 'default_hide_threshold' => 20, 'propagation' => $this->do_propagation_cboxes,
 				'otype_label_singular' => $otype_def->labels->singular_name, 'otype_label' => $otype_def->labels->name,
@@ -529,7 +529,7 @@ class ScoperItemRolesUI {
 		if ( ! $role_defs_by_otype = $this->scoper->role_defs->get_for_taxonomy($tx->object_source, $taxonomy) )
 			return;
 			
-		require_once('admin-bulk_rs.php');
+		require_once( dirname(__FILE__).'/admin-bulk_rs.php');
 		
 		$all_terms = array( (object) array( $tx_src->cols->id => $term_id, $tx_src->cols->name => '', $tx_src->cols->parent => 0 ) );
 
@@ -556,7 +556,7 @@ class ScoperItemRolesUI {
 		$default_restrictions = $this->scoper->get_default_restrictions(TERM_SCOPE_RS);
 		$default_strict_roles = ( ! empty($default_restrictions[$taxonomy] ) ) ? array_flip(array_keys($default_restrictions[$taxonomy])) : array();
 
-		require_once('admin_ui_lib_rs.php');
+		require_once( dirname(__FILE__).'/admin_ui_lib_rs.php');
 		$table_captions = ScoperAdminUI::restriction_captions(TERM_SCOPE_RS, $tx, $tx->labels->singular_name, $tx->labels->name );
 
 		echo '<br />';

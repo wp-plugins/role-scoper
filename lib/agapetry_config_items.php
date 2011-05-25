@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 	
-require_once('agapetry_lib.php');
+require_once( dirname(__FILE__).'/agapetry_lib.php');
 
 class AGP_Config_Items {
 	var $members = array();		// collection array used by each base class	

@@ -30,14 +30,14 @@ class Scoper
 	// minimal config retrieval to support pre-init usage by WP_Scoped_User before text domain is loaded
 	function Scoper() {
 		$this->definitions = array( 'data_sources' => 'Data_Sources', 'taxonomies' => 'Taxonomies', 'cap_defs' => 'Capabilities', 'role_defs' => 'Roles' );	
-		require_once( 'definitions_cr.php' );
+		require_once( dirname(__FILE__).'/definitions_cr.php' );
 		
 		if ( defined( 'RVY_VERSION' ) )
 			$this->cap_interceptor = (object) array();	// legacy support for Revisionary < 1.1 which set flags on this object property
 	}
 	
 	function load_config() {
-		require_once('lib/agapetry_config_items.php');
+		require_once( dirname(__FILE__).'/lib/agapetry_config_items.php');
 		$this->access_types = new AGP_Config_Items();
 		$this->access_types->init( cr_access_types() );  // 'front' and 'admin' are the hardcoded access types
 		
@@ -66,7 +66,7 @@ class Scoper
 			
 		// clean up after 3rd party plugins (such as Role Scoping for NGG) which don't set object type and src_name properties for roles
 		if ( has_filter( 'define_roles_rs' ) ) {
-			require_once( 'extension-helper_rs.php' );
+			require_once( dirname(__FILE__).'/extension-helper_rs.php' );
 			scoper_adjust_legacy_extension_cfg( $this->role_defs, $this->cap_defs );
 		}
 
@@ -243,7 +243,7 @@ class Scoper
 		}
 		// =====
 
-		require_once('attachment-interceptor_rs.php');
+		require_once( dirname(__FILE__).'/attachment-interceptor_rs.php');
 		$GLOBALS['attachment_interceptor'] = new AttachmentInterceptor_RS(); // .htaccess file is always there, so we always need to handle its rewrites
 				
 		// ===== Content Filters to limit/enable the current user
@@ -261,22 +261,22 @@ class Scoper
 		}
 		
 		// register a map_meta_cap filter to handle the type-specific meta caps we are forcing
-		require_once( 'meta_caps_rs.php' );	
+		require_once( dirname(__FILE__).'/meta_caps_rs.php' );	
 
 		if ( ! $disable_queryfilters ) {
 			 if ( ! $is_administrator ) {
 				if ( $this->direct_file_access ) {
-					require_once('cap-interceptor-basic_rs.php');  // only need to support basic read_post / read_page check for direct file access
+					require_once( dirname(__FILE__).'/cap-interceptor-basic_rs.php');  // only need to support basic read_post / read_page check for direct file access
 					$GLOBALS['cap_interceptor_basic'] = new CapInterceptorBasic_RS();
 				} else {
-					require_once('cap-interceptor_rs.php');
+					require_once( dirname(__FILE__).'/cap-interceptor_rs.php');
 					$GLOBALS['cap_interceptor'] = new CapInterceptor_RS();
 				}
 			}
 
 			// (also use content filters on front end to FILTER IN private content which WP inappropriately hides from administrators)
 			if ( ( ! $is_administrator ) || $this->is_front() ) {
-				require_once('query-interceptor_rs.php');
+				require_once( dirname(__FILE__).'/query-interceptor_rs.php');
 				$GLOBALS['query_interceptor'] = new QueryInterceptor_RS();
 			}
 
@@ -300,12 +300,12 @@ class Scoper
 		global $pagenow;
 		
 		// ===== Admin filters (menu and other basics) which are (almost) always loaded 
-		require_once('admin/admin_rs.php');
+		require_once( dirname(__FILE__).'/admin/admin_rs.php');
 		$GLOBALS['scoper_admin'] = new ScoperAdmin();
 		
 		if ( 'async-upload.php' != $pagenow ) {
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator ) {
-				require_once( 'admin/filters-admin-ui_rs.php' );
+				require_once( dirname(__FILE__).'/admin/filters-admin-ui_rs.php' );
 				$GLOBALS['scoper_admin_filters_ui'] = new ScoperAdminFiltersUI();
 			}
 		}
@@ -313,20 +313,20 @@ class Scoper
 
 		// ===== Script-specific Admin filters 
 		if ( 'users.php' == $pagenow ) {
-			require_once( 'admin/filters-admin-users_rs.php' );
+			require_once( dirname(__FILE__).'/admin/filters-admin-users_rs.php' );
 			
 		} elseif ( 'edit.php' == $pagenow ) {
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') || $is_administrator )
-				require_once( 'admin/filters-admin-ui-listing_rs.php' );
+				require_once( dirname(__FILE__).'/admin/filters-admin-ui-listing_rs.php' );
 
 		} elseif ( in_array( $pagenow, array( 'edit-tags.php', 'edit-link-categories.php' ) ) ) {
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') )
-				require_once( 'admin/filters-admin-terms_rs.php' );
+				require_once( dirname(__FILE__).'/admin/filters-admin-terms_rs.php' );
 		}
 		// =====
 		
 		if ( scoper_get_option( 'group_ajax' ) && ( isset( $_GET['rs_user_search'] ) || isset( $_GET['rs_group_search'] ) ) ) {
-			require_once( 'admin/user_query_rs.php' );
+			require_once( dirname(__FILE__).'/admin/user_query_rs.php' );
 			exit;	
 		} 
 	}
@@ -334,7 +334,7 @@ class Scoper
 	
 	function add_hardway_filters() {
 		// port or low-level query filters to work around limitations in WP core API
-		require_once('hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
+		require_once( dirname(__FILE__).'/hardway/hardway_rs.php'); // need get_pages() filtering to include private pages for some 3rd party plugin config UI (Simple Section Nav)
 		
 		// buffering of taxonomy children is disabled with non-admin user logged in
 		// But that non-admin user may add cats.  Don't allow unfiltered admin to rely on an old copy of children
@@ -365,7 +365,7 @@ class Scoper
 				$hardway_uris = apply_filters( 'scoper_admin_hardway_uris', $hardway_uris );
 																															// support for rs-config-ngg <= 1.0
 				if ( defined('XMLRPC_REQUEST') || in_array( $pagenow, $hardway_uris ) || in_array( $plugin_page_cr, $hardway_uris ) || in_array( "p-admin/admin.php?page=$plugin_page_cr", $hardway_uris ) )
-					require_once( 'hardway/hardway-admin_rs.php' );
+					require_once( dirname(__FILE__).'/hardway/hardway-admin_rs.php' );
         	}
 		} // endif is_admin or xmlrpc
 	}
@@ -381,24 +381,24 @@ class Scoper
 		if ( ! defined('DOING_CRON') ) {
 			if ( $this->is_front() ) {
 				if ( ! $disable_queryfilters )
-					require_once('query-interceptor-front_rs.php');
+					require_once( dirname(__FILE__).'/query-interceptor-front_rs.php');
 	
 				if ( ! $is_administrator ) {
-					require_once('qry-front_non-administrator_rs.php');
+					require_once( dirname(__FILE__).'/qry-front_non-administrator_rs.php');
 					$GLOBALS['feed_interceptor'] = new FeedInterceptor_RS(); // file already required in role-scoper.php
 				}
 	
-				require_once('template-interceptor_rs.php');
+				require_once( dirname(__FILE__).'/template-interceptor_rs.php');
 				$GLOBALS['template_interceptor'] = new TemplateInterceptor_RS();
 	
 				$frontend_admin = ! scoper_get_option('no_frontend_admin'); // potential performance enhancement	
 			}
 				
 			// ===== Filters which are always loaded (except on plugin scripts), for any access type
-			include_once( 'hardway/wp-patches_agp.php' ); // simple patches for WP
+			include_once( dirname(__FILE__).'/hardway/wp-patches_agp.php' ); // simple patches for WP
 			
 			if ( $this->is_front() || ( 'edit.php' == $GLOBALS['pagenow'] ) ) {
-				require_once('query-interceptor-base_rs.php');
+				require_once( dirname(__FILE__).'/query-interceptor-base_rs.php');
 				$GLOBALS['query_interceptor_base'] = new QueryInterceptorBase_RS();  // listing filter used for role status indication in edit posts/pages and on front end by template functions
 			}
 		}
@@ -406,8 +406,8 @@ class Scoper
 		// ===== Filters which support automated role maintenance following content creation/update
 		// Require an explicitly set option to skip these for front end access, just in case other plugins modify content from the front end.
 		if ( ( $is_admin || defined('XMLRPC_REQUEST') || $frontend_admin || defined('DOING_CRON') ) ) {
-			require_once( 'admin/cache_flush_rs.php' );
-			require_once( 'admin/filters-admin_rs.php' );
+			require_once( dirname(__FILE__).'/admin/cache_flush_rs.php' );
+			require_once( dirname(__FILE__).'/admin/filters-admin_rs.php' );
 			$GLOBALS['scoper_admin_filters'] = new ScoperAdminFilters();
 			
 			if ( defined( 'RVY_VERSION' ) ) // Support Revisionary references to $scoper->filters_admin (TODO: eventually phase this out)
@@ -419,7 +419,7 @@ class Scoper
 
 	function init_users_interceptor() {
 		if ( ! isset($GLOBALS['users_interceptor']) ) {
-			require_once('users-interceptor_rs.php');
+			require_once( dirname(__FILE__).'/users-interceptor_rs.php');
 			$GLOBALS['users_interceptor'] = new UsersInterceptor_RS();
 
 			//log_mem_usage_rs( 'init Users Interceptor' );
@@ -507,11 +507,11 @@ class Scoper
 			//scoper_restore_property_array( $results, $term_names, 'term_id', 'name' );
 				
 			if ( ORDERBY_HIERARCHY_RS == $order_by ) {
-				require_once('admin/admin_lib_rs.php');
+				require_once( dirname(__FILE__).'/admin/admin_lib_rs.php');
 				
 				if ( $src = $this->data_sources->get( $tx->source ) ) {
 					if ( ! empty($src->cols->id) && ! empty($src->cols->parent) ) {
-						require_once( 'admin/admin_lib-bulk-parent_rs.php');
+						require_once( dirname(__FILE__).'/admin/admin_lib-bulk-parent_rs.php');
 						$results = ScoperAdminBulkParent::order_by_hierarchy($results, $src->cols->id, $src->cols->parent);
 					}
 				}
@@ -1045,7 +1045,7 @@ class Scoper
 		if ( is_administrator_rs($src_name) )
 			return true;
 	
-		require_once( 'admin/permission_lib_rs.php' );
+		require_once( dirname(__FILE__).'/admin/permission_lib_rs.php' );
 		return user_can_edit_blogwide_rs($src_name, $object_type, $args);
 	}
 	

@@ -151,7 +151,7 @@ class QueryInterceptorBase_RS {
 			if ( scoper_get_otype_option('restrictions_column', 'post') || scoper_get_otype_option('term_roles_column', 'post') || scoper_get_otype_option('object_roles_column', 'post') ) {
 				global $scoper_role_usage;
 				
-				require_once( 'role_usage_rs.php' );
+				require_once( dirname(__FILE__).'/role_usage_rs.php' );
 				$scoper_role_usage = new Role_Usage_RS();
 				$scoper_role_usage->determine_role_usage_rs( 'post', $listed_ids );
 			}

@@ -1996,11 +1996,11 @@ endif; // any options accessable in this tab
 
 if ( ! empty( $ui->form_options['rs_role_definitions'] ) ) {
 	// RS Role Definitions Tab
-	include('role_definition.php');
+	include( dirname(__FILE__).'/role_definition.php');
 	scoper_display_rs_roledefs( array( 'bgcolor_class' => $color_class, 'sitewide' => $sitewide, 'customize_defaults' => $customize_defaults ) );
 
 	// WP Role Definitions Tab
-	include('role_definition_wp.php');
+	include( dirname(__FILE__).'/role_definition_wp.php');
 	scoper_display_wp_roledefs( array( 'bgcolor_class' => $color_class ) );
 }
 

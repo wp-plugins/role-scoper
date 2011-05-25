@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once( 'admin_ui_lib_rs.php' );
+require_once( dirname(__FILE__).'/admin_ui_lib_rs.php' );
 
 class ScoperProfileUI {
 
@@ -266,7 +266,7 @@ class ScoperProfileUI {
 				
 		} // end foreach taxonomy
 		
-		require_once('object_roles_list.php');
+		require_once( dirname(__FILE__).'/object_roles_list.php');
 		$html .= scoper_object_roles_list($user, array( 'enforce_duration_limits' => false, 'is_user_profile' => $viewing_own_profile, 'echo' => false ) );
 		
 		if ( $groups_only ) {
@@ -400,7 +400,7 @@ class ScoperProfileUI {
 			$locked_ids = array_diff($stored_groups, $editable_ids );
 			$args = array( 'suppress_extra_prefix' => true, 'eligible_ids' => $editable_ids, 'locked_ids' => $locked_ids );
 			
-			require_once('agents_checklist_rs.php');
+			require_once( dirname(__FILE__).'/agents_checklist_rs.php');
 	 		ScoperAgentsChecklist::agents_checklist( ROLE_BASIS_GROUPS, $all_groups, $css_id, array_flip($stored_groups), $args);
 			
 			echo '</fieldset>';

@@ -72,7 +72,7 @@ class Scoper_XMLRPC_Helper {
 
 // clean up after xmlrpc clients that don't specify a post_type for mw_editPost
 if ( defined( 'WLW_XMLRPC_HACK' ) )
-	include( 'xmlrpc-wlw_rs.php' );
+	include( dirname(__FILE__).'/xmlrpc-wlw_rs.php' );
 
   
 // might have to do this someday, but prefer not to incur the liability of overriding entire method handlers

@@ -22,8 +22,8 @@ if ( GROUP_ROLES_RS && ( $is_administrator || $scoper_admin->user_can_admin_term
 if ( empty($role_bases) )
 	wp_die(__awp('Cheatin&#8217; uh?'));
 
-require_once( 'admin-bulk_rs.php' );
-require_once('role_assignment_lib_rs.php');
+require_once( dirname(__FILE__).'/admin-bulk_rs.php' );
+require_once( dirname(__FILE__).'/role_assignment_lib_rs.php');
 $role_assigner = init_role_assigner();
 	
 $nonce_id = 'scoper-assign-roles';

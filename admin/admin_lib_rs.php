@@ -18,7 +18,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 add_filter('wp_dropdown_pages', array('ScoperAdminLib', 'flt_dropdown_pages') );
 
 if ( strpos( $_SERVER['REQUEST_URI'], 'nggallery' ) ) // Role Scoping for NGG calls ScoperAdminUI::dropdown_pages
-	require_once( 'admin_ui_lib_rs.php' );
+	require_once( dirname(__FILE__).'/admin_ui_lib_rs.php' );
 
 
 class ScoperAdminLib {
@@ -143,7 +143,7 @@ class ScoperAdminLib {
 	 * @return boolean True on successful creation
 	 **/
 	function create_group ($name, $description = ''){
-		require_once( 'groups-support.php' );
+		require_once( dirname(__FILE__).'/groups-support.php' );
 		return UserGroups_tp::CreateGroup($name, $description);
 	}
 	
@@ -537,7 +537,7 @@ class ScoperAdminLib {
 	}
 
 	function sync_wproles( $user_ids = '', $role_name = '', $blog_id_arg = '' ) {
-		require_once('update_rs.php');
+		require_once( dirname(__FILE__).'/update_rs.php');
 		scoper_sync_wproles( $user_ids, $role_name, $blog_id_arg );
 	} // end sync_wproles function
 	
@@ -586,7 +586,7 @@ class ScoperAdminLib {
 					elseif ( intval($agent_name) && in_array( $agent_name, $groups_by_name ) )
 						$agent_ids [] = $agent_name;
 				} else {
-					require_once( 'user_lib_rs.php' );
+					require_once( dirname(__FILE__).'/user_lib_rs.php' );
 					
 					if ( $user = awp_get_user_by_name( $agent_name ) )
 						$agent_ids [] = $user->ID;

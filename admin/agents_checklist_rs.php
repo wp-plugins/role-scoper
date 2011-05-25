@@ -14,7 +14,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 define ('CURRENT_ITEMS_RS', 'current');
 define ('ELIGIBLE_ITEMS_RS', 'eligible');
 
-require_once( 'admin_ui_lib_rs.php' );
+require_once( dirname(__FILE__).'/admin_ui_lib_rs.php' );
 
 class ScoperAgentsChecklist {
 	function all_agents_checklist( $role_bases, $agents, $args, $class = 'rs-agents' ) {
@@ -416,7 +416,7 @@ class ScoperAgentsChecklist {
 			$caption = $agent_display_name;
 			
 			if ( strlen($caption) > $caption_length_limit ) {
-				if ( $rtl )
+				if ( ! empty($rtl) )
 					$caption = '...' . substr( $caption, strlen($caption) - $caption_length_limit); 
 				else
 					$caption = substr($caption, 0, $caption_length_limit) . '...';

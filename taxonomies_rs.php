@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('lib/agapetry_config_items.php');
+require_once( dirname(__FILE__).'/lib/agapetry_config_items.php');
 
 class CR_Taxonomies extends AGP_Config_Items {
 	// creates related data source and taxonomy objects
@@ -146,7 +146,7 @@ class CR_Taxonomies extends AGP_Config_Items {
 		if ( ! empty($tx->uses_standard_schema) )
 			return $this->standard_query_vars($terms_only);
 
-		require_once('taxonomies-custom_rs.php');
+		require_once( dirname(__FILE__).'/taxonomies-custom_rs.php');
 		return ScoperCustomTaxonomyHelper::get_terms_query_vars($tx, $terms_only);
 	}
 	
@@ -160,7 +160,7 @@ class CR_Taxonomies extends AGP_Config_Items {
 		if ( ! empty($tx->uses_standard_schema) )
 			return $this->standard_query($taxonomy, $cols, $object_id, $terms_only);  //this is a required child method
 		
-		require_once('taxonomies-custom_rs.php');
+		require_once( dirname(__FILE__).'/taxonomies-custom_rs.php');
 		return ScoperCustomTaxonomyHelper::get_terms_query($tx, $cols, $object_id, $terms_only);
 	}
 }

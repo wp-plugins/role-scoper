@@ -33,7 +33,7 @@ class ScoperRewrite {
 		define( $const_name, true );
 
 		if ( IS_MU_RS ) {
-			add_action( 'shutdown', create_function( '', "require_once( 'rewrite-mu_rs.php' ); ScoperRewriteMU::update_mu_htaccess( '$include_rs_rules' );" ) );
+			add_action( 'shutdown', create_function( '', "require_once( dirname(__FILE__).'/rewrite-mu_rs.php' ); ScoperRewriteMU::update_mu_htaccess( '$include_rs_rules' );" ) );
 		} else {
 			if ( file_exists( ABSPATH . '/wp-admin/includes/misc.php' ) )
 				include_once( ABSPATH . '/wp-admin/includes/misc.php' );
@@ -52,7 +52,7 @@ class ScoperRewrite {
 		$new_rules = '';
 		
 		if ( $http_auth || $filtering ) {
-			require_once( 'uploads_rs.php' );
+			require_once( dirname(__FILE__).'/uploads_rs.php' );
 	
 			$new_rules = "\n# BEGIN Role Scoper\n";
 	
@@ -79,7 +79,7 @@ class ScoperRewrite {
 
 	
 	function site_config_supports_rewrite() {
-		require_once( 'uploads_rs.php' );
+		require_once( dirname(__FILE__).'/uploads_rs.php' );
 		$uploads = scoper_get_upload_info();
 		
 		if ( false === strpos( $uploads['baseurl'], untrailingslashit( get_option('siteurl') ) ) )
@@ -113,7 +113,7 @@ class ScoperRewrite {
 		else
 			$rules = ScoperRewrite::build_blog_file_rules();
 			
-		require_once( 'uploads_rs.php' );
+		require_once( dirname(__FILE__).'/uploads_rs.php' );
 		$uploads = scoper_get_upload_info();
 		
 		// If a filter has changed MU basedir, don't filter file attachments for this blog because we might not be able to regenerate the basedir for rule removal at RS deactivation
@@ -126,13 +126,13 @@ class ScoperRewrite {
 	function &build_blog_file_rules() {
 		$new_rules = '';
 		
-		require_once( 'analyst_rs.php' );
+		require_once( dirname(__FILE__).'/analyst_rs.php' );
 		if ( ! $attachment_results = ScoperAnalyst::identify_protected_attachments() )
 			return $new_rules;
 			
 		global $wpdb;
 
-		require_once( 'uploads_rs.php' );
+		require_once( dirname(__FILE__).'/uploads_rs.php' );
 		
 		$home_root = parse_url(get_option('home'));
 		$home_root = trailingslashit( $home_root['path'] );

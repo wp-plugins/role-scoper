@@ -65,7 +65,7 @@ $args['default_role_basis'] = $role_basis;
 if ( isset($args['html_inserts']->close->container) )
 	$args['html_inserts']->close->container .= '<br />';
 
-	include_once('item_roles_ui_rs.php');
+	include_once( dirname(__FILE__).'/item_roles_ui_rs.php');
 	$item_roles_ui = new ScoperItemRolesUI();
 	$item_roles_ui->single_object_roles_ui($src_name, $object_type, $object_id, $args);
 ?>

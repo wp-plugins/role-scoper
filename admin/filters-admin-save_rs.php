@@ -107,7 +107,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			
 		} else {
 			// for other data sources, we have to assume object is new unless it has a role or restriction stored already.
-			require_once( 'filters-admin-save-custom_rs.php' );
+			require_once( dirname(__FILE__).'/filters-admin-save-custom_rs.php' );
 			$is_new_object = ScoperCustomAdminFiltersSave::log_object_save( $src_name, $object_id, $is_new_object, $col_parent, $set_parent );
 		}
 	
@@ -536,7 +536,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( ! is_array($selected_terms) )
 			$selected_terms = array();
 			
-		require_once('filters-admin-term-selection_rs.php');
+		require_once(dirname(__FILE__).'/filters-admin-term-selection_rs.php');
 		$user_terms = array(); // will be returned by filter_terms_for_status
 		
 		$selected_terms = scoper_filter_terms_for_status($taxonomy, $selected_terms, $user_terms);

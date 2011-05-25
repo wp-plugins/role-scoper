@@ -16,13 +16,13 @@ define ('ASSIGN_FOR_BOTH_RS', 'both');
 
 define( 'OBJECT_UI_RS', 'object_ui' );
 	
-require_once( 'admin_lib_rs.php' );
+require_once( dirname(__FILE__).'/admin_lib_rs.php' );
 
 if ( IS_MU_RS )
-	require_once( 'admin_lib-mu_rs.php' );
+	require_once( dirname(__FILE__).'/admin_lib-mu_rs.php' );
 
 if ( ( 'index.php' == $GLOBALS['pagenow'] ) && ! defined( 'USE_RVY_RIGHTNOW' )  )
-	include_once( 'admin-dashboard_rs.php' );
+	include_once( dirname(__FILE__).'/admin-dashboard_rs.php' );
 
 	
 class ScoperAdmin
@@ -56,10 +56,10 @@ class ScoperAdmin
 		}
 
 		if ( ( ( 'edit-tags.php' == $pagenow ) || ( isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'p-admin/edit-tags.php') ) ) && awp_is_plugin_active('subscribe2') )
-			require_once('subscribe2_helper_rs.php');
+			require_once( dirname(__FILE__).'/subscribe2_helper_rs.php');
 			
 		if ( defined( 'FLUTTER_NAME' ) )
-			require_once('flutter_helper_rs.php');
+			require_once( dirname(__FILE__).'/flutter_helper_rs.php');
 	}
 
 	function menu_handler() {
@@ -156,7 +156,7 @@ class ScoperAdmin
 
 		if ( 'rs-options' == $plugin_page_cr ) {
 			if ( scoper_get_option('version_update_notice') ) {
-				require_once('misc/version_notice_rs.php');
+				require_once( dirname(__FILE__).'/misc/version_notice_rs.php');
 				scoper_new_version_notice();
 			}
 
@@ -196,7 +196,7 @@ class ScoperAdmin
 			// add Ajax goodies we need for role duration/content date limit editing Bulk Role Admin
 			wp_print_scripts( array( 'page' ) );
 			
-			require_once( 'admin_lib-bulk_rs.php' );
+			require_once( dirname(__FILE__).'/admin_lib-bulk_rs.php' );
 			ScoperAdminBulkLib::date_limits_js();
 		}
 		
@@ -219,7 +219,7 @@ class ScoperAdmin
 					$agent_id = $_GET['user_id'];
 			}
 
-			require_once( 'user_search_ui_rs.php' );
+			require_once( dirname(__FILE__).'/user_search_ui_rs.php' );
 			$scoper_user_search = new ScoperUserSearch( $agent_type );
 			$scoper_user_search->output_js( $agent_type, $agent_id );
 		}
@@ -655,7 +655,7 @@ jQuery(document).ready( function($) {
 		if ( is_user_administrator_rs() )
 			return true;
 
-		require_once( 'permission_lib_rs.php' );
+		require_once( dirname(__FILE__).'/permission_lib_rs.php' );
 		return user_can_admin_role_rs($role_handle, $item_id, $src_name, $object_type, $args );
 	}
 	
@@ -663,7 +663,7 @@ jQuery(document).ready( function($) {
 		if ( is_content_administrator_rs() )
 			return true;
 		
-		require_once( 'permission_lib_rs.php' );
+		require_once( dirname(__FILE__).'/permission_lib_rs.php' );
 		return user_can_admin_object_rs($src_name, $object_type, $object_id, $any_obj_role_check, $user );
 	}
 	
@@ -671,7 +671,7 @@ jQuery(document).ready( function($) {
 		if ( is_user_administrator_rs() )
 			return true;
 		
-		require_once( 'permission_lib_rs.php' );
+		require_once( dirname(__FILE__).'/permission_lib_rs.php' );
 		return user_can_admin_terms_rs($taxonomy, $term_id, $user);
 	}
 } // end class ScoperAdmin

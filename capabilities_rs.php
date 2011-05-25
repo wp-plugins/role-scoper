@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('lib/agapetry_config_items.php');
+require_once( dirname(__FILE__).'/lib/agapetry_config_items.php');
 
 class CR_Capabilities extends AGP_Config_Items {
 	// defining_module could be a plugin name, theme name, etc.

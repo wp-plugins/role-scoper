@@ -2,7 +2,7 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('lib/agapetry_config_items.php');
+require_once( dirname(__FILE__).'/lib/agapetry_config_items.php');
 
 class CR_Roles extends AGP_Config_Items {
 	var $role_caps = array();
@@ -20,7 +20,7 @@ class CR_Roles extends AGP_Config_Items {
 		if ( isset( $this->display_names[$role_handle] ) )
 			return $this->display_names[$role_handle];
 		
-		require_once( 'roles-strings_rs.php' );
+		require_once( dirname(__FILE__).'/roles-strings_rs.php' );
 		return ScoperRoleStrings::get_display_name( $role_handle, $context );
 	}
 	
@@ -28,7 +28,7 @@ class CR_Roles extends AGP_Config_Items {
 		if ( isset( $this->abbrevs[$role_handle] ) )
 			return $this->abbrevs[$role_handle];
 		
-		require_once( 'roles-strings_rs.php' );
+		require_once( dirname(__FILE__).'/roles-strings_rs.php' );
 		return ScoperRoleStrings::get_abbrev( $role_handle, $context );
 	}
 	
@@ -36,7 +36,7 @@ class CR_Roles extends AGP_Config_Items {
 		if ( isset( $this->micro_abbrevs[$role_handle] ) )
 			return $this->micro_abbrevs[$role_handle];
 
-		require_once( 'roles-strings_rs.php' );
+		require_once( dirname(__FILE__).'/roles-strings_rs.php' );
 		
 		if( ! $return = ScoperRoleStrings::get_micro_abbrev( $role_handle, $context ) )
 			$return = ScoperRoleStrings::get_abbrev( $role_handle, $context );

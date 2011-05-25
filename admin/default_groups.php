@@ -16,7 +16,7 @@ echo "<a href='$groups_url'>Back to Groups</a>";
 <form action="" method="post" name="role_assign" id="role_assign">
 
 <?php
-require_once('groups-support.php');
+require_once(dirname(__FILE__).'/groups-support.php');
 wp_nonce_field( 'scoper-assign-termroles' );
 
 if ( isset($_POST['rs_submit']) ) {
@@ -52,7 +52,7 @@ if ( $editable_ids = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS) ) {
 	$locked_ids = array_diff($stored_groups, $editable_ids );
 	$args = array( 'suppress_extra_prefix' => true, 'eligible_ids' => $editable_ids, 'locked_ids' => $locked_ids );
 	
-	require_once('agents_checklist_rs.php');
+	require_once(dirname(__FILE__).'/agents_checklist_rs.php');
 	ScoperAgentsChecklist::agents_checklist( ROLE_BASIS_GROUPS, $all_groups, $css_id, array_flip($stored_groups), $args);
 	?>
 	</div>

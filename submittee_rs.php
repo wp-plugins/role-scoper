@@ -222,7 +222,7 @@ class Scoper_Submittee {
 				if ( $current_setting != $value ) {
 					//delete_option( 'scoper_version' ); // this forces DB schema update on next access (to create site-wide / blog-specific groups table)
 					$ver = get_option( 'scoper_version' );
-					require_once( 'db-setup_rs.php' );
+					require_once( dirname(__FILE__).'/db-setup_rs.php' );
 					scoper_db_setup( $ver['db_version'] );
 				}
 				

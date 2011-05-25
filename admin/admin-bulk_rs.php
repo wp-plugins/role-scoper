@@ -2,8 +2,8 @@
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
-require_once('admin_lib-bulk_rs.php' );
-require_once('admin_ui_lib_rs.php');
+require_once(dirname(__FILE__).'/admin_lib-bulk_rs.php' );
+require_once(dirname(__FILE__).'/admin_ui_lib_rs.php');
 require_once( SCOPER_ABSPATH . '/hardway/hardway-parent_rs.php');
 
 class ScoperAdminBulk {
@@ -163,7 +163,7 @@ function display_inputs($mode, $assignment_modes, $args = array()) {
 		echo '</h3>';
 		
 		$args = array( 'suppress_extra_prefix' => true, 'filter_threshold' => 20, 'default_hide_threshold' => 20, 'check_for_incomplete_submission' => true );
-		require_once('agents_checklist_rs.php');
+		require_once(dirname(__FILE__).'/agents_checklist_rs.php');
 		ScoperAgentsChecklist::all_agents_checklist($role_bases, $agents, $args);
 		
 		echo '<p style="clear:both"></p>';

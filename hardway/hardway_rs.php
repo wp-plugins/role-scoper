@@ -13,13 +13,13 @@ global $scoper;
 require_once( SCOPER_ABSPATH . '/lib/ancestry_lib_rs.php' );
 
 if ( $scoper->is_front() )
-	require_once('hardway-front_rs.php');
+	require_once( dirname(__FILE__).'/hardway-front_rs.php');
 
 if ( $scoper->is_front() || ! is_content_administrator_rs() )
-	require_once('hardway-taxonomy_rs.php');
+	require_once( dirname(__FILE__).'/hardway-taxonomy_rs.php');
 
 if ( $scoper->data_sources->is_member('link') )
-	require_once( 'hardway-bookmarks_rs.php' );
+	require_once( dirname(__FILE__).'/hardway-bookmarks_rs.php' );
 
 
 // flt_get_pages is required on the front end (even for administrators) to enable the inclusion of private pages

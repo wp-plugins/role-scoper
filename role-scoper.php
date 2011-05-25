@@ -77,7 +77,7 @@ if ( $prev = get_option('scoper_version') ) {
 	if ( version_compare( $prev['version'], '1.3.1', '<') ) {
 		if ( $role_type = get_option( 'scoper_role_type' ) ) {
 			if ( 'wp' == $role_type ) {
-				require_once( 'error_rs.php' );
+				require_once( dirname(__FILE__).'/error_rs.php' );
 				scoper_startup_error( 'wp_role_type' );
 				$bail = 1;
 			}
@@ -113,37 +113,37 @@ define( 'SCOPER_MAX_DATE_STRING', '2035-01-01 00:00:00' );
 define( 'SCOPER_MAX_DATE_VALUE', strtotime( constant('SCOPER_MAX_DATE_STRING') ) );
 
 if ( defined('RS_DEBUG') ) {
-	include_once('lib/debug.php');
+	include_once( dirname(__FILE__).'/lib/debug.php');
 	add_action( 'admin_footer', 'awp_echo_usage_message' );
 } else
-	include_once('lib/debug_shell.php');
+	include_once( dirname(__FILE__).'/lib/debug_shell.php');
 	
 //log_mem_usage_rs( 'plugin load' );
 
 //if ( version_compare( phpversion(), '5.2', '<' ) )	// some servers (Ubuntu) return irregular version string format
 if ( ! function_exists("array_fill_keys") )
-	require_once('lib/php4support_rs.php');
+	require_once( dirname(__FILE__).'/lib/php4support_rs.php');
 
-require_once('lib/agapetry_lib.php');
+require_once( dirname(__FILE__).'/lib/agapetry_lib.php');
 
 // === awp_is_mu() function definition and usage: must be executed in this order, and before any checks of IS_MU_RS constant (such as in role-scoper_init.php) ===
-require_once('lib/agapetry_wp_lib.php');
+require_once( dirname(__FILE__).'/lib/agapetry_wp_lib.php');
 define( 'IS_MU_RS', awp_is_mu() );
 // ----------------------------------------
 
-require_once('role-scoper_init.php');	// Contains activate, deactivate, init functions. Adds mod_rewrite_rules.
+require_once( dirname(__FILE__).'/role-scoper_init.php');	// Contains activate, deactivate, init functions. Adds mod_rewrite_rules.
 
 // register these functions before any early exits so normal activation/deactivation can still run with RS_DEBUG
 register_activation_hook(__FILE__, 'scoper_activate');
 register_deactivation_hook(__FILE__, 'scoper_deactivate');
 
 function scoper_activate() {
-	require_once('role-scoper_activation.php');
+	require_once( dirname(__FILE__).'/role-scoper_activation.php');
 	_scoper_activate();
 }
 
 function scoper_deactivate() {
-	require_once('role-scoper_activation.php');
+	require_once( dirname(__FILE__).'/role-scoper_activation.php');
 	_scoper_deactivate();
 }
 
@@ -206,13 +206,13 @@ if ( is_admin() || defined('XMLRPC_REQUEST') ) {
 		return;
 
 } elseif ( ! $bail ) {
-	require_once('feed-interceptor_rs.php'); // must define get_currentuserinfo early
+	require_once( dirname(__FILE__).'/feed-interceptor_rs.php'); // must define get_currentuserinfo early
 }
 
 //log_mem_usage_rs( 'initial requires' );
 
 if ( ! $bail ) {
-	require_once('defaults_rs.php');
+	require_once( dirname(__FILE__).'/defaults_rs.php');
 	
 	//log_mem_usage_rs( 'defaults_rs' );
 	

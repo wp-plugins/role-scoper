@@ -175,7 +175,7 @@ function is_restricted_rs( $id = '', $src_name = 'post', $op_type = 'read', $sco
 	
 	global $scoper_role_usage;
 
-	require_once('role_usage_rs.php');
+	require_once( dirname(__FILE__).'/role_usage_rs.php');
 	$scoper_role_usage = new Role_Usage_RS();
 	$scoper_role_usage->determine_role_usage_rs($src_name, $listed_ids);
 

@@ -84,7 +84,7 @@ class QueryInterceptorFront_NonAdmin_RS {
 				
 				if ( $remove_ids = array_diff( $item_ids, $okay_ids ) ) {
 					if ( $teaser_enabled && scoper_get_otype_option( 'use_teaser', 'post', $post_type ) ) {
-						require_once( 'teaser_rs.php' );
+						require_once( dirname(__FILE__).'/teaser_rs.php' );
 						$teaser_prepend = ScoperTeaser::get_teaser_text( 'prepend', 'name', 'post', $post_type );
 						$teaser_append = ScoperTeaser::get_teaser_text( 'append', 'name', 'post', $post_type );
 						

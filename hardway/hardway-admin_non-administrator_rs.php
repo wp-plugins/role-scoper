@@ -91,12 +91,12 @@ class ScoperAdminHardway_Ltd {
 				_rs_mnt_modify_nav_menu_item( $_REQUEST['menu-item'], 'move' );
 			}
 		} elseif ( 'add-bookmark' == $referer_name ) {
-			require_once( 'hardway-admin-links_rs.php' );
+			require_once( dirname(__FILE__).'/hardway-admin-links_rs.php' );
 			$link_category = ! empty( $_POST['link_category'] ) ? $_POST['link_category'] : array();
 			$_POST['link_category'] = scoper_flt_newlink_category( $link_category );
 
 		} elseif ( 0 === strpos( $referer_name, 'update-bookmark_' ) ) {
-			require_once( 'hardway-admin-links_rs.php' );
+			require_once( dirname(__FILE__).'/hardway-admin-links_rs.php' );
 			$link_category = ! empty( $_POST['link_category'] ) ? $_POST['link_category'] : array();
 			$_POST['link_category'] = scoper_flt_link_category( $link_category );
 		}

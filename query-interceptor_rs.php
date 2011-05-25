@@ -1428,7 +1428,7 @@ class QueryInterceptor_RS
 		
 		if ( $this->scoper->is_front() && empty($this->skip_teaser) ) {
 			if ( $tease_otypes = $this->_get_teaser_object_types($src_name, $object_types, $args) ) {
-				require_once('teaser_rs.php');
+				require_once( dirname(__FILE__).'/teaser_rs.php');
 				
 				$args['force_teaser'] = true;
 				return ScoperTeaser::posts_teaser_prep_results( $results, $tease_otypes, $args );
@@ -1472,7 +1472,7 @@ class QueryInterceptor_RS
 		if ( empty($tease_otypes) || ( empty($force_teaser) && ! array_intersect($object_types, $tease_otypes) ) )
 			return $results;
 		
-		require_once('teaser_rs.php');
+		require_once( dirname(__FILE__).'/teaser_rs.php');
 		return ScoperTeaser::posts_teaser($results, $tease_otypes, $args);
 	}
 

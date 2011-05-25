@@ -3,7 +3,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
 
 function agp_return_file( $file_path, $attachment_id = 0 ) {
-	require_once( 'uploads_rs.php' );
+	require_once( dirname(__FILE__).'/uploads_rs.php' );
 	$uploads = scoper_get_upload_info();
 	
 	if ( false === strpos( $file_path, $uploads['basedir'] ) )
@@ -27,7 +27,7 @@ function agp_return_file( $file_path, $attachment_id = 0 ) {
 
 	if ( ! $key = get_post_meta( $attachment_id, '_rs_file_key' ) ) {
 		// The key was lost from DB, so regenerate it (and files / uploads .htaccess)
-		require_once( 'rewrite-rules_rs.php' );
+		require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 		ScoperRewrite::resync_file_rules();
 		
 		// If the key is still not available, fail out to avoid recursion
@@ -40,7 +40,7 @@ function agp_return_file( $file_path, $attachment_id = 0 ) {
 		$last_resync = get_option( 'scoper_last_htaccess_resync' );
 		if ( ( ! $last_resync ) || ( time() - $last_resync > 3600 ) ) {  // prevent abuse (mismatched .htaccess keys should not be a frequent occurance)
 			update_option( 'scoper_last_htaccess_resync', time() );
-			require_once( 'rewrite-rules_rs.php' );
+			require_once( dirname(__FILE__).'/rewrite-rules_rs.php' );
 			ScoperRewrite::resync_file_rules();
 		}
 		exit(0);  // If htaccess rewrite was instantaneous, we could just continue without this exit.  But settle for the one-time image access failure to avoid a redirect loop on delayed file update.
@@ -87,7 +87,7 @@ class AttachmentFilters_RS {
 		}
 		
 		if ( ! is_array( $uploads ) || empty($uploads['basedir']) ) {
-			require_once( 'uploads_rs.php' );
+			require_once( dirname(__FILE__).'/uploads_rs.php' );
 			$uploads = scoper_get_upload_info();
 		}
 	
@@ -163,7 +163,7 @@ class AttachmentFilters_RS {
 
 		$file = $query->query_vars['attachment'];
 
-		require_once( 'uploads_rs.php' );
+		require_once( dirname(__FILE__).'/uploads_rs.php' );
 		$uploads = scoper_get_upload_info();
 	
 		$return_attachment_id = 0;

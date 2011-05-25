@@ -26,9 +26,9 @@ if ( empty($role_bases) )
 
 $otype = $scoper->data_sources->member_property($src_name, 'object_types', $object_type);
 	
-require_once( 'admin-bulk_rs.php' );
-require_once( 'admin_lib-bulk-parent_rs.php');
-require_once('role_assignment_lib_rs.php');
+require_once( dirname(__FILE__).'/admin-bulk_rs.php' );
+require_once( dirname(__FILE__).'/admin_lib-bulk-parent_rs.php');
+require_once( dirname(__FILE__).'/role_assignment_lib_rs.php');
 $role_assigner = init_role_assigner();
 	
 $nonce_id = 'scoper-assign-roles';
