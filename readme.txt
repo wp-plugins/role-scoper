@@ -113,7 +113,6 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : "Eligible Groups" count above groups checklists wrong under some configurations
 * BugFix : Needless ALTER TABLE statements, PHP warnings on plugin activation
 * Change : Change all require and include statements to absolute path to work around oddball servers that can't handle relative paths
-* Change : When a role was assigned for page and subpages, propagation stopped at subpages which already had the same role direct-assigned
 * BugFix : File Filtering - on Multisite, adding a new site created a security loophole to protected files, until plugin reactivated or File Filtering toggled off/on
 * BugFix : Invalid .htaccess contents (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled and default .htaccess has <IfModule> statement above default WP block
 

@@ -412,15 +412,11 @@ class ScoperRoleAssigner
 			if ( $remove_ids )
 				$descendant_ids = array_diff( $descendant_ids, $remove_ids );
 
-			if ( $retain_roles = $this->scoper->role_defs->get_containing_roles( array($role_handle => true), $role_spec->role_type ) ) {
-				$retain_role_names = scoper_role_handles_to_names(array_keys($retain_roles));
+			$retain_roles = $this->scoper->role_defs->add_containing_roles( array($role_handle => true), $role_spec->role_type );
+			$retain_role_names = scoper_role_handles_to_names(array_keys($retain_roles));
 
-				$role_in = "'" . implode("', '", $retain_role_names) . "'";
-				$role_clause = "AND role_name IN ($role_in)";
-			} else {
-				$retain_role_names = array();
-				$role_clause = "AND 1=2";
-			}
+			$role_in = "'" . implode("', '", $retain_role_names) . "'";
+			$role_clause = "AND role_name IN ($role_in)";
 		}
 		
 		
@@ -535,10 +531,8 @@ class ScoperRoleAssigner
 				foreach ( $descendant_ids as $id ) {
 					// Don't overwrite an explicitly assigned object role with a propagated assignment
 					// unless the propagated role would be an upgrade
-					if ( $retain_role_names ) {
-						if ( $direct_assignment = scoper_get_var( "$qry_select_base AND inherited_from = '0' $role_clause AND $col_ug_id = '$ug_id' AND obj_or_term_id = '$id' LIMIT 1" ) )
-							continue;
-					}
+					if ( $direct_assignment = scoper_get_var( "$qry_select_base AND inherited_from = '0' $role_clause AND $col_ug_id = '$ug_id' AND obj_or_term_id = '$id' LIMIT 1" ) )
+						continue;
 					
 					// don't delete other role assignments if this insertion has date limits
 					if ( ! $duration_vals && ! $content_date_vals ) {
