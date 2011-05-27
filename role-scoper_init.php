@@ -519,12 +519,10 @@ function scoper_mod_rewrite_rules ( $rules ) {
 			$rules = ScoperRewriteMU::insert_site_rules( $rules );
 		}
 	} else {
-		$rs_rules = ScoperRewrite::build_site_rules();
-		
-		if ( $pos_endif = strpos( $rules, '</IfModule>' ) )
-			$rules = substr( $rules, 0, $pos_endif ) . $rs_rules . substr($rules, $pos_endif);
-		else
+		if ( ! strpos( $rules, 'BEGIN Role Scoper' ) ) {
+			$rs_rules = ScoperRewrite::build_site_rules();
 			$rules .= $rs_rules;
+		}
 	}
 
 	return $rules;

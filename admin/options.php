@@ -794,6 +794,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		if ( $ui->display_hints) 
 			_e('Block direct URL access to images and other uploaded files in the WordPress uploads folder which are attached to post(s)/page(s) that the user cannot read.  A separate RewriteRule will be added to your .htaccess file for each protected file.  Non-protected files are returned with no script execution whatsoever.', 'scoper');
 		if ( $attachment_filtering ) {
+			/*
 			if ( $ui->display_hints) {
 				if ( IS_MU_RS && ! defined('SCOPER_MU_FILE_PROCESSING') ) {
 					echo '</div><div class="agp-vspaced_input" style="margin-top: 1em">';
@@ -801,6 +802,7 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 					echo '</div>';
 				}
 			}
+			*/
 		} elseif ( ! empty($content_dir_notice) ) {
 			echo '<br /><span class="rs-warning">';
 			echo $content_dir_notice;

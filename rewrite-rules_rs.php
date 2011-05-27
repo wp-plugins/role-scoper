@@ -45,7 +45,7 @@ class ScoperRewrite {
 		}
 	}
 	
-	function build_site_rules() {
+	function build_site_rules( $ifmodule_wrapper = true ) {
 		$http_auth = scoper_get_option( 'feed_link_http_auth' );
 		$filtering = IS_MU_RS && get_site_option( 'scoper_file_filtering' );	// scoper_get_option is not reliable for initial execution following plugin activation
 		
@@ -55,21 +55,24 @@ class ScoperRewrite {
 			require_once( dirname(__FILE__).'/uploads_rs.php' );
 	
 			$new_rules = "\n# BEGIN Role Scoper\n";
+			
+			if ( $ifmodule_wrapper )
+				$new_rules .= "<IfModule mod_rewrite.c>\n";
 	
+			$new_rules .= "RewriteEngine On\n\n";
+
 			if ( $http_auth ) {
-				$new_rules .= "RewriteEngine On\n\n";
-				
 				// workaround for HTTP Authentication with PHP running as CGI
 				$new_rules .= "RewriteCond %{HTTP:Authorization} ^(.*)\n";
 				$new_rules .= "RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]\n";
 			}
 		
 			if ( $filtering ) {
-				if ( ! $http_auth )
-					$new_rules .= "RewriteEngine On\n\n";
-				
 				$new_rules .= ScoperRewriteMU::build_blog_file_redirects();
 			}
+			
+			if ( $ifmodule_wrapper )
+				$new_rules .= "</IfModule>\n";
 			
 			$new_rules .= "\n# END Role Scoper\n\n";
 		}
@@ -89,6 +92,9 @@ class ScoperRewrite {
 		if ( IS_MU_RS ) {
 			global $blog_id;
 			
+			if ( 'site-new.php' == $GLOBALS['pagenow'] )
+				return true;
+
 			if ( UPLOADS != UPLOADBLOGSDIR . "/$blog_id/files/" )
 				return false;
 				
@@ -206,11 +212,20 @@ class ScoperRewrite {
 			}
 		} // end foreach protected attachment
 
-		if ( IS_MU_RS && defined('SCOPER_MU_FILE_PROCESSING') ) { // unless SCOPER_MU_FILE_PROCESSING is defined (indicating blogs.php has been modified for compatibility), blogs.php processing will be bypassed for all files
-			$content_path = trailingslashit( str_replace( $strip_path, '', str_replace( '\\', '/', WP_CONTENT_DIR ) ) );
+		if ( IS_MU_RS ) {
+			global $blog_id;
+			$file_filtered_sites = (array) get_site_option( 'scoper_file_filtered_sites' );
+			if ( ! in_array( $blog_id, $file_filtered_sites ) ) {
+				// this site needs a file redirect rule in root .htaccess
+				scoper_flush_site_rules();
+			}
+		
+			if ( defined('SCOPER_MU_FILE_PROCESSING') ) { // unless SCOPER_MU_FILE_PROCESSING is defined (indicating blogs.php has been modified for compatibility), blogs.php processing will be bypassed for all files
+				$content_path = trailingslashit( str_replace( $strip_path, '', str_replace( '\\', '/', WP_CONTENT_DIR ) ) );
 
-			$new_rules .= "\n# Default WordPress cache handling\n";
-			$new_rules .= "RewriteRule ^(.*) {$content_path}blogs.php?file=$1 [L]\n";
+				$new_rules .= "\n# Default WordPress cache handling\n";
+				$new_rules .= "RewriteRule ^(.*) {$content_path}blogs.php?file=$1 [L]\n";
+			}
 		}
 		
 		$new_rules .= "</IfModule>\n";
