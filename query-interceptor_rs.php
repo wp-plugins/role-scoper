@@ -223,7 +223,7 @@ class QueryInterceptor_RS
 			$args['skip_owner_clause'] = true;
 			$args['terms_reqd_caps'] = $reqd_caps_by_otype;
 			$args['taxonomies'] = $taxonomies;
-			
+
 			if ( is_admin() )
 				$args['alternate_reqd_caps'][0] = array( "assign_$taxonomy" );
 
@@ -1044,7 +1044,7 @@ class QueryInterceptor_RS
 
 		$where = array();
 
-		if ( $otype_use_term_roles && is_array($otype_use_term_roles) ) {
+		if ( $otype_use_term_roles && is_array($otype_use_term_roles) && ! $terms_query ) {
 			$_taxonomies = array_keys( array_intersect( $otype_use_term_roles, array( 1, '1', true ) ) );
 			
 			// taxonomies arg is for limiting; default is to include all associated taxonomies in where clause
@@ -1224,7 +1224,6 @@ class QueryInterceptor_RS
 			}
 		}
 
-
 		// since object roles are not pre-loaded prior to this call, role date limits are handled via subselect, within the date_key = '' iteration
 		$object_roles_duration_clause = scoper_get_duration_clause();
 				
@@ -1260,7 +1259,7 @@ class QueryInterceptor_RS
 							if ( $qvars = $this->scoper->taxonomies->get_terms_query_vars($taxonomy) )
 								if ( $terms_query && ! $otype_use_object_roles ) {
 									$qtv = $this->scoper->taxonomies->get_terms_query_vars($taxonomy, true);
-									$taxonomy_clauses[$is_strict] []= "{$qtv->term->alias}.{$qtv->term->col_id} IN ('" . implode("', '", $terms) . "') $objscope_clause";
+									$taxonomy_clauses[false] []= "{$qtv->term->alias}.{$qtv->term->col_id} IN ('" . implode("', '", $terms) . "') $objscope_clause";
 								} else {
 									$this_tx_clause = "{$qvars->term->alias}.{$qvars->term->col_id} IN ('" . implode("', '", $terms) . "')";
 

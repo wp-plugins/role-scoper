@@ -115,6 +115,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Change : Change all require and include statements to absolute path to work around oddball servers that can't handle relative paths
 * BugFix : File Filtering - on Multisite, adding a new site created a security loophole to protected files, until plugin reactivated or File Filtering toggled off/on
 * BugFix : Invalid .htaccess contents (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled and default .htaccess has <IfModule> statement above default WP block
+* BugFix : Tags were not displayed in Edit Posts listing for non-Administrators
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
