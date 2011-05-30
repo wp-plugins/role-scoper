@@ -481,7 +481,13 @@ function scoper_get_otype_option( $option_main_key, $src_name, $object_type = ''
 function is_taxonomy_used_rs( $taxonomy ) {
 	global $scoper_default_otype_options;
 
-	$term_roles = array_merge( $scoper_default_otype_options['use_term_roles'], (array) scoper_get_option( 'use_term_roles' ) );
+	$stored_option = (array) scoper_get_option( 'use_term_roles' );
+	foreach( array_merge( array_keys($scoper_default_otype_options['use_term_roles']), array_keys($stored_option) ) as $key ) {
+		$term_roles[$key] = ( isset($scoper_default_otype_options['use_term_roles'][$key]) ) ? $scoper_default_otype_options['use_term_roles'][$key] : array();
+		
+		if ( isset( $stored_option[$key] ) )
+			$term_roles[$key] =	array_merge( $term_roles[$key], $stored_option[$key] );
+	}
 
 	foreach ( $term_roles as $taxonomies )  // keyed by src_otype
 		if ( ! empty( $taxonomies[$taxonomy] ) )

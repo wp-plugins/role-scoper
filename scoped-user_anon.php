@@ -82,7 +82,7 @@ class WP_Scoped_User_Anon extends WP_User { // Special skeleton class for ANONYM
 
 		global $wpdb;
 		
-		if ( ! $wpdb->groups_rs )
+		if ( empty($wpdb->groups_rs) )
 			return array();
 
 		// include WP metagroup for anonymous user

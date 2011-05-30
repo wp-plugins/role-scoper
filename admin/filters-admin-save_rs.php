@@ -8,7 +8,6 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	// * force the filter for all associated taxonomies regardless of term selection
 	// * apply default term(s) if defined
 	function scoper_force_custom_taxonomy_filters( $post_id, $post ) {
-
 		$post_type_obj = get_post_type_object( $post->post_type );
 
 		foreach( $post_type_obj->taxonomies as $taxonomy ) {
@@ -805,8 +804,13 @@ function cr_get_posted_object_terms( $taxonomy ) {
 		if ( ! empty($_POST['tags_input']) )
 			return $_POST['tags_input'];
 
-	} elseif( ! empty($_POST['tax_input'][$taxonomy]) ) {
-		return $_POST['tax_input'][$taxonomy];
+	} else {
+		if ( $var = $GLOBALS['scoper']->taxonomies->member_property( $taxonomy, 'object_terms_post_var' ) ) {
+			if ( isset( $_POST[$var] ) )
+				return $_POST[$var];
+		} elseif ( ! empty($_POST['tax_input'][$taxonomy]) ) {
+ 			return $_POST['tax_input'][$taxonomy];
+		}
 	}
 		
 	return array();

@@ -989,7 +989,6 @@ class QueryInterceptor_RS
 	
 	
 	function objects_where_scope_clauses($src_name, $reqd_caps, $args ) {
-
 		// Optional Args (will be defaulted to meaningful values)
 		// Note: ignore_restrictions affects Scoper::qualify_terms() output
 		$defaults = array( 'taxonomies' => '', 'use_blog_roles' => true, 'terms_query' => false,  'qualifying_object_roles' => false,
