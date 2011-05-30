@@ -1044,19 +1044,23 @@ class QueryInterceptor_RS
 
 		$where = array();
 
-		if ( $otype_use_term_roles && is_array($otype_use_term_roles) && ! $terms_query ) {
+		if ( $terms_query ) {
+			$_taxonomies = $taxonomies;
+
+		} elseif ( $otype_use_term_roles && is_array($otype_use_term_roles) ) {
 			$_taxonomies = array_keys( array_intersect( $otype_use_term_roles, array( 1, '1', true ) ) );
 			
 			// taxonomies arg is for limiting; default is to include all associated taxonomies in where clause
 			if ( $taxonomies )
 				$_taxonomies = array_intersect( $_taxonomies, $taxonomies );
-				
-			if ( 'post' == $src_name ) {
-				$enabled_taxonomies = array_keys( array_intersect( scoper_get_option( 'use_taxonomies' ), array( 1, '1', true ) ) );
-				$_taxonomies = array_intersect( $_taxonomies, $enabled_taxonomies );
-			}
-		} else
+		} else {
 			$_taxonomies = array();
+		}
+		
+		if ( $_taxonomies && ( 'post' == $src_name ) ) {
+			$enabled_taxonomies = array_keys( array_intersect( scoper_get_option( 'use_taxonomies' ), array( 1, '1', true ) ) );
+			$_taxonomies = array_intersect( $_taxonomies, $enabled_taxonomies );
+		}
 		
 		$user_blog_roles = array( '' => array() );
 		
