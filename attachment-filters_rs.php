@@ -10,7 +10,7 @@ function agp_return_file( $file_path, $attachment_id = 0 ) {
 		$file_path = untrailingslashit($uploads['basedir']) . "/$file_path";
 	
 	$file_url = str_replace( untrailingslashit($uploads['basedir']), untrailingslashit($uploads['baseurl']), $file_path );
-		
+
 	//rs_errlog( "agp_return_file: $file_path" );
 	
 	if ( ! $attachment_id ) {
@@ -85,7 +85,7 @@ class AttachmentFilters_RS {
 			//rs_errlog("skipping filtering for $file");
 			return true;
 		}
-		
+
 		if ( ! is_array( $uploads ) || empty($uploads['basedir']) ) {
 			require_once( dirname(__FILE__).'/uploads_rs.php' );
 			$uploads = scoper_get_upload_info();
@@ -162,7 +162,7 @@ class AttachmentFilters_RS {
 			return;
 
 		$file = $query->query_vars['attachment'];
-
+		
 		require_once( dirname(__FILE__).'/uploads_rs.php' );
 		$uploads = scoper_get_upload_info();
 	

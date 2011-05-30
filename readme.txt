@@ -116,6 +116,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : File Filtering - on Multisite, adding a new site created a security loophole to protected files, until plugin reactivated or File Filtering toggled off/on
 * BugFix : Invalid .htaccess contents (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled and default .htaccess has <IfModule> statement above default WP block
 * BugFix : Tags were not displayed in Edit Posts listing for non-Administrators
+* Compat : W3 Total Cache: .htaccess corruption (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta

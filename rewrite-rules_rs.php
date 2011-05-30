@@ -32,8 +32,10 @@ class ScoperRewrite {
 	
 		define( $const_name, true );
 
+		// sleep() time is necessary to avoid .htaccess file i/o race conditions since other plugins (W3 Total Cache) may also perform or trigger .htaccess update, and those file operations don't all use flock
+		// This update only occurs on plugin activation, the first time a MS site has an attachment to a private/restricted page, and on various plugin option changes.
 		if ( IS_MU_RS ) {
-			add_action( 'shutdown', create_function( '', "require_once( dirname(__FILE__).'/rewrite-mu_rs.php' ); ScoperRewriteMU::update_mu_htaccess( '$include_rs_rules' );" ) );
+			add_action( 'shutdown', create_function( '', "sleep(2); require_once( dirname(__FILE__).'/rewrite-mu_rs.php' ); ScoperRewriteMU::update_mu_htaccess( '$include_rs_rules' );" ) );
 		} else {
 			if ( file_exists( ABSPATH . '/wp-admin/includes/misc.php' ) )
 				include_once( ABSPATH . '/wp-admin/includes/misc.php' );
@@ -41,7 +43,7 @@ class ScoperRewrite {
 			if ( file_exists( ABSPATH . '/wp-admin/includes/file.php' ) )
 				include_once( ABSPATH . '/wp-admin/includes/file.php' );
 
-			add_action( 'shutdown', create_function( '', 'global $wp_rewrite; if ( ! did_action("delete_option_rewrite_rules") && ! empty($wp_rewrite) ) { $wp_rewrite->flush_rules(true); }' ), 999 );
+			add_action( 'shutdown', create_function( '', 'global $wp_rewrite; if ( ! did_action("delete_option_rewrite_rules") && ! empty($wp_rewrite) ) { sleep(2); $wp_rewrite->flush_rules(true); }' ), 999 );
 		}
 	}
 	
