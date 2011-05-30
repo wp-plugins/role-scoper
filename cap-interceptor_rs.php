@@ -215,18 +215,14 @@ class CapInterceptor_RS
 		} elseif ( is_admin() && ( 'edit-tags.php' == $GLOBALS['pagenow'] ) && ( 'link_category' == $_REQUEST['taxonomy'] ) ) {
 			$src_name = 'link';
 			$object_type = 'link_category';
-		} elseif ( $is_taxonomy_cap ) {
-			$object_types = (array) $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'object_types' );
-			$object_type = reset( $object_types );
 		}
-	
+
 		if ( empty($object_type) )
 			$object_type = cr_find_object_type( $src_name, $object_id );
 
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
 		// =====================================================================================================================================
 
-		
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
 		if ( 'post' == $src_name ) {	
 			if ( ! $is_taxonomy_cap ) {
