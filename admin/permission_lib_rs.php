@@ -135,9 +135,13 @@
 			$user = $GLOBALS['current_rs_user'];
 		}
 		
+		$taxonomies = array();
 		$qualifying_caps = array();
 		
-		$taxonomies = array();
+		if ( $tx_obj = get_taxonomy( $taxonomy ) ) {
+			$qualifying_caps = array( $tx_obj->cap->manage_terms => 1 );
+			$taxonomies[$taxonomy] = 1;
+		} else {
 		foreach ( $scoper->cap_defs->get_all() as $cap_name => $capdef )
 			if ( isset($capdef->op_type) && (OP_ADMIN_RS == $capdef->op_type) && ! empty($capdef->object_types) ) {
 				foreach ( $capdef->object_types as $_object_type ) {
@@ -149,6 +153,7 @@
 					}
 				}
 			}
+		}
 
 		if ( empty($qualifying_caps) )
 			return false;
@@ -163,8 +168,9 @@
 				foreach ( array_keys($user_blog_roles) as $role_handle ) {
 					// can't blend in blog role if term requires term role assignment
 					if ( isset($strict_terms['unrestrictions'][$role_handle][$term_id])
-					|| ( ! is_array($strict_terms['unrestrictions'][$role_handle]) && ! isset($strict_terms['restrictions'][$role_handle][$term_id]) ) )
+					|| ( ! is_array($strict_terms['unrestrictions'][$role_handle]) && ! isset($strict_terms['restrictions'][$role_handle][$term_id]) ) ) {
 						return true;
+					}
 				}
 			} else {
 				// todo: more precision by checking whether ANY terms are non-strict for the qualifying role(s)
