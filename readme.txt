@@ -120,6 +120,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Non-Administrators could not edit categories or tags (since 1.3.35)
 * BugFix : Could not create a new post based on an editing role assigned for a non-hierarchical custom taxonomy
 * BugFix : PHP Warning "Invalid argument supplied for foreach()" with some custom taxonomy configurations
+* Compat : WPML - other language categories included in Post Edit form for non-Administrators
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta

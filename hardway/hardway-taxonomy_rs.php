@@ -334,9 +334,13 @@ class ScoperHardwayTaxonomy
 		if ( !empty($exclusions) )
 			$exclusions .= ')';
 		
+		// WPML attempts to pull taxonomy out of debug_backtrace() unless set in $_GET or $_POST; previous filter execution throws it off
+		if ( defined('ICL_SITEPRESS_VERSION') && ! isset($_GET['taxonomy'] ) )
+			$_GET['taxonomy'] = current($taxonomies);
+
 		$exclusions = apply_filters('list_terms_exclusions', $exclusions, $args);
 		$where .= $exclusions;
-	
+
 		if ( !empty($slug) ) {
 			$slug = sanitize_title($slug);
 			$where .= " AND t.slug = '$slug'";
@@ -489,7 +493,7 @@ class ScoperHardwayTaxonomy
 				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser, 'post_type' => $post_type ) );
 			}
 		}
-
+		
 		// Make sure we show empty categories that have children.
 		if ( $hierarchical && $hide_empty ) {
 			foreach ( $terms as $k => $term ) {
