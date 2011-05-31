@@ -801,7 +801,7 @@ class CapInterceptor_RS
 				continue;
 
 			foreach ( $otypes as $this_otype_caps ) { // keyed by object_type
-				$caps_by_op = $this->scoper->cap_defs->organize_caps_by_op($this_otype_caps);
+				$caps_by_op = $this->scoper->cap_defs->organize_caps_by_op( (array) $this_otype_caps);
 				
 				foreach ( $caps_by_op as $this_op_caps ) { // keyed by op_type
 					$roles = $this->scoper->role_defs->qualify_roles($this_op_caps);

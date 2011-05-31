@@ -119,6 +119,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : W3 Total Cache: .htaccess corruption (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled
 * BugFix : Non-Administrators could not edit categories or tags (since 1.3.35)
 * BugFix : Could not create a new post based on an editing role assigned for a non-hierarchical custom taxonomy
+* BugFix : PHP Warning "Invalid argument supplied for foreach()" with some custom taxonomy configurations
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
