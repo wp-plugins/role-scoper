@@ -2024,7 +2024,7 @@ if ( $ui->display_hints ) {
 echo '<ul>';
 $all_movable_options = array();
 
-$option_scope_stamp = __( 'sitewide control of "%s"', 'scoper' );
+$option_scope_stamp = __( 'network-wide control of "%s"', 'scoper' );
 
 foreach ( $available_form_options as $tab_name => $sections ) {
 	echo '<li>';

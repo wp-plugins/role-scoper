@@ -10,7 +10,8 @@ class ScoperAncestry {
 		
 		$children = get_option("{$taxonomy}_children_rs");
 
-		if ( is_array($children) )
+		//if ( is_array($children) )  // caused non-refresh from empty array for custom taxonomies
+		if ( $children )
 			return $children;
 
 		$children = array();
