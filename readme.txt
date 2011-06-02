@@ -123,6 +123,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : WPML - other language categories included in Post Edit form for non-Administrators
 * BugFix : Non-Administrators could not edit tags (since 1.3.35)
 * BugFix : New child terms in custom taxonomies were excluded from terms listing until RS re-activation, in some situations
+* Compat : Mingle plugin (and others which force setting of user object before all plugins are loaded) made RS inoperative
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta

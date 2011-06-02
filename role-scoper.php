@@ -249,6 +249,9 @@ if ( ! $bail ) {
 
 	add_action( 'set_current_user', 'scoper_act_set_current_user', 99 );
 	
+	if ( ! empty( $GLOBALS['current_user'] ) )	// some plugins force setting of current user before RS loads
+		scoper_act_set_current_user();
+
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
 	add_action('init', 'scoper_log_init_action', $priority);
 }
