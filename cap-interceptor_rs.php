@@ -446,15 +446,15 @@ class CapInterceptor_RS
 						continue;
 
 					$inserted_terms[$taxonomy][$object_id] = true;
-							
+
 					//if ( $stored_terms = wp_get_object_terms( $object_id, $taxonomy ) ) // note: this will cause trouble if WP core ever auto-stores object terms on post creation
 					//	continue;
 
 					$stored_terms = $this->scoper->get_terms($taxonomy, UNFILTERED_RS, COL_ID_RS, $object_id);
 					
-					require_once( dirname(__FILE__).'/admin/filters-admin-save_rs.php' );   // todo: is this already included by now?
+					require_once( dirname(__FILE__).'/admin/filters-admin-save_rs.php' );
 					$selected_terms = cr_get_posted_object_terms( $taxonomy );
-							
+
 					if ( $set_terms = $GLOBALS['scoper_admin_filters']->flt_pre_object_terms($selected_terms, $taxonomy) ) {
 						$set_terms = array_unique( array_map('intval', $set_terms) );
 
@@ -466,6 +466,18 @@ class CapInterceptor_RS
 							unset( $cache_where_clause );
 							unset( $cache_okay_ids );
 						}
+					}
+				}
+				
+				// also avoid chicken-egg situation when publish cap is granted by a propagating page role
+				if ( $object_type_obj->hierarchical && isset( $_POST['parent_id'] ) ) {
+					if ( $_POST['parent_id'] != get_post_field( 'post_parent', $object_id ) ) {
+						$set_parent = $GLOBALS['scoper_admin_filters']->flt_page_parent( $_POST['parent_id'] );
+						$GLOBALS['wpdb']->query( "UPDATE $wpdb->posts SET post_parent = '$set_parent' WHERE ID = '$object_id'" );
+						
+						require_once( dirname(__FILE__).'/admin/filters-admin-save_rs.php' );
+						scoper_inherit_parent_roles($object_id, OBJECT_SCOPE_RS, $src_name, $set_parent, $object_type);
+						scoper_inherit_parent_restrictions($object_id, OBJECT_SCOPE_RS, $src_name, $set_parent, $object_type);
 					}
 				}
 			}

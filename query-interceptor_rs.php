@@ -989,6 +989,7 @@ class QueryInterceptor_RS
 	
 	
 	function objects_where_scope_clauses($src_name, $reqd_caps, $args ) {
+
 		// Optional Args (will be defaulted to meaningful values)
 		// Note: ignore_restrictions affects Scoper::qualify_terms() output
 		$defaults = array( 'taxonomies' => '', 'use_blog_roles' => true, 'terms_query' => false,  'qualifying_object_roles' => false,
@@ -1312,26 +1313,12 @@ class QueryInterceptor_RS
 								// Combine all qualifying (and applied) object roles into a single OR clause						
 								$role_in = "'" . implode("', '", array_keys($scope_criteria[OBJECT_SCOPE_RS][$role_type])) . "'";
 
-								static $cache_obj_ids;
-								static $post_save_refreshed;
-								
-								if ( ! isset( $cache_obj_ids ) ) {
-									$cache_obj_ids = array();
-									$post_save_refreshed = array();
-								}
-								
+								static $cache_obj_ids = array();
+
+								if ( 'post.php' == $GLOBALS['pagenow'] && ! empty($_REQUEST['action']) || did_action( 'save_post' ) || ! empty($_GET['doaction']) )
+									$force_refresh = true;		
+
 								$objrole_subselect = "SELECT DISTINCT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause ";
-								
-								if ( did_action( 'save_post' ) || ! empty($_GET['doaction']) ) {
-									// make sure we don't refresh the same query multiple times following an update operation
-									if ( isset( $post_save_refreshed[$objrole_subselect] ) )
-										$force_refresh = false;
-									else {
-										unset( $cache_obj_ids[$objrole_subselect] );
-										$post_save_refreshed[$objrole_subselect] = true;
-									}
-								} else
-									$force_refresh = false;				
 
 								if ( ! isset( $cache_obj_ids[$objrole_subselect] ) || $force_refresh )  
 									$cache_obj_ids[$objrole_subselect] = scoper_get_col( $objrole_subselect );

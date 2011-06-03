@@ -124,6 +124,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : Non-Administrators could not edit tags (since 1.3.35)
 * BugFix : New child terms in custom taxonomies were excluded from terms listing until RS re-activation, in some situations
 * Compat : Mingle plugin (and others which force setting of user object before all plugins are loaded) made RS inoperative
+* BugFix : When Page Editor and Author roles are Restricted by default, new pages saved by non-Administrator set to "Pending Review" on first Publish attempt
+* BugFix : When all Page editing roles are Restricted by default, new pages are not editable by non-Administrator creator
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
