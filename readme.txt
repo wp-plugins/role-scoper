@@ -3,8 +3,8 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
-Tested up to: 3.1.2
-Stable Tag: 1.3.39
+Tested up to: 3.2
+Stable Tag: 1.3.40
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,26 +106,38 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.40-dev =
-* BugFix : Bad link to Role Groups edit form from group selection checklist when Sitewide Groups enabled on a Multisite Installation
-* BugFix : Default Groups could not be defined on Multisite installations
-* BugFix : Default Groups Edit Form did not refresh following update
-* BugFix : "Eligible Groups" count above groups checklists wrong under some configurations
-* BugFix : Needless ALTER TABLE statements, PHP warnings on plugin activation
-* Change : Change all require and include statements to absolute path to work around oddball servers that can't handle relative paths
+#### 1.3.40 - 6 June 2011
+
+= Category / Tag Editing =
+* BugFix : Non-Administrators could not edit categories or tags (since 1.3.35)
+* BugFix : Tags were not displayed in Edit Posts listing for non-Administrators
+* BugFix : New child terms in custom taxonomies were excluded from terms listing until RS re-activation, in some situations
+
+= Plugin Compatibility =
+* Compat : W3 Total Cache: .htaccess corruption (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled
+* Compat : Mingle plugin (and others which force setting of user object before all plugins are loaded) made RS inoperative
+* Compat : WPML - category selection checkboxes from other languages included in Post Edit form for non-Administrators
+
+= File Filtering =
 * BugFix : File Filtering - on Multisite, adding a new site created a security loophole to protected files, until plugin reactivated or File Filtering toggled off/on
 * BugFix : Invalid .htaccess contents (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled and default .htaccess has <IfModule> statement above default WP block
-* BugFix : Tags were not displayed in Edit Posts listing for non-Administrators
-* Compat : W3 Total Cache: .htaccess corruption (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled
-* BugFix : Non-Administrators could not edit categories (since 1.3.35)
-* BugFix : Could not create a new post based on an editing role assigned for a non-hierarchical custom taxonomy
-* BugFix : PHP Warning "Invalid argument supplied for foreach()" with some custom taxonomy configurations
-* Compat : WPML - other language categories included in Post Edit form for non-Administrators
-* BugFix : Non-Administrators could not edit tags (since 1.3.35)
-* BugFix : New child terms in custom taxonomies were excluded from terms listing until RS re-activation, in some situations
-* Compat : Mingle plugin (and others which force setting of user object before all plugins are loaded) made RS inoperative
+
+= Page / Post Editing =
 * BugFix : When Page Editor and Author roles are Restricted by default, new pages saved by non-Administrator set to "Pending Review" on first Publish attempt
 * BugFix : When all Page editing roles are Restricted by default, new pages are not editable by non-Administrator creator
+* BugFix : Could not create a new post based on an editing role assigned for a non-hierarchical custom taxonomy
+
+= Role Groups =
+* BugFix : Default Groups could not be defined on Multisite installations
+* BugFix : Default Groups Edit Form did not refresh following update
+* BugFix : Bad link to Role Groups edit form from group selection checklist when Sitewide Groups enabled on a Multisite Installation
+* BugFix : "Eligible Groups" count above groups checklists wrong under some configurations
+
+= Miscellaneous =
+* BugFix : Fatal Error "undefined method stdClass::merge_scoped_blogcaps()" under some configurations 
+* BugFix : Needless ALTER TABLE statements, PHP warnings on plugin activation
+* BugFix : PHP Warning "Invalid argument supplied for foreach()" with some custom taxonomy configurations
+* Change : Change all require and include statements to absolute path to work around oddball servers that can't handle relative paths
 
 = 1.3.39 - 16 May 2011 =
 * BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
@@ -576,6 +588,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.40 =
+Fixes: Non-Admins can't edit cats/tags or see tags in Edit Posts; New custom tx child terms not in terms listing; 500 Err w/ W3 Total Cache; RS self-disables w/ Mingle plugin; WPML cat checkboxes for other langs; 500 Err with HTTP Auth; File Filtering on Multisite security patch; Default Groups
 
 = 1.3.39 =
 Another one-line change to eliminate a Fatal Error on WP 3.2 Beta

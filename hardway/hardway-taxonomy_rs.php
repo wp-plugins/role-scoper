@@ -340,7 +340,7 @@ class ScoperHardwayTaxonomy
 
 		$exclusions = apply_filters('list_terms_exclusions', $exclusions, $args);
 		$where .= $exclusions;
-
+	
 		if ( !empty($slug) ) {
 			$slug = sanitize_title($slug);
 			$where .= " AND t.slug = '$slug'";
@@ -493,7 +493,7 @@ class ScoperHardwayTaxonomy
 				rs_tally_term_counts($terms, $taxonomies[0], array('pad_counts' => $pad_counts, 'skip_teaser' => ! $do_teaser, 'post_type' => $post_type ) );
 			}
 		}
-		
+
 		// Make sure we show empty categories that have children.
 		if ( $hierarchical && $hide_empty ) {
 			foreach ( $terms as $k => $term ) {
