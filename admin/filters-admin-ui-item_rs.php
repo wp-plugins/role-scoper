@@ -52,8 +52,8 @@ jQuery(document).ready( function($) {
 
 	// jQuery selector will disable all term checkboxes which are not in our okay_terms array
 	if ( $user_terms ) {
-		$id_not_equal = "[id!=in-$taxonomy-" . implode( "][id!=in-$taxonomy-", $user_terms ) . ']';
-		$id_not_equal_popular = "[id!=in-popular-$taxonomy-" . implode( "][id!=in-popular-$taxonomy-", $user_terms ) . ']';
+		$id_not_equal = "[id!='in-$taxonomy-" . implode( "'][id!='in-$taxonomy-", $user_terms ) . "']";
+		$id_not_equal_popular = "[id!='in-popular-$taxonomy-" . implode( "'][id!='in-popular-$taxonomy-", $user_terms ) . "']";
 	} else {
 		$id_not_equal = '';
 		$id_not_equal_popular = '';
