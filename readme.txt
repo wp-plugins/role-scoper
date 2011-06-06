@@ -10,14 +10,14 @@ CMS-like permissions for reading and editing. Content-specific restrictions and 
 
 == Description ==
 
-Role Scoper is a comprehensive access control solution, giving you CMS-like control of reading and editing permissions.  Assign restrictions and roles to specific pages, posts or categories.  For WP 2.7 to 2.9, use [Role Scoper 1.2.x](http://agapetry.net/downloads/role-scoper_legacy).
+Role Scoper is a comprehensive access control solution, giving you CMS-like control of reading and editing permissions. Assign restrictions and roles to specific pages, posts or categories. For WP 2.7 to 2.9, use [Role Scoper 1.2.x](http://agapetry.net/downloads/role-scoper_legacy).
 
 = How it works: =
-Your WordPress core role definitions remain unchanged, and continue to function as default permissions.  User access is altered only as you expand it by assigning content-specific roles, or reduce it by setting content-specific restrictions.
+Your WordPress core role definitions remain unchanged, and continue to function as default permissions. User access is altered only as you expand it by assigning content-specific roles, or reduce it by setting content-specific restrictions.
 
-Users of any level can be elevated to read or edit content of your choice.  Restricted content can be withheld from users lacking a content-specific role, regardless of their WP role.  Deactivation or removal of Role Scoper will return each user to their standard WordPress access (but all RS settings remain harmlessly in the database in case you change your mind).
+Users of any level can be elevated to read or edit content of your choice. Restricted content can be withheld from users lacking a content-specific role, regardless of their WP role. Deactivation or removal of Role Scoper will return each user to their standard WordPress access (but all RS settings remain harmlessly in the database in case you change your mind).
 
-Scoped role restrictions and assignments are reflected in every aspect of the WordPress interface, from front end content and navigation to administrative post and comment totals.  Although Role Scoper provides extreme flexibility and powerful bulk administration forms, basic usage is just a set of user checkboxes in the Post/Page Edit Form.
+Scoped role restrictions and assignments are reflected in every aspect of the WordPress interface, from front end content and navigation to administrative post and comment totals. Although Role Scoper provides extreme flexibility and powerful bulk administration forms, basic usage is just a set of user checkboxes in the Post/Page Edit Form.
 
 = Partial Feature List =
 * WP roles work as is or can be limited by content-specific Restrictions
