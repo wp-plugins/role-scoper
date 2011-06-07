@@ -929,9 +929,14 @@ class QueryInterceptor_RS
 				
 				if ( ! empty($alternate_roles ) )
 					$owner_roles = array_merge( $owner_roles, $alternate_roles );				
-				
-				$qualifying_object_roles = $this->scoper->confirm_object_scope( $owner_roles );		// have to pass this in for 'user' call because qualifying_roles may not include a qualifying object role (i.e. Page Contributor object role assignment)
-			}
+			} else
+				$owner_roles = array();
+			
+			// have to pass qualifying_object_roles in for 'user' call because qualifying_roles may not include a qualifying object role (i.e. Page Contributor object role assignment)
+			if ( $owner_roles && ( empty( $GLOBALS['revisionary'] ) || empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) )
+				$qualifying_object_roles = $this->scoper->confirm_object_scope( $owner_roles );
+			else
+				$qualifying_object_roles = $this->scoper->confirm_object_scope( $qualifying_roles ); // get_base_caps() strips out edit_private_* cap requirement for post owner, in compliance with WP metacap mapping.  But for Revisionary, that causes Revisors to have full editing caps if a page is privately published (but not if it's publicly published).
 
 			if ( $qualifying_roles || ! empty($qualifying_object_roles) ) {
 				//d_echo( "regular objects_where_scope_clauses for " . serialize( $reqd_caps ) );
@@ -968,7 +973,7 @@ class QueryInterceptor_RS
 					}
 				}
 			}
-
+			
 			// all role clauses concat: user clauses [OR] [owner clauses]
 			if ( ! empty($where[$cap_name]) )
 				$where[$cap_name] = agp_implode(' ) OR ( ', $where[$cap_name], ' ( ', ' ) ');

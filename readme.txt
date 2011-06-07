@@ -108,6 +108,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = 1.3.41-dev =
 * Change : some changes to jQuery syntax (for forward compat), for disabling category checkboxes in the Edit Post when user can't remove a currently stored category
+* Compat : Revisionary - private pages could be directly edited by users with a Page Revisor role assigned directly for the page
 
 #### 1.3.40 - 6 June 2011
 
