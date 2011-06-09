@@ -536,9 +536,9 @@ class CapInterceptor_RS
 
 							if ( $restore_caps = array_diff($orig_reqd_caps, array_keys($rs_reqd_caps) ) )  // restore original reqd_caps which we substituted for the type-specific scoped query
 								$wp_blogcaps = array_merge( $wp_blogcaps, array_fill_keys($restore_caps, true) );
-									
-							return $wp_blogcaps;
 						}
+
+						return $wp_blogcaps;
 					}
 				} //endif retrieved post is a revision or attachment
 			} // endif post retrieved
