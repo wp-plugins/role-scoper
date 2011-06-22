@@ -111,6 +111,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Revisionary - private pages could be directly edited by users with a Page Revisor role assigned directly for the page
 * BugFix : Editors could not edit/attach other users' unattached uploads
 * Compat : Work around WP 3.2 beta/RC permissions issue when Posts/Pages menu contains only one submenu item
+* Compat : "Add New" buttons were not hidden when appropriate with WP 3.2
 
 #### 1.3.40 - 6 June 2011
 

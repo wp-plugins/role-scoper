@@ -50,10 +50,8 @@ class ScoperAdmin
 				
 				add_action('admin_menu', array(&$this,'build_menu'));
 
-				if ( awp_ver( '3.2-dev' ) )
-					add_filter('custom_menu_order', array(&$this,'filter_add_new_content_links'));	// work around WP 3.2 (as of RC1) removal of Edit submenu item if Add New is removed
-				else
-					add_action('admin_menu', array(&$this,'filter_add_new_content_links'));
+				add_action('admin_init', array(&$this,'filter_add_new_content_links'));	// changed from 'admin_menu' hook to work around WP 3.2 (as of RC1) removal of Edit submenu item if Add New is removed
+				add_action('admin_print_scripts', array(&$this,'filter_add_new_button'));
 				
 				if ( 'plugins.php' == $pagenow )
 					add_filter( 'plugin_row_meta', array(&$this, 'flt_plugin_action_links'), 10, 2 );
@@ -66,7 +64,7 @@ class ScoperAdmin
 		if ( defined( 'FLUTTER_NAME' ) )
 			require_once( dirname(__FILE__).'/flutter_helper_rs.php');
 	}
-
+	
 	function menu_handler() {
 		$rs_page = $_GET['page'];
 		$url = SCOPER_ABSPATH . '/admin/';
@@ -156,7 +154,7 @@ class ScoperAdmin
 	
 	function admin_head() {
 		global $pagenow, $plugin_page_cr;
-		
+
 		echo '<link rel="stylesheet" href="' . SCOPER_URLPATH . '/admin/role-scoper.css" type="text/css" />'."\n";
 
 		if ( 'rs-options' == $plugin_page_cr ) {
@@ -267,11 +265,11 @@ class ScoperAdmin
 		return $help;
 	}
 			
-	function filter_add_new_content_links( $arg = '' ) {
+	function filter_add_new_content_links() {
 		global $scoper, $submenu;
 	
 		if ( is_content_administrator_rs() )
-			return $arg;
+			return;
 		
 		// workaround for WP's universal inclusion of "Add New"
 		$src = $this->scoper->data_sources->get( 'post' );
@@ -298,28 +296,26 @@ class ScoperAdmin
 
 			$this->scoper->ignore_object_roles = false;
 		}
-		
-		if ( 'edit.php' == $GLOBALS['pagenow'] ) {
-			$_post_type = ( ! empty($_REQUEST['post_type']) ) ? $_REQUEST['post_type'] : 'post';
-			if ( $wp_type = get_post_type_object( $_post_type ) ) {
-				if ( ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) ) 
-					add_action( 'admin_footer', array( &$this, 'hide_add_new_button' ) );
-			}
-		}
-		
-		return $arg;
 	}
 	
-	function hide_add_new_button() {
-?>
+	function filter_add_new_button() {
+		if ( in_array( $GLOBALS['pagenow'], array( 'edit.php', 'post.php', 'post-new.php' ) ) ) {
+			$_post_type = ( ! empty($_REQUEST['post_type']) ) ? $_REQUEST['post_type'] : 'post';
+			if ( $wp_type = get_post_type_object( $_post_type ) ) {
+				if ( ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) ) {
+					if ( ! wp_script_is( 'jquery' ) )
+						wp_print_scripts( 'jquery' );
+					?>
 <script type="text/javascript">
 /* <![CDATA[ */
 jQuery(document).ready( function($) {
-	$('.add-new-h2').hide();
+	$(".add-new-h2").hide();
 });
 /* ]]> */
-</script>
-<?php
+</script><?php
+				} // endif cr_user_can
+			}
+		}
 	}
 	
 	function build_menu() {
