@@ -50,6 +50,11 @@ class ScoperAdmin
 				
 				add_action('admin_menu', array(&$this,'build_menu'));
 
+				if ( awp_ver( '3.2-dev' ) )
+					add_filter('custom_menu_order', array(&$this,'filter_add_new_content_links'));	// work around WP 3.2 (as of RC1) removal of Edit submenu item if Add New is removed
+				else
+					add_action('admin_menu', array(&$this,'filter_add_new_content_links'));
+				
 				if ( 'plugins.php' == $pagenow )
 					add_filter( 'plugin_row_meta', array(&$this, 'flt_plugin_action_links'), 10, 2 );
 			}
@@ -262,11 +267,11 @@ class ScoperAdmin
 		return $help;
 	}
 			
-	function filter_add_new_content_links() {
+	function filter_add_new_content_links( $arg = '' ) {
 		global $scoper, $submenu;
 	
 		if ( is_content_administrator_rs() )
-			return;
+			return $arg;
 		
 		// workaround for WP's universal inclusion of "Add New"
 		$src = $this->scoper->data_sources->get( 'post' );
@@ -301,6 +306,8 @@ class ScoperAdmin
 					add_action( 'admin_footer', array( &$this, 'hide_add_new_button' ) );
 			}
 		}
+		
+		return $arg;
 	}
 	
 	function hide_add_new_button() {
@@ -325,13 +332,11 @@ jQuery(document).ready( function($) {
 			scoper_use_posted_init_options();
 
 		global $current_user;
-
-		$this->filter_add_new_content_links();
 		
 		$is_option_administrator = is_option_administrator_rs();
 		$is_user_administrator = is_user_administrator_rs();
 		$is_content_administrator = is_content_administrator_rs();
-			
+
 		/*
 		// optional hack to prevent roles / restrictions menu for non-Administrators
 		//

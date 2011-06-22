@@ -180,7 +180,7 @@ class CapInterceptor_RS
 		$doing_admin_menus = is_admin() && (
 		( did_action( '_admin_menu' ) && ! did_action('admin_menu') ) 		 // menu construction
 		|| ( did_action( 'in_admin_header' ) && ! did_action('adminmenu') )	 // menu display
-		); 
+		);
 
 		// for scoped menu management roles, satisfy edit_theme_options cap requirement
 		if ( ( 'edit_theme_options' == $orig_reqd_caps[0] ) && empty( $wp_blogcaps['edit_theme_options'] ) ) {
