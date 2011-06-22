@@ -113,6 +113,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : WP 3.2 beta/RC - Work around permissions issue when Posts/Pages menu contains only one submenu item
 * Compat : WP 3.2 beta/RC - "Add New" buttons were not hidden when appropriate with
 * Compat : Advanced Custom Fields - metaboxes not visible in post edit forms
+* BugFix : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm
 
 #### 1.3.40 - 6 June 2011
 
