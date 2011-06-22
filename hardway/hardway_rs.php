@@ -84,6 +84,10 @@ class ScoperHardway
 		// === BEGIN Role Scoper ADDITION: support front-end optimization
 		$post_type = ( isset( $args['post_type'] ) ) ? $args['post_type'] : $defaults['post_type'];
 		
+		$use_post_types = (array) scoper_get_option( 'use_post_types' );
+		if ( empty( $use_post_types[$post_type] ) )
+			return $results;
+
 		if ( $scoper->is_front() ) {
 			if ( ( 'page' == $post_type ) && defined( 'SCOPER_GET_PAGES_LEAN' ) ) // custom types are likely to have custom fields
 				$defaults['fields'] = "$wpdb->posts.ID, $wpdb->posts.post_title, $wpdb->posts.post_parent, $wpdb->posts.post_date, $wpdb->posts.post_date_gmt, $wpdb->posts.post_status, $wpdb->posts.post_name, $wpdb->posts.post_modified, $wpdb->posts.post_modified_gmt, $wpdb->posts.guid, $wpdb->posts.menu_order, $wpdb->posts.comment_count";
@@ -109,15 +113,15 @@ class ScoperHardway
 		$offset = (int) $offset;
 
 		$child_of = (int) $child_of;  // Role Scoper modification: null value will confuse children array check
-
+		
 		// Make sure the post type is hierarchical
 		$hierarchical_post_types = get_post_types( array( 'public' => true, 'hierarchical' => true ) );
 		if ( !in_array( $post_type, $hierarchical_post_types ) )
-			return false;
+			return $results;
 	
 		// Make sure we have a valid post status
 		if ( !in_array($post_status, get_post_stati()) )
-			return false;
+			return $results;
 			
 		// for the page parent dropdown, return no available selections for a published main page if the logged user isn't allowed to de-associate it from Main
 		if ( ! empty( $name ) && ( 'parent_id' == $name ) ) {

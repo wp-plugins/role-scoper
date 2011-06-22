@@ -110,8 +110,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Change : some changes to jQuery syntax (for forward compat), for disabling category checkboxes in the Edit Post when user can't remove a currently stored category
 * Compat : Revisionary - private pages could be directly edited by users with a Page Revisor role assigned directly for the page
 * BugFix : Editors could not edit/attach other users' unattached uploads
-* Compat : Work around WP 3.2 beta/RC permissions issue when Posts/Pages menu contains only one submenu item
-* Compat : "Add New" buttons were not hidden when appropriate with WP 3.2
+* Compat : WP 3.2 beta/RC - Work around permissions issue when Posts/Pages menu contains only one submenu item
+* Compat : WP 3.2 beta/RC - "Add New" buttons were not hidden when appropriate with
+* Compat : Advanced Custom Fields - metaboxes not visible in post edit forms
 
 #### 1.3.40 - 6 June 2011
 
