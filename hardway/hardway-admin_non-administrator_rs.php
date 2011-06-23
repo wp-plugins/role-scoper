@@ -123,16 +123,26 @@ class ScoperAdminHardway_Ltd {
 		}
 	}
 	
-	
+	function flt_last_resort_query($query) {
+		static $in_process = false;
+		
+		if ( $in_process )
+			return $query;
+			
+		$in_process = true;
+		$query = ScoperAdminHardway_Ltd::_flt_last_resort_query($query);
+		$in_process = false;
+		return $query;
+	}
 	
 	// low-level filtering of otherwise unhookable queries
 	//
 	// Todo: review all queries for version-specificity; apply regular expressions to make it less brittle
-	function flt_last_resort_query($query) {
+	function _flt_last_resort_query($query) {
 		// no recursion
 		if ( scoper_querying_db() || $GLOBALS['cap_interceptor']->in_process )
 			return $query;
-			
+
 		global $wpdb, $pagenow, $scoper;
 
 		$posts = $wpdb->posts;

@@ -115,6 +115,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Advanced Custom Fields - metaboxes not visible in post edit forms
 * BugFix : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm
 * Compat : NextGen Gallery - Flash uploader did not work when RS activated (since 1.3.35)
+* BugFix : Script recursion and timeout on post creation by non-Administrator under some configurations
 
 #### 1.3.40 - 6 June 2011
 
