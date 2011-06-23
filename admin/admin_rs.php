@@ -268,7 +268,7 @@ class ScoperAdmin
 			
 	function filter_add_new_content_links() {
 		global $scoper, $submenu;
-	
+
 		if ( is_content_administrator_rs() )
 			return;
 		

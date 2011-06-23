@@ -106,16 +106,16 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.41-dev =
-* Change : some changes to jQuery syntax (for forward compat), for disabling category checkboxes in the Edit Post when user can't remove a currently stored category
-* Compat : Revisionary - private pages could be directly edited by users with a Page Revisor role assigned directly for the page
+= 1.3.41 - 23 June 2011 =
 * BugFix : Editors could not edit/attach other users' unattached uploads
-* Compat : WP 3.2 beta/RC - Work around permissions issue when Posts/Pages menu contains only one submenu item
-* Compat : WP 3.2 beta/RC - "Add New" buttons were not hidden when appropriate with
-* Compat : Advanced Custom Fields - metaboxes not visible in post edit forms
 * BugFix : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm
-* Compat : NextGen Gallery - Flash uploader did not work when RS activated (since 1.3.35)
 * BugFix : Script recursion and timeout on post creation by non-Administrator under some configurations
+* Compat : WP 3.2 - Work around permissions issue when Posts/Pages menu contains only one submenu item
+* Compat : WP 3.2 - "Add New" buttons were not hidden when appropriate
+* Compat : NextGen Gallery - Flash uploader did not work when RS activated (since 1.3.35)
+* Compat : Advanced Custom Fields - metaboxes not visible in post edit forms
+* Compat : Revisionary - private pages could be directly edited by users with a Page Revisor role assigned directly for the page
+* Change : some changes to jQuery syntax (for forward compat), for disabling category checkboxes in the Edit Post when user can't remove a currently stored category
 
 #### 1.3.40 - 6 June 2011
 
@@ -599,6 +599,19 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+* Change : some changes to jQuery syntax (for forward compat), for disabling category checkboxes in the Edit Post when user can't remove a currently stored category
+* Compat : Revisionary - private pages could be directly edited by users with a Page Revisor role assigned directly for the page
+* BugFix : Editors could not edit/attach other users' unattached uploads
+* Compat : WP 3.2 beta/RC - Work around permissions issue when Posts/Pages menu contains only one submenu item
+* Compat : WP 3.2 beta/RC - "Add New" buttons were not hidden when appropriate
+* Compat : Advanced Custom Fields - metaboxes not visible in post edit forms
+* BugFix : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm
+* Compat : NextGen Gallery - Flash uploader did not work when RS activated (since 1.3.35)
+* BugFix : Script recursion and timeout on post creation by non-Administrator under some configurations
+
+= 1.3.41 =
+WP 3.2: inability to edit Posts/Pages when user can't add new posts; Fixes: Editors can't edit others' unattached uploads; Custom Posts not editable by Editors if RS filtering disabled; Plugin Compat: Advanced Custom Fields metaboxes in post edit forms; NextGEN Gallery image uploader
 
 = 1.3.40 =
 Fixes: Non-Admins can't edit cats/tags or see tags in Edit Posts; New custom tx child terms not in terms listing; 500 Err w/ W3 Total Cache; RS self-disables w/ Mingle plugin; WPML cat checkboxes for other langs; 500 Err with HTTP Auth; File Filtering on Multisite security patch; Default Groups
