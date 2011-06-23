@@ -103,7 +103,7 @@ function scoper_init() {
 		
 	require_once( dirname(__FILE__).'/scoped-user.php');
 	require_once( dirname(__FILE__).'/role-scoper_main.php');
-
+	
 	//log_mem_usage_rs( 'require role-scoper_main' );
 	
 	if ( empty($scoper) ) {		// set_current_user may have already triggered scoper creation and role_cap load
@@ -112,7 +112,7 @@ function scoper_init() {
 		//log_mem_usage_rs( 'new Scoper done' );
 		$scoper->init();
 	}
-	
+
 	// ensure that content administrators (as defined by SCOPER_CONTENT_ADMIN_CAP) have all caps for custom types by default
 	if ( is_content_administrator_rs() ) {
 		global $current_rs_user;

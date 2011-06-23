@@ -279,7 +279,7 @@ class QueryInterceptor_RS
 		if ( strpos( $request, "post_type = 'revision'") )
 			return $request; 
 
-		// no need to apply objects query filtering withing NextGEN Gallery / Grand Flash Gallery upload operation (was failing with undefined $current_user)
+		// no need to apply objects query filtering within NextGEN Gallery / Grand Flash Gallery upload operation (was failing with undefined $current_user)
 		if ( is_admin() ) {
 			if ( defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) && ( $GLOBALS['pagenow'] == 'upload.php' ) )
 				return $request;
