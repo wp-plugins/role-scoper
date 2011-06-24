@@ -106,6 +106,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.42-dev =
+* BugFix : If a file or image is attached to more than one protected post, File Filtering may prevent qualified users from viewing it
+
 = 1.3.41 - 23 June 2011 =
 * BugFix : Editors could not edit/attach other users' unattached uploads
 * BugFix : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm

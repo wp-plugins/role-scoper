@@ -1,7 +1,7 @@
 <?php
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-
+	
 function agp_return_file( $file_path, $attachment_id = 0 ) {
 	require_once( dirname(__FILE__).'/uploads_rs.php' );
 	$uploads = scoper_get_upload_info();
@@ -10,7 +10,7 @@ function agp_return_file( $file_path, $attachment_id = 0 ) {
 		$file_path = untrailingslashit($uploads['basedir']) . "/$file_path";
 	
 	$file_url = str_replace( untrailingslashit($uploads['basedir']), untrailingslashit($uploads['baseurl']), $file_path );
-		
+
 	//rs_errlog( "agp_return_file: $file_path" );
 	
 	if ( ! $attachment_id ) {
@@ -63,6 +63,7 @@ function agp_return_file( $file_path, $attachment_id = 0 ) {
 
 	//rs_errlog( "redirect: $redirect" );
 
+	usleep( 10 );
 	wp_redirect( $redirect );
 	exit(0);
 }
@@ -123,9 +124,11 @@ class AttachmentFilters_RS {
 			
 			foreach ( $results as $attachment ) {
 				//rs_errlog( "found attachment: " . serialize($attachment) );
-				if ( is_content_administrator_rs() )
+				if ( is_content_administrator_rs() ) {
 					$return_attachment_id = $attachment->ID;
-
+					break;
+				}
+					
 				if ( $attachment->post_parent ) {
 					if ( $parent_post = scoper_get_row( "SELECT post_type, post_status FROM $wpdb->posts WHERE ID = '$attachment->post_parent' LIMIT 1" ) ) {
 						$object_type = $parent_post->post_type;

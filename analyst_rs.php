@@ -164,7 +164,7 @@ class ScoperAnalyst {
 			}
 			
 			if ( ! empty( $restricted_roles ) ) {
-				$restricted_objects['post'] = agp_array_flatten( $restricted_roles['post'] );
+				$restricted_objects['post'] = array_unique( agp_array_flatten( $restricted_roles['post'] ) );
 			
 				if ( $restricted_objects['post'] )
 					$object_restriction_clause = "OR post_parent IN ( SELECT ID FROM $wpdb->posts WHERE ID IN ('" . implode( "','", $restricted_objects['post'] ) . "') )";
@@ -185,7 +185,7 @@ class ScoperAnalyst {
 		
 		$single_col = false;
 
-		if ( COLS_ALL_RS == $cols )
+		if ( COLS_ALL_RS === $cols )
 			$query_cols = '*';
 		elseif ( COL_ID_RS == $cols ) {
 			$query_cols = 'ID';
@@ -196,7 +196,7 @@ class ScoperAnalyst {
 			else
 				$query_cols = 'ID, post_title';
 		} else {
-			if ( $attachment )
+			if ( $attachments )
 				$query_cols = 'ID, guid';
 			else {
 				$query_cols = 'ID';

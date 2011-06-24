@@ -153,11 +153,14 @@ class ScoperRewrite {
 		$rewrite_base = $arr_url['path'];
 		
 		$file_keys = array();
-
-		if ( $key_results = scoper_get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = '_rs_file_key'" ) ) {
-			foreach ( $key_results as $row )
-				$file_keys[$row->post_id] = $row->meta_value;		
-		} 
+		$has_postmeta = array();
+		
+		if ( $key_results = scoper_get_results( "SELECT pm.meta_value, p.guid, p.ID FROM $wpdb->postmeta AS pm INNER JOIN $wpdb->posts AS p ON p.ID = pm.post_id WHERE pm.meta_key = '_rs_file_key'" ) ) {
+			foreach ( $key_results as $row ) {
+				$file_keys[$row->guid] = $row->meta_value;
+				$has_postmeta[$row->ID] = $row->meta_value;
+			}
+		}
 	
 		$new_rules = "<IfModule mod_rewrite.c>\n";
 		$new_rules .= "RewriteEngine On\n";
@@ -165,17 +168,25 @@ class ScoperRewrite {
 	
 		$main_rewrite_rule = "RewriteRule ^(.*) {$home_root}index.php?attachment=$1&rs_rewrite=1 [NC,L]\n";
 	
+		$htaccess_urls = array();
+	
 		foreach ( $attachment_results as $row ) {
-			if ( isset($file_keys[ $row->ID ] ) ) {
-				$key = $file_keys[ $row->ID ];
-			} else {
-				$key = urlencode( str_replace( '.', '', uniqid( strval( rand() ), true ) ) );
-				update_post_meta( $row->ID, "_rs_file_key", $key );
-			}
-
-			//dump($row->guid);
-
 			if ( false !== strpos( $row->guid, $baseurl ) ) {	// no need to include any attachments which are not in the uploads folder
+				if ( ! empty($file_keys[ $row->guid ] ) ) {
+					$key = $file_keys[ $row->guid ];
+				} else {
+					$key = urlencode( str_replace( '.', '', uniqid( strval( rand() ), true ) ) );
+					$file_keys[ $row->guid ] = $key;
+				}
+
+				if ( ! isset( $has_postmeta[$row->ID] ) || ( $key != $has_postmeta[$row->ID] ) )
+					update_post_meta( $row->ID, "_rs_file_key", $key );
+
+				if ( isset( $htaccess_urls[$row->guid] ) )  // if a file is attached to multiple protected posts, use a single rewrite rule for it
+					continue;
+
+				$htaccess_urls[$row->guid] = true;
+				
 				$rel_path =  str_replace( $baseurl, '', $row->guid );
 				
 				// escape spaces
