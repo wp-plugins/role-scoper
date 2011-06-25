@@ -272,6 +272,9 @@ class ScoperAdmin
 		if ( is_content_administrator_rs() )
 			return;
 		
+		$_default_restricted_roles = $scoper->get_default_restrictions( 'object' );
+		$default_restricted_roles = ( isset( $_default_restricted_roles['post'] ) ) ? $_default_restricted_roles['post'] : array();
+		
 		// workaround for WP's universal inclusion of "Add New"
 		$src = $this->scoper->data_sources->get( 'post' );
 		foreach ( array_keys($src->object_types) as $_post_type ) {
@@ -282,8 +285,13 @@ class ScoperAdmin
 				if ( isset($submenu[$edit_key]) ) {
 					foreach ( $submenu[$edit_key] as $key => $arr ) {
 						if ( isset($arr['2']) && ( $add_key == $arr['2'] ) ) {
-							if ( ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) )
+							$qualifying_roles = $scoper->role_defs->qualify_roles( $wp_type->cap->edit_posts );
+
+							if ( ( ! defined( 'SCOPER_LEGACY_MENU_FILTERING' ) && ! array_diff_key( $qualifying_roles, $default_restricted_roles ) ) 
+							|| ! user_can_edit_blogwide_rs( 'post', $_post_type ) ) {
+							//|| ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) ) {
 								unset( $submenu[$edit_key][$key]);
+							}
 						}
 					}
 				}
@@ -303,7 +311,13 @@ class ScoperAdmin
 		if ( in_array( $GLOBALS['pagenow'], array( 'edit.php', 'post.php', 'post-new.php' ) ) ) {
 			$_post_type = ( ! empty($_REQUEST['post_type']) ) ? $_REQUEST['post_type'] : 'post';
 			if ( $wp_type = get_post_type_object( $_post_type ) ) {
-				if ( ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) ) {
+				global $scoper;
+				$_default_restricted_roles = $scoper->get_default_restrictions( 'object' );
+				$default_restricted_roles = ( isset( $_default_restricted_roles['post'] ) ) ? $_default_restricted_roles['post'] : array();
+				$qualifying_roles = $scoper->role_defs->qualify_roles( $wp_type->cap->edit_posts );
+				
+				if ( ( ! defined( 'SCOPER_LEGACY_MENU_FILTERING' ) && ! array_diff_key( $qualifying_roles, $default_restricted_roles ) ) 
+				|| ! user_can_edit_blogwide_rs( 'post', $_post_type ) ) {
 					if ( ! wp_script_is( 'jquery' ) )
 						wp_print_scripts( 'jquery' );
 					?>

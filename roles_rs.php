@@ -199,7 +199,7 @@ class CR_Roles extends AGP_Config_Items {
 	function get_contained_roles($role_handles, $include_this_role = false, $role_type = '') {
 		if ( ! $role_handles )
 			return array();
-
+			
 		$role_handles = (array) $role_handles;
 
 		$contained_roles = array();
@@ -211,17 +211,16 @@ class CR_Roles extends AGP_Config_Items {
 			$role_attributes = $this->get_role_attributes( $role_handle );
 				
 			foreach ( array_keys($this->role_caps) as $other_role_handle ) {
-				if ( ( ($other_role_handle != $role_handle) || $include_this_role ) ) {
-					if ( $this->role_caps[$other_role_handle] ) { // don't take credit for including roles that have no pertinent caps
-						if ( ! array_diff_key($this->role_caps[$other_role_handle], $this->role_caps[$role_handle]) ) {
-							// role caps qualify, but only count RS roles of matching object type
-							if ( 'rs' == $role_attributes->role_type ) {
-								if ( $role_attributes->object_type != $this->member_property( $other_role_handle, 'object_type' )  )
-									continue;
-							}
-								
-							$contained_roles[$other_role_handle] = 1;
+				if ( ( ($other_role_handle != $role_handle) || $include_this_role ) ) {					
+					if ( ! array_diff_key( (array) $this->role_caps[$other_role_handle], $this->role_caps[$role_handle]) ) {
+						// role caps qualify, but only count RS roles of matching object type
+						if ( 'rs' == $role_attributes->role_type ) {
+							if ( $role_attributes->object_type != $this->member_property( $other_role_handle, 'object_type' ) )
+								continue;
 						}
+						
+						if ( $this->role_caps[$other_role_handle] ) // don't take credit for including roles that have no pertinent caps
+							$contained_roles[$other_role_handle] = 1;
 					}
 				}
 			}
@@ -330,32 +329,30 @@ class CR_Roles extends AGP_Config_Items {
 		$defaults = array( 'src_name' => '', 'all_wp_caps' => false );
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
+
+		$good_roles = array();
 		
 		if ( $reqd_caps )
 			$reqd_caps = $this->role_handles_to_caps( (array) $reqd_caps, true); // arg: also check for unprefixed WP rolenames
-
+		
 		if ( $role_type )
 			$role_handles = $this->filter_keys( array_keys($this->members), array( 'role_type' => $role_type ) );
 		else
 			$role_handles = array_keys($this->members);
 
-		$good_roles = array();
 		foreach ( $role_handles as $role_handle ) {
 			if ( $reqd_caps ) {
 				if ( $all_wp_caps && ( 0 === strpos( $role_handle, 'wp_' ) ) ) {
-					global $wp_roles;
-					if ( empty( $wp_roles->role_objects[ substr($role_handle, 3) ]->capabilities ) 
-					|| array_diff( $reqd_caps, array_keys( $wp_roles->role_objects[ substr($role_handle, 3) ]->capabilities ) ) )	// note: this does not observe "false" value in capabilities array
+					if ( empty( $GLOBALS['wp_roles']->role_objects[ substr($role_handle, 3) ]->capabilities ) 
+					|| array_diff( $reqd_caps, array_keys( $GLOBALS['wp_roles']->role_objects[ substr($role_handle, 3) ]->capabilities ) ) )	// note: this does not observe "false" value in capabilities array
 						continue;
 				} else {
-					if ( empty( $this->role_caps[$role_handle] ) 
-					|| array_diff( $reqd_caps, array_keys( $this->role_caps[$role_handle] ) ) )
+					if ( empty( $this->role_caps[$role_handle] ) || array_diff( $reqd_caps, array_keys( $this->role_caps[$role_handle] ) ) )
 						continue;
 				}
 			} 
 
 			// The required caps test passed or was not applied.  Now verify data source and/or object type, if specified...
-			
 			if ( 'rs' == $this->members[$role_handle]->role_type ) {
 				// data source and object type matching only apply to RS roles, which always have a single data source and object type defined
 				if ( $src_name && ! in_array( $this->members[$role_handle]->src_name, (array) $src_name ) )

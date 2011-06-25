@@ -182,9 +182,9 @@ if ( ! function_exists('awp_usage_message') ) {
 function awp_usage_message( $translate = true ) {
 	if ( function_exists('memory_get_usage') ) {
 		if ( $translate )
-			return sprintf( __('%1$s queries in %2$s seconds. %3$s MB used.', 'scoper'), get_num_queries(), round(timer_stop(0), 1), round( memory_get_usage() / (1024 * 1024), 3), 'scoper' ) . ' ';
+			return sprintf( __('%1$s queries in %2$s seconds. %3$s MB used.', 'scoper'), get_num_queries(), timer_stop(0, 2), round( memory_get_usage() / (1024 * 1024), 3), 'scoper' ) . ' ';
 		else
-			return get_num_queries() . ' queries in ' . round(timer_stop(0), 1) . ' seconds. ' . round( memory_get_usage() / (1024 * 1024), 3) . ' MB used. ';
+			return get_num_queries() . ' queries in ' . timer_stop(0, 2) . ' seconds. ' . round( memory_get_usage() / (1024 * 1024), 3) . ' MB used. ';
 	}
 }
 }

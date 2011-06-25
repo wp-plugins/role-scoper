@@ -420,6 +420,13 @@ class ScoperAdminHardway_Ltd {
 			if ( $where_pos = strpos($query, 'WHERE ') ) {
 
 				if ( ! defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) ) {  // note: this constant actually just prevents Media Library filtering, falling back to WP Roles for attachment editability and leaving uneditable uploads viewable in Library
+					static $att_sanity_count = 0;
+					
+					if ( $att_sanity_count > 5 )  // TODO: why does this apply filtering to 300+ queries on at least one MS installation?
+						return $query;
+					
+					$att_sanity_count++;
+					
 					$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
 					$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
 					

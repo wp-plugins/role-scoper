@@ -164,6 +164,10 @@ class ScoperProfileUI {
 			$object_types = array();
 			
 			$obj_src = $this->scoper->data_sources->get( $tx->object_source );
+			
+			if ( ! $obj_src || ! is_array($obj_src->object_types) )
+				continue;
+
 			foreach ( array_keys($obj_src->object_types) as $object_type)
 				if ( scoper_get_otype_option('use_term_roles', $tx->object_source, $object_type) )
 					$object_types []= $object_type;
