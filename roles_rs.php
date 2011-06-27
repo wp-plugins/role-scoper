@@ -212,15 +212,16 @@ class CR_Roles extends AGP_Config_Items {
 				
 			foreach ( array_keys($this->role_caps) as $other_role_handle ) {
 				if ( ( ($other_role_handle != $role_handle) || $include_this_role ) ) {					
-					if ( ! array_diff_key( (array) $this->role_caps[$other_role_handle], $this->role_caps[$role_handle]) ) {
-						// role caps qualify, but only count RS roles of matching object type
-						if ( 'rs' == $role_attributes->role_type ) {
-							if ( $role_attributes->object_type != $this->member_property( $other_role_handle, 'object_type' ) )
-								continue;
-						}
-						
-						if ( $this->role_caps[$other_role_handle] ) // don't take credit for including roles that have no pertinent caps
+					if ( $this->role_caps[$other_role_handle] ) { // don't take credit for including roles that have no pertinent caps
+						if ( ! array_diff_key($this->role_caps[$other_role_handle], $this->role_caps[$role_handle]) ) {
+							// role caps qualify, but only count RS roles of matching object type
+							if ( 'rs' == $role_attributes->role_type ) {
+								if ( $role_attributes->object_type != $this->member_property( $other_role_handle, 'object_type' ) )
+									continue;
+							}
+							
 							$contained_roles[$other_role_handle] = 1;
+						}
 					}
 				}
 			}

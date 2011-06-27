@@ -110,6 +110,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * BugFix : If a file or image is attached to more than one protected post, File Filtering may prevent qualified users from viewing it
 * BugFix : Long delay / timeout when adding a new post/page, under some configurations
 * BugFix : "Add New" menu item was displayed even if Default Restrictions prevent logged user from editing new post following creation (to restore previous behavior, define constant 'SCOPER_LEGACY_MENU_FILTERING'
+* Compat : WP 3.2 - Current comments not displayed for single custom post type on front end
 
 = 1.3.41 - 23 June 2011 =
 * BugFix : Editors could not edit/attach other users' unattached uploads
