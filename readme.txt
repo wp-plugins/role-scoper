@@ -107,10 +107,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.3.42-dev =
-* BugFix : If a file or image is attached to more than one protected post, File Filtering may prevent qualified users from viewing it
-* BugFix : Long delay / timeout when adding a new post/page, under some configurations
-* BugFix : "Add New" menu item was displayed even if Default Restrictions prevent logged user from editing new post following creation (to restore previous behavior, define constant 'SCOPER_LEGACY_MENU_FILTERING'
 * Compat : WP 3.2 - Current comments not displayed for single custom post type on front end
+* BugFix : If a file or image is attached to more than one protected post, File Filtering may prevent qualified users from viewing it
+* BugFix : "Add New" menu item was displayed even if Default Restrictions prevent logged user from editing new post following creation (to restore previous behavior, define constant 'SCOPER_LEGACY_MENU_FILTERING'
+* BugFix : Long delay / timeout when adding a new post/page, under some configurations
+* BugFix : When editing a post of custom type, Gallery tab is not displayed in "Add Media" popup
 
 = 1.3.41 - 23 June 2011 =
 * BugFix : Editors could not edit/attach other users' unattached uploads
@@ -606,15 +607,8 @@ For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive
 
 == Upgrade Notice ==
 
-* Change : some changes to jQuery syntax (for forward compat), for disabling category checkboxes in the Edit Post when user can't remove a currently stored category
-* Compat : Revisionary - private pages could be directly edited by users with a Page Revisor role assigned directly for the page
-* BugFix : Editors could not edit/attach other users' unattached uploads
-* Compat : WP 3.2 beta/RC - Work around permissions issue when Posts/Pages menu contains only one submenu item
-* Compat : WP 3.2 beta/RC - "Add New" buttons were not hidden when appropriate
-* Compat : Advanced Custom Fields - metaboxes not visible in post edit forms
-* BugFix : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm
-* Compat : NextGen Gallery - Flash uploader did not work when RS activated (since 1.3.35)
-* BugFix : Script recursion and timeout on post creation by non-Administrator under some configurations
+= 1.3.42 =
+Fixes: In WP 3.2, current comments not displayed under custom post; File Filtering: no access when file attached to multiple protected posts; "Add New" menu item sometimes displayed inappropriately
 
 = 1.3.41 =
 WP 3.2: inability to edit Posts/Pages when user can't add new posts; Fixes: Editors can't edit others' unattached uploads; Custom Posts not editable by Editors if RS filtering disabled; Plugin Compat: Advanced Custom Fields metaboxes in post edit forms; NextGEN Gallery image uploader

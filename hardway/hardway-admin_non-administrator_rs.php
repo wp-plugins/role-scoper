@@ -156,7 +156,6 @@ class ScoperAdminHardway_Ltd {
 		//SELECT post_mime_type, COUNT( * ) AS num_posts FROM wp_trunk_posts WHERE post_type = 'attachment' GROUP BY post_mime_type
 		//if ( preg_match( "/ELECT\s*post_mime_type", $query ) ) {
 		if ( strpos($query, "post_type = 'attachment'") && strpos($query, "post_parent < 1") && strpos($query, '* FROM') ) {
-
 			if ( $where_pos = strpos($query, 'WHERE ') ) {
 				// optionally hide other users' unattached uploads, but not from blog-wide Editors
 				if ( ( ! scoper_get_option( 'admin_others_unattached_files' ) ) && ! $scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) ) ) {
@@ -450,7 +449,7 @@ class ScoperAdminHardway_Ltd {
 	
 					$parent_query = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE 1=1";
 
-					$parent_query = apply_filters('objects_request_rs', $parent_query, 'post', array('post', 'page') );
+					$parent_query = apply_filters('objects_request_rs', $parent_query, 'post' );
 
 					$where_insert = "( $unattached_clause ( $wpdb->posts.post_parent IN ($parent_query) $attached_clause ) ) AND ";
 					
