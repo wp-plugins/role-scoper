@@ -154,6 +154,12 @@ class ScoperAdminFiltersUI
 	function ui_hide_add_menu() {
 		$tx_obj = get_taxonomy( 'nav_menu' );
 
+		if ( ! empty ( $GLOBALS['current_user']->allcaps['edit_theme_options'] ) ) {
+			$use_term_roles = scoper_get_otype_option( 'use_term_roles', 'post' );
+			if ( empty( $use_term_roles['nav_menu'] ) )
+				return;
+		}
+
 		if ( cr_user_can( $tx_obj->cap->manage_terms, BLOG_SCOPE_RS ) )
 			return;
 ?>

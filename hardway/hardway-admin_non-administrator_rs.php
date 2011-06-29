@@ -72,11 +72,15 @@ class ScoperAdminHardway_Ltd {
 		} elseif ( 'update-nav_menu' == $referer_name ) {
 			$tx = get_taxonomy( 'nav_menu' );
 			
-			if ( ! cr_user_can( $tx->cap->manage_terms, $_REQUEST['menu'], 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) ) ) {
-				if ( $_REQUEST['menu'] )
-					wp_die( __('You do not have permission to update that Navigation Menu', 'scoper') );
-				else
-					wp_die( __('You do not have permission to create new Navigation Menus', 'scoper') );
+			$use_term_roles = scoper_get_otype_option( 'use_term_roles', 'post', 'nav_menu' );
+
+			if ( empty ( $GLOBALS['current_user']->allcaps['edit_theme_options'] ) || ! empty( $use_term_roles['nav_menu'] ) ) {
+				if ( ! cr_user_can( $tx->cap->manage_terms, $_REQUEST['menu'], 0, array( 'skip_id_generation' => true, 'skip_any_term_check' => true ) ) ) {
+					if ( $_REQUEST['menu'] )
+						wp_die( __('You do not have permission to update that Navigation Menu', 'scoper') );
+					else
+						wp_die( __('You do not have permission to create new Navigation Menus', 'scoper') );
+				}
 			}
 		
 		} elseif ( false !== strpos( $referer_name, 'delete-menu_item_' ) ) {
