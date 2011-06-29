@@ -121,9 +121,11 @@ function scoper_init() {
 			foreach ( get_post_types( array('public' => true, '_builtin' => false) ) as $name )
 				$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_editor"] = true;
 			
-			foreach ( get_taxonomies( array('public' => true, '_builtin' => false) ) as $name )
+			$taxonomies = get_taxonomies( array('public' => true, '_builtin' => false) );
+			$taxonomies []= 'nav_menu';
+			foreach ( $taxonomies as $name )
 				$current_rs_user->assigned_blog_roles[ANY_CONTENT_DATE_RS]["rs_{$name}_manager"] = true;
-
+			
 			$current_rs_user->merge_scoped_blogcaps();
 			$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
 			$GLOBALS['current_user']->assigned_blog_roles = $current_rs_user->assigned_blog_roles;

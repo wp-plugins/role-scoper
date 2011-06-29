@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.2
-Stable Tag: 1.3.41
+Stable Tag: 1.3.42
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -107,11 +107,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.3.42-dev =
-* Compat : WP 3.2 - Current comments not displayed for single custom post type on front end
+* Compat : WP 3.2 - Current comments not displayed for single custom post on front end
 * BugFix : If a file or image is attached to more than one protected post, File Filtering may prevent qualified users from viewing it
 * BugFix : "Add New" menu item was displayed even if Default Restrictions prevent logged user from editing new post following creation (to restore previous behavior, define constant 'SCOPER_LEGACY_MENU_FILTERING'
 * BugFix : Long delay / timeout when adding a new post/page, under some configurations
-* BugFix : When editing a post of custom type, Gallery tab is not displayed in "Add Media" popup
+* BugFix : When a custom post has attachments, Gallery tab is not displayed in "Add Media" popup
+* BugFix : On Multisite, site Administrator role does not enable Nav Menu creation
 
 = 1.3.41 - 23 June 2011 =
 * BugFix : Editors could not edit/attach other users' unattached uploads
@@ -608,7 +609,7 @@ For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive
 == Upgrade Notice ==
 
 = 1.3.42 =
-Fixes: In WP 3.2, current comments not displayed under custom post; File Filtering: no access when file attached to multiple protected posts; "Add New" menu item sometimes displayed inappropriately
+Fixes: In WP 3.2, current comments not displayed under custom post; File Filtering: no access when file attached to multiple protected posts; "Add New" menu item sometimes displayed inappropriately; no Gallery tab in "Add Media" popup for custom posts;
 
 = 1.3.41 =
 WP 3.2: inability to edit Posts/Pages when user can't add new posts; Fixes: Editors can't edit others' unattached uploads; Custom Posts not editable by Editors if RS filtering disabled; Plugin Compat: Advanced Custom Fields metaboxes in post edit forms; NextGEN Gallery image uploader
