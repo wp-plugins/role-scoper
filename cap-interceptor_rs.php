@@ -223,9 +223,11 @@ class CapInterceptor_RS
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
 		
 		if ( 'post' == $src_name ) {
+			if ( ! in_array( $object_type, array( 'attachment', 'revision' ) ) ) {
 			$use_post_types = scoper_get_option( 'use_post_types' );
 			if ( empty( $use_post_types[$object_type] ) )
 				return $wp_blogcaps;
+			}
 		}
 		
 		// =====================================================================================================================================
