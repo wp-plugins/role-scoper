@@ -108,6 +108,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = 1.3.43-dev =
 * BugFix : Users cannot add/edit Nav Menus based on custom addition of edit_theme_options capability into WP role definition
+* BugFix : In Multisite Role Options, bad link to Attachments Utility
 
 = 1.3.42 - 29 June 2011 =
 * Compat : WP 3.2 - Current comments not displayed for single custom post on front end

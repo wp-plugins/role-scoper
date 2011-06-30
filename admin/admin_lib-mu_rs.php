@@ -27,6 +27,10 @@ function scoper_mu_site_menu() {
 		$func = "include_once('$path' . '/admin/options.php');scoper_options( false, true );";
 		add_action("{$name}_page_rs-default_options", create_function( '', $func ) );
 	}
+	
+	// satisfy WordPress' demand that all admin links be properly defined in menu
+	if ( 'rs-attachments_utility' == $GLOBALS['plugin_page_cr'] )
+		add_submenu_page("{$name}.php", __('Attachment Utility', 'scoper'), __('Attachment Utility', 'scoper'), 'read', 'rs-attachments_utility', array( $GLOBALS['scoper_admin'], 'menu_handler' ) );
 }
 
 function scoper_mu_users_menu() {

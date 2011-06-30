@@ -182,8 +182,17 @@ function scoper_attach_linked_uploads( $echo = false ) {
 <td width = "90%">
 <h2><?php _e('Attachments Utility', 'scoper') ?></h2>
 <?php 
+
+if ( MULTISITE ) {
+	$name = ( awp_ver( '3.1' ) ) ? 'sites' : 'ms-admin';
+	$page = 'rs-site_options';
+} else {
+	$name = 'admin';
+	$page = 'rs-options';
+}
+
 //printf( _ x('Back to %1$sRole Scoper Options%2$s', 'arguments are link open, link close', 'scoper'), "<a href='admin.php?page=rs-options'>", '</a>');
-printf( __('Back to %1$sRole Scoper Options%2$s', 'scoper'), "<a href='admin.php?page=rs-options'>", '</a>');
+printf( __('Back to %1$sRole Scoper Options%2$s', 'scoper'), "<a href='$name.php?page=$page'>", '</a>');
 ?>
 </td>
 <td>
