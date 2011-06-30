@@ -107,22 +107,23 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.3.43-dev =
-* BugFix : Users cannot add/edit Nav Menus based on custom addition of edit_theme_options capability into WP role definition
-* BugFix : In Multisite Role Options, bad link to Attachments Utility
+* Fixed : Users cannot add/edit Nav Menus based on custom addition of edit_theme_options capability into WP role definition
+* Fixed : In Multisite Role Options, bad link to Attachments Utility
+* Fixed : File Attachments Utility non-functional on Multisite
 
 = 1.3.42 - 29 June 2011 =
 * Compat : WP 3.2 - Current comments not displayed for single custom post on front end
-* BugFix : If a file or image is attached to more than one protected post, File Filtering may prevent qualified users from viewing it
-* BugFix : "Add New" menu item was displayed even if Default Restrictions prevent logged user from editing new post following creation (to restore previous behavior, define constant 'SCOPER_LEGACY_MENU_FILTERING'
-* BugFix : Long delay / timeout when adding a new post/page, under some configurations
-* BugFix : When a custom post has attachments, Gallery tab is not displayed in "Add Media" popup
-* BugFix : On Multisite, site Administrator role does not enable Nav Menu creation
-* BugFix : Attachment editing failed when logged user is not a sitewide Editor or Administrator (since 1.3.41)
+* Fixed : If a file or image is attached to more than one protected post, File Filtering may prevent qualified users from viewing it
+* Fixed : "Add New" menu item was displayed even if Default Restrictions prevent logged user from editing new post following creation (to restore previous behavior, define constant 'SCOPER_LEGACY_MENU_FILTERING'
+* Fixed : Long delay / timeout when adding a new post/page, under some configurations
+* Fixed : When a custom post has attachments, Gallery tab is not displayed in "Add Media" popup
+* Fixed : On Multisite, site Administrator role does not enable Nav Menu creation
+* Fixed : Attachment editing failed when logged user is not a sitewide Editor or Administrator (since 1.3.41)
 
 = 1.3.41 - 23 June 2011 =
-* BugFix : Editors could not edit/attach other users' unattached uploads
-* BugFix : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm
-* BugFix : Script recursion and timeout on post creation by non-Administrator under some configurations
+* Fixed : Editors could not edit/attach other users' unattached uploads
+* Fixed : Custom Posts not editable by Editors if RS filtering disabled in Roles > Options > Realm
+* Fixed : Script recursion and timeout on post creation by non-Administrator under some configurations
 * Compat : WP 3.2 - Work around permissions issue when Posts/Pages menu contains only one submenu item
 * Compat : WP 3.2 - "Add New" buttons were not hidden when appropriate
 * Compat : NextGen Gallery - Flash uploader did not work when RS activated (since 1.3.35)
@@ -133,9 +134,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 #### 1.3.40 - 6 June 2011
 
 = Category / Tag Editing =
-* BugFix : Non-Administrators could not edit categories or tags (since 1.3.35)
-* BugFix : Tags were not displayed in Edit Posts listing for non-Administrators
-* BugFix : New child terms in custom taxonomies were excluded from terms listing until RS re-activation, in some situations
+* Fixed : Non-Administrators could not edit categories or tags (since 1.3.35)
+* Fixed : Tags were not displayed in Edit Posts listing for non-Administrators
+* Fixed : New child terms in custom taxonomies were excluded from terms listing until RS re-activation, in some situations
 
 = Plugin Compatibility =
 * Compat : W3 Total Cache: .htaccess corruption (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled
@@ -143,61 +144,61 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : WPML - category selection checkboxes from other languages included in Post Edit form for non-Administrators
 
 = File Filtering =
-* BugFix : File Filtering - on Multisite, adding a new site created a security loophole to protected files, until plugin reactivated or File Filtering toggled off/on
-* BugFix : Invalid .htaccess contents (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled and default .htaccess has <IfModule> statement above default WP block
+* Fixed : File Filtering - on Multisite, adding a new site created a security loophole to protected files, until plugin reactivated or File Filtering toggled off/on
+* Fixed : Invalid .htaccess contents (and 500 Error) when "HTTP Authentication Request in RSS Feed Links" option enabled and default .htaccess has <IfModule> statement above default WP block
 
 = Page / Post Editing =
-* BugFix : When Page Editor and Author roles are Restricted by default, new pages saved by non-Administrator set to "Pending Review" on first Publish attempt
-* BugFix : When all Page editing roles are Restricted by default, new pages are not editable by non-Administrator creator
-* BugFix : Could not create a new post based on an editing role assigned for a non-hierarchical custom taxonomy
+* Fixed : When Page Editor and Author roles are Restricted by default, new pages saved by non-Administrator set to "Pending Review" on first Publish attempt
+* Fixed : When all Page editing roles are Restricted by default, new pages are not editable by non-Administrator creator
+* Fixed : Could not create a new post based on an editing role assigned for a non-hierarchical custom taxonomy
 
 = Role Groups =
-* BugFix : Default Groups could not be defined on Multisite installations
-* BugFix : Default Groups Edit Form did not refresh following update
-* BugFix : Bad link to Role Groups edit form from group selection checklist when Sitewide Groups enabled on a Multisite Installation
-* BugFix : "Eligible Groups" count above groups checklists wrong under some configurations
+* Fixed : Default Groups could not be defined on Multisite installations
+* Fixed : Default Groups Edit Form did not refresh following update
+* Fixed : Bad link to Role Groups edit form from group selection checklist when Sitewide Groups enabled on a Multisite Installation
+* Fixed : "Eligible Groups" count above groups checklists wrong under some configurations
 
 = Miscellaneous =
-* BugFix : Fatal Error "undefined method stdClass::merge_scoped_blogcaps()" under some configurations 
-* BugFix : Needless ALTER TABLE statements, PHP warnings on plugin activation
-* BugFix : PHP Warning "Invalid argument supplied for foreach()" with some custom taxonomy configurations
+* Fixed : Fatal Error "undefined method stdClass::merge_scoped_blogcaps()" under some configurations 
+* Fixed : Needless ALTER TABLE statements, PHP warnings on plugin activation
+* Fixed : PHP Warning "Invalid argument supplied for foreach()" with some custom taxonomy configurations
 * Change : Change all require and include statements to absolute path to work around oddball servers that can't handle relative paths
 
 = 1.3.39 - 16 May 2011 =
-* BugFix : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
+* Fixed : Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
 
 = 1.3.38 - 13 May 2011 =
-* BugFix : One-line change to eliminate a Fatal Error on WP 3.2 Beta
+* Fixed : One-line change to eliminate a Fatal Error on WP 3.2 Beta
 
 = 1.3.37 - 11 May 2011 =
-* BugFix : Fatal Error on front end access when a Post Tag is present in displayed Nav Menu
+* Fixed : Fatal Error on front end access when a Post Tag is present in displayed Nav Menu
 * Change : Force version update to correct erroneous directory structure in 1.3.36 zip archive
 
 = 1.3.36 - 11 May 2011 =
 * Compat : Role Scoping for NextGEN Gallery and custom template code using $current_user->groups, $current_user->blog_roles or $current_user->term_roles was broken by 1.3.35
 
 = 1.3.35 - 11 May 2011 =
-* BugFix : Empty Categories/Terms were hidden from Nav Manus for non-Administrators (unless they had a non-empty sub-term)
-* BugFix : Non-Administrators could not edit Navigation Menus based on Nav Menu Manger role assignment
+* Fixed : Empty Categories/Terms were hidden from Nav Manus for non-Administrators (unless they had a non-empty sub-term)
+* Fixed : Non-Administrators could not edit Navigation Menus based on Nav Menu Manger role assignment
 * Feature : Navigation Menus option "List only user-editable content as available items" also filters editing/deletion/ordering of existing menu items 
-* BugFix : Role Duration Limits were not applied to General Roles or Term Roles if Internal Cache enabled
+* Fixed : Role Duration Limits were not applied to General Roles or Term Roles if Internal Cache enabled
 * Compat : Don't define pluggable function set_current_user(), to avoid conflict with other plugins that define it
 * Compat : Don't cast global $current_user as a custom subclass, to avoid conflict with other plugins that do so
 * Compat : Put RS menu links in Users menu if OZH Admin Menus plugin active or SCOPER_FORCE_USERS_MENU constant defined
 
 = 1.3.34 - 28 Apr 2011 =
 * Compat : Edit Flow - if 'post_status' taxonomy enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
-* BugFix : Non-Administrators could not edit categories if Post Tags enabled for RS filtering
-* BugFix : Links were not displayed to non-Administrators if multiple sort fields specified in get_bookmarks() call
+* Fixed : Non-Administrators could not edit categories if Post Tags enabled for RS filtering
+* Fixed : Links were not displayed to non-Administrators if multiple sort fields specified in get_bookmarks() call
 
 = 1.3.33 - 26 Apr 2011 =
-* BugFix : Links Widgets and other get_bookmarks() output was hidden from non-Administrators on the front end (since 1.3.30)
+* Fixed : Links Widgets and other get_bookmarks() output was hidden from non-Administrators on the front end (since 1.3.30)
 
 = 1.3.32 - 26 Apr 2011 =
-* BugFix : Filtering could not be disabled for some Custom Post Types / Taxonomies (via Roles > Options > Realm)
+* Fixed : Filtering could not be disabled for some Custom Post Types / Taxonomies (via Roles > Options > Realm)
 
 = 1.3.31 - 25 Apr 2011 =
-* BugFix : Custom taxonomies could not be fully disabled, causing various access failures (including non-display of Edit Flow post status in Publish metabox)
+* Fixed : Custom taxonomies could not be fully disabled, causing various access failures (including non-display of Edit Flow post status in Publish metabox)
 * Change : Default to late initialization, for compatibility with plugins/themes which register post types / taxonomies without specifying early execution priority.
 * Change : When a custom type/taxonomy is auto-enabled for RS filtering, display a dashboard warning to Administrator, explaining the need to assign type-specific roles.
 
@@ -206,30 +207,30 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 #### 1.3.29 - 21 Apr 2011
 
-= Misc. Bug Fixes =
-* BugFix : non-Administrators cannot modify moderate/edit comments with WP 3.1
-* BugFix : Role Groups edit form unavailable from WP 3.0 Multisite "Super Admin" menu (since 1.3.28)
-* BugFix : Grammatically customized capability names were not mirrored in RS Role Definitions
-* BugFix : Internal Cache was unavailable for new WP 3.1 installations
-* BugFix : Nav Menu Managers could not add new menu items if they lacked a site-wide edit_posts capability
-* BugFix : Bulk Admin forms for Taxonomy Roles / Restrictions did not include roles for associated post types if association is defined by both register_taxonomy() and register_taxonomy_for_object_type()
-* BugFix : PHP Warnings on admin dashboard (since 1.3.28)
+= Misc. Fixedes =
+* Fixed : non-Administrators cannot modify moderate/edit comments with WP 3.1
+* Fixed : Role Groups edit form unavailable from WP 3.0 Multisite "Super Admin" menu (since 1.3.28)
+* Fixed : Grammatically customized capability names were not mirrored in RS Role Definitions
+* Fixed : Internal Cache was unavailable for new WP 3.1 installations
+* Fixed : Nav Menu Managers could not add new menu items if they lacked a site-wide edit_posts capability
+* Fixed : Bulk Admin forms for Taxonomy Roles / Restrictions did not include roles for associated post types if association is defined by both register_taxonomy() and register_taxonomy_for_object_type()
+* Fixed : PHP Warnings on admin dashboard (since 1.3.28)
 * Change : Convert all RS database tables to utf8 collation to eliminate query errors on some servers
 * Lang : Translation string for Assigner roles
 
 = File Attachment Filtering =
-* BugFix : File Attachment Filtering rules were not updated for new attachments, under some configurations
-* BugFix : Manually resized images were not protected by File Filtering
+* Fixed : File Attachment Filtering rules were not updated for new attachments, under some configurations
+* Fixed : Manually resized images were not protected by File Filtering
 
 = Media Library =
-* BugFix : Disabling Media Library filtering via SCOPER_ALL_UPLOADS_EDITABLE constant definition broke Media Library paging for Contributors
-* BugFix : Media Library filtering was not totally disabled by SCOPER_ALL_UPLOADS_EDITABLE constant definition
+* Fixed : Disabling Media Library filtering via SCOPER_ALL_UPLOADS_EDITABLE constant definition broke Media Library paging for Contributors
+* Fixed : Media Library filtering was not totally disabled by SCOPER_ALL_UPLOADS_EDITABLE constant definition
 
 = Link Access =
 * Feature : Front-end visibility of Links can be restricted or assigned per-category
-* BugFix : When creating or editing a link, no selectable link categories for non-administrators (since 1.3.28)
-* BugFix : Link Category Manager role assignments were ineffective
-* BugFix : Link Category listing in edit-tags.php did not refresh after editing a name / description
+* Fixed : When creating or editing a link, no selectable link categories for non-administrators (since 1.3.28)
+* Fixed : Link Category Manager role assignments were ineffective
+* Fixed : Link Category listing in edit-tags.php did not refresh after editing a name / description
 
 = Plugin Compatibility =
 * Compat : Relevanssi - Fatal Error on tag search under some configurations
@@ -241,33 +242,33 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 #### 1.3.28 - 18 Mar 2011
 
 = WP 3.1 =
-* BugFix : Role Options, Role Defaults menu items were not available on 3.1 multisite
+* Fixed : Role Options, Role Defaults menu items were not available on 3.1 multisite
 * Feature : Filter "Add New" links out of WP Admin bar if user lacks site-wide capability
 
 = Navigation Menus =
 * Feature : Nav Menu Manager role can be assigned to users who do not have edit_theme_options capability
 * Feature : Nav Menu Manager role can be assigned site-wide
 * Feature : For Nav Menu Management, option to list only user-editable content as available items
-* BugFix : Nav Menus displayed categories even if no posts readable
+* Fixed : Nav Menus displayed categories even if no posts readable
 
-= Miscellaneous Bug Fixes =
-* BugFix : When editing is based on category, could not upload files into edit form prior to saving post 
-* BugFix : Non-administrators could not add a non-hierarchical custom term to post if taxonomy is included in post type registration
-* BugFix : Internal Cache (and therefore permissions) did not refresh when an existing user's role is changed
-* BugFix : Default roles were not applied at Page / Post creation
-* BugFix : In wp-admin, Page menu not visible while editing a post if page editing access is not site-wide
-* BugFix : Duplicate entries in Author dropdown if RS editing roles have been assigned to WP role groups
-* BugFix : Did not support meta_key without meta_value in get_pages call (or vice versa)
+= Miscellaneous Fixedes =
+* Fixed : When editing is based on category, could not upload files into edit form prior to saving post 
+* Fixed : Non-administrators could not add a non-hierarchical custom term to post if taxonomy is included in post type registration
+* Fixed : Internal Cache (and therefore permissions) did not refresh when an existing user's role is changed
+* Fixed : Default roles were not applied at Page / Post creation
+* Fixed : In wp-admin, Page menu not visible while editing a post if page editing access is not site-wide
+* Fixed : Duplicate entries in Author dropdown if RS editing roles have been assigned to WP role groups
+* Fixed : Did not support meta_key without meta_value in get_pages call (or vice versa)
 
 = Category Listing (front end) =
-* BugFix : New categories were not listed until Role Scoper re-activation, under some configurations
+* Fixed : New categories were not listed until Role Scoper re-activation, under some configurations
 * Change : Support post_type argument in get_terms / wp_list_terms function call
 
 = Category Management =
 * Feature : Category Assigner role does not grant post creation/editing capabilities but specifies categories which are assignable to any user-editable post regardless of post ownership or status
-* BugFix : Term-specific management roles did not grant editing access
+* Fixed : Term-specific management roles did not grant editing access
 * Change : Term-specific management role also grants ability to create child terms
-* BugFix : Non-administrators could not delete categories
+* Fixed : Non-administrators could not delete categories
 
 = Plugin Compatibility =
 * Compat : NextGEN Gallery - with versions 1.7+, error when uploading images as a non-Administrator
@@ -278,116 +279,116 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : When plugin or theme code forces autologin, RS filtering does not reflect it until the next http request
 
 = 1.3.27 - 19 Jan 2011 =
-* BugFix : Hidden Content Teaser - private pages were not included for teasing to anonymous reader
-* BugFix : Hidden Content Teaser - pages with Reader restriction were not flagged in page listing
+* Fixed : Hidden Content Teaser - private pages were not included for teasing to anonymous reader
+* Fixed : Hidden Content Teaser - pages with Reader restriction were not flagged in page listing
 
 = 1.3.26 - 17 Jan 2011 =
-* BugFix : User Search on Role Group creation/edit form did not work (since 1.3.23)
-* BugFix : Group Search on User Profile form did not work (since 1.3.23)
+* Fixed : User Search on Role Group creation/edit form did not work (since 1.3.23)
+* Fixed : Group Search on User Profile form did not work (since 1.3.23)
 
 = 1.3.25 - 14 Jan 2011 =
-* BugFix : Hidden Content Teaser did not include private posts or pages, regardless of "hide private" setting (since 1.3.2)
+* Fixed : Hidden Content Teaser did not include private posts or pages, regardless of "hide private" setting (since 1.3.2)
 
 = 1.3.24 - 14 Jan 2011 =
-* BugFix : On Page Edit form, invalid blank item in Page Parent dropdown for Non-Editors with a General Role of Page Contributor / Author, caused new pages to be saved as top level 
+* Fixed : On Page Edit form, invalid blank item in Page Parent dropdown for Non-Editors with a General Role of Page Contributor / Author, caused new pages to be saved as top level 
 
 = 1.3.23 - 12 Jan 2011 =
-* BugFix : Under some configurations, Database Error when attempting to update a subpage
-* BugFix : Find Posts results in Media Library were not filtered
-* BugFix : Media Library count was not filtered
-* BugFix : Various PHP warnings/notices (visible in wp-admin when running with WP_DEBUG enabled)
+* Fixed : Under some configurations, Database Error when attempting to update a subpage
+* Fixed : Find Posts results in Media Library were not filtered
+* Fixed : Media Library count was not filtered
+* Fixed : Various PHP warnings/notices (visible in wp-admin when running with WP_DEBUG enabled)
 * Compat : Replace function calls deprecated by WP 3.1
 
 = 1.3.22 - 7 Jan 2011 =
-* BugFix : Under some configurations, Database Error when attempting to update a subpage
+* Fixed : Under some configurations, Database Error when attempting to update a subpage
 * Compat : Simple:Press - PHP warning (database error) on forum page for logged non-Editors
-* BugFix : Private pages were still accessible by direct URL (with teaser imposed) if Hidden Content Teaser enabled with "hide private posts" option enabled
-* BugFix : PHP Notice "Undefined property: stdClass::$src_name" under some configurations
+* Fixed : Private pages were still accessible by direct URL (with teaser imposed) if Hidden Content Teaser enabled with "hide private posts" option enabled
+* Fixed : PHP Notice "Undefined property: stdClass::$src_name" under some configurations
 * Lang : Revised Italian Translation (Alberto Ramacciotti - http://obertfsp.com)
 
 = 1.3.21 - 23 Dec 2010 =
-* BugFix : Role assignment metaboxes in post edit form did not indicate implicit role assignments based on Category Roles
+* Fixed : Role assignment metaboxes in post edit form did not indicate implicit role assignments based on Category Roles
 
 = 1.3.20 - 18 Dec 2010 =
-* BugFix : Bulk assignment of Category or Taxonomy Retrictions failed when specified "for selected and sub-categories" or "for sub-categories"
+* Fixed : Bulk assignment of Category or Taxonomy Retrictions failed when specified "for selected and sub-categories" or "for sub-categories"
 
 = 1.3.19 - 17 Dec 2010 =
 * Compat : NextGEN Gallery - fatal error on file upload attempt
 
 = 1.3.18 - 15 Dec 2010 =
-* BugFix : Users designated as Group Administrator for a specific group could not edit the group
-* BugFix : Currently assigned Group Administrators did were not indicated by checkbox
-* BugFix : Custom post types were included in front-end Pages listing under some configurations
+* Fixed : Users designated as Group Administrator for a specific group could not edit the group
+* Fixed : Currently assigned Group Administrators did were not indicated by checkbox
+* Fixed : Custom post types were included in front-end Pages listing under some configurations
 
 = 1.3.17 - 11 Dec 2010 =
-* BugFix : Template functions is_teaser_rs() and is_restricted_rs() caused fatal error
-* BugFix : Comments on teased posts were included in Recent Comments widget
+* Fixed : Template functions is_teaser_rs() and is_restricted_rs() caused fatal error
+* Fixed : Comments on teased posts were included in Recent Comments widget
 
 = 1.3.16 - 8 Dec 2010 =
-* BugFix : Roles, Restrictions menus not visible on Plugins page
+* Fixed : Roles, Restrictions menus not visible on Plugins page
 
 = 1.3.15 - 8 Dec 2010 =
-* BugFix : Spam-tagged comments were linked in Recent Comments widget
+* Fixed : Spam-tagged comments were linked in Recent Comments widget
 
 = 1.3.14 - 6 Dec 2010 =
-* BugFix : Page Associate role assignments failed to make pages available for selection as Page Parent 
-* BugFix : Trashed posts were included in Post/Page Restrictions bulk editor
+* Fixed : Page Associate role assignments failed to make pages available for selection as Page Parent 
+* Fixed : Trashed posts were included in Post/Page Restrictions bulk editor
 * Change : Include Role Scoper help links within wp-admin for Users, Media and RS Options pages
 
 = 1.3.13 - 3 Dec 2010 =
-* BugFix : Activation of "Sync WP Editor" option in RS Role Defs caused capabilites of other post types to be stripped out of WP Editor role definition 
+* Fixed : Activation of "Sync WP Editor" option in RS Role Defs caused capabilites of other post types to be stripped out of WP Editor role definition 
 * Compat : Revisionary - If another plugin (Events Manager) triggers a secondary edit_posts cap check when a Revisor attempts to edit another user's unpublished post, a pending revision is generated instead of just updating the unpublished post
 
 = 1.3.12 - 3 Dec 2010 =
-* BugFix : Page Parent automatically changed (possibly to an invalid selection) when a page is edited by a limited user who cannot fully edit current parent
-* BugFix : Category Manager restrictions were not applied for WP Editors
-* BugFix : "Navigation Menus" checkbox displayed inappropriately in Roles > Options > Realm > Taxonomy Usage
-* BugFix : Invalid filtering results after other template/plugin code manually changed current user via call to wp_set_current_user
+* Fixed : Page Parent automatically changed (possibly to an invalid selection) when a page is edited by a limited user who cannot fully edit current parent
+* Fixed : Category Manager restrictions were not applied for WP Editors
+* Fixed : "Navigation Menus" checkbox displayed inappropriately in Roles > Options > Realm > Taxonomy Usage
+* Fixed : Invalid filtering results after other template/plugin code manually changed current user via call to wp_set_current_user
 * Change : Default to requiring site-wide Editor or Administrator role for role/restriction assignment
 * Compat : Revisionary - Was causing duplicate checkboxes for Pending Revision Notification in some cases
 * Compat : Revisionary - Some qualifying users were not included in Pending Revision Notification checkboxes if internal cache was disabled
 * Compat : Revisionary - All authors to see and edit revisions submitted on their posts (unless HIDE_REVISIONS_FROM_AUTHOR is defined)
 
 = 1.3.11 - 26 Nov 2010 =
-* BugFix : Page editing by user lacking site-wide Page Editor role caused page parent to revert to Main (since 1.2.9)
-* BugFix : Non-administrators could not modify or request group membership via Ajax UI (since 1.2.9)
+* Fixed : Page editing by user lacking site-wide Page Editor role caused page parent to revert to Main (since 1.2.9)
+* Fixed : Non-administrators could not modify or request group membership via Ajax UI (since 1.2.9)
 
 = 1.3.10 - 25 Nov 2010 =
 * Compat : More Taxonomies - Category Roles could not be managed because of bug in More Taxonomies (and possibly other plugins) where category taxonomy is overriden without setting it public
 
 = 1.3.9 - 24 Nov 2010 =
-* BugFix : Non-administrators could delete users with a higher role level
-* BugFix : When viewing a page, hidden categories are listed
-* BugFix : Site-wide edit_theme_options capability was not honored for Nav Menu management by non-Administrators
+* Fixed : Non-administrators could delete users with a higher role level
+* Fixed : When viewing a page, hidden categories are listed
+* Fixed : Site-wide edit_theme_options capability was not honored for Nav Menu management by non-Administrators
 * Feature: Support menu-specific restrictions for Nav Menus
 * Feature: Constant definition 'SCOPER_NO_COMMENT_FILTERING' honored in backend for users lacking site-wide moderate_comments capability
-* BugFix : Scheduled posts included in front-end listing for logged Administrators, Editors
-* BugFix : "Add New" button was displayed on Edit Posts form even for users lacking a qualifying WP / General role
-* BugFix : Category Restrictions were not applied to a post if it also had a tag in a non-hierarchical (tag-type) taxonomy 
+* Fixed : Scheduled posts included in front-end listing for logged Administrators, Editors
+* Fixed : "Add New" button was displayed on Edit Posts form even for users lacking a qualifying WP / General role
+* Fixed : Category Restrictions were not applied to a post if it also had a tag in a non-hierarchical (tag-type) taxonomy 
 
 = 1.3.8 - 19 Nov 2010 =
-* BugFix : Improper blocking of content for custom post types not selected for RS filtering (Roles > Options > Realm > Post Type Usage)
+* Fixed : Improper blocking of content for custom post types not selected for RS filtering (Roles > Options > Realm > Post Type Usage)
 
 = 1.3.7 - 18 Nov 2010 =
-* BugFix : On PHP 4 sites, logged non-administrators had no read/edit access based on WP role
-* BugFix : Various PHP Notices / Warnings
+* Fixed : On PHP 4 sites, logged non-administrators had no read/edit access based on WP role
+* Fixed : Various PHP Notices / Warnings
 
 = 1.3.6 - 17 Nov 2010 =
-* BugFix : Post previews for qualified users failed with "Not Found" error
-* BugFix : For template calls to get_terms() / get_categories() / wp_list_categories(), include argument was not handled correctly (since 1.0)
-* BugFix : Fatal Error for logged Administrators (undefined method merge_scoped_blogcaps) in some cases
-* BugFix : Reader role restrictions not applied in some situations
+* Fixed : Post previews for qualified users failed with "Not Found" error
+* Fixed : For template calls to get_terms() / get_categories() / wp_list_categories(), include argument was not handled correctly (since 1.0)
+* Fixed : Fatal Error for logged Administrators (undefined method merge_scoped_blogcaps) in some cases
+* Fixed : Reader role restrictions not applied in some situations
 
 = 1.3.5 - 13 Nov 2010 =
-* BugFix : Post Author dropdown was limited to Editors and Administrators if "Filter Users Dropdown" option enabled
-* BugFix : Category Manager role was not applied to new subcategories when assigned for "parent and sub-categories"
-* BugFix : Invalid posts filtering when template invokes two or more query_posts calls with category_name argument
-* BugFix : Front-end attachment queries returned only attachments authored by logged user
-* BugFix : With "default new posts to private visibility" enabled, existing posts also forced to private when edited
-* BugFix : Link Admin roles / restrictions were not correctly applied per-category
+* Fixed : Post Author dropdown was limited to Editors and Administrators if "Filter Users Dropdown" option enabled
+* Fixed : Category Manager role was not applied to new subcategories when assigned for "parent and sub-categories"
+* Fixed : Invalid posts filtering when template invokes two or more query_posts calls with category_name argument
+* Fixed : Front-end attachment queries returned only attachments authored by logged user
+* Fixed : With "default new posts to private visibility" enabled, existing posts also forced to private when edited
+* Fixed : Link Admin roles / restrictions were not correctly applied per-category
 * Change : If a limited Link Editor submits new link without selecting a category, default to a selectable category
 * Change : Separate role definitions for link editing, link category management for per-category assignment
-* BugFix : Posts / Comments menu sometimes displayed inappropriately for content-specific editors
+* Fixed : Posts / Comments menu sometimes displayed inappropriately for content-specific editors
 * Change : Display user_login for role assignment and group membership administration, even if user has set a different display name
 * Compat : Revisionary - Dashboard Right Now count did not include revisable posts/pages (since 1.3.3)
 * Compat : Revisionary - Revisor role now available by default for direct post/page assignment; allows editing others' revisions
@@ -401,7 +402,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Revisionary - Non-Administrators receive Not Found error for revision preview
 
 = 1.3.2 - 3 Nov 2010 =
-* BugFix : Post counts and other dashboard items were not filtered for non-Administrators (since 1.3.1)
+* Fixed : Post counts and other dashboard items were not filtered for non-Administrators (since 1.3.1)
 * Compat : Revisionary - users could not submit or edit revisions based on Contributor role direct-assigned for post
 
 = 1.3.1 - 2 Nov 2010 =
@@ -411,24 +412,24 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = File Attachment Filtering =
 * Feature : For File Filtering, ability to force regeneration of access keys and rewrite rules via utility URL
-* BugFix : Infinite redirection if file keys in .htaccess (uploads folder) were manually modified
+* Fixed : Infinite redirection if file keys in .htaccess (uploads folder) were manually modified
 
 = Multisite =
-* BugFix : With Multisite, some Default Site Options could not be modified
-* BugFix : On WP 3.0 Multisite installations, all files in wp-content/cache get deleted, clashing with other plugins such as WP Super Cache
-* BugFix : On Multisite installations, could not save changes to Default Sitewide Options
+* Fixed : With Multisite, some Default Site Options could not be modified
+* Fixed : On WP 3.0 Multisite installations, all files in wp-content/cache get deleted, clashing with other plugins such as WP Super Cache
+* Fixed : On Multisite installations, could not save changes to Default Sitewide Options
 
 = Post Editing =
 * Change : In Post Edit Form, currently assigned categories and other hierarchical terms shown with disabled checkboxes if current cannot edit in the term
-* BugFix : Default Post/Page Roles were assigned to existing posts at post edit (since 1.1.3, now assigned only to new posts)
-* BugFix : Page Parent dropdown filtering hid published pages from Contributors if none editable
-* BugFix : Page Structure option "Page Authors, Editors and Administrators" did not work (prevented all non-Administrators from editing top-level pages)
-* BugFix : Uploaded files could not be edited / deleted in some cases
-* BugFix : With "Users CSV Entry" enabled, checkboxes for existing role assignments were not displayed in some cases 
-* BugFix : Display of edit link in Edit Posts/Pages listing did not reflect capability requirements imposed by other plugins 
+* Fixed : Default Post/Page Roles were assigned to existing posts at post edit (since 1.1.3, now assigned only to new posts)
+* Fixed : Page Parent dropdown filtering hid published pages from Contributors if none editable
+* Fixed : Page Structure option "Page Authors, Editors and Administrators" did not work (prevented all non-Administrators from editing top-level pages)
+* Fixed : Uploaded files could not be edited / deleted in some cases
+* Fixed : With "Users CSV Entry" enabled, checkboxes for existing role assignments were not displayed in some cases 
+* Fixed : Display of edit link in Edit Posts/Pages listing did not reflect capability requirements imposed by other plugins 
 
 = Custom Post Types / Taxonomies =
-* BugFix : Previous, Next links on single post page for custom types included unpublished posts (since 1.0.0)
+* Fixed : Previous, Next links on single post page for custom types included unpublished posts (since 1.0.0)
 * Compat : More Taxonomies, More Types now supported by automatically forcing RS to initalize later
 * Compat : Late registration of custom types/taxonomies can be supported by forcing RS to initialize later: define( 'SCOPER_LATE_INIT', true );
 * Change : Dropped support for "WP" Role Type (means scoper-assigned roles and restrictions must be object type-specific)
@@ -436,18 +437,18 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = Performance Enhancement =
 * Perf : Eliminate extensive delays on some sites using Page Roles on hundreds of pages (when filtering posts, pre-execute a problematic subquery) 
 * Perf : Eliminate superfluous query clauses for better wp-admin/edit.php performance
-* BugFix : Dozens of PHP Notices / Warnings for undeclared variables or missing array indexes
+* Fixed : Dozens of PHP Notices / Warnings for undeclared variables or missing array indexes
 * Perf : Extensive code refactoring to reduce memory usage
 
 = Category / Term Management =
-* BugFix : Category-specific assignment of Category Manger role (and management roles for custom terms) was not applied correctly with WP 3.0
-* BugFix : Bulk Administration of Term Roles / Restrictions was too narrowly limited for non-Administrators (since 1.2.?)
-* BugFix : Category Manager restrictions were not enforced against users with site-wide manage_categories capability
-* BugFix : Category creation was not appropriately restricted with WP 3.0
+* Fixed : Category-specific assignment of Category Manger role (and management roles for custom terms) was not applied correctly with WP 3.0
+* Fixed : Bulk Administration of Term Roles / Restrictions was too narrowly limited for non-Administrators (since 1.2.?)
+* Fixed : Category Manager restrictions were not enforced against users with site-wide manage_categories capability
+* Fixed : Category creation was not appropriately restricted with WP 3.0
 * Feature : Hide the "Add New Category" UI if logged user does not have term management role site-wide
 
 = User Groups =
-* BugFix : Administrators could not modify User Group name or description (since 1.2)
+* Fixed : Administrators could not modify User Group name or description (since 1.2)
 * Change : User search results for group membership show user display name (rather than login)
 
 = Plugin Compatibility =
@@ -466,45 +467,45 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 = Custom Types / Taxonomies =
 * Feature : New simple checklist enables/disables RS usage of each defined post type and taxonomy 
-* BugFix : Hidden Content Teaser could not be enabled for custom post types
-* BugFix : Category Role usage was not available for custom post types
-* BugFix : Role assignment metaboxes did not display for custom types
-* BugFix : Custom Post Type menus were not displayed based on Object Role assignment
-* BugFix : Newly enabled custom roles were not handled correctly by RS because initial save following activation de-associated their role capabilities (under RS Role Defs tab)
-* BugFix : Some RS Options (including custom post type / taxonomy role usage) did not store correctly with WP Multisite
-* BugFix : Was not requiring type-specific editing capabilities for term selection in post edit form for custom types
-* BugFix : Post Types and Taxonomies disabled via new option checkboxes were not removed from Roles, Restrictions menus
-* BugFix : Error when using custom post types with WP 2.9 
+* Fixed : Hidden Content Teaser could not be enabled for custom post types
+* Fixed : Category Role usage was not available for custom post types
+* Fixed : Role assignment metaboxes did not display for custom types
+* Fixed : Custom Post Type menus were not displayed based on Object Role assignment
+* Fixed : Newly enabled custom roles were not handled correctly by RS because initial save following activation de-associated their role capabilities (under RS Role Defs tab)
+* Fixed : Some RS Options (including custom post type / taxonomy role usage) did not store correctly with WP Multisite
+* Fixed : Was not requiring type-specific editing capabilities for term selection in post edit form for custom types
+* Fixed : Post Types and Taxonomies disabled via new option checkboxes were not removed from Roles, Restrictions menus
+* Fixed : Error when using custom post types with WP 2.9 
 * Change : Force type-specific capability_type and caps for all custom post types
 * Change : Enable new Post Types and Taxonomies for RS Roles & Restrictions by default
 * Change : Support get_pages / list_pages filtering of hierarchical custom post types
 * Change : Better support for nonstandard capabilities in custom post type definitions
 
 = File Attachment Filtering =
-* BugFix : File Attachment Filter was inactive for installations upgraded to WP 3.0 multisite and still using wp-content/uploads folder
-* BugFix : On failed direct file access attempt, any page / term listings on 404 page were not filtered for RS restrictions / roles
+* Fixed : File Attachment Filter was inactive for installations upgraded to WP 3.0 multisite and still using wp-content/uploads folder
+* Fixed : On failed direct file access attempt, any page / term listings on 404 page were not filtered for RS restrictions / roles
 
 = Front End =
-* BugFix : Fatal error when manage_categories capability is checked from the front end by template or plugin code
+* Fixed : Fatal error when manage_categories capability is checked from the front end by template or plugin code
 
 = Post Edit Form =
-* BugFix : Post submission categories not filtered when user had category-specific Post Editor role but a General Role of Page Author / Editor (since 1.2)
-* BugFix : Implicit role ownership (indicated by coloring in role metaboxes) was not indicacted correctly under some configurations
+* Fixed : Post submission categories not filtered when user had category-specific Post Editor role but a General Role of Page Author / Editor (since 1.2)
+* Fixed : Implicit role ownership (indicated by coloring in role metaboxes) was not indicacted correctly under some configurations
 
 = Role / Restriction Maintenance =
-* BugFix : Category Roles, Category Restrictions bulk admin forms had invalid category edit links
-* BugFix : Roles, Restrictions were not displayed on single term edit form
-* BugFix : Invalid Roles > Roles submenu displayed if logged user has edit_users capability but not manage_settings capability
+* Fixed : Category Roles, Category Restrictions bulk admin forms had invalid category edit links
+* Fixed : Roles, Restrictions were not displayed on single term edit form
+* Fixed : Invalid Roles > Roles submenu displayed if logged user has edit_users capability but not manage_settings capability
 * Change : Suppress scroll links in Term Roles / Restrictions bulk admin form if terms total over 300
 
 = Admin - Misc. =
 * Feature : Media Library option, for non-Editors, to prevent the inclusion of files uploaded by other users (even if logged user can edit the related post)
 * Perf : Unnecessary DB query on post save added needless overhead, caused out of memory error on some configurations (since 1.2)
-* BugFix : In admin menus, "Add New" was not properly suppressed in some configurations
-* BugFix : Comment listing in wp-admin was not filtered to match post editing access
-* BugFix : Custom-defined WP Nav menus were not filtered for RS restrictions / roles
-* BugFix : XML-RPC submissions failed for users lacking blog-wide edit_posts capability
-* BugFix : On version upgrade from RS < 1.2, groups_rs db table update failed under certain conditions
+* Fixed : In admin menus, "Add New" was not properly suppressed in some configurations
+* Fixed : Comment listing in wp-admin was not filtered to match post editing access
+* Fixed : Custom-defined WP Nav menus were not filtered for RS restrictions / roles
+* Fixed : XML-RPC submissions failed for users lacking blog-wide edit_posts capability
+* Fixed : On version upgrade from RS < 1.2, groups_rs db table update failed under certain conditions
 * Lang : Removed ASCII HTML character codes from Spanish translation (David Gómez Becerril - www.desarrollowebdequeretaro.com)
 
 = Plugin Compatibility =
@@ -515,42 +516,42 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Change : (with Revisionary plugin) Revisor role does not satisfy "Roles and Restrictions can be set" requirement of "site-wide Editor"
 
 = 1.2.7 - 30 June 2010 =
-* BugFix : Conflict with Tag Cloud (since 1.2.6) 
+* Fixed : Conflict with Tag Cloud (since 1.2.6) 
 
 = 1.2.6 - 30 June 2010 =
-* BugFix : Multibyte string functions used in Role Scoper admin forms caused fatal errors on servers lacking that PHP module
-* BugFix : Page Parent filtering was broken for new pages with WP 3.0
-* BugFix : If multiple sticky posts exists, all except one were dropped down to non-sticky display position
-* BugFix : Various PHP warnings (harmless to normal installations)
-* BugFix : "Add New" links were included in Posts, Pages menu if user has an object-specific editing role but lacks the sitewide role required for object creation
-* BugFix : Database error when filtering Recent Comments widget (ambiguous reference to post_status)
-* BugFix : Query parsing become confused by queries which included a tab character before or after WHERE instead of a space
-* BugFix : Auto-drafts were listed in Page Roles, Page Restrictions administration forms with WP 3.0
-* BugFix : Category Roles / Restrictions were applied regardless of Realm settings (causing overly restricted read access under some configurations)
+* Fixed : Multibyte string functions used in Role Scoper admin forms caused fatal errors on servers lacking that PHP module
+* Fixed : Page Parent filtering was broken for new pages with WP 3.0
+* Fixed : If multiple sticky posts exists, all except one were dropped down to non-sticky display position
+* Fixed : Various PHP warnings (harmless to normal installations)
+* Fixed : "Add New" links were included in Posts, Pages menu if user has an object-specific editing role but lacks the sitewide role required for object creation
+* Fixed : Database error when filtering Recent Comments widget (ambiguous reference to post_status)
+* Fixed : Query parsing become confused by queries which included a tab character before or after WHERE instead of a space
+* Fixed : Auto-drafts were listed in Page Roles, Page Restrictions administration forms with WP 3.0
+* Fixed : Category Roles / Restrictions were applied regardless of Realm settings (causing overly restricted read access under some configurations)
 
 = 1.2.5 - 19 June 2010 =
-* BugFix : .htaccess file became corrupted on WP-MU versions < 3.0 on plugin re-activation with File Filtering enabled, causing inaccessable site
-* BugFix : On WP 3.0, File Filtering was not automatically re-enabled following plugin de-activation, re-activation
+* Fixed : .htaccess file became corrupted on WP-MU versions < 3.0 on plugin re-activation with File Filtering enabled, causing inaccessable site
+* Fixed : On WP 3.0, File Filtering was not automatically re-enabled following plugin de-activation, re-activation
 
 = 1.2.4 - 18 June 2010 =
-* BugFix : Category or Page listing with include / exclude argument caused PHP error with WP 3.0
-* BugFix : Limited users could not use the Media Library based on a Post Author Category Role, and could not upload into the Edit Form until after saving the post
+* Fixed : Category or Page listing with include / exclude argument caused PHP error with WP 3.0
+* Fixed : Limited users could not use the Media Library based on a Post Author Category Role, and could not upload into the Edit Form until after saving the post
 * Compat : My Category Order plugin (and any other plugins or custom queries which pass a child_of argument with nullstring value)
-* BugFix : User group could not be removed via User Profile, using jQuery interface
-* BugFix : Category Roles link on User Profile was invalid
+* Fixed : User group could not be removed via User Profile, using jQuery interface
+* Fixed : Category Roles link on User Profile was invalid
 * Lang : Partial French translation (thanks to Chryjs - http://chryjs.free.fr)
 * Lang : Update English .po file via poEdit, add .pot file as generated by wordpress.org
 
 = 1.2.3 - 17 June 2010 =
-* BugFix : Non-administrators could not assign post categories correctly with WP 3.0
-* BugFix : Custom object types and taxonomies were not recognized (for RS roles and restrictions) under some configurations
+* Fixed : Non-administrators could not assign post categories correctly with WP 3.0
+* Fixed : Custom object types and taxonomies were not recognized (for RS roles and restrictions) under some configurations
 
 = 1.2.2 - 2 June 2010 =
-* BugFix : Category filtering for some widgets and plugins (Subscribe2) was broken (since 1.2) 
+* Fixed : Category filtering for some widgets and plugins (Subscribe2) was broken (since 1.2) 
 
 = 1.2.1 - 2 June 2010 =
-* BugFix : Syntax error when attempting to access RS Options (since 1.2)
-* BugFix : Blank options area when attempting to access General Options (since 1.2)
+* Fixed : Syntax error when attempting to access RS Options (since 1.2)
+* Fixed : Blank options area when attempting to access General Options (since 1.2)
 
 #### 1.2 - 2 June 2010
 
@@ -559,39 +560,39 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Support RS Roles, Restrictions for Custom Post Types created via WP 2.9 / 3.0 framework
 * Compat : Support RS Roles for Custom Taxonomies created via WP 2.9 / 3.0 framework
 * Compat : WP 3.0 Multisite menu items had invalid link
-* BugFix : File Filtering did not work on WP 3.0 Multisite
-* BugFix : File Filtering did not work on new MU blogs until plugin re-activation or File Filtering re-enable
+* Fixed : File Filtering did not work on WP 3.0 Multisite
+* Fixed : File Filtering did not work on new MU blogs until plugin re-activation or File Filtering re-enable
 
 = New Features =
 * Feature : Ajax interface for group membership selection
 * Feature : Group membership requests
 * Feature : Group membership recommendations (2-tier membership moderation)
 
-= Major Bug Fixes =
-* BugFix : File Filtering was not imposed based on Post/Page Restrictions or Default Category Roles (also required Private visibility)
-* BugFix : RS Restrictions and Roles were not applied to Sticky Posts
-* BugFix : Attachment filenames with spaces, parenthesis and other special chars caused corrupt or ineffective .htaccess (possibly resulting in Internal Server Error)
-* BugFix : Last blog paging link sometimes hidden when Hidden Content Teaser enabled (also caused WP-PageNavi conflict)
-* BugFix : With Revisionary (or possibly other plugins) enabled, posts are inappropriately forced into default category in logged user cannot post there.
-* BugFix : Custom calls to wp_dropdown_pages (in template or other plugin code) were sometimes filtered inappropriately
-* BugFix : On abnormally configured web servers, RS menu links did not work
-* BugFix : Private Posts were excluded from Recent Posts widget if Hidden Content Teaser enabled, even if logged user can read the post
-* BugFix : On some installations, Page Roles could not be updated correctly following upgrade from older Role Scoper version
+= Major Fixedes =
+* Fixed : File Filtering was not imposed based on Post/Page Restrictions or Default Category Roles (also required Private visibility)
+* Fixed : RS Restrictions and Roles were not applied to Sticky Posts
+* Fixed : Attachment filenames with spaces, parenthesis and other special chars caused corrupt or ineffective .htaccess (possibly resulting in Internal Server Error)
+* Fixed : Last blog paging link sometimes hidden when Hidden Content Teaser enabled (also caused WP-PageNavi conflict)
+* Fixed : With Revisionary (or possibly other plugins) enabled, posts are inappropriately forced into default category in logged user cannot post there.
+* Fixed : Custom calls to wp_dropdown_pages (in template or other plugin code) were sometimes filtered inappropriately
+* Fixed : On abnormally configured web servers, RS menu links did not work
+* Fixed : Private Posts were excluded from Recent Posts widget if Hidden Content Teaser enabled, even if logged user can read the post
+* Fixed : On some installations, Page Roles could not be updated correctly following upgrade from older Role Scoper version
 
-= Minor Bug Fixes =
-* BugFix : When previewing a post, non-editors don't see Page or Post listings in sidebar / topbar
-* BugFix : Recent Comments widget included comments on unreadable posts, with WP 2.9
-* BugFix : Custom WP_PLUGIN_DIR was not supported
-* BugFix : In Bulk Object Roles Edit forms, links to edit roles of individual object were broken
-* BugFix : RS addition to wp-admin footer forced horizontal scroll bar in IE7
-* BugFix : Role Basis settings (User Roles and Group Roles enable / disable) were hidden and unalterable
-* BugFix : If Page Reader is enabled as an "Additional Object Role", Private Page Reader also remains captioned as "Page Reader"
-* BugFix : If Post Reader is enabled as an "Additional Object Role", Private Post Reader also remains captioned as "Post Reader"
-* BugFix : Bad edit link on User Profile where user is a Group Manager for specific group(s)
-* BugFix : When scanning Posts/Pages for unregistered attachments, File Attachment Utility did not distinguish broken links
-* BugFix : Roles and Restricions menu did not remain collapsed
-* BugFix : If redundant Page / Post / Category roles were stored to database, they could only be deleted one at a time (giving the appearance and effect of a failed role deletion)
-* BugFix : Javascript error in Page Edit form, failed to set tooltip caption for Page Role checkboxes
+= Minor Fixedes =
+* Fixed : When previewing a post, non-editors don't see Page or Post listings in sidebar / topbar
+* Fixed : Recent Comments widget included comments on unreadable posts, with WP 2.9
+* Fixed : Custom WP_PLUGIN_DIR was not supported
+* Fixed : In Bulk Object Roles Edit forms, links to edit roles of individual object were broken
+* Fixed : RS addition to wp-admin footer forced horizontal scroll bar in IE7
+* Fixed : Role Basis settings (User Roles and Group Roles enable / disable) were hidden and unalterable
+* Fixed : If Page Reader is enabled as an "Additional Object Role", Private Page Reader also remains captioned as "Page Reader"
+* Fixed : If Post Reader is enabled as an "Additional Object Role", Private Post Reader also remains captioned as "Post Reader"
+* Fixed : Bad edit link on User Profile where user is a Group Manager for specific group(s)
+* Fixed : When scanning Posts/Pages for unregistered attachments, File Attachment Utility did not distinguish broken links
+* Fixed : Roles and Restricions menu did not remain collapsed
+* Fixed : If redundant Page / Post / Category roles were stored to database, they could only be deleted one at a time (giving the appearance and effect of a failed role deletion)
+* Fixed : Javascript error in Page Edit form, failed to set tooltip caption for Page Role checkboxes
 
 = Plugin Compatibility =
 * Compat : WP-PageNavi - conflict with paging links, see above
@@ -629,16 +630,16 @@ Another one-line change to eliminate a Fatal Error on WP 3.2 Beta
 One-line change eliminates a Fatal Error on WP 3.2 Beta
 
 = 1.3.35 =
-Fixes conflict w/ plugins which define pluggable functions; Nav Menu filtering bug fixes and enhancements; better OZH Admin Menus compatibility
+Fixes conflict w/ plugins which define pluggable functions; Nav Menu filtering Fixedes and enhancements; better OZH Admin Menus compatibility
 
 = 1.3.34 =
 Fixes conflict w/ Edit Flow plugin: if 'post_status' taxonomy was enabled for RS Filtering (Roles > Options > Realm), editing a Private post forced it to Public visibility
 
 = 1.3.33 =
-Bug Fix : Links Widgets and other get_bookmarks() output was hidden from non-Administrators on the front end (since 1.3.30)
+Fixed : Links Widgets and other get_bookmarks() output was hidden from non-Administrators on the front end (since 1.3.30)
 
 = 1.3.32 =
-Bug Fix : Filtering could not be disabled for some Custom Post Types / Taxonomies
+Fixed : Filtering could not be disabled for some Custom Post Types / Taxonomies
 
 = 1.3.31 =
 All changes relate to Custom Post Types / Taxonomies: better compat with CPT / Taxonomy registrations; Dashboard hint on type-specific Role assignments for RS-filtered Post Types; Custom Taxonomies could not be fully disabled, so various access failures (including conflict with Edit Flow plugin)
@@ -650,7 +651,7 @@ Fatal error when another plugin defines pluggable function 'set_current_user' (c
 Comment editing for non-Admins in 3.1; DB errors from collation mismatch; Per-category Link visiblity; File Filtering not applied to new attachments; File Filtering for manually resized images; Manage Nav Menus w/o siteside edit; Role Groups menu in WP 3.0 MS; CMS Tree and 4 other plugin conflicts
 
 = 1.3.28 =
-Improves Nav Menu Manager and Category Manager role assignment; filters "Add New" links out of admin bar as appropriate; fixes RS Options menus in 3.1 Multisite, fixes 6 plugin conflicts including NextGEN Gallery, and 9 other bug fixes. 
+Improves Nav Menu Manager and Category Manager role assignment; filters "Add New" links out of admin bar as appropriate; fixes RS Options menus in 3.1 Multisite, fixes 6 plugin conflicts including NextGEN Gallery, and 9 other Fixedes. 
 
 == Documentation ==
 
