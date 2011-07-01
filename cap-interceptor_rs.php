@@ -223,10 +223,29 @@ class CapInterceptor_RS
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
 		
 		if ( 'post' == $src_name ) {
-			if ( ! in_array( $object_type, array( 'attachment', 'revision' ) ) ) {
-			$use_post_types = scoper_get_option( 'use_post_types' );
-			if ( empty( $use_post_types[$object_type] ) )
-				return $wp_blogcaps;
+			if ( in_array( $object_type, array( 'attachment', 'revision' ) ) ) {
+				if ( $object_id ) {
+					if ( $_post = get_post( $object_id ) ) {
+						if ( $_parent = get_post($_post->post_parent) ) {
+							$object_type = $_parent->post_type;
+							$object_id = $_parent->ID;
+							
+							// deal with case of edit_posts cap check on attachments to revision (with Revisionary)
+							if ( 'revision' == $object_type ) {
+								if ( $_orig_post = get_post($_parent->post_parent) ) {
+									$object_type = $_orig_post->post_type;
+									$object_id = $orig_post->ID;
+								}
+							}
+							
+							$object_type_obj = get_post_type_object( $object_type );
+						}
+					}
+				}
+			} else {
+				$use_post_types = scoper_get_option( 'use_post_types' );
+				if ( empty( $use_post_types[$object_type] ) )
+					return $wp_blogcaps;
 			}
 		}
 		
