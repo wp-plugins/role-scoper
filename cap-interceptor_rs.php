@@ -248,7 +248,7 @@ class CapInterceptor_RS
 					return $wp_blogcaps;
 			}
 		}
-		
+
 		// =====================================================================================================================================
 
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
@@ -677,6 +677,10 @@ class CapInterceptor_RS
 		$rs_reqd_caps = array_fill_keys( $rs_reqd_caps, true );
 		
 		if ( ! $this_id_okay ) {
+			if ( ( 'edit_posts' == $orig_reqd_caps[0] ) && strpos( $_SERVER['REQUEST_URI'], 'async-upload.php' ) ) {  // temp workaround for ACF with Revisionary
+				return $wp_blogcaps;
+			}
+
 			// ================= TEMPORARY DEBUG CODE ===================
 			//d_echo("object_id $object_id FAILED !!!!!!!!!!!!!!!!!" );
 
