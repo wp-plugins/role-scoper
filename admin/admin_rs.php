@@ -2,7 +2,7 @@
 // menu icons by Jonas Rask: http://www.jonasraskdesign.com/
 if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	die();
-	
+
 $wp_content = ( is_ssl() || ( is_admin() && defined('FORCE_SSL_ADMIN') && FORCE_SSL_ADMIN ) ) ? str_replace( 'http:', 'https:', WP_CONTENT_URL ) : WP_CONTENT_URL;
 define ('SCOPER_URLPATH', $wp_content . '/plugins/' . SCOPER_FOLDER);
 
@@ -50,7 +50,7 @@ class ScoperAdmin
 				
 				add_action('admin_menu', array(&$this,'build_menu'));
 				add_action('admin_menu', array(&$this,'ngg_uploader_workaround'));
-				
+
 				add_action('admin_init', array(&$this,'filter_add_new_content_links'));	// changed from 'admin_menu' hook to work around WP 3.2 (as of RC1) removal of Edit submenu item if Add New is removed
 				add_action('admin_print_scripts', array(&$this,'filter_add_new_button'));
 				
@@ -335,6 +335,10 @@ jQuery(document).ready( function($) {
 	
 	// support NextGenGallery uploader and other custom jquery calls which WP treats as index.php ( otherwise user_can_access_admin_page() fails )
 	function ngg_uploader_workaround() {
+		$site_url = parse_url( get_option( 'siteurl' ) );
+		if ( $_SERVER['REQUEST_URI'] == $site_url['path'] . '/wp-admin/' )
+			return;
+
 		if ( ( 'index.php' == $GLOBALS['pagenow'] ) && ! strpos( $_SERVER['REQUEST_URI'], 'index.php' ) )  //  strpos( $_SERVER['REQUEST_URI'], 'admin/upload.php' )
 			$GLOBALS['pagenow'] = '';
 	}

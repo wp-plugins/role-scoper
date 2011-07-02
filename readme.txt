@@ -111,6 +111,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Fixed : In Multisite Role Options, bad link to Attachments Utility
 * Fixed : File Attachments Utility non-functional on Multisite
 * Compat : Revisionary - Revisors could not upload images
+* Fixed : Dashboard Screen Options were not applied (since 1.3.41)
 
 = 1.3.42 - 29 June 2011 =
 * Compat : WP 3.2 - Current comments not displayed for single custom post on front end
