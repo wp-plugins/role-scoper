@@ -112,6 +112,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Fixed : File Attachments Utility non-functional on Multisite
 * Compat : Revisionary - Revisors could not upload images
 * Fixed : Dashboard Screen Options were not applied (since 1.3.41)
+* Fixed : Default term selection was forced for hierarchical custom taxonomies even if taxonomy not enabled for RS filtering
+* Fixed : Default term selection was not forced for hierarchical custom taxonomies, when taxonomy enabled for RS filtering and post edited by logged Administrator
+* Fixed : Hierchical custom taxonomy terms unselectable for non-Administrator when taxonomy is not enabled for RS filtering
+* Fixed : Bad links to General Roles from Realm tab in Multisite Network Role Options
 
 = 1.3.42 - 29 June 2011 =
 * Compat : WP 3.2 - Current comments not displayed for single custom post on front end

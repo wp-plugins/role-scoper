@@ -504,12 +504,12 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	function scoper_flt_pre_object_terms ($selected_terms, $taxonomy, $args = array()) {
 		//rs_errlog( "scoper_flt_pre_object_terms input: " . serialize($selected_terms) );
-				
+
 		// strip out fake term_id -1 (if applied)
 		if ( $selected_terms && is_array($selected_terms) )
 			$selected_terms = array_diff($selected_terms, array(-1, 0, '0', '-1', ''));  // not sure who is changing empty $_POST['post_category'] array to an array with nullstring element, but we have to deal with that
 			
-		if ( is_content_administrator_rs() || defined('DISABLE_QUERYFILTERS_RS') )
+		if ( defined('DISABLE_QUERYFILTERS_RS') )
 			return $selected_terms;
 
 		if ( ! is_array($selected_terms) ) {
@@ -523,37 +523,42 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		if ( ! $src_name = $scoper->taxonomies->member_property($taxonomy, 'object_source') )
 			return $selected_terms;
 		
-		if ( defined( 'RVY_VERSION' ) ) {
-			global $revisionary;
-				 
-			if ( ! empty($revisionary->admin->impose_pending_rev) )
-				return $selected_terms;
-		}
+		// don't filter selected terms for content administrator, but still need to apply default term as needed when none were selected
+		if ( is_content_administrator_rs() ) {
+			$user_terms = $selected_terms;
+		} else {
+			if ( defined( 'RVY_VERSION' ) ) {
+				global $revisionary;
+					 
+				if ( ! empty($revisionary->admin->impose_pending_rev) )
+					return $selected_terms;
+			}
+				
+			$orig_selected_terms = $selected_terms;
+				
+			if ( ! is_array($selected_terms) )
+				$selected_terms = array();
+				
+			require_once(dirname(__FILE__).'/filters-admin-term-selection_rs.php');
+			$user_terms = array(); // will be returned by filter_terms_for_status
 			
-		$orig_selected_terms = $selected_terms;
+			$selected_terms = scoper_filter_terms_for_status($taxonomy, $selected_terms, $user_terms);
 			
-		if ( ! is_array($selected_terms) )
-			$selected_terms = array();
-			
-		require_once(dirname(__FILE__).'/filters-admin-term-selection_rs.php');
-		$user_terms = array(); // will be returned by filter_terms_for_status
-		
-		$selected_terms = scoper_filter_terms_for_status($taxonomy, $selected_terms, $user_terms);
-			
-		if ( 'post' == $src_name ) { // TODO: abstract for other data sources
-			if ( $object_id = $scoper->data_sources->detect('id', $src_name) ) {
-				$stored_terms = wp_get_object_terms( $object_id, $taxonomy, array( 'fields' => 'ids' ) );
+			if ( 'post' == $src_name ) { // TODO: abstract for other data sources
+				if ( $object_id = $scoper->data_sources->detect('id', $src_name) ) {
+					$stored_terms = wp_get_object_terms( $object_id, $taxonomy, array( 'fields' => 'ids' ) );
 
-				if ( $deselected_terms = array_diff( $stored_terms, $selected_terms ) ) {
-					if ( $unremovable_terms = array_diff( $deselected_terms, $user_terms ) )
-						$selected_terms = array_merge( $selected_terms, $unremovable_terms );
+					if ( $deselected_terms = array_diff( $stored_terms, $selected_terms ) ) {
+						if ( $unremovable_terms = array_diff( $deselected_terms, $user_terms ) )
+							$selected_terms = array_merge( $selected_terms, $unremovable_terms );
+					}
 				}
 			}
 		}
-
+		
 		//rs_errlog( "$taxonomy - user terms: " . serialize($user_terms) );
 		//rs_errlog( "selected terms: " . serialize($selected_terms) );
-		
+
 		if ( empty($selected_terms) ) {
 			// For now, always check the DB for default terms.  TODO: only if the default_term_option property is set
 			if ( ! $default_term_option = $scoper->taxonomies->member_property( $taxonomy, 'default_term_option' ) )
@@ -566,11 +571,19 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			
 			// but if the default term is not defined or is not in user's subset of usable terms, substitute first available
 			if ( $user_terms ) {
-				$default_terms = array_intersect($default_terms, $user_terms);
+				$_default_terms = array_intersect($default_terms, $user_terms);
 				
-				if ( ! $default_terms ) {
-					//if ( $scoper->taxonomies->member_property( $taxonomy, 'requires_term' )  )
+				if ( ! $_default_terms ) {
+					if ( $default_terms || defined( 'SCOPER_AUTO_DEFAULT_TERM' ) ) { // substitute 1st available only if default term option is set or constant defined
+						//if ( $scoper->taxonomies->member_property( $taxonomy, 'requires_term' )  )
 						$default_terms = (array) $user_terms[0];
+					} else {
+						$use_taxonomies = scoper_get_option( 'use_taxonomies' );  // If a 'requires_term' taxonomy (i.e. hierarchical) is enabled for RS filtering, a term must be stored
+						if ( ! empty( $use_taxonomies[$taxonomy] ) )
+							$default_terms = (array) $user_terms[0];
+						else
+							$default_terms = array();
+					}
 				}
 			}
 			
@@ -578,7 +591,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 
 			$selected_terms = $default_terms;
 		}
-		
+
 		//rs_errlog( "returning selected terms: " . serialize($selected_terms) );
 		return $selected_terms;
 	}

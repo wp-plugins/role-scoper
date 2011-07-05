@@ -267,7 +267,7 @@ class ScoperHardwayTaxonomy
 			$orderby = 't.term_order';
 		else
 			$orderby = 't.name';
-
+	
 		$orderby = apply_filters( 'get_terms_orderby', $orderby, $args );
 
 		if ( !empty($orderby) )

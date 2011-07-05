@@ -41,12 +41,17 @@ class ScoperAdminFiltersItemUI {
 		if ( empty($post) )
 			return;	
 
-		require_once(dirname(__FILE__).'/filters-admin-term-selection_rs.php');		
+		require_once(dirname(__FILE__).'/filters-admin-term-selection_rs.php');	
+		
+		$use_taxonomies = scoper_get_option( 'use_taxonomies' );
 ?>
 <script type="text/javascript">
 /* <![CDATA[ */
 jQuery(document).ready( function($) {
 <?php foreach( get_taxonomies( array( 'public' => true, 'hierarchical' => true ) ) as $taxonomy ) :
+	if ( empty( $use_taxonomies[$taxonomy] ) )
+		continue;
+	
 	$user_terms = array();
 	scoper_filter_terms_for_status( $taxonomy,  array(), $user_terms, array( 'object_id' => $post->ID, 'object_type' => $post->post_type, 'status' => $post->post_status ) );
 

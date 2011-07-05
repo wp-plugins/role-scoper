@@ -1790,16 +1790,23 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 				
 			} // endif displaying this option in form
 			
+			if ( MULTISITE )
+				$link_open = $link_close = '';
+			else {
+				$link_open = "<a href='admin.php?page=rs-general_roles'>";
+				$link_close = '</a>';
+			}
+
 			if ( 'term' == $scope ) {
 				if ( get_taxonomies( array( '_builtin' => false, 'public' => true ) ) ) {
 					echo '<div>';
-					printf( __( '<strong>NOTE:</strong> Non-Administrators need a %1$sTaxonomy-specific Role assignment%2$s to manage Custom Taxonomies selected here.', 'scoper' ), "<a href='admin.php?page=rs-general_roles'>", '</a>' );
+					printf( __( '<strong>NOTE:</strong> Non-Administrators need a %1$sTaxonomy-specific Role assignment%2$s to manage Custom Taxonomies selected here.', 'scoper' ), $link_open, $link_close );
 					echo '</div>';
 				}
 			} else {
 				if ( get_post_types( array( '_builtin' => false, 'public' => true ) ) ) {
 					echo '<div>';
-					printf( __( '<strong>NOTE:</strong> Non-Administrators need a %1$sType-specific Role assignment%2$s to manage Custom Post Types selected here.', 'scoper' ), "<a href='admin.php?page=rs-general_roles'>", '</a>' );
+					printf( __( '<strong>NOTE:</strong> Non-Administrators need a %1$sType-specific Role assignment%2$s to manage Custom Post Types selected here.', 'scoper' ), $link_open, $link_close );
 					echo '</div><br />';
 				}
 			}
