@@ -116,6 +116,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Fixed : Default term selection was not forced for hierarchical custom taxonomies, when taxonomy enabled for RS filtering and post edited by logged Administrator
 * Fixed : Hierchical custom taxonomy terms unselectable for non-Administrator when taxonomy is not enabled for RS filtering
 * Fixed : Bad links to General Roles from Realm tab in Multisite Network Role Options
+* Compat : WP 3.2 - Recent Comments widget was not filtered based on RS Restrictions / Roles
 
 = 1.3.42 - 29 June 2011 =
 * Compat : WP 3.2 - Current comments not displayed for single custom post on front end

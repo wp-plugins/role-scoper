@@ -47,16 +47,15 @@ class ScoperHardwayFront
 	}
 
 	function flt_recent_comments($query) {
+		global $wpdb;
+		
 		// Due to missing get_comments hook, this filter operates on every front-end query.
 		// If query doesn't pertain to comments, skip out with as little overhead as possible.
 		if ( strpos($query, 'comment')
-		&& strpos($query, "ELECT") && ! strpos($query, 'posts as parent') && ! strpos($query, "COUNT") && ! strpos($query, "comment_post_ID" ) && strpos($query, "comment_approved") )
+		&& strpos($query, "ELECT") && ! strpos($query, 'posts as parent') && ! strpos($query, "COUNT") && strpos($query, "JOIN $wpdb->posts" ) && strpos($query, "comment_approved") )
 		{
 			if ( ! is_attachment() && ! is_content_administrator_rs() ) {
-				
-				global $wpdb;
-
-				if ( strpos($query, " $wpdb->posts " ) )
+				if ( ! awp_ver('3.2-dev') && strpos($query, " $wpdb->posts " ) )
 					return $query;
 
 				if ( awp_is_plugin_active( 'wp-wall') ) {
@@ -68,10 +67,9 @@ class ScoperHardwayFront
 				
 				if ( strpos($query, $wpdb->comments) ) {
 					$query = str_replace( " post_status = 'publish'", " $wpdb->posts.post_status = 'publish'", $query );
-
+					
 					// theoretically, a slight performance enhancement if we can simplify the query to skip filtering of attachment comments
-					if ( defined('SCOPER_NO_ATTACHMENT_COMMENTS') || ( false !== strpos( $query, 'comment_post_ID =') ) ) {
-						
+					if ( defined('SCOPER_NO_ATTACHMENT_COMMENTS') || ( false !== strpos( $query, 'comment_post_ID =') && ! awp_ver( '3.2-dev' ) ) ) {
 						if ( ! strpos( $query, "JOIN $wpdb->posts" ) )
 							$query = preg_replace( "/FROM\s*{$wpdb->comments}\s*WHERE /", "FROM $wpdb->comments INNER JOIN $wpdb->posts ON {$wpdb->posts}.ID = {$wpdb->comments}.comment_post_ID WHERE ", $query);
 						
@@ -84,6 +82,8 @@ class ScoperHardwayFront
 
 						// WP 2.9+
 						$query = str_replace( "SELECT $wpdb->comments.* FROM $wpdb->comments", "SELECT DISTINCT $wpdb->comments.* FROM $wpdb->comments", $query);
+						
+						d_echo( $query . '<br /><br />' );
 						
 						if ( ! strpos( $query, ' DISTINCT ' ) )
 							$query = str_replace( "SELECT ", "SELECT DISTINCT ", $query);
