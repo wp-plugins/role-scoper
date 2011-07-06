@@ -1266,8 +1266,8 @@ if ( ! empty( $ui->form_options[$tab][$section] ) && in_array( 'do_teaser', $ui-
 								$val = htmlspecialchars($opt_vals[$src_otype]);
 								$id = str_replace(':', '_', $option_name . '-' . $src_otype);
 								
-								echo "<label for='$id'>";
-								echo( "<li>$actions_display[$action]" );
+								echo "<li><label for='$id'>";
+								echo( $actions_display[$action] );
 	?>
 	<input name="<?php echo($id);?>" type="text" style="width: 95%" id="<?php echo($id);?>" value="<?php echo($val);?>" />
 	</label><br /></li>
