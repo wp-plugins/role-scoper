@@ -288,8 +288,7 @@ class ScoperAdmin
 							$qualifying_roles = $scoper->role_defs->qualify_roles( $wp_type->cap->edit_posts );
 
 							if ( ( ! defined( 'SCOPER_LEGACY_MENU_FILTERING' ) && ! array_diff_key( $qualifying_roles, $default_restricted_roles ) ) 
-							|| ! $this->scoper->user_can_edit_blogwide( 'post', $_post_type ) ) {
-							//|| ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) ) {
+							|| ! cr_user_can( $wp_type->cap->edit_posts, 0, 0, array('skip_id_generation' => true, 'skip_any_object_check' => true ) ) ) {
 								unset( $submenu[$edit_key][$key]);
 							}
 						}
