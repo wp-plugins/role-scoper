@@ -3,8 +3,8 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
-Tested up to: 3.2
-Stable Tag: 1.3.42
+Tested up to: 3.2.1
+Stable Tag: 1.3.43
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,19 +106,19 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.43-dev =
-* Fixed : Users cannot add/edit Nav Menus based on custom addition of edit_theme_options capability into WP role definition
-* Fixed : In Multisite Role Options, bad link to Attachments Utility
-* Fixed : File Attachments Utility non-functional on Multisite
-* Compat : Revisionary - Revisors could not upload images
+= 1.3.43 - 19 July 2011 =
+* Compat : WP 3.2 - Recent Comments widget was not filtered based on RS Restrictions / Roles
+* Fixed : "Add New" menu links were not displayed for Subscribers with Category-assigned Contributor/Author/Editor roles (since 1.3.42)
 * Fixed : Dashboard Screen Options were not applied (since 1.3.41)
 * Fixed : Default term selection was forced for hierarchical custom taxonomies even if taxonomy not enabled for RS filtering
 * Fixed : Default term selection was not forced for hierarchical custom taxonomies, when taxonomy enabled for RS filtering and post edited by logged Administrator
 * Fixed : Hierchical custom taxonomy terms unselectable for non-Administrator when taxonomy is not enabled for RS filtering
+* Fixed : Users could not add/edit Nav Menus based on custom addition of edit_theme_options capability into WP role definition
+* Fixed : File Attachments Utility non-functional on Multisite
+* Fixed : In Multisite Role Options, bad link to Attachments Utility
 * Fixed : Bad links to General Roles from Realm tab in Multisite Network Role Options
-* Compat : WP 3.2 - Recent Comments widget was not filtered based on RS Restrictions / Roles
 * Fixed : Hidden Content Teaser options form forced focus to different textbox on Firefox
-* Fixed : "Add New" menu links were not displayed for Subscribers with Category-assigned Contributor/Author/Editor roles (since 1.3.42)
+* Compat : Revisionary - Revisors could not upload images
 
 = 1.3.42 - 29 June 2011 =
 * Compat : WP 3.2 - Current comments not displayed for single custom post on front end
@@ -622,6 +622,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.43 =
+Fixes: Recent Comments widget filtering w/ WP 3.2; "Add New" Post menu links for Subscribers with Category Roles; Dashboard Screen Options; Term filtering and default selection issues; Nav Menu filtering with customized WP roles; File uploads with Revisionary
 
 = 1.3.42 =
 Fixes: In WP 3.2, current comments not displayed under custom post; File Filtering: no access when file attached to multiple protected posts; "Add New" menu item sometimes displayed inappropriately; no Gallery tab in "Add Media" popup for custom posts;

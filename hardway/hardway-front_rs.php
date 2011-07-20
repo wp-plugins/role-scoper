@@ -83,7 +83,7 @@ class ScoperHardwayFront
 						// WP 2.9+
 						$query = str_replace( "SELECT $wpdb->comments.* FROM $wpdb->comments", "SELECT DISTINCT $wpdb->comments.* FROM $wpdb->comments", $query);
 						
-						d_echo( $query . '<br /><br />' );
+						//d_echo( $query . '<br /><br />' );
 						
 						if ( ! strpos( $query, ' DISTINCT ' ) )
 							$query = str_replace( "SELECT ", "SELECT DISTINCT ", $query);

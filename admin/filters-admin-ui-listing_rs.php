@@ -13,6 +13,7 @@ add_action('manage_pages_custom_column', array('ScoperEditListingFilters', 'flt_
 
 add_action('admin_notices', array('ScoperEditListingFilters', 'act_maybe_hide_quickedit') );
 
+
 class ScoperEditListingFilters {
 	
 	function flt_manage_posts_columns($defaults) {
