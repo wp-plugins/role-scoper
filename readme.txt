@@ -106,6 +106,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.44-dev =
+* BugFix : Template calls to get_comments() were not filtered to match post visibility (since 1.3.43)
+
 = 1.3.43 - 19 July 2011 =
 * Compat : WP 3.2 - Recent Comments widget was not filtered based on RS Restrictions / Roles
 * Fixed : "Add New" menu links were not displayed for Subscribers with Category-assigned Contributor/Author/Editor roles (since 1.3.42)
