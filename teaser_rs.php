@@ -52,11 +52,13 @@ class ScoperTeaser {
 		else
 			$private_stati = array( 'private' );
 
-		if ( is_single() || is_page() )
+		if ( is_single() || is_page() ) {
 			$maybe_fudge_private = true;
-		else
+			$maybe_strip_private = false;
+		} else {
 			$maybe_strip_private = true;
-	
+			$maybe_fudge_private = false;
+		}
 
 		if ( ! is_object($user) ) {
 			global $current_user;

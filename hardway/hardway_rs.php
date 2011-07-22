@@ -12,9 +12,13 @@ global $scoper;
 
 require_once( SCOPER_ABSPATH . '/lib/ancestry_lib_rs.php' );
 
-if ( $scoper->is_front() )
+if ( $scoper->is_front() ) {
 	require_once( dirname(__FILE__).'/hardway-front_rs.php');
-
+	
+	if ( ! awp_ver('3.1') )
+		require_once( dirname(__FILE__).'/hardway-front-legacy_rs.php');
+}
+	
 if ( $scoper->is_front() || ! is_content_administrator_rs() )
 	require_once( dirname(__FILE__).'/hardway-taxonomy_rs.php');
 

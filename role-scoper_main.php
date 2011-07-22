@@ -285,6 +285,8 @@ class Scoper
 
 		} // endif query filtering not disabled for this access type
 
+		require_once( 'comments-interceptor_rs.php' );
+		
 		if ( is_admin() )
 			$this->add_admin_ui_filters( $is_administrator );
 		
