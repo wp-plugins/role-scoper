@@ -209,7 +209,7 @@ class ScoperRoleAssigner
 					}
 				}
 			}
-					
+
 			$comparison = array();
 			
 			foreach ( $agents as $ug_id => $assign_for ) {
@@ -258,6 +258,12 @@ class ScoperRoleAssigner
 					$id_in = "'" . implode("', '", $this_ass_ids) . "'";
 					$qry = "UPDATE $wpdb->user2role2object_rs SET assign_for = '$assign_for', inherited_from = '0' WHERE assignment_id IN ($id_in)";
 					scoper_query($qry);
+					
+					if ( 'entity' == $assign_for ) {
+						// If a parent role is changed from "both" or "children" to "entity", delete propagated roles
+						$qry = "DELETE FROM $wpdb->user2role2object_rs WHERE inherited_from IN ($id_in)";
+						scoper_query($qry);
+					}
 				}
 			}
 
@@ -617,7 +623,7 @@ class ScoperRoleAssigner
 					$req_ids[$role_handle][$req->assignment_id] = array();
 				}
 			}
-					
+
 			if ( ! $is_administrator )
 				$user_has_role = $this->_validate_assigner_roles($scope, $src_or_tx_name, $item_id, $roles);
 			
@@ -657,7 +663,7 @@ class ScoperRoleAssigner
 				
 				$unused_byref_arg = '';
 				$comparison = $this->_compare_role_settings($require_for, $stored_req, $delete_reqs, $update_require_for, $unused_byref_arg, $unused_byref_arg);
-
+				
 				$insert_restriction = ( $comparison['unset'] ) ? false : $require_for;
 				
 				// Mark assignment for propagation to child items (But don't do so on storage of default restriction to root item. Default restrictions are only applied at item creation.)
@@ -668,13 +674,19 @@ class ScoperRoleAssigner
 				
 				if ( ! empty($req_ids[$role_handle]) ) {
 					$id_in = "'" . implode("', '", array_keys($req_ids[$role_handle]) ) . "'";
-						
+					
 					// do this for each role prior to insert call because insert function will consider inherited_from value
 					foreach ($update_require_for as $require_for => $this_ass_ids) {
 						if ( $this_ass_ids ) {
 							$id_in = "'" . implode("', '", $this_ass_ids) . "'";
 							$qry = "UPDATE $wpdb->role_scope_rs SET require_for = '$require_for', inherited_from = '0' WHERE requirement_id IN ($id_in)";
 							scoper_query($qry);
+							
+							if ( 'entity' == $require_for ) {
+								// If a parent restriction is changed from "both" or "children" to "entity", delete propagated restrictions
+								$qry = "DELETE FROM $wpdb->role_scope_rs WHERE inherited_from IN ($id_in)";
+								scoper_query($qry);
+							}
 						}
 					}
 				}

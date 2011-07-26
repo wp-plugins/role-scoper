@@ -106,6 +106,10 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.45-dev =
+* Fixed : Propagated roles were not deleted when parent role assignment changed from "for page and subpages" to "for page"
+* Fixed : Propagated restrictions were not deleted when parent restriction changed from "for page and subpages" to "for page"
+
 = 1.3.44 - 22 July 2011 =
 * Fixed : Template calls to get_comments() were not filtered to match post visibility (since 1.3.43)
 * Fixed : Hidden Content Teaser triggered a PHP Notice
