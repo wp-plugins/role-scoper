@@ -280,12 +280,26 @@ class Scoper
 				$GLOBALS['query_interceptor'] = new QueryInterceptor_RS();
 			}
 
-			if ( ( ! $this->direct_file_access ) && ( ! $is_administrator || ! defined('XMLRPC_REQUEST') ) ) // don't tempt trouble by adding hardway filters on XMLRPC for logged administrator
+			if ( ( ! $this->direct_file_access ) && ( ! $is_administrator || ! defined('XMLRPC_REQUEST') ) ) { // don't tempt trouble by adding hardway filters on XMLRPC for logged administrator
 				$this->add_hardway_filters();
+				
+				if ( $this->is_front() || ! $is_administrator ) {
+					require_once( dirname(__FILE__).'/terms-query-lib_rs.php');
+				
+					if ( awp_ver( '3.1' ) && ! defined( 'SCOPER_LEGACY_TERMS_FILTER' ) ) {
+						require_once( dirname(__FILE__).'/terms-interceptor_rs.php');
+						$GLOBALS['terms_interceptor'] = new TermsInterceptor_RS();
+					} else
+						require_once( dirname(__FILE__).'/hardway/hardway-taxonomy-legacy_rs.php');
+				}
+			}
 
 		} // endif query filtering not disabled for this access type
 
-		require_once( 'comments-interceptor_rs.php' );
+		if ( $is_administrator && $this->is_front() )
+			require_once( 'comments-int-administrator_rs.php' );
+		else
+			require_once( 'comments-interceptor_rs.php' );
 		
 		if ( is_admin() )
 			$this->add_admin_ui_filters( $is_administrator );
@@ -877,7 +891,9 @@ class Scoper
 				if ( in_array( $pagenow, array( 'post.php', 'post-new.php' ) ) )
 					$object_type = cr_find_post_type();
 			} else {
-				$operation = 'edit';
+				if ( ! $operation )
+					$operation = ( $this->is_front() ) ? 'read' : 'edit';
+
 				$status = '';
 			}
 				

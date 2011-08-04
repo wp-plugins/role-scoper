@@ -19,9 +19,6 @@ if ( $scoper->is_front() ) {
 		require_once( dirname(__FILE__).'/hardway-front-legacy_rs.php');
 }
 	
-if ( $scoper->is_front() || ! is_content_administrator_rs() )
-	require_once( dirname(__FILE__).'/hardway-taxonomy_rs.php');
-
 if ( $scoper->data_sources->is_member('link') )
 	require_once( dirname(__FILE__).'/hardway-bookmarks_rs.php' );
 

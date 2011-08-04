@@ -52,6 +52,7 @@ class QueryInterceptor_RS
 			// Note: If any of the optional args are missing or nullstring, an attempt is made
 			// to determine them from URI based on Scoped_Taxonomy properties
 			add_filter('terms_request_rs', array(&$this, 'flt_terms_request'), 50, 4);
+			add_filter('terms_where_rs', array(&$this, 'flt_terms_where'), 50, 3);
 		}
 		
 		// note: If DISABLE_QUERYFILTERS_RS is set, the RS filters are still defined above for selective internal use,
@@ -130,19 +131,46 @@ class QueryInterceptor_RS
 	// Append any limiting clauses to WHERE clause for taxonomy query
 	//$reqd_caps_by_taxonomy[tx_name][op_type] = array of cap names
 	function flt_terms_request($request, $taxonomies, $args = array()) {
-		$defaults = array( 'reqd_caps_by_otype' => array(), 'is_term_admin' => false, 'required_operation' => '', 'post_type' => '' );
-		$args = array_merge( $defaults, (array) $args );
-		extract($args);
+		//$defaults = array( 'reqd_caps_by_otype' => array(), 'is_term_admin' => false, 'required_operation' => '', 'post_type' => '' );
 
-		if ( $post_type )
-			$post_type = (array) $post_type;
+		// determine term id col (term_id or term_taxonomy_id) for term management queries 
+		if ( strpos( $request, 'AS tt' ) )
+			$args['term_id_col'] = 'tt.term_taxonomy_id';
+		elseif ( strpos( $request, 'AS t' ) )
+			$args['term_id_col'] = 't.term_id';
+		else {
+			global $wpdb;
+			if ( strpos( $request, $wpdb->terms ) )
+				$args['term_id_col'] = "$wpdb->terms.term_id";
+			elseif ( strpos( $request, $wpdb->term_taxonomy ) )
+				$args['term_id_col'] = "$wpdb->term_taxonomy.term_taxonomy_id";
+		}
+
+		if ( $rs_where = $this->flt_terms_where('', $taxonomies, $args) ) {
+			if ( strpos( $request, ' WHERE ' ) )
+				$request = str_replace( ' WHERE ', " WHERE 1=1 $rs_where AND ", $request );
+			elseif ( $pos_suffix = agp_get_suffix_pos( $request ) )
+				$request = substr( $request, 0, $pos_suffix ) . " WHERE 1=1 $rs_where " . substr( $request, $pos_suffix );
+			else
+				$request .= " WHERE 1=1 $rs_where ";
+		}
+
+		//d_echo ("<br /><br />terms_request output:$request<br /><br />");
+		
+		return $request;
+	}
+	
+	function flt_terms_where($where, $taxonomies, $args = array()) {
+		$defaults = array( 'reqd_caps_by_otype' => array(), 'is_term_admin' => false, 'required_operation' => '', 'post_type' => '', 'term_id_col' => '' );
+		$args = array_merge( $defaults, (array) $args );
+		extract( $args, EXTR_SKIP );
 		
 		$taxonomies = (array) $taxonomies;
 		if ( ! $taxonomies )
-			return $request;
-
-		if ( ! preg_match('/\s*WHERE\s*1=1/', $request) )
-			$request = preg_replace('/\s*WHERE\s*/', ' WHERE 1=1 AND ', $request);
+			return $where;
+	
+		if ( $post_type )
+			$post_type = (array) $post_type;
 	
 		// support multiple taxonomies, but only if they all use the same object data source
 		$taxonomy_sources = array();
@@ -159,7 +187,7 @@ class QueryInterceptor_RS
 		}
 
 		if ( count($taxonomy_sources) != 1 )
-			return $request;
+			return $where;
 			
 		// if the filter call did not specify required caps...
 		if ( ! $reqd_caps_by_otype ) {
@@ -175,46 +203,30 @@ class QueryInterceptor_RS
 			
 			// if required operation still unknown, default based on access type
 			if ( ! $reqd_caps_by_otype )
-				return $request;
+				return $where;
 		}
 		
 		// prevent hardway-admin filtering of any queries which may be triggered by this filter
 		$GLOBALS['scoper_status']->querying_db = true;
-
+		
 		// Note that term management capabilities (i.e. "manage_categories") are implemented via Term Roles on the Posts data source, with taxonomy as the object type
 		//
 		// if this is a term management query, no need to involve objects query filtering
 		if ( ( 'post' == $src_name ) && isset( $reqd_caps_by_otype[ $taxonomies[0] ] ) ) {
-			/*
-			$taxonomy_obj = get_taxonomy( $taxonomies[0] );
-			if ( in_array( $taxonomy_obj->cap->manage_terms, $reqd_caps_by_otype[ $taxonomies[0] ] ) ) {
-				$args['taxonomies'] = array( $taxonomies[0] );
-				$args['object_type'] = $taxonomies[0];
-				$args['use_term_roles'] = true;	// forces usage of Term-assigned management roles (currently no RS Option available)
-			}
-			*/
-			
-			if ( strpos( $request, 'AS tt' ) )
-				$term_col = 'tt.term_taxonomy_id';
-			elseif ( strpos( $request, 'AS t' ) )
-				$term_col = 't.term_id';
-			elseif ( strpos( $request, $GLOBALS['wpdb']->terms ) )
-				$term_col = $GLOBALS['wpdb']->terms . '.term_id';
-			elseif ( strpos( $request, $GLOBALS['wpdb']->term_taxonomy ) )
-				$term_col = $GLOBALS['wpdb']->term_taxonomy . '.term_taxonomy_id';
-			else {
-				$GLOBALS['scoper_status']->querying_db = false;  // re-enable hardway-admin filtering
-				return $request;
-			}
-			
-			$return_id_type = ( strpos( $term_col, 'term_taxonomy_id' ) ) ? COL_TAXONOMY_ID_RS : COL_ID_RS;
-
 			$qualifying_roles = $this->scoper->role_defs->qualify_roles( $reqd_caps_by_otype[$taxonomies[0]], 'rs', $taxonomies[0] );	// otherwise qualify_terms() will not filter out other taxonomy manager roles that also use manage_categories cap
-
+			
+			if ( ! $term_id_col ) {
+				// can't attempt filtering without this info
+				$GLOBALS['scoper_status']->querying_db = false;
+				return $where;
+			}
+			
+			$return_id_type = ( strpos( $term_id_col, 'term_taxonomy_id' ) ) ? COL_TAXONOMY_ID_RS : COL_ID_RS;
+			
 			if ( $ids = $this->scoper->qualify_terms( $reqd_caps_by_otype[$taxonomies[0]], $taxonomies[0], $qualifying_roles, compact('return_id_type') ) ) {	// returns term_id since COL_TAXONOMY_ID_RS is not passed as args['return_id_type']
-				$request = str_replace( "WHERE 1=1", "WHERE 1=1 AND $term_col IN ('" . implode( "','", $ids ) . "')", $request );
+				$where .= " AND $term_id_col IN ('" . implode( "','", $ids ) . "')";
 			} else
-				$request = str_replace( "WHERE 1=1", "WHERE 1=2", $request );
+				$where = "1=2";
 		} else {
 			// Call objects_where_role_clauses() with src_name of the taxonomy source.
 			// This works as a slight subversion of the normal flt_objects_where query building because we are also forcing taxonomies explicitly and passing the terms_query arg.
@@ -227,21 +239,8 @@ class QueryInterceptor_RS
 			if ( is_admin() )
 				$args['alternate_reqd_caps'][0] = array( "assign_$taxonomy" );
 
-			$pos_where = 0;
-			$pos_suffix = 0;
-			$where = agp_parse_after_WHERE_11( $request, $pos_where, $pos_suffix );  // any existing where, orderby or group by clauses remain in $where
-			if ( ! $pos_where && $pos_suffix ) {
-				$request = substr($request, 0, $pos_suffix) . ' WHERE 1=1 ' .  substr($request, $pos_suffix);
-				$pos_where = $pos_suffix;
-			}
-	
-			$where = $this->flt_objects_where($where, $src_name, '', $args);
+			$where .= $this->flt_objects_where('', $src_name, '', $args);
 
-			if ( $pos_where === false )
-				$request = $request . ' WHERE 1=1 ' . $where;
-			else
-				$request = substr($request, 0, $pos_where) . ' WHERE 1=1 ' . $where; // any pre-exising join clauses remain in $request
-				
 			// For Edit Form display, include currently stored terms.  User will still not be able to remove them without proper editing roles for object. (TODO: abstract for other data sources)
 			if ( 'post.php' == $GLOBALS['pagenow'] ) {
 				if ( 'post' == $src_name ) {
@@ -251,18 +250,16 @@ class QueryInterceptor_RS
 							foreach( array_keys($stored_terms) as $key ) 
 								$tt_ids []= $stored_terms[$key]->term_taxonomy_id;						
 								
-							$request = str_replace( "ORDER BY", "OR tt.term_taxonomy_id IN ('" . implode( "','", $tt_ids ) . "') ORDER BY", $request );
+							$where .= " OR tt.term_taxonomy_id IN ('" . implode( "','", $tt_ids ) . "')";
 						}
 					}
 				}
 			}
 		}
-				
+
 		$GLOBALS['scoper_status']->querying_db = false;  // re-enable hardway-admin filtering
 		
-		//d_echo ("<br /><br />terms_request output:$request<br /><br />");
-		
-		return $request;
+		return $where;
 	}
 	
 	function flt_objects_request($request, $src_name, $object_types = '', $args = array()) {
@@ -272,8 +269,6 @@ class QueryInterceptor_RS
 			$args = array_merge( $defaults, (array) $args );
 			extract($args);
 		}
-		
-		//d_echo( "<br />flt_objects_request: $request<br />" );
 		
 		// Filtering in user_has_cap sufficiently controls revision access; a match here should be for internal, pre-validation purposes
 		if ( strpos( $request, "post_type = 'revision'") )
@@ -963,8 +958,13 @@ class QueryInterceptor_RS
 
 								// enable authors to view / edit / approve revisions to their published posts
 								if ( ! empty( $do_revision_clause ) && ! defined( 'HIDE_REVISIONS_FROM_AUTHOR' ) ) {
-									if ( $owner_ids = scoper_get_col( "SELECT {$src->cols->id} FROM $src->table WHERE {$src->cols->type} = '$object_type' AND {$src->cols->owner} = '$user->ID'" ) )
-										$parent_clause = "OR $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ('" . implode( "','", $owner_ids ) . "')"; 
+									static $owner_ids = array();
+									
+									if ( ! isset( $owner_ids[$user->ID][$object_type] ) )	// also keying by user ID in case this filter is invoked for a non-current user
+										$owner_ids[$user->ID][$object_type] = scoper_get_col( "SELECT {$src->cols->id} FROM $src->table WHERE {$src->cols->type} = '$object_type' AND {$src->cols->owner} = '$user->ID'" );
+
+									if ( $owner_ids[$user->ID][$object_type] )
+										$parent_clause = "OR $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ('" . implode( "','", $owner_ids[$user->ID][$object_type] ) . "')"; 
 								}
 								
 								$where[$cap_name]['owner'] = '( ' . $scope_temp . " ) AND ( $src_table.{$src->cols->owner} = '$user->ID' $parent_clause )";
@@ -1276,7 +1276,7 @@ class QueryInterceptor_RS
 									$terms_subselect = "SELECT {$qvars->term->alias}.{$qvars->term->col_obj_id} FROM {$qvars->term->table} {$qvars->term->as} WHERE $this_tx_clause";
 
 									if ( defined('RVY_VERSION') && $objrole_revisions_clause )
-										$revision_clause = "OR $src_table.{$src->cols->parent} IN ( $terms_subselect )";
+										$revision_clause = "OR ( $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ( $terms_subselect ) )";
 									else
 										$revision_clause = '';
 
@@ -1478,21 +1478,25 @@ function agp_parse_after_WHERE_11( $request, &$pos_where, &$pos_suffix ) {
 	$pos_where = strpos( $request_u, ' WHERE 1=1');
 	
 	if ( ! $pos_where ) {
-		$suffix_terms = array(' ORDER BY ', ' GROUP BY ', ' LIMIT ');
-		$pos_suffix = strlen($request) + 1;
-		foreach ( $suffix_terms as $suffix_term )
-			if ( $pos = strrpos($request_u, $suffix_term) )
-				if ( $pos < $pos_suffix )
-					$pos_suffix = $pos;
-		
-		if ( $pos_suffix )
+		if ( $pos_suffix = agp_get_suffix_pos($request) )
 			$where =  substr($request, $pos_suffix); 
-
 	} else {
 		// note: this will still also contain any orderby/limit/groupby clauses ( okay since we won't append anything to the end )
 		$where = substr($request, $pos_where + strlen(' WHERE 1=1 ')); 
 	}
 	
 	return $where;	
+}
+
+function agp_get_suffix_pos( $request ) {
+	$request_u = strtoupper($request);
+
+	$pos_suffix = strlen($request) + 1;
+	foreach ( array(' ORDER BY ', ' GROUP BY ', ' LIMIT ') as $suffix_term )
+		if ( $pos = strrpos($request_u, $suffix_term) )
+			if ( $pos < $pos_suffix )
+				$pos_suffix = $pos;
+				
+	return $pos_suffix;
 }
 ?>

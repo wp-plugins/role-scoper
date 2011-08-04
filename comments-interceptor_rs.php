@@ -1,16 +1,15 @@
 <?php
 add_filter( 'comments_clauses', array( 'CommentsInterceptor_RS', 'flt_comments_clauses' ), 10, 2 );
 
+if ( is_admin() )
+	require_once( 'admin/comments-interceptor-admin_rs.php' );
+
 class CommentsInterceptor_RS {
 	function flt_comments_clauses( $clauses, &$qry_obj ) {
 		global $wpdb;
-		
-		if ( is_content_administrator_rs() ) {
-			$stati = array_merge( get_post_stati( array( 'public' => true ) ), get_post_stati( array( 'private' => true ) ) );
-			$status_csv = "'" . implode( "','", $stati ) . "'";
-			$clauses['where'] = preg_replace( "/\s*AND\s*{$wpdb->posts}.post_status\s*=\s*[']?publish[']?/", "AND {$wpdb->posts}.post_status IN ($status_csv)", $clauses['where'] );
+
+		if ( is_admin() && defined( 'SCOPER_NO_COMMENT_FILTERING' ) && empty( $GLOBALS['current_user']->allcaps['moderate_comments'] ) )
 			return $clauses;
-		}
 
 		if ( empty( $clauses['join'] ) )
 			$clauses['join'] = "JOIN $wpdb->posts ON $wpdb->posts.ID = $wpdb->comments.comment_post_ID";
@@ -27,9 +26,14 @@ class CommentsInterceptor_RS {
 
 		$attachment_query = ( 'attachment' == $post_type_arg ) || ( $post_id && ( 'attachment' == get_post_field( 'post_type', $post_id ) ) );
 
+		$args = array( 'skip_teaser' => true );
+
+		if ( is_admin() )
+			$args['force_reqd_caps'] = CommentsInterceptorAdmin_RS::get_reqd_caps();
+
 		if ( ! $attachment_query && ( $post_id || defined('SCOPER_NO_ATTACHMENT_COMMENTS') || ( ! defined('SCOPER_ATTACHMENT_COMMENTS') && ! scoper_get_var($qry_any_attachment_comments) ) ) ) {
 			$clauses['where'] = " AND " . $clauses['where'];
-			$clauses['where'] = "1=1" . apply_filters('objects_where_rs', $clauses['where'], 'post', $post_type_arg, array('skip_teaser' => true) );
+			$clauses['where'] = "1=1" . apply_filters('objects_where_rs', $clauses['where'], 'post', $post_type_arg, $args );
 		} else {
 			if ( false === strpos( $clauses['fields'], 'DISTINCT ' ) )
 				$clauses['fields'] = 'DISTINCT ' . $clauses['fields'];
@@ -48,7 +52,7 @@ class CommentsInterceptor_RS {
 			$where = array();
 			foreach( $post_types as $type ) {
 				if ( ! empty( $use_post_types[$type] ) )
-					$where_post = apply_filters('objects_where_rs', '', 'post', $type, array('skip_teaser' => true) );
+					$where_post = apply_filters('objects_where_rs', '', 'post', $type, $args );
 				else
 					$where_post = "AND 1=1";
 				

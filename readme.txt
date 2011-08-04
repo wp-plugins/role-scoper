@@ -109,6 +109,15 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 = 1.3.45-dev =
 * Fixed : Propagated roles were not deleted when parent role assignment changed from "for page and subpages" to "for page"
 * Fixed : Propagated restrictions were not deleted when parent restriction changed from "for page and subpages" to "for page"
+* Fixed : Comments were editable / approvable by any user who could edit the associated post, regardless of moderate_comments capability
+* Fixed : Terms could not be managed based on term-assigned Manager role.
+* Fixed : Image / attachment access fails due to corrupted uploads/.htaccess file, under unusual editing conditions
+* Change: Further safeguard against corruption of main .htaccess
+* Perf  : Avoid redundant regeneration of uploads/.htaccess when attaching a file in Post Edit Form
+* Perf  : Now fully utilizing WP_Comment_Query hooks introduced in WP 3.1
+* Perf  : Now fully utilizing WP_Term_Query hooks introduced in WP 3.1. To revert to previous filtering, define('SCOPER_LEGACY_TERMS_FILTER');
+* Perf  : Eliminated several redundant DB queries
+* Perf  : Removed some extra wp-admin query filtering which is no longer necessary with WP > 3.1.  To revert to previous filtering, define('SCOPER_LEGACY_HW_FILTERS');
 
 = 1.3.44 - 22 July 2011 =
 * Fixed : Template calls to get_comments() were not filtered to match post visibility (since 1.3.43)

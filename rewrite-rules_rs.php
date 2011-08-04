@@ -32,6 +32,17 @@ class ScoperRewrite {
 	
 		define( $const_name, true );
 
+		// Avoid file corruption by skipping if another flush was initiated < 5 seconds ago
+		// Currently, this could leave .htaccess out of sync with settings (following an unusual option updating sequence), but that's the lesser failure
+		if ( $last_regen = get_site_option( 'scoper_main_htaccess_date' ) ) {
+			if ( intval($last_regen) > agp_time_gmt() - 5 ) {
+				return;
+			}
+		}
+		update_site_option( 'scoper_main_htaccess_date', agp_time_gmt() );  // stores to site_meta table for network installs.  Note: scoper_update_site_option is NOT equivalent
+		
+		$include_rs_rules = $include_rs_rules && scoper_get_option( 'file_filtering' );
+		
 		// sleep() time is necessary to avoid .htaccess file i/o race conditions since other plugins (W3 Total Cache) may also perform or trigger .htaccess update, and those file operations don't all use flock
 		// This update only occurs on plugin activation, the first time a MS site has an attachment to a private/restricted page, and on various plugin option changes.
 		if ( IS_MU_RS ) {
@@ -109,6 +120,13 @@ class ScoperRewrite {
 	
 	function update_blog_file_rules( $include_rs_rules = true ) {
 		global $blog_id;
+		
+		// avoid file collision by skipping if another flush was initiated < 10 seconds ago
+		if ( $last_regen = scoper_get_option( 'file_htaccess_date' ) ) {
+			if ( intval($last_regen) > agp_time_gmt() - 10 ) {
+				return;
+			}
+		}
 		
 		scoper_update_option( 'file_htaccess_date', agp_time_gmt() );
 		

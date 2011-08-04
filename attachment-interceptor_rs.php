@@ -7,10 +7,13 @@ class AttachmentInterceptor_RS {
 	function AttachmentInterceptor_RS() {
 		add_action('parse_query', array(&$this, 'act_parse_query_for_direct_access') );
 		add_action('template_redirect', array(&$this, 'act_attachment_access') );
-		
-		add_action( 'add_attachment', 'scoper_flush_file_rules' );
-		add_action( 'edit_attachment', 'scoper_flush_file_rules' );
-		add_action( 'delete_attachment', 'scoper_flush_file_rules' );
+
+		// to avoid redundant regen of uploads/.htaccess, allow main post save operation to trigger it (possibly after changing visibility)
+		if ( false === strpos( $_SERVER['SCRIPT_NAME'], 'async-upload.php' ) ) {
+			add_action( 'add_attachment', 'scoper_flush_file_rules' );
+			add_action( 'edit_attachment', 'scoper_flush_file_rules' );
+			add_action( 'delete_attachment', 'scoper_flush_file_rules' );
+		}
 	}
 	
 	// handle access to uploaded file where request was a direct file URL, which was rewritten according to our .htaccess addition

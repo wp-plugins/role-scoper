@@ -504,9 +504,9 @@ class ScoperRoleAssigner
 			
 			// won't delete any other role assignments which have date limits
 			$date_clause = " AND date_limited = '0' AND start_date_gmt = '" . SCOPER_MIN_DATE_STRING . "' AND end_date_gmt = '" . SCOPER_MAX_DATE_STRING . "' AND content_date_limited = '0' AND content_min_date_gmt = '" . SCOPER_MIN_DATE_STRING . "' AND content_max_date_gmt = '" . SCOPER_MAX_DATE_STRING . "'";
-						
+
 			if ( isset($insert_agents[$ug_id]) ) {
-				$assign_for = $insert_agents[$ug_id];
+				$assign_for = ( in_array( $insert_agents[$ug_id], array( 'entity', 'children', 'both' ) ) ) ? $insert_agents[$ug_id] : 'entity';  // sanity check to avoid empty assign_for value
 				$this_inherited_from = ( isset($inherited_from[$ug_id]) ) ? $inherited_from[$ug_id] : 0;
 				
 				// don't delete other role assignments if this insertion has date limits

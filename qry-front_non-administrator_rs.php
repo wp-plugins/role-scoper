@@ -69,6 +69,7 @@ class QueryInterceptorFront_NonAdmin_RS {
 				*/
 
 				$hide_empty = isset( $args['hide_empty'] ) ? $args['hide_empty'] : 0;
+
 				$okay_ids = get_terms( $taxonomy, "fields=ids&hierarchical=0&hide_empty=$hide_empty" );
 
 				if ( $remove_ids = array_diff( $item_ids, $okay_ids ) )

@@ -7,9 +7,13 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 if ( isset($_POST['action']) && ($_POST['action'] == 'autosave') && isset($_POST['post_type']) )
 	add_filter('query', array('ScoperAdminHardway', 'flt_autosave_bugstomper') );
 
-if ( ! is_content_administrator_rs() )
+if ( ! is_content_administrator_rs() ) {
 	require_once( dirname(__FILE__).'/hardway-admin_non-administrator_rs.php' );
-
+	
+	if ( ! awp_ver( '3.1' ) || defined( 'SCOPER_LEGACY_HW_FILTERS' ) )
+		require_once( dirname(__FILE__).'/hardway-admin_non-administrator-legacy_rs.php' );
+}
+	
 // Note: we are not filtering the QuickEdit author dropdown on edit.php
 if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'post-new.php' ) ) ) {
 	if ( scoper_get_option( 'filter_users_dropdown') )

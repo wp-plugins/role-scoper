@@ -147,7 +147,7 @@ class CapInterceptor_RS
 		}		
 		// =================================================== (end early exit checks) ======================================================
 
-
+		
 		// ============================ GLOBAL VARIABLE DECLARATIONS, ARGUMENT TRANSLATION AND STATUS DETECTION =============================
 		global $current_rs_user;
 		
@@ -203,7 +203,7 @@ class CapInterceptor_RS
 			// required capabilities correspond to multiple data sources
 			return $wp_blogcaps;		
 		}
-
+		
 		// slight simplification: assume a single cap object type for a few cap substitution checks
 		$is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' );
 		
@@ -242,13 +242,13 @@ class CapInterceptor_RS
 						}
 					}
 				}
-			} else {
+			} elseif ( ! $is_taxonomy_cap ) {
 				$use_post_types = scoper_get_option( 'use_post_types' );
 				if ( empty( $use_post_types[$object_type] ) )
 					return $wp_blogcaps;
 			}
 		}
-
+		
 		// =====================================================================================================================================
 
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
@@ -366,7 +366,6 @@ class CapInterceptor_RS
 				}
 			}
 			
-
 			// If we still have no object id (detection was skipped or failed to identify it)...
 			if ( ! $object_id ) { // || ! $matched_context ) {
 				// ============================================ "CAN FOR ANY" CHECKS ===========================================

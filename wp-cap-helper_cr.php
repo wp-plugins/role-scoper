@@ -142,7 +142,7 @@ class WP_Cap_Helper_CR {
 		
 		// One-time message alerting Administrators that custom types were auto-enabled for RS filtering
 		if ( $customized ) {
-			$logged = ( ! empty($_POST['rs_defaults'] ) ) ? array() : (array) get_option( 'scoper_log_customized_types' );
+			$logged = ( ! empty($_POST['rs_defaults'] ) ) ? array() : (array) scoper_get_option( 'log_customized_types' );
 			if ( $new_customized = array_diff_key( $customized, $logged ) ) {
 				$labels = array();
 				foreach( array_keys($new_customized) as $post_type ) {
@@ -214,7 +214,7 @@ class WP_Cap_Helper_CR {
 		
 		// One-time message alerting Administrators that custom taxonomies were auto-enabled for RS filtering
 		if ( $customized ) {
-			$logged = ( ! empty($_POST['rs_defaults'] ) ) ? array() : (array) get_option( 'scoper_log_customized_taxonomies' );
+			$logged = ( ! empty($_POST['rs_defaults'] ) ) ? array() : (array) scoper_get_option( 'log_customized_taxonomies' );
 			if ( $new_customized = array_diff_key( $customized, $logged ) ) {
 				$labels = array();
 

@@ -132,8 +132,8 @@ function scoper_establish_group_scope() {
 
 
 function scoper_review_file_htaccess() {
-	$min_date = scoper_get_site_option( 'file_htaccess_min_date' );
-	$last_regen = scoper_get_option( 'file_htaccess_date' );
+	$min_date = (int) scoper_get_site_option( 'file_htaccess_min_date' );
+	$last_regen = (int) scoper_get_option( 'file_htaccess_date' );
 
 	if ( ! $last_regen || ( $min_date > $last_regen ) )
 		scoper_flush_file_rules();

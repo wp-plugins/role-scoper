@@ -9,6 +9,12 @@ function scoper_version_updated( $prev_version ) {
 
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		// roles were stored with invalid assign_for value under some conditions
+		if ( version_compare( $prev_version, '1.3.45-beta', '<') ) {
+			global $wpdb;
+			scoper_query( "UPDATE $wpdb->user2role2object_rs SET assign_for = 'entity' WHERE assign_for = ''" );
+		}
+	
 		// file filtering rules were not written for new attachments if restriction was based solely on category restrictions
 		if ( version_compare( $prev_version, '1.3.29-beta', '<') ) {
 			scoper_flush_site_rules();
