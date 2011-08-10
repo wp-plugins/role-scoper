@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.2.1
-Stable Tag: 1.3.44
+Stable Tag: 1.3.45
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,11 +106,13 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.45-dev =
+= 1.3.45 - 10 Aug 2011 =
+* Fixed : Propagated object roles were lost on autosave
 * Fixed : Propagated roles were not deleted when parent role assignment changed from "for page and subpages" to "for page"
 * Fixed : Propagated restrictions were not deleted when parent restriction changed from "for page and subpages" to "for page"
 * Fixed : Comments were editable / approvable by any user who could edit the associated post, regardless of moderate_comments capability
 * Fixed : Terms could not be managed based on term-assigned Manager role.
+* Fixed : Dashboard "Right Now" category count was not filtered
 * Fixed : Image / attachment access fails due to corrupted uploads/.htaccess file, under unusual editing conditions
 * Change: Further safeguard against corruption of main .htaccess
 * Perf  : Avoid redundant regeneration of uploads/.htaccess when attaching a file in Post Edit Form
@@ -639,6 +641,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.45 =
+Fixes: Propagated Post/Page Roles lost on autosave; Propagated Roles / Restrictions not deleted when propagation turned off; Comments editable by any post Editors w/o moderate_comments cap; Term-assigned Manager role ineffective; Image / Attachment access failure under some configs
 
 = 1.3.43 =
 Fixes: Recent Comments widget filtering w/ WP 3.2; "Add New" Post menu links for Subscribers with Category Roles; Dashboard Screen Options; Term filtering and default selection issues; Nav Menu filtering with customized WP roles; File uploads with Revisionary

@@ -512,7 +512,7 @@ class CapInterceptor_RS
 
 		// generate a string key for this set of required caps, for use below in checking, caching the scoped results
 		$arg_append = '';
-		$arg_append .= ( ! empty( $GLOBALS['query_interceptor']->require_full_object_role ) ) ? '-require_full_object_role-' : '';
+		$arg_append .= ( ! empty( $this->require_full_object_role ) ) ? '-require_full_object_role-' : '';
 		$arg_append .= ( ! empty( $GLOBALS['revisionary']->skip_revision_allowance ) ) ? '-skip_revision_allowance-' : '';
 
 		sort($rs_reqd_caps);

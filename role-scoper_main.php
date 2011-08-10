@@ -296,9 +296,10 @@ class Scoper
 
 		} // endif query filtering not disabled for this access type
 
-		if ( $is_administrator && $this->is_front() )
-			require_once( 'comments-int-administrator_rs.php' );
-		else
+		if ( $is_administrator ) {
+			if ( $this->is_front() )
+				require_once( 'comments-int-administrator_rs.php' );
+		} else
 			require_once( 'comments-interceptor_rs.php' );
 		
 		if ( is_admin() )
@@ -1080,13 +1081,16 @@ function awp_user_can( $reqd_caps, $object_id = 0, $user_id = 0, $meta_flags = a
 // equivalent to current_user_can, 
 // except it supports array of reqd_caps, supports non-current user, and does not support numeric reqd_caps
 function cr_user_can( $reqd_caps, $object_id = 0, $user_id = 0, $meta_flags = array() ) {	
-	if ( function_exists('is_super_admin') && is_super_admin() ) 
-		return true;
-		
-	if ( is_content_administrator_rs() || ! function_exists( '_cr_user_can' ) )
-		return current_user_can( $reqd_caps );
+	if ( ! $user_id ) {
+		if ( function_exists('is_super_admin') && is_super_admin() ) 
+			return true;
+			
+		if ( is_content_administrator_rs() || ! function_exists( '_cr_user_can' ) )
+			return current_user_can( $reqd_caps );
+	}
 
-	return _cr_user_can( $reqd_caps, $object_id, $user_id, $meta_flags );
+	if ( function_exists( '_cr_user_can' ) )
+		return _cr_user_can( $reqd_caps, $object_id, $user_id, $meta_flags );
 }
 
 ?>

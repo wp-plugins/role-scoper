@@ -1,5 +1,6 @@
 <?php
 add_filter( 'comments_clauses', array( 'CommentsInterceptor_RS', 'flt_comments_clauses' ), 10, 2 );
+add_filter( 'wp_count_comments', array( 'CommentsInterceptor_RS', 'wp_count_comments_override'), 99 );
 
 if ( is_admin() )
 	require_once( 'admin/comments-interceptor-admin_rs.php' );
@@ -7,7 +8,7 @@ if ( is_admin() )
 class CommentsInterceptor_RS {
 	function flt_comments_clauses( $clauses, &$qry_obj ) {
 		global $wpdb;
-
+		
 		if ( is_admin() && defined( 'SCOPER_NO_COMMENT_FILTERING' ) && empty( $GLOBALS['current_user']->allcaps['moderate_comments'] ) )
 			return $clauses;
 
@@ -65,6 +66,45 @@ class CommentsInterceptor_RS {
 		}
 		
 		return $clauses;
+	}
+	
+	function wp_count_comments_clauses( $clauses, &$qry_obj ) {
+		if ( ! strpos( $clauses['where'], 'GROUP BY' ) ) {
+			$clauses['fields'] = 'comment_approved, COUNT( * ) AS num_comments';
+			$clauses['where'] .= ' GROUP BY comment_approved';
+		}
+		return $clauses;
+	}
+	
+	// force wp_count_comments() through WP_Comment_Query filtering
+	function wp_count_comments_override( $comments, $post_id = 0 ) {
+		add_filter( 'comments_clauses', array( 'CommentsInterceptor_RS', 'wp_count_comments_clauses' ), 99, 2 );
+		$count = get_comments( array( 'post_id' => $post_id ) );
+		remove_filter( 'comments_clauses', array( 'CommentsInterceptor_RS', 'wp_count_comments_clauses' ), 99, 2 );
+		
+		// remainder of this function ported from WP 3.2 function wp_count_comments()
+	
+		$total = 0;
+		$approved = array('0' => 'moderated', '1' => 'approved', 'spam' => 'spam', 'trash' => 'trash', 'post-trashed' => 'post-trashed');
+		foreach ( (array) $count as $row ) {
+			$row = (array) $row;  // RS modification
+		
+			// Don't count post-trashed toward totals
+			if ( 'post-trashed' != $row['comment_approved'] && 'trash' != $row['comment_approved'] )
+				$total += $row['num_comments'];
+			if ( isset( $approved[$row['comment_approved']] ) )
+				$stats[$approved[$row['comment_approved']]] = $row['num_comments'];
+		}
+
+		$stats['total_comments'] = $total;
+		foreach ( $approved as $key ) {
+			if ( empty($stats[$key]) )
+				$stats[$key] = 0;
+		}
+
+		$stats = (object) $stats;
+
+		return $stats;
 	}
 }
 ?>

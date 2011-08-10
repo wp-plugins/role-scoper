@@ -49,9 +49,6 @@ class ScoperAdminHardway_Ltd_Legacy {
 				return $query;			
 			}
 			
-			//rs_errlog ("<br /> <strong>caught</strong> $query<br /> ");	
-			d_echo( "<b>caught: <br />$query<br /></b>" );
-			
 			// cache the filtered results for pending comment count query, which (as of WP 3.0.1) is executed once per-post in the edit listing
 			$post_id = 0;
 			if ( $doing_pending_comment_count = strpos( $query, 'COUNT(comment_ID)' ) && strpos( $query, 'comment_post_ID' ) && strpos( $query, "comment_approved = '0'" ) ) {

@@ -49,6 +49,8 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	function scoper_mnt_save_object($src_name, $args, $object_id, $object = '') {
 		global $scoper, $scoper_admin;
 
+		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
+		
 		// operations in this function only apply to main post save action, not revision save
 		if ( 'post' == $src_name ) {
 			if ( is_object($object) && ! empty( $object->post_type ) && ( ( 'revision' == $object->post_type ) || ( 'auto-draft' == $object->post_status ) ) )
