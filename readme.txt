@@ -106,6 +106,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.46-dev =
+* Fixed : Add New Post link not displayed if all editing Post Roles default-restricted and user has a qualifying Default Post Role assignment
+* Fixed : If Media Library filtering is disabled via SCOPER_ALL_UPLOADS_EDITABLE constant, listing in Post Edit Form popup was still filtered
+* Compat : WPML 2.3.x - Post Edit Form showed duplicate and/or foreign checkboxes in some situations (for non-Administrator) 
+
 = 1.3.45 - 10 Aug 2011 =
 * Fixed : Propagated object roles were lost on autosave
 * Fixed : Propagated roles were not deleted when parent role assignment changed from "for page and subpages" to "for page"

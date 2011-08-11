@@ -242,7 +242,7 @@ class QueryInterceptor_RS
 			$where .= $this->flt_objects_where('', $src_name, '', $args);
 
 			// For Edit Form display, include currently stored terms.  User will still not be able to remove them without proper editing roles for object. (TODO: abstract for other data sources)
-			if ( 'post.php' == $GLOBALS['pagenow'] ) {
+			if ( ( 'post.php' == $GLOBALS['pagenow'] ) && empty( $_REQUEST['admin_bar'] ) ) {
 				if ( 'post' == $src_name ) {
 					if ( $object_id = $this->scoper->data_sources->detect( 'id', $src_name ) ) {
 						if ( $stored_terms = wp_get_object_terms( $object_id, $taxonomies[0] ) ) {
@@ -270,6 +270,10 @@ class QueryInterceptor_RS
 			extract($args);
 		}
 		
+		// if Media Library filtering is disabled, don't filter listing for TinyMCE popup either
+		if ( is_admin() && defined( 'SCOPER_ALL_UPLOADS_EDITABLE' ) && strpos( $_SERVER['SCRIPT_NAME'], 'wp-admin/media-upload.php' ) )
+			return $request;
+
 		// Filtering in user_has_cap sufficiently controls revision access; a match here should be for internal, pre-validation purposes
 		if ( strpos( $request, "post_type = 'revision'") )
 			return $request; 

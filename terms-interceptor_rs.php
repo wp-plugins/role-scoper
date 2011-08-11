@@ -273,9 +273,9 @@ class TermsInterceptor_RS
 		if ( defined('ICL_SITEPRESS_VERSION') && ! isset($_GET['taxonomy'] ) )
 			$_GET['taxonomy'] = $taxonomy;
 
-		//d_echo($taxonomy);
-		//dump($clauses);
-
+		if ( 0 !== strpos( $clauses['fields'], 'DISTINCT ' ) )
+			$clauses['fields'] = 'DISTINCT ' . $clauses['fields'];
+		
 		return $clauses;
 	}
 
