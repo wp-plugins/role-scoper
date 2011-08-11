@@ -110,6 +110,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Fixed : Add New Post link not displayed if all editing Post Roles default-restricted and user has a qualifying Default Post Role assignment
 * Fixed : If Media Library filtering is disabled via SCOPER_ALL_UPLOADS_EDITABLE constant, listing in Post Edit Form popup was still filtered
 * Compat : WPML 2.3.x - Post Edit Form showed duplicate and/or foreign checkboxes in some situations (for non-Administrator) 
+* Feature : Support 'required_operation' argument in get_terms(), forces term filtering to require 'read' or 'edit' meta capability on one or more related posts
+* Feature : Support 'is_term_admin' argument in get_terms(), forces requirement / non-requirement of $taxonomy->manage_terms capability for term filtering
 
 = 1.3.45 - 10 Aug 2011 =
 * Fixed : Propagated object roles were lost on autosave

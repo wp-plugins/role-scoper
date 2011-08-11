@@ -114,26 +114,28 @@ class TermsInterceptor_RS
 	function get_filter_criteria( $args ) {
 		$return = array();
 	
-		$is_term_admin = in_array( $GLOBALS['pagenow'], array( 'edit-tags.php', 'edit-link-categories.php' ) );
-
-		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
+		$return['filter_key'] = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
 		
-		$name = ( isset( $args['name'] ) ) ? $args['name'] : '';
-		
-		// support Quick Post Widget plugin
-		if ( 'quick_post_cat' == $name ) {
-			$required_operation = 'edit';
-			$return['post_type'] = 'post';
-			$return['remap_parents'] = true;
-		} elseif ( 'quick_post_new_cat_parent' == $name ) {
-			$is_term_admin = true;
-			$required_operation = '';
-			$return['remap_parents'] = true;
-		} else {
-			$required_operation = '';
+		if ( empty($args['required_operation']) ) {
+			// support Quick Post Widget plugin
+			if ( ! empty($args['name']) && ( 'quick_post_cat' == $args['name'] ) ) {
+				$return['required_operation'] = 'edit';
+				$return['post_type'] = 'post';
+				$return['remap_parents'] = true;
+			}
 		}
-		
-		return array_merge( $return, compact( 'is_term_admin', 'filter_key', 'required_operation' ) );
+
+		if ( '' === $args['is_term_admin'] ) {
+			$return['is_term_admin'] = in_array( $GLOBALS['pagenow'], array( 'edit-tags.php', 'edit-link-categories.php' ) );
+		} else {
+			// support Quick Post Widget plugin
+			if ( ! empty($args['name']) && ( 'quick_post_new_cat_parent' == $args['name'] ) ) {
+				$return['is_term_admin'] = true;
+				$return['remap_parents'] = true;
+			}
+		}
+
+		return $return;
 	}
 	
 	function flt_get_terms_args( $args, $taxonomies ) {
@@ -145,7 +147,7 @@ class TermsInterceptor_RS
 		$rs_defaults = array(
 			'depth' => 0,			'skip_teaser' => false,
 			'remap_parents' => -1,	'enforce_actual_depth' => -1,	'remap_thru_excluded_parent' => -1,
-			'post_type' => ''
+			'post_type' => '',		'required_operation' => '',		'is_term_admin' => '',
 		);
 		$args = wp_parse_args( $args, $rs_defaults );
 
