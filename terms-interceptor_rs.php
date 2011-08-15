@@ -63,6 +63,9 @@ class TermsInterceptor_RS
 	function skip_filtering( $taxonomies, $args ) {
 		global $scoper;
 		
+		if ( ! empty( $args['rs_no_filter'] ) )
+			return true;
+
 		// this filtering currently only supports a single taxonomy for each get_terms call
 		// (although the terms_where filter does support multiple taxonomies and this function could be made to do so)
 		if ( count($taxonomies) > 1 )

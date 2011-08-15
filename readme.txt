@@ -112,6 +112,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : WPML 2.3.x - Post Edit Form showed duplicate and/or foreign checkboxes in some situations (for non-Administrator) 
 * Feature : Support 'required_operation' argument in get_terms(), forces term filtering to require 'read' or 'edit' meta capability on one or more related posts
 * Feature : Support 'is_term_admin' argument in get_terms(), forces requirement / non-requirement of $taxonomy->manage_terms capability for term filtering
+* Feature : Support 'rs_no_filter' argument in get_terms()
 
 = 1.3.45 - 10 Aug 2011 =
 * Fixed : Propagated object roles were lost on autosave
