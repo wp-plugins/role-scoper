@@ -1329,7 +1329,7 @@ class QueryInterceptor_RS
 
 								$objrole_subselect = "SELECT DISTINCT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause ";
 
-								if ( ! isset( $cache_obj_ids[$objrole_subselect] ) || $force_refresh )  
+								if ( ! isset( $cache_obj_ids[$objrole_subselect] ) || ! empty($force_refresh) )  
 									$cache_obj_ids[$objrole_subselect] = scoper_get_col( $objrole_subselect );
 
 								if ( $cache_obj_ids[$objrole_subselect] ) {

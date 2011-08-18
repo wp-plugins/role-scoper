@@ -93,7 +93,7 @@ function rs_tally_term_counts(&$terms, $taxonomy, $args = array()) {
 			 . " INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id "
 			 . " WHERE tt.taxonomy = '$taxonomy' AND tt.term_id IN ('" . implode("','", $term_ids) . "') "
 			 . " AND $wpdb->posts.post_type IN ('" . implode("','", $enabled_types) . "')";
-	
+
 	// no need to pass any parameters which do not pertain to the objects_request filter
 	$args = array_intersect_key( $args, array_flip( array('skip_teaser') ) );
 

@@ -819,7 +819,7 @@ function scoper_get_property_array( &$arr, $id_prop, $buffer_prop ) {
 	$buffer = array();
 		
 	foreach ( array_keys($arr) as $key )
-		$buffer[ $arr[$key]->$id_prop ] = $arr[$key]->$buffer_prop;
+		$buffer[ $arr[$key]->$id_prop ] = ( isset($arr[$key]->$buffer_prop) ) ? $arr[$key]->$buffer_prop : '';
 
 	return $buffer;
 }

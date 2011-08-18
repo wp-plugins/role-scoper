@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.2.1
-Stable Tag: 1.3.45
+Stable Tag: 1.3.46
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -106,9 +106,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.46-dev =
+= 1.3.46 - 18 Aug 2011 =
+* Fixed : Non-Administrators could not edit/delete attached uploads (since 1.3.43)
+* Fixed : Non-Administrators could not edit Navigation Menus based on Nav Menu Manager role assignment
 * Fixed : Add New Post link not displayed if all editing Post Roles default-restricted and user has a qualifying Default Post Role assignment
 * Fixed : If Media Library filtering is disabled via SCOPER_ALL_UPLOADS_EDITABLE constant, listing in Post Edit Form popup was still filtered
+* Fixed : Various PHP Warnings / Notices
 * Compat : WPML 2.3.x - Post Edit Form showed duplicate and/or foreign checkboxes in some situations (for non-Administrator) 
 * Feature : Support 'required_operation' argument in get_terms(), forces term filtering to require 'read' or 'edit' meta capability on one or more related posts
 * Feature : Support 'is_term_admin' argument in get_terms(), forces requirement / non-requirement of $taxonomy->manage_terms capability for term filtering
@@ -649,6 +652,9 @@ Note: Role Scoper was first released as a public beta on 14 May 2008.  Stable re
 For an archived change log, see [http://agapetry.net/downloads/RS-readme-archive.txt](http://agapetry.net/downloads/RS-readme-archive.txt)
 
 == Upgrade Notice ==
+
+= 1.3.46 =
+Compat: Category selection with WPML 2.3.x; Fixes: Media Library editing for non-Administrators; Menu editing via Nav Menu Manager role; Missing Posts > "Add New" under some configurations; Various PHP Warnings
 
 = 1.3.45 =
 Fixes: Propagated Post/Page Roles lost on autosave; Propagated Roles / Restrictions not deleted when propagation turned off; Comments editable by any post Editors w/o moderate_comments cap; Term-assigned Manager role ineffective; Image / Attachment access failure under some configs

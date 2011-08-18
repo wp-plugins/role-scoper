@@ -47,7 +47,7 @@ function _rs_mnt_modify_nav_menu_item( $menu_item_id, $menu_operation ) {
 				$stored_vals['classes'] = (array) get_post_meta( $menu_item_id, '_menu_item_classes', true );
 				$stored_vals['xfn'] = get_post_meta( $menu_item_id, '_menu_item_xfn', true );
 				
-				if ( ! $stored_val['title'] )
+				if ( empty($stored_val['title']) )
 					$stored_vals['title'] = ( $is_post_type ) ? get_post_field( 'post_title', $object_id ) : get_term_field( 'name', $object_id, $object_type );
 					
 				$changed = false;
@@ -84,8 +84,6 @@ function _rs_mnt_modify_nav_menu_item( $menu_item_id, $menu_operation ) {
 					wp_die( sprintf( __( 'You do not have permission to move the menu item "%1$s". <br /><br /><a href="%2$s">Return to Menu Editor</a>', 'scoper' ), $stored_vals['title'], $link ) );
 				break;
 				case 'delete':
-					agp_bt_die();
-					wp_die( serialize( debug_backtrace() ) );
 					wp_die( sprintf( __( 'You do not have permission to delete the menu item "%1$s". <br /><br /><a href="%2$s">Return to Menu Editor</a>', 'scoper' ), $stored_vals['title'], $link ) );
 				break;
 				default:

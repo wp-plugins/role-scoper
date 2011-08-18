@@ -178,8 +178,8 @@ class CapInterceptor_RS
 		$cap_types = $this->scoper->cap_defs->src_otypes_from_caps( $rs_reqd_caps, $src_name );	  // note: currently only needed for src_name determination
 		
 		$doing_admin_menus = is_admin() && (
-		( did_action( '_admin_menu' ) && ! did_action('admin_menu') ) 		 // menu construction
-		|| ( did_action( 'in_admin_header' ) && ! did_action('adminmenu') )	 // menu display
+		( did_action( '_admin_menu' ) && ! did_action('admin_menu') ) 	 // menu construction
+		|| ( did_action( 'admin_head' ) && ! did_action('adminmenu') )	 // menu display
 		);
 
 		// for scoped menu management roles, satisfy edit_theme_options cap requirement
@@ -203,7 +203,7 @@ class CapInterceptor_RS
 			// required capabilities correspond to multiple data sources
 			return $wp_blogcaps;		
 		}
-		
+
 		// slight simplification: assume a single cap object type for a few cap substitution checks
 		$is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' );
 		
@@ -215,6 +215,8 @@ class CapInterceptor_RS
 		} elseif ( is_admin() && ( 'edit-tags.php' == $GLOBALS['pagenow'] ) && ( 'link_category' == $_REQUEST['taxonomy'] ) ) {
 			$src_name = 'link';
 			$object_type = 'link_category';
+		} elseif ( in_array( $orig_reqd_caps[0], array( 'manage_nav_menus', 'edit_theme_options' ) ) ) {
+			$src_name = 'nav_menu';
 		}
 
 		if ( empty($object_type) )
@@ -257,19 +259,21 @@ class CapInterceptor_RS
 				$modified_caps = false;
 				
 				if ( 'post' != $object_type ) {
-					// Replace edit_posts requirement with corresponding type-specific requirement, but only after admin menu is drawn, or on a submission before the menu is drawn
-					$replace_post_caps = array( 'publish_posts' );
+					$replace_post_caps = array( 'publish_posts', 'edit_others_posts', 'edit_published_posts' );
 					
-					if ( did_action( 'admin_init' ) )	// otherwise extra padding between menu items due to some items populated but unpermitted
-						$replace_post_caps []= 'edit_posts'; 
-
-					//if ( 'media-upload.php' == $pagenow )
-						$replace_post_caps = array_merge( $replace_post_caps, array( 'edit_others_posts', 'edit_published_posts' ) );
+					// Replace edit_posts requirement with corresponding type-specific requirement, but only after admin menu is drawn, or on a submission before the menu is drawn
+					if ( did_action( 'admin_init' ) ) {	// otherwise extra padding between menu items due to some items populated but unpermitted
+						$replace_post_caps []= 'edit_posts';
+					}
+	
+					if ( in_array( $pagenow, array( 'upload.php', 'media.php' ) ) ) {
+						$replace_post_caps = array_merge( $replace_post_caps, array( 'delete_posts', 'delete_others_posts' ) );
+					}
 
 					foreach( $replace_post_caps as $post_cap_name ) {
 						$key = array_search( $post_cap_name, $rs_reqd_caps );
 
-						if ( ( false !== $key ) && ! $doing_admin_menus && in_array( $pagenow, array( 'edit.php', 'post.php', 'post-new.php', 'admin-ajax.php' ) ) ) {				
+						if ( ( false !== $key ) && ! $doing_admin_menus && in_array( $pagenow, array( 'edit.php', 'post.php', 'post-new.php', 'admin-ajax.php', 'upload.php', 'media.php' ) ) ) {				
 							$rs_reqd_caps[$key] = $object_type_obj->cap->$post_cap_name;
 							$modified_caps = true;
 						}

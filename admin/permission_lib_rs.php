@@ -167,8 +167,9 @@
 			
 				foreach ( array_keys($user_blog_roles) as $role_handle ) {
 					// can't blend in blog role if term requires term role assignment
+					// Presence of an "unrestrictions" element in array indicates that the role is default-restricted.
 					if ( isset($strict_terms['unrestrictions'][$role_handle][$term_id])
-					|| ( ! is_array($strict_terms['unrestrictions'][$role_handle]) && ! isset($strict_terms['restrictions'][$role_handle][$term_id]) ) ) {
+					|| ( ( ! isset($strict_terms['unrestrictions'][$role_handle]) || ! is_array($strict_terms['unrestrictions'][$role_handle]) ) && ! isset($strict_terms['restrictions'][$role_handle][$term_id]) ) ) {
 						return true;
 					}
 				}

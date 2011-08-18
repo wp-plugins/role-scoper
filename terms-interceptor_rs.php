@@ -49,6 +49,7 @@ class TermsInterceptor_RS
 		$arg_ser = md5( serialize($args) );
 		if ( ! isset( $this->current_cache_key[$taxonomy][$arg_ser] ) ) {
 			extract( $criteria );
+			if ( ! isset($required_operation) ) { $required_operation = ''; }
 			$this->current_cache_key[$taxonomy][$arg_ser] = md5( $taxonomy . serialize( $args ) . $filter_key . serialize( $GLOBALS['scoper']->get_terms_reqd_caps($taxonomy, $required_operation, $is_term_admin) ) );
 		}
 		
@@ -167,7 +168,7 @@ class TermsInterceptor_RS
 		if ( is_admin() ) {
 			global $wpdb;
 		
-			switch( $GLOBALS['page_now'] ) {
+			switch( $GLOBALS['pagenow'] ) {
 				case 'edit-tags.php' :
 					$tx_obj = get_taxonomy( $taxonomy );
 					if ( $tx_obj->hierarchical && ! empty( $_REQUEST['tag_ID'] ) ) {
@@ -199,9 +200,12 @@ class TermsInterceptor_RS
 			}
 		}
 		
-		if ( ! in_array( $args['fields'], array( 'all', 'count' ) ) ) {
+		if ( in_array( $args['fields'], array( 'ids', 'names', 'id=>parent' ) ) ) {
+			// flt_get_terms needs parent col in intermediate result set even if final result set will be ids only, will convert result set back to expected format before returning
+			add_filter( 'get_terms_fields', create_function( '$a,$b', "return array('t.*', 'tt.*');" ), 1, 2 );
+
 			$buffer_args['fields'] = $args['fields'];
-			$args['fields'] = 'all';
+			$args['fields'] = 'force_all';
 		}
 		
 		if ( $buffer_args )
@@ -245,7 +249,7 @@ class TermsInterceptor_RS
 			$clauses['where'] .= ' AND tt.count > 0';
 		}
 		
-		if ( is_admin() && ( 'edit-tags.php' == $GLOBALS['page_now'] ) && ! empty( $_REQUEST['tag_ID'] ) ) {
+		if ( is_admin() && ( 'edit-tags.php' == $GLOBALS['pagenow'] ) && ! empty( $_REQUEST['tag_ID'] ) ) {
 			$tx_obj = get_taxonomy( $taxonomy );
 			if ( $tx_obj->hierarchical ) {
 				// don't filter current parent category out of selection UI even if current user can't manage it

@@ -5,7 +5,7 @@ class CommentsInterceptorAdmin_RS {
 	function get_reqd_caps() {
 		$reqd_caps = array();
 		
-		$generic_uri = in_array( $pagenow, array( 'index.php', 'comments.php' ) );
+		$generic_uri = in_array( $GLOBALS['pagenow'], array( 'index.php', 'comments.php' ) );
 
 		if ( ! $generic_uri && ( $_post_type = cr_find_post_type( '', false ) ) )  // arg: don't return 'post' as default if detection fails
 			$post_types = array( $_post_type => get_post_type_object( $_post_type ) );
