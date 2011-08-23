@@ -410,6 +410,9 @@ class ScoperItemRolesUI {
 			
 			$args['eligible_ids'] = isset($this->eligible_agent_ids[$role_basis][$agents_reqd_op]) ? $this->eligible_agent_ids[$role_basis][$agents_reqd_op]: '';
 		
+			if ( ( 'post' == $src_name ) && ( 'auto-draft' == $object->post_status ) )
+				$args['suppress_last_agents'] = true;
+		
 			if ( ! empty($this->current_roles[$role_basis][$role_handle]['assigned']) ) {
 				ScoperAgentsChecklist::agents_checklist( $role_basis, $this->all_agents[$role_basis], $id_prefix, $this->current_roles[$role_basis][$role_handle]['assigned'], $args );
 			} else

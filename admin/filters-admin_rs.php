@@ -396,10 +396,10 @@ class ScoperAdminFilters
 			$object_type = cr_find_object_type($src_name, $object_id);
 			
 		if ( 'post' == $src_name ) {
-			$post_type_obj = get_post_type_object( $object_type );
-			
-			if ( $post_type_obj->hierarchical )
-				scoper_flush_cache_groups('get_pages');
+			if ( $post_type_obj = get_post_type_object( $object_type ) ) {
+				if ( $post_type_obj->hierarchical )
+					scoper_flush_cache_groups('get_pages');
+			}
 		}
 			
 		scoper_flush_roles_cache(OBJECT_SCOPE_RS);

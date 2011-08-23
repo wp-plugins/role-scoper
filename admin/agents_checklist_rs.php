@@ -115,7 +115,7 @@ class ScoperAgentsChecklist {
 		'via_other_scope_ids' => '', 	'via_other_scope_prefix' => '/', 	'via_other_scope_suffix' => '/',
 		'via_other_role_ids' => '', 	'via_other_role_prefix' => '(', 	'via_other_role_suffix' => ')',
 		'via_other_basis_ids' => '', 	'via_other_basis_prefix' => "|", 	'via_other_basis_suffix' => '|',
-		'inherited_prefix' => '{', 		'inherited_suffix' => '}' );
+		'inherited_prefix' => '{', 		'inherited_suffix' => '}',			'suppress_last_agents' => false );
 
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
@@ -373,7 +373,7 @@ class ScoperAgentsChecklist {
 					$this_checked = '';
 			}
 			
-			if ( $this_checked )
+			if ( $this_checked && ! $suppress_last_agents )
 				$last_agents[] = $id;
 
 			if ( isset($via_other_role_ids[$id]) )
@@ -403,7 +403,7 @@ class ScoperAgentsChecklist {
 						$this_checked_prop = '';
 				}
 				
-				if ( $this_checked_prop )
+				if ( $this_checked_prop && ! $suppress_last_agents )
 					$last_agents_prop[] = $id;
 				
 				echo "{"

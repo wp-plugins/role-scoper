@@ -9,7 +9,7 @@ if ( isset( $_GET['rs_user_search'] )  ) {
 		
 	} else {
 		if ( awp_ver( '3.1-beta' ) )
-			$search = new WP_User_Query( $_GET['rs_user_search'] );
+			$search = new WP_User_Query( 'search=*' . $_GET['rs_user_search'] . '*' );
 		else
 			$search = new WP_User_Search( $_GET['rs_user_search'] );
 

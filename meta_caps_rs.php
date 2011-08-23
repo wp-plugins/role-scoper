@@ -137,7 +137,7 @@ function _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
 	} // end switch
 	
 	// if a capability is defined for this custom status, require it also
-	if ( $require_all_status_caps ) {
+	if ( empty($require_all_status_caps) ) {
 		if ( empty($post_status_obj->_builtin) ) {
 			$status_cap_name = "{$op}_{$post->post_status}_posts";
 			if ( ! empty( $post_type_obj->cap->$status_cap_name ) )

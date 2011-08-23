@@ -106,6 +106,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
+= 1.3.47-dev =
+* Fixed : Default Object Roles (as specified in Roles > Pages, etc.) were not retained upon saving a new post
+* Fixed : When creating or editing a Role Group, user search always returned all users
+* Fixed : PHP Notices in Dashboard QuickPress and Revisionary "Publishers to Notify" metabox
+
 = 1.3.46 - 18 Aug 2011 =
 * Fixed : Non-Administrators could not edit/delete attached uploads (since 1.3.43)
 * Fixed : Non-Administrators could not edit Navigation Menus based on Nav Menu Manager role assignment
