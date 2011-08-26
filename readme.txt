@@ -107,9 +107,12 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.3.47-dev =
+* Fixed : Javascript on "Edit Posts" / "Edit Pages" was broken for non-Administrators under some configurations
 * Fixed : Default Object Roles (as specified in Roles > Pages, etc.) were not retained upon saving a new post
 * Fixed : When creating or editing a Role Group, user search always returned all users
-* Fixed : PHP Notices in Dashboard QuickPress and Revisionary "Publishers to Notify" metabox
+* Fixed : Post Authors always received comment moderation email even if they lack moderate_comments capability for the post (work around WP map_meta_cap quirk for 'edit_comment') 
+* Fixed : PHP Warning for DB error on User Profile
+* Fixed : PHP Notices in Dashboard QuickPress, Quick Edit and Revisionary "Publishers to Notify" metabox
 
 = 1.3.46 - 18 Aug 2011 =
 * Fixed : Non-Administrators could not edit/delete attached uploads (since 1.3.43)

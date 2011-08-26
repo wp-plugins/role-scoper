@@ -125,7 +125,10 @@ class CR_Data_Sources extends AGP_Config_Items {
 			if ( defined('XMLRPC_REQUEST') && ! empty( $GLOBALS['xmlrpc_post_id_rs'] ) )
 				return $GLOBALS['xmlrpc_post_id_rs'];
 				
-			if ( ( 'post' == $src->name ) && ! empty($GLOBALS['post']) ) {
+			if ( 'post' == $src->name && ! empty($GLOBALS['post']) ) {
+				if ( ! is_object($GLOBALS['post']) )
+					$GLOBALS['post'] = get_post( $GLOBALS['post'] );
+
 				if ( 'auto-draft' == $GLOBALS['post']->post_status )
 					return 0;
 				else

@@ -887,7 +887,7 @@ function cr_find_post_type( $post_arg = '', $return_default = true ) {
 	// no post id was passed in, or we couldn't retrieve it for some reason, so check $_REQUEST args
 	global $pagenow;
 
-	if ( ! empty( $GLOBALS['post']->post_type ) ) {
+	if ( ! empty( $GLOBALS['post'] ) && is_object($GLOBALS['post']) && ! empty( $GLOBALS['post']->post_type ) ) {
 		$object_type = $GLOBALS['post']->post_type;
 
 		if ( 'revision' == $object_type )

@@ -166,6 +166,11 @@ class CapInterceptor_RS
 
 		// WP passes comment ID with 'edit_comment' metacap
 		if ( $object_id && ( 'edit_comment' == $args[0] ) ) {
+			if ( ! in_array( 'moderate_comments', $rs_reqd_caps ) ) {	 // as of WP 3.2.1, 'edit_comment' maps to related post's 'edit_post' caps without requiring moderate_comments
+				$rs_reqd_caps[] = 'moderate_comments';
+				$modified_caps = true;
+			}
+				
 			if ( $comment = get_comment( $object_id ) )
 				$object_id = $comment->comment_post_ID;
 			else
@@ -326,8 +331,13 @@ class CapInterceptor_RS
 							$this->skip_id_generation = true;
 					}
 				}
-			} elseif ( ! empty( $GLOBALS['post'] ) && ( 'auto-draft' == $GLOBALS['post']->post_status ) && ! $doing_admin_menus )
-				$this->skip_id_generation = true;	
+			} else {
+				if ( ! empty($GLOBALS['post']) && ! is_object($GLOBALS['post']) )
+					$GLOBALS['post'] = get_post($GLOBALS['post']);
+				
+				if ( ! empty( $GLOBALS['post'] ) && ( 'auto-draft' == $GLOBALS['post']->post_status ) && ! $doing_admin_menus )
+					$this->skip_id_generation = true;
+				}
 		}
 		
 		// If no object id was passed in...
