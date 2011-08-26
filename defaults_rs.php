@@ -73,7 +73,8 @@ function scoper_default_options() {
 		'role_content_date_limits' => 1,
 		'filter_users_dropdown' => 1,
 		'auto_private' => 1,
-		'admin_nav_menu_filter_items' => 0
+		'admin_nav_menu_filter_items' => 0,
+		'require_moderate_comments_cap' => 0,
 	);
 	
 	// NOTE: scoper_get_option() applies these defaults

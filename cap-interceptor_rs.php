@@ -167,8 +167,10 @@ class CapInterceptor_RS
 		// WP passes comment ID with 'edit_comment' metacap
 		if ( $object_id && ( 'edit_comment' == $args[0] ) ) {
 			if ( ! in_array( 'moderate_comments', $rs_reqd_caps ) ) {	 // as of WP 3.2.1, 'edit_comment' maps to related post's 'edit_post' caps without requiring moderate_comments
-				$rs_reqd_caps[] = 'moderate_comments';
-				$modified_caps = true;
+				if ( scoper_get_option( 'require_moderate_comments_cap' ) ) {
+					$rs_reqd_caps[] = 'moderate_comments';
+					$modified_caps = true;
+				}
 			}
 				
 			if ( $comment = get_comment( $object_id ) )

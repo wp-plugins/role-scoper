@@ -107,10 +107,11 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 == Changelog ==
 
 = 1.3.47-dev =
+* Feature : Roles > Options > Features > Content Maint > "Require moderate_comments capability" (otherwise Post Author received comment moderation emails even without moderate_comments capability)
 * Fixed : Javascript on "Edit Posts" / "Edit Pages" was broken for non-Administrators under some configurations
 * Fixed : Default Object Roles (as specified in Roles > Pages, etc.) were not retained upon saving a new post
 * Fixed : When creating or editing a Role Group, user search always returned all users
-* Fixed : Post Authors always received comment moderation email even if they lack moderate_comments capability for the post (work around WP map_meta_cap quirk for 'edit_comment') 
+* Fixed : Invalid edit link for "DEFAULTS for new" in bulk Roles / Restrictions admin form
 * Fixed : PHP Warning for DB error on User Profile
 * Fixed : PHP Notices in Dashboard QuickPress, Quick Edit and Revisionary "Publishers to Notify" metabox
 

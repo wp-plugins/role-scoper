@@ -20,7 +20,10 @@ class CommentsInterceptorAdmin_RS {
 				continue;
 		
 			foreach ( $post_statuses as $status => $status_obj ) {
-				$reqd_caps[$_post_type][$status] = array( $type_obj->cap->edit_others_posts, 'moderate_comments' );
+				$reqd_caps[$_post_type][$status] = array( $type_obj->cap->edit_others_posts );
+				
+				if ( scoper_get_option( 'require_moderate_comments_cap' ) )
+					$reqd_caps[$_post_type][$status] []= 'moderate_comments';
 				
 				if ( $status_obj->private )
 					$reqd_caps[$_post_type][$status] []= $type_obj->cap->edit_private_posts;

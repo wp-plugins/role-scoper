@@ -2,7 +2,7 @@
 
 add_action( 'scoper_init', 'scoper_review_file_htaccess' );
 
-// indicates, for MU installations, which of the RS options (and OType options) should be controlled site-wide
+// indicates, for MU installations, which of the RS options (and OType options) should be controlled network-wide
 function scoper_default_options_sitewide() {
 	$def = array(
 		'persistent_cache' => true,
@@ -50,7 +50,8 @@ function scoper_default_options_sitewide() {
 		'term_roles_column' => true,
 		'object_roles_column' => true,
 		
-		'admin_nav_menu_filter_items' => true
+		'admin_nav_menu_filter_items' => true,
+		'require_moderate_comments_cap' => true,
 	);
 	return $def;	
 }

@@ -809,9 +809,12 @@ function item_tree($scope, $mode, $src, $otype_or_tx, $all_items, $assigned_role
 			$link_span_close = ( $status_text ) ? "</span>" : '';
 				
 			// link from object name to our "Edit Object Role Assignment" interface
-			$rs_edit_url = "admin.php?page=rs-object_role_edit&amp;src_name=$src_or_tx_name&amp;object_type={$otype_or_tx->name}&amp;object_id=$id&amp;object_name=" . urlencode($name);
-			$name_text = "$link_span_open<a title='$title_roles' href='$rs_edit_url'>$name</a>$link_span_close";
-			
+			if ( $id ) {
+				$rs_edit_url = "admin.php?page=rs-object_role_edit&amp;src_name=$src_or_tx_name&amp;object_type={$otype_or_tx->name}&amp;object_id=$id&amp;object_name=" . urlencode($name);
+				$name_text = "$link_span_open<a title='$title_roles' href='$rs_edit_url'>$name</a>$link_span_close";
+			} else
+				$name_text = $name;
+
 			// link from object ID to the object type's default editor, if defined
 			if ( $id && $edit_url_base ) {
 				$content_edit_url = sprintf($edit_url_base, $id);
