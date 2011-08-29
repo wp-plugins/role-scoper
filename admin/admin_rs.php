@@ -336,10 +336,11 @@ jQuery(document).ready( function($) {
 	// support NextGenGallery uploader and other custom jquery calls which WP treats as index.php ( otherwise user_can_access_admin_page() fails )
 	function ngg_uploader_workaround() {
 		$site_url = parse_url( get_option( 'siteurl' ) );
+		
 		if ( isset($site_url['path']) && $_SERVER['REQUEST_URI'] == $site_url['path'] . '/wp-admin/' )
 			return;
 
-		if ( ( 'index.php' == $GLOBALS['pagenow'] ) && ! strpos( $_SERVER['REQUEST_URI'], 'index.php' ) )  //  strpos( $_SERVER['REQUEST_URI'], 'admin/upload.php' )
+		if ( ( 'index.php' == $GLOBALS['pagenow'] ) && ! strpos( $_SERVER['REQUEST_URI'], 'index.php' ) && strpos( $_SERVER['REQUEST_URI'], 'upload.php' ) )
 			$GLOBALS['pagenow'] = '';
 	}
 
