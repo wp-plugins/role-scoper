@@ -312,28 +312,28 @@ function role_submission($scope, $mode, $role_bases, $src_or_tx_name, $role_code
 						}
 					}
 				}
-
-				if ( ROLE_ASSIGNMENT_RS == $mode ) {
-					$args = array( 'force_flush' => true, 'set_role_duration' => '', 'set_content_date_limits' => '' );
-					
-					if ( $duration_limits_enabled && ! empty($_POST['set_role_duration']) ) {
-						$is_limited = ( $date_entries_gmt->start_date_gmt || ( $date_entries_gmt->end_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['start_date_gmt_keep-timestamp'] ) || ! empty( $_POST['end_date_gmt_keep-timestamp'] ) );
-						$args[ 'set_role_duration' ] = (object) array( 'date_limited' => $is_limited, 'start_date_gmt' => $date_entries_gmt->start_date_gmt, 'end_date_gmt' => $date_entries_gmt->end_date_gmt );
-					}
-					
-					if( $content_date_limits_enabled && ! empty($_POST['set_content_date_limits']) ) {
-						$is_limited = ( $date_entries_gmt->content_min_date_gmt || ( $date_entries_gmt->content_max_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['content_min_date_gmt_keep-timestamp'] ) || ! empty( $_POST['content_max_date_gmt_keep-timestamp'] ) );
-						$args[ 'set_content_date_limits' ] = (object) array( 'content_date_limited' => $is_limited, 'content_min_date_gmt' => $date_entries_gmt->content_min_date_gmt, 'content_max_date_gmt' => $date_entries_gmt->content_max_date_gmt );	
-					}
-
-					if ( isset($set_roles[$role_basis]) )
-						foreach ( $set_roles[$role_basis] as $id => $item_roles )
-							$role_assigner->assign_roles($scope, $src_or_tx_name, $id, $item_roles, $role_basis, $args );
-				} else {
-					foreach ( $set_roles as $id => $item_roles )
-						$role_assigner->restrict_roles($scope, $src_or_tx_name, $id, $item_roles, array('force_flush' => true) );
+			}// end foreach selected agents
+				
+			if ( ROLE_ASSIGNMENT_RS == $mode ) {
+				$args = array( 'force_flush' => true, 'set_role_duration' => '', 'set_content_date_limits' => '' );
+				
+				if ( $duration_limits_enabled && ! empty($_POST['set_role_duration']) ) {
+					$is_limited = ( $date_entries_gmt->start_date_gmt || ( $date_entries_gmt->end_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['start_date_gmt_keep-timestamp'] ) || ! empty( $_POST['end_date_gmt_keep-timestamp'] ) );
+					$args[ 'set_role_duration' ] = (object) array( 'date_limited' => $is_limited, 'start_date_gmt' => $date_entries_gmt->start_date_gmt, 'end_date_gmt' => $date_entries_gmt->end_date_gmt );
 				}
-			} // end foreach selected agents
+				
+				if( $content_date_limits_enabled && ! empty($_POST['set_content_date_limits']) ) {
+					$is_limited = ( $date_entries_gmt->content_min_date_gmt || ( $date_entries_gmt->content_max_date_gmt != SCOPER_MAX_DATE_STRING ) || ! empty( $_POST['content_min_date_gmt_keep-timestamp'] ) || ! empty( $_POST['content_max_date_gmt_keep-timestamp'] ) );
+					$args[ 'set_content_date_limits' ] = (object) array( 'content_date_limited' => $is_limited, 'content_min_date_gmt' => $date_entries_gmt->content_min_date_gmt, 'content_max_date_gmt' => $date_entries_gmt->content_max_date_gmt );	
+				}
+
+				if ( isset($set_roles[$role_basis]) )
+						foreach ( $set_roles[$role_basis] as $id => $item_roles )
+						   $role_assigner->assign_roles($scope, $src_or_tx_name, $id, $item_roles, $role_basis, $args );
+			} else {
+				foreach ( $set_roles as $id => $item_roles )
+					$role_assigner->restrict_roles($scope, $src_or_tx_name, $id, $item_roles, array('force_flush' => true) );
+			}
 
 			if ( ! empty($selected_agents[$role_basis]) ) {
 				if ( ROLE_BASIS_USER == $role_basis )

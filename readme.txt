@@ -115,6 +115,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Fixed : PHP Warning for DB error on User Profile
 * Fixed : PHP Notices in Dashboard QuickPress, Quick Edit and Revisionary "Publishers to Notify" metabox
 * Fixed : Non-Administrators can't access /wp-admin/, under some configurations
+* Fixed : Tag filtering did not support hide_empty=0 argument in get_tags()
+* Fixed : Bulk Role Editor only deleted roles for one selected user/group on each update
 
 = 1.3.46 - 18 Aug 2011 =
 * Fixed : Non-Administrators could not edit/delete attached uploads (since 1.3.43)

@@ -106,15 +106,15 @@ class ScoperHardwayFront
 		$defaults = array(
 		'exclude' => '', 'include' => '',
 		'number' => '', 'offset' => '', 'slug' => '', 
-		'name__like' => '', 'search' => '');
+		'name__like' => '', 'search' => '', 'hide_empty' => true );
 		$args = wp_parse_args( $args, $defaults );
 		extract($args, EXTR_SKIP);
 		
-		if ( 'ids' == $fields )
+		if ( ( 'ids' == $fields ) || ! $hide_empty )
 			return $results;
-		
-		global $scoper, $current_rs_user;
 
+		global $scoper, $current_rs_user;
+		
 		$filter_key = ( has_filter('list_terms_exclusions') ) ? serialize($GLOBALS['wp_filter']['list_terms_exclusions']) : '';
 		$ckey = md5( serialize( compact(array_keys($defaults)) ) . serialize( $taxonomies ) . $filter_key );
 		$cache_flag = 'rs_get_terms';
