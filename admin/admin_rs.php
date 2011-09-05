@@ -369,7 +369,7 @@ jQuery(document).ready( function($) {
 		//
 		// end optional hack
 		*/
-				
+
 		$require_blogwide_editor = scoper_get_option('role_admin_blogwide_editor_only');
 
 		if ( ! $is_content_administrator && ( 'admin_content' == $require_blogwide_editor ) )

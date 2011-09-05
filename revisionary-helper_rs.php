@@ -32,6 +32,23 @@ Class Rvy_Helper {
 
 		return $rs_reqd_caps;
 	}
+	
+	// ensure proper cap requirements when a non-Administrator Quick-Edits or Bulk-Edits Posts/Pages (which may be included in the edit listing only for revision submission)
+	function fix_table_edit_reqd_caps( $rs_reqd_caps, $orig_meta_cap, $_post, $object_type_obj ) {
+		foreach( array( 'edit', 'delete' ) as $op ) {
+			if ( in_array( $orig_meta_cap, array( "{$op}_post", "{$op}_page" ) ) ) {
+				$status_obj = get_post_status_object( $_post->post_status );
+				foreach( array( 'public' => 'published', 'private' => 'private' ) as $status_prop => $cap_suffix ) {
+					if ( ! empty($status_obj->$status_prop) ) {
+						$cap_prop = "{$op}_{$cap_suffix}_posts";
+						$rs_reqd_caps[]= $object_type_obj->cap->$cap_prop;
+						$GLOBALS['revisionary']->skip_revision_allowance = true;
+					}
+				}
+			}
+		}
+		return $rs_reqd_caps;
+	}
 }
 
 ?>

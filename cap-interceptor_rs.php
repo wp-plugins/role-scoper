@@ -339,13 +339,16 @@ class CapInterceptor_RS
 				
 				if ( ! empty( $GLOBALS['post'] ) && ( 'auto-draft' == $GLOBALS['post']->post_status ) && ! $doing_admin_menus )
 					$this->skip_id_generation = true;
-				}
+			}
 		}
 		
 		// If no object id was passed in...
 		if ( ! $object_id ) { // || ! $matched_context ) {
 		//if ( $missing_caps = array_diff($rs_reqd_caps, array_keys($wp_blogcaps) ) ) {
-			if ( ! $object_id && ! $doing_admin_menus ) {
+			if ( ! $doing_admin_menus ) {
+				if ( ! empty($_REQUEST['action']) && in_array( $pagenow, array('edit.php','edit-tags.php') ) )
+					$this->skip_id_generation = true;
+
 				// ============================================ OBJECT ID DETERMINATION ========================================
 				if ( ! $this->skip_id_generation && ! defined('XMLRPC_REQUEST') && ! in_array( $pagenow, array( 'media-upload.php', 'async-upload.php' ) ) ) {  // lots of superfluous queries in media upload popup otherwise
 					// Try to generate missing object_id argument for problematic current_user_can calls 
@@ -369,17 +372,12 @@ class CapInterceptor_RS
 						$object_id = $gen_id;
 					} else
 						$object_id = $generated_id[$object_type][$caps_key];
-
+	
 					//rs_errlog( "detected ID: $object_id" );
 				} else
 					$this->skip_id_generation = false; // this is a one-time flag
 
 				// ========================================= (end object id determination) =======================================
-			} else {
-				if ( $_post = get_post($object_id) ) {
-					$object_type = $_post->post_type;
-					$object_type_obj = cr_get_type_object( $src_name, $object_type );
-				}
 			}
 			
 			// If we still have no object id (detection was skipped or failed to identify it)...
@@ -431,28 +429,35 @@ class CapInterceptor_RS
 		//} else
 			//return $wp_blogcaps;
 			
-		} else { // endif no object_id passed in
-			
-			// if the top level page structure is locked, don't allow non-administrator to delete a top level page either
-			if ( 'post' == $src_name ) {
-				if ( ( 'page' == $object_type ) || defined( 'SCOPER_LOCK_OPTION_ALL_TYPES' ) && ! is_content_administrator_rs() ) {
-					$delete_metacap = ( ! empty($object_type_obj->hierarchical) ) ? $object_type_obj->cap->delete_post : 'delete_page';
+		} 
 
-					// if the top level page structure is locked, don't allow non-administrator to delete a top level page either
-					if ( $delete_metacap == $args[0] ) {
-						if ( '1' === scoper_get_option( 'lock_top_pages' ) ) {	  // stored value of 1 means only Administrators are allowed to modify top-level page structure
-							if ( $page = get_post( $args[2] ) ) {
-								if ( empty( $page->post_parent ) ) {
-									$in_process = false;
-									return false;
-								}
+		if ( $object_id && ( 'post' == $src_name ) ) {
+			$_post = get_post($object_id);
+			$object_type = $_post->post_type;
+			$object_type_obj = cr_get_type_object( $src_name, $object_type );
+			
+			if ( RVY_VERSION && in_array( $pagenow, array('edit.php', 'edit-tags.php', 'admin-ajax.php') ) && ! empty($_REQUEST['action']) ) {
+				$rs_reqd_caps = Rvy_Helper::fix_table_edit_reqd_caps( $rs_reqd_caps, $args[0], $_post, $object_type_obj );
+			}
+
+			// if the top level page structure is locked, don't allow non-administrator to delete a top level page either
+			if ( ( 'page' == $object_type ) || defined( 'SCOPER_LOCK_OPTION_ALL_TYPES' ) && ! is_content_administrator_rs() ) {
+				$delete_metacap = ( ! empty($object_type_obj->hierarchical) ) ? $object_type_obj->cap->delete_post : 'delete_page';
+
+				// if the top level page structure is locked, don't allow non-administrator to delete a top level page either
+				if ( $delete_metacap == $args[0] ) {
+					if ( '1' === scoper_get_option( 'lock_top_pages' ) ) {	  // stored value of 1 means only Administrators are allowed to modify top-level page structure
+						if ( $page = get_post( $args[2] ) ) {
+							if ( empty( $page->post_parent ) ) {
+								$in_process = false;
+								return false;
 							}
 						}
 					}
 				}
 			}
 		}
-		
+
 		// Note: At this point, we have a nonzero object_id...
 		
 		// if this is a term administration request, route to user_can_admin_terms()

@@ -117,6 +117,9 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Fixed : Non-Administrators can't access /wp-admin/, under some configurations
 * Fixed : Tag filtering did not support hide_empty=0 argument in get_tags()
 * Fixed : Bulk Role Editor only deleted roles for one selected user/group on each update
+* Fixed : Posts/Pages could not be bulk-edited or bulk-trashed by non-Administrator when access is based on a Post-assigned editing role
+* Fixed : Pages and custom post types could not be Quick-edited by non-Administrator when user relies on a Page-assigned editing role
+* Compat : Revisionary - better error message when a Revisor attempts to Quick-Edit a page which they cannot fully edit
 
 = 1.3.46 - 18 Aug 2011 =
 * Fixed : Non-Administrators could not edit/delete attached uploads (since 1.3.43)
