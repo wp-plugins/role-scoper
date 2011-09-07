@@ -121,9 +121,9 @@ class ScoperRewrite {
 	function update_blog_file_rules( $include_rs_rules = true ) {
 		global $blog_id;
 		
-		// avoid file collision by skipping if another flush was initiated < 10 seconds ago
+		// avoid file collision by skipping if another flush was initiated < 5 seconds ago
 		if ( $last_regen = scoper_get_option( 'file_htaccess_date' ) ) {
-			if ( intval($last_regen) > agp_time_gmt() - 10 ) {
+			if ( intval($last_regen) > agp_time_gmt() - 5  ) {
 				return;
 			}
 		}
@@ -132,12 +132,13 @@ class ScoperRewrite {
 		
 		$include_rs_rules = $include_rs_rules && scoper_get_option( 'file_filtering' );
 		
-		if ( ! ScoperRewrite::site_config_supports_rewrite() )
+		if ( ! ScoperRewrite::site_config_supports_rewrite() ) {
 			return;
-		elseif ( ! $include_rs_rules )
+		} elseif ( ! $include_rs_rules )
 			$rules = '';
-		else
+		else {
 			$rules = ScoperRewrite::build_blog_file_rules();
+		}
 			
 		require_once( dirname(__FILE__).'/uploads_rs.php' );
 		$uploads = scoper_get_upload_info();
@@ -151,7 +152,7 @@ class ScoperRewrite {
 	
 	function &build_blog_file_rules() {
 		$new_rules = '';
-		
+
 		require_once( dirname(__FILE__).'/analyst_rs.php' );
 		if ( ! $attachment_results = ScoperAnalyst::identify_protected_attachments() )
 			return $new_rules;

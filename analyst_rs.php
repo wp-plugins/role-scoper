@@ -107,10 +107,10 @@ class ScoperAnalyst {
 			}
 		}
 		
-			
+		
 		if ( $attachment_id ) {
 			if ( is_array($attachment_id) )
-				$id_clause = "AND ID IN '" . implode( "','", $attachment_id ) . "'";
+				$id_clause = "AND ID IN ('" . implode( "','", $attachment_id ) . "')";
 			else {
 				$id_clause = "AND ID = '$attachment_id'";
 				$limit_clause = 'LIMIT 1';
@@ -120,6 +120,11 @@ class ScoperAnalyst {
 		else
 			$id_clause = '';
 	
+		if ( defined( 'SCOPER_NO_THUMBNAIL_FILTER' ) ) {
+			if ( $thumbnail_ids = scoper_get_col( "SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = '_thumbnail_id'" ) ) {
+				$id_clause .= " AND ID NOT IN ('" . implode( "','", $thumbnail_ids ) . "')";
+			}
+		}
 		
 		if ( $attachments ) {
 			// to reduce pool of objects, we only care about those that have an attachment
@@ -206,7 +211,7 @@ class ScoperAnalyst {
 		
 		$query = "SELECT $query_cols FROM $wpdb->posts WHERE $attachment_type_clause ( 1=1 $status_query $term_restriction_clause $object_restriction_clause $unattached_clause ) $id_clause ORDER BY ID DESC $limit_clause";
 		
-		if ( $id_clause && ! is_array( $attachment_id ) ) {
+		if ( $attachment_id && ! is_array( $attachment_id ) ) {
 			if ( $single_col )
 				$results = scoper_get_var( $query );
 			else
