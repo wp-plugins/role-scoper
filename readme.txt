@@ -119,6 +119,7 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Fixed : Bulk Role Editor only deleted roles for one selected user/group on each update
 * Fixed : Posts/Pages could not be bulk-edited or bulk-trashed by non-Administrator when access is based on a Post-assigned editing role
 * Fixed : Pages and custom post types could not be Quick-edited by non-Administrator when user relies on a Page-assigned editing role
+* Fixed : Don't block access to attachment templates (?attachment_id=) for unattached uploads unless SCOPER_BLOCK_UNATTACHED_UPLOADS is defined
 * Compat : Revisionary - better error message when a Revisor attempts to Quick-Edit a page which they cannot fully edit
 
 = 1.3.46 - 18 Aug 2011 =

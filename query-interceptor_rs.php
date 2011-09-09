@@ -328,6 +328,13 @@ class QueryInterceptor_RS
 		if ( strpos( $request, "post_type = 'attachment'" ) ) {
 			global $wpdb;
 			
+			if ( ! is_admin() && ! empty($_REQUEST['attachment_id']) && ! defined('SCOPER_BLOCK_UNATTACHED_UPLOADS') ) {
+				if ( $_att = get_post($_REQUEST['attachment_id']) ) {
+					if ( 0 === $_att->post_parent )
+						return $request;
+				}
+			}
+			
 			// filter attachments by inserting a scoped subquery based on user roles on the post/page attachment is tied to
 			$rs_where = $this->flt_objects_where( '', $src_name, '', $args );
 			$subqry = "SELECT ID FROM $wpdb->posts WHERE 1=1 $rs_where";
