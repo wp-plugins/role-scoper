@@ -436,7 +436,7 @@ class CapInterceptor_RS
 			$object_type = $_post->post_type;
 			$object_type_obj = cr_get_type_object( $src_name, $object_type );
 			
-			if ( RVY_VERSION && in_array( $pagenow, array('edit.php', 'edit-tags.php', 'admin-ajax.php') ) && ! empty($_REQUEST['action']) ) {
+			if ( defined('RVY_VERSION') && in_array( $pagenow, array('edit.php', 'edit-tags.php', 'admin-ajax.php') ) && ! empty($_REQUEST['action']) ) {
 				$rs_reqd_caps = Rvy_Helper::fix_table_edit_reqd_caps( $rs_reqd_caps, $args[0], $_post, $object_type_obj );
 			}
 
