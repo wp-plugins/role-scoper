@@ -231,8 +231,11 @@ class CapInterceptor_RS
 
 		$object_type_obj = cr_get_type_object( $src_name, $object_type );
 		
+		$is_att_rev = false;
 		if ( 'post' == $src_name ) {
 			if ( in_array( $object_type, array( 'attachment', 'revision' ) ) ) {
+				$is_att_rev = true;
+			
 				if ( $object_id ) {
 					if ( $_post = get_post( $object_id ) ) {
 						if ( $_parent = get_post($_post->post_parent) ) {
@@ -341,6 +344,8 @@ class CapInterceptor_RS
 					$this->skip_id_generation = true;
 			}
 		}
+		
+		//dump($object_id);
 		
 		// If no object id was passed in...
 		if ( ! $object_id ) { // || ! $matched_context ) {
@@ -555,27 +560,14 @@ class CapInterceptor_RS
 				}
 
 				if ( ( 'revision' == $_post->post_type ) || ( 'attachment' == $_post->post_type ) ) {
+					$is_att_rev = true;
+				
 					if ( $_post->post_parent ) {
 						$object_id = $_post->post_parent;
 
 						if ( $_parent = get_post($_post->post_parent) ) {
 							$object_type = $_parent->post_type;
 							$object_type_obj = get_post_type_object( $object_type );
-
-							if ( 'post' != $_parent->post_type ) {
-								// Compensate for WP's requirement of posts cap for attachment editing, regardless of whether it's attached to a post or page							
-								if ( 'edit_others_posts' == $rs_reqd_caps[0] )
-									$rs_reqd_caps[0] = $object_type_obj->cap->edit_others_posts;
-									
-								elseif ( 'delete_others_posts' == $rs_reqd_caps[0] )
-									$rs_reqd_caps[0] = $object_type_obj->cap->delete_others_posts;
-									
-								elseif ( 'edit_posts' == $rs_reqd_caps[0] )
-									$rs_reqd_caps[0] = $object_type_obj->cap->edit_posts;
-									
-								elseif ( 'delete_posts' == $rs_reqd_caps[0] )
-									$rs_reqd_caps[0] = $object_type_obj->cap->delete_posts;
-							}
 						}
 					} elseif ( 'attachment' == $_post->post_type ) {
 						// special case for unattached uploads: uploading user should have their way with them
@@ -591,6 +583,25 @@ class CapInterceptor_RS
 				} //endif retrieved post is a revision or attachment
 			} // endif post retrieved
 		} // endif specified id might be a revision or attachment
+		
+		if ( $is_att_rev ) {
+			if ( 'post' != $object_type_obj->post_type ) {
+				// Compensate for WP's requirement of posts cap for attachment editing, regardless of whether it's attached to a post or page							
+				if ( 'edit_others_posts' == $rs_reqd_caps[0] )
+					$rs_reqd_caps[0] = $object_type_obj->cap->edit_others_posts;
+					
+				elseif ( 'delete_others_posts' == $rs_reqd_caps[0] )
+					$rs_reqd_caps[0] = $object_type_obj->cap->delete_others_posts;
+					
+				elseif ( 'edit_posts' == $rs_reqd_caps[0] )
+					$rs_reqd_caps[0] = $object_type_obj->cap->edit_posts;
+					
+				elseif ( 'delete_posts' == $rs_reqd_caps[0] )
+					$rs_reqd_caps[0] = $object_type_obj->cap->delete_posts;
+			}
+		} //endif retrieved post is a revision or attachment
+		
+		
 		// ============================== (end special handling for attachments and revisions) ==========================================
 		
 	
@@ -654,7 +665,7 @@ class CapInterceptor_RS
 				$cache_where_clause[$src_name][$object_type][$capreqs_key] = $where;
 			} else
 				$where = $cache_where_clause[$src_name][$object_type][$capreqs_key];
-
+				
 			// run the query
 			$query = "SELECT $src_table.{$cols->id} FROM $src_table WHERE 1=1 $where AND $src_table.{$cols->id} IN ('" . implode( "', '", array_unique($listed_ids) ) . "')";
 			

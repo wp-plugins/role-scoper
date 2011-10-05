@@ -99,7 +99,7 @@ class TermsInterceptor_RS
 			
 		// link category roles / restrictions are only scoped for management (TODO: review this)
 		if ( ( 'link_category' == $taxonomy ) && $scoper->is_front() )
-			return $results;
+			return $taxonomies;
 		
 		if ( $args['child_of'] || $args['parent'] ) {
 			$children = ScoperAncestry::get_terms_children($taxonomy);

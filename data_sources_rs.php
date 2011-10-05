@@ -89,10 +89,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 		} else {
 			if ( ! $src = $this->get($src_name) )
 				return;
-				
-			if ( ! isset($src->cols->type) )
-				return;
-				
+
 			global $wpdb;
 			
 			if ( ! $cols )
@@ -100,7 +97,7 @@ class CR_Data_Sources extends AGP_Config_Items {
 
 			if ( empty($object_id) )
 				return array();
-				
+
 			return scoper_get_row("SELECT $cols FROM $src->table WHERE {$src->cols->id} = '$object_id' LIMIT 1");
 		} // end switch
 	}

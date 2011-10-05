@@ -25,7 +25,7 @@ if ( empty($role_bases) )
 	wp_die(__awp('Cheatin&#8217; uh?'));
 
 $otype = $scoper->data_sources->member_property($src_name, 'object_types', $object_type);
-	
+
 require_once( dirname(__FILE__).'/admin-bulk_rs.php' );
 require_once( dirname(__FILE__).'/admin_lib-bulk-parent_rs.php');
 require_once( dirname(__FILE__).'/role_assignment_lib_rs.php');

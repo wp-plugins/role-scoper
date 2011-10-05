@@ -4,8 +4,8 @@ function scoper_adjust_legacy_extension_cfg( &$role_defs, $cap_defs ) {
 
 	if ( $src = $scoper->data_sources->get('ngg_gallery') ) {
 		// TODO: merge this with CR_Data_Sources::process()
-		$scoper->data_sources->members['ngg_gallery']->object_types = array($src->name => (object) array() );
-
+		$scoper->data_sources->members['ngg_gallery']->object_types = array($src->name => (object) array( 'name' => $src->name ) );
+		
 		if ( is_admin() ) {
 			$scoper->data_sources->members['ngg_gallery']->object_types[$src->name]->labels->singular_name = $src->labels->singular_name;
 			$scoper->data_sources->members['ngg_gallery']->object_types[$src->name]->labels->name = $src->labels->name;

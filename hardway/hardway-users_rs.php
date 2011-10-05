@@ -71,11 +71,20 @@ class ScoperHardwayUsers {
 		if( ! $post_type_obj = get_post_type_object($object_type) )
 			return $wp_output;
 			
-		$object_id = scoper_get_object_id( 'post', $object_type);
+		$is_ngg_edit = strpos( $_SERVER['REQUEST_URI'], 'nggallery-manage-gallery' );
+			
+		if ( ! $is_ngg_edit ) {
+			$src_name = 'post';
+			$object_id = scoper_get_object_id( 'post', $object_type);
+			
+			// only modify the default authors list if current user has Editor role for the current post/page
+			$have_cap = cr_user_can( $post_type_obj->cap->edit_others_posts, $object_id, 0, array( 'require_full_object_role' => true ) );
+		} else {
+			$src_name = 'ngg_gallery';
+			$object_id = $_REQUEST['gid'];
+			$have_cap = ! empty( $GLOBALS['current_user']->allcaps[$post_type_obj->cap->edit_others_posts] );  // $post_type_obj defaults to 'post' type on NGG Manage Gallery page
+		}
 
-		// only modify the default authors list if current user has Editor role for the current post/page
-		$have_cap = cr_user_can( $post_type_obj->cap->edit_others_posts, $object_id, 0, array( 'require_full_object_role' => true ) );
-		
 		//if ( ! $have_cap )
 		 //	return $wp_output;
 		
@@ -157,15 +166,15 @@ class ScoperHardwayUsers {
 		$args = array();
 		$args['where'] = $where;
 		$args['orderby'] = $orderby;
-
+		
 		if ( $object_id > 0 ) {
-			if ( $current_author = $scoper->data_sources->get_from_db('owner', 'post', $object_id) )
+			if ( $current_author = $scoper->data_sources->get_from_db('owner', $src_name, $object_id) )
 				$force_user_id = $current_author;
 		} else {
 			global $current_user;
 			$force_user_id = $current_user->ID;
 		}
-
+		
 		if ( $have_cap ) {
 			if ( $force_user_id )
 				$args['preserve_or_clause'] = " uro.user_id = '$force_user_id'";

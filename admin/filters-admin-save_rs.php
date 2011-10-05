@@ -399,7 +399,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 			$selected_parent_id = $GLOBALS['post']->post_parent;
 		} else
 			return $status;	
-		
+
 		$_post = get_post( $post_id );
 		
 		if ( $saved_status_object = get_post_status_object( $_post->post_status ) )
@@ -414,18 +414,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 		// if the page is and was associated with Main Page, don't mess
 		if ( empty($selected_parent_id) && empty($_post->post_parent) && $already_published )
 			return $status;
-		
-		global $scoper_admin_filters;
 
-		if ( ! $scoper_admin_filters->user_can_associate_main( $post_type ) ) {
-			// If post was previously published to another parent, allow subsequent page_parent filter to revert it
-			if ( $already_published ) {
-				if ( ! isset($scoper_admin_filters->revert_post_parent) )
-					$scoper_admin_filters->revert_post_parent = array();
-					
-				$scoper_admin_filters->revert_post_parent[ $post_id ] = $_post->post_parent;
-				
-			} elseif ( empty($_POST['parent_id']) ) {  // This should only ever happen if the POST data is manually fudged
+		if ( empty($_POST['parent_id']) && ! $GLOBALS['scoper_admin_filters']->user_can_associate_main( $post_type ) ) {
+			if ( ! $already_published ) {  // This should only ever happen if the POST data is manually fudged
 				if ( $post_status_object = get_post_status_object( $status ) ) {
 					if ( $post_status_object->public || $post_status_object->private )
 						$status = 'draft';
@@ -449,34 +440,50 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				return $parent_id;
 		}
 		
-		global $scoper_admin_filters;
+		if ( empty($_POST['post_type']) )
+			return $parent_id;
 		
-		// Did the post_status filter mark the post for parent reversion due to Main Page (un)association with insufficient blog role?
-		if ( isset($scoper_admin_filters->revert_post_parent) && isset( $scoper_admin_filters->revert_post_parent[ $_POST['post_ID'] ] ) )
-			return $scoper_admin_filters->revert_post_parent[ $_POST['post_ID'] ];
+		// Make sure the selected parent is valid.  Merely an anti-hacking precaution to deal with manually fudged POST data		
+		global $scoper, $wpdb;
+		
+		$post_type = $_POST['post_type'];
+		$plural_name = plural_name_from_cap_rs( get_post_type_object($post_type) );
+		
+		$args = array();
+		$args['alternate_reqd_caps'][0] = array("create_child_{$plural_name}");
 
-		// Make sure the selected parent is valid.  Merely an anti-hacking precaution to deal with manually fudged POST data
-		if ( $parent_id && ! empty($_POST['post_type']) ) {
-			global $scoper, $wpdb;
-			
-			$post_type = $_POST['post_type'];
-			$plural_name = $scoper->data_sources->member_property( 'post', 'object_types', $post_type, 'plural_name' );
-			
-			$args = array();
-			$args['alternate_reqd_caps'][0] = array("create_child_{$plural_name}");
+		if ( $descendant_ids = scoper_get_page_descendant_ids( $_POST['post_ID'] ) )
+			$exclusion_clause = "AND ID NOT IN('" . implode( "','", $descendant_ids ) . "')";
+		else
+			$exclusion_clause = '';
+		
+		$qry_parents = "SELECT ID FROM $wpdb->posts WHERE post_type = '$post_type' AND post_status != 'auto-draft' $exclusion_clause";
+		$qry_parents = apply_filters('objects_request_rs', $qry_parents, 'post', $post_type, $args);
+		$valid_parents = scoper_get_col($qry_parents);
+				
+		$post = get_post( $_POST['post_ID'] );
+		
+		if ( $parent_id ) {
+			if ( $post && ! in_array($parent_id, $valid_parents) ) {
+				$parent_id = $post->post_parent;
+			}
+		} else {
+			if ( ! $GLOBALS['scoper_admin_filters']->user_can_associate_main( $post_type ) ) {
+				$already_published = false;
+				if ( $post ) {
+					if ( $saved_status_object = get_post_status_object( $post->post_status ) )
+						$already_published = ( $saved_status_object->public || $saved_status_object->private );
+				}
 
-			if ( $descendant_ids = scoper_get_page_descendant_ids( $_POST['post_ID'] ) )
-				$exclusion_clause = "AND ID NOT IN('" . implode( "','", $descendant_ids ) . "')";
-			else
-				$exclusion_clause = '';
-			
-			$qry_parents = "SELECT ID FROM $wpdb->posts WHERE post_type = '$post_type' $exclusion_clause";
-			$qry_parents = apply_filters('objects_request_rs', $qry_parents, 'post', $post_type, $args);
-			$valid_parents = scoper_get_col($qry_parents);
-
-			if ( ! in_array($parent_id, $valid_parents) ) {
-				if ( $post = get_post( $_POST['post_ID'] ) )
+				if ( $already_published ) {
+					// If post was previously published to another parent, revert it
 					$parent_id = $post->post_parent;
+				} elseif ( $valid_parents ) {
+					// otherwise default to a valid parent
+					sort( $valid_parents );
+					$parent_id = current($valid_parents);
+					$_POST['parent_id'] = $parent_id; // for subsequent post_status filter
+				}
 			}
 		}
 			

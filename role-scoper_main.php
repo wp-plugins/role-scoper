@@ -63,7 +63,7 @@ class Scoper
 			
 		foreach( array_keys($this->definitions) as $topic )
 			$this->$topic->lock();
-			
+
 		// clean up after 3rd party plugins (such as Role Scoping for NGG) which don't set object type and src_name properties for roles
 		if ( has_filter( 'define_roles_rs' ) ) {
 			require_once( dirname(__FILE__).'/extension-helper_rs.php' );
