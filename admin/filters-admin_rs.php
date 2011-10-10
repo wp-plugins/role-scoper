@@ -143,7 +143,7 @@ class ScoperAdminFilters
 		add_action( 'transition_post_status', array(&$this, 'act_log_post_status'), 10, 3 );
 
 		add_action( 'edit_post', array(&$this, 'act_log_updated_post') );
-
+		
 		// Filtering of Page Parent selection:
 		add_filter('pre_post_status', array(&$this, 'flt_post_status'), 50, 1);
 		add_filter('pre_post_parent', array(&$this, 'flt_page_parent'), 50, 1);
@@ -186,6 +186,15 @@ class ScoperAdminFilters
 		foreach ( $wp_taxonomies as $key => $t ) {
 			if ( isset($t->update_count_callback) && ( '_update_post_term_count' == $t->update_count_callback ) )
 				$wp_taxonomies[$key]->update_count_callback = 'scoper_update_post_term_count';
+		}
+		
+		add_action( 'load-post.php', array( &$this, 'maybe_override_kses' ) );
+	}
+	
+	function maybe_override_kses() {
+		if ( ! empty($_POST) && ! empty($_POST['action']) && ( 'editpost' == $_POST['action'] ) ) {
+			if ( current_user_can( 'unfiltered_html' ) ) // initial core cap check in kses_init() is unfilterable
+				kses_remove_filters();
 		}
 	}
 	

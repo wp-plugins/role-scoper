@@ -91,7 +91,7 @@ class CapInterceptor_RS
 			//rs_errlog(serialize($args));
 			//rs_errlog('');
 		//}
-
+		
 		// ============================================= (end temporary debug code) ==============================================
 
 		// convert 'rs_role_name' to corresponding caps (and also make a tinkerable copy of orig_reqd_caps)
@@ -587,7 +587,7 @@ class CapInterceptor_RS
 		} // endif specified id might be a revision or attachment
 		
 		if ( $is_att_rev ) {
-			if ( 'post' != $object_type_obj->post_type ) {
+			if ( 'post' != $object_type_obj->name ) {
 				// Compensate for WP's requirement of posts cap for attachment editing, regardless of whether it's attached to a post or page							
 				if ( 'edit_others_posts' == $rs_reqd_caps[0] )
 					$rs_reqd_caps[0] = $object_type_obj->cap->edit_others_posts;
@@ -855,7 +855,7 @@ class CapInterceptor_RS
 		$caps_by_otype = $this->scoper->cap_defs->organize_caps_by_otype($reqd_caps);
 		
 		// temp workaround
-		if ( 'manage_categories' == $reqd_caps[0] && isset( $caps_by_otype['post']['link'] ) ) {
+		if ( 'manage_categories' == current($reqd_caps) && isset( $caps_by_otype['post']['link'] ) ) {
 			$caps_by_otype['link']['link_category'] = $caps_by_otype['post']['link'];
 			unset( $caps_by_otype['post']['link'] );
 		}
