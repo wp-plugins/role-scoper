@@ -25,6 +25,9 @@ class ScoperRewrite {
 	
 	
 	function update_site_rules( $include_rs_rules = true ) {
+		if ( defined( 'SCOPER_NO_HTACCESS' ) )
+			return;
+		
 		$const_name = ( $include_rs_rules ) ? 'FLUSHING_RULES_RS' : 'CLEARING_RULES_RS';
 			
 		if ( defined( $const_name ) )
@@ -59,6 +62,9 @@ class ScoperRewrite {
 	}
 	
 	function build_site_rules( $ifmodule_wrapper = true ) {
+		if ( defined( 'SCOPER_NO_HTACCESS' ) )
+			return;
+	
 		$http_auth = scoper_get_option( 'feed_link_http_auth' );
 		$filtering = IS_MU_RS && get_site_option( 'scoper_file_filtering' );	// scoper_get_option is not reliable for initial execution following plugin activation
 		

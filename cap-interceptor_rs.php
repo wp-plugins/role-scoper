@@ -508,16 +508,18 @@ class CapInterceptor_RS
 					require_once( dirname(__FILE__).'/admin/filters-admin-save_rs.php' );
 					$selected_terms = cr_get_posted_object_terms( $taxonomy );
 
-					if ( $set_terms = $GLOBALS['scoper_admin_filters']->flt_pre_object_terms($selected_terms, $taxonomy) ) {
-						$set_terms = array_unique( array_map('intval', $set_terms) );
+					if ( is_array($selected_terms) ) { // non-hierarchical terms do not need to be pre-inserted
+						if ( $set_terms = $GLOBALS['scoper_admin_filters']->flt_pre_object_terms($selected_terms, $taxonomy) ) {
+							$set_terms = array_unique( array_map('intval', $set_terms) );
 
-						if ( $set_terms != $stored_terms ) {
-							wp_set_object_terms( $object_id, $set_terms, $taxonomy );
+							if ( $set_terms != $stored_terms ) {
+								wp_set_object_terms( $object_id, $set_terms, $taxonomy );
 
-							// delete any buffered cap check results which were queried prior to storage of these object terms
-							unset( $cache_tested_ids );
-							unset( $cache_where_clause );
-							unset( $cache_okay_ids );
+								// delete any buffered cap check results which were queried prior to storage of these object terms
+								unset( $cache_tested_ids );
+								unset( $cache_where_clause );
+								unset( $cache_okay_ids );
+							}
 						}
 					}
 				}

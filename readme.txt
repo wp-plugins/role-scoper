@@ -124,7 +124,8 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 * Compat : Role Scoping for NextGEN Gallery : non-Editors could change Gallery Author
 * Fixed : Media Library items could not be deleted based on a Page-specific role assignment
 * Fixed : Page Associate role for specific pages did not allow Page Authors to save a new post with specified parent
-
+* Fixed : PHP Warning when saving a post with non-hierarchical terms
+* Feature : Support SCOPER_NO_HTACCESS constant to prevent any .htaccess modification
 
 = 1.3.46 - 18 Aug 2011 =
 * Fixed : Non-Administrators could not edit/delete attached uploads (since 1.3.43)

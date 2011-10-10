@@ -763,6 +763,9 @@ if ( ! empty( $ui->form_options[$tab][$section] ) ) :?>
 		if ( defined('DISABLE_ATTACHMENT_FILTERING') )
 			$content_dir_notice = __('<strong>Note</strong>: Direct access to uploaded file attachments will not be filtered because DISABLE_ATTACHMENT_FILTERING is defined, perhaps in wp-config.php or role-scoper.php', 'scoper');
 
+		elseif ( MULTISITE && defined('SCOPER_NO_HTACCESS') )
+			$content_dir_notice = __('<strong>Note</strong>: Direct access to uploaded file attachments will not be filtered because SCOPER_NO_HTACCESS is defined, perhaps in wp-config.php or role-scoper.php', 'scoper');
+
 		else {
 			require_once( SCOPER_ABSPATH . '/rewrite-rules_rs.php' );
 			

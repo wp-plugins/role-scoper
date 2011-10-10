@@ -29,6 +29,9 @@ class ScoperRewriteMU {
 	function update_mu_htaccess( $include_rs_rules = true ) {
 		//rs_errlog( "update_mu_htaccess: arg = $include_rs_rules" );
 		
+		if ( defined( 'SCOPER_NO_HTACCESS' ) )
+			return;
+		
 		$include_rs_rules = $include_rs_rules && get_site_option( 'scoper_file_filtering' );	// scoper_get_option is not reliable for initial execution following plugin activation
 		
 		if ( ! $include_rs_rules )
@@ -67,6 +70,9 @@ class ScoperRewriteMU {
 	// Note: this filter is never applied by WP Multisite as of WP 3.1.3
 	// In case a modified or future MU regenerates the site .htaccess, filter contents to include RS rules
 	function insert_site_rules( $rules = '' ) {
+		if ( defined( 'SCOPER_NO_HTACCESS' ) )
+			return $rules;
+	
 		if ( get_site_option( 'scoper_file_filtering' ) ) {
 			if ( $pos_def = ScoperRewriteMU::default_file_rule_pos($rules) ) {	
 				$rules = substr( $rules, 0, $pos_def ) . ScoperRewrite::build_site_rules(false) . substr( $rules, $pos_def );

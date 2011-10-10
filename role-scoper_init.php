@@ -23,7 +23,9 @@ if ( IS_MU_RS || defined('SCOPER_FORCE_FILE_INCLUSIONS') ) {
 }
 
 // If an htaccess regeneration is triggered by somebody else, insert our rules (normal non-MU installations).
-add_filter( 'mod_rewrite_rules', 'scoper_mod_rewrite_rules' );
+if ( ! defined( 'SCOPER_NO_HTACCESS' ) )
+	add_filter( 'mod_rewrite_rules', 'scoper_mod_rewrite_rules' );
+
 add_action( 'delete_option', 'scoper_maybe_rewrite_inclusions' );
 add_action( 'delete_transient_rewrite_rules', 'scoper_rewrite_inclusions' );
 
@@ -513,6 +515,9 @@ function scoper_rewrite_inclusions ( $option_name = '' ) {
 // htaccess directive intercepts direct access to uploaded files, converts to WP call with custom args to be caught by subsequent parse_query filter
 // parse_query filter will return content only if user can read a containing post/page
 function scoper_mod_rewrite_rules ( $rules ) {
+	if ( defined( 'SCOPER_NO_HTACCESS' ) )
+		return $rules;
+	
 	$file_filtering = scoper_get_option( 'file_filtering' );
 
 	global $scoper;
