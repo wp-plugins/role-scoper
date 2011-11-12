@@ -12,7 +12,7 @@ CMS-like permissions for reading and editing. Content-specific restrictions and 
 
 Role Scoper is a comprehensive access control solution, giving you CMS-like control of reading and editing permissions.  Assign restrictions and roles to specific pages, posts or categories.  For WP 2.7 to 2.9, use [Role Scoper 1.2.x](http://agapetry.net/downloads/role-scoper_legacy).
 
-<strong>Role Scoper has a big brother!</strong> Are you interested in a friendlier UI, cleaner restriction model with WP Roles integration, custom Visibility and Moderation statuses, BBpress content roles, BuddyPress role groups and professional support? Step up to <a href='http://presspermit.com'>Press Permit</a>.
+<strong>Role Scoper has a big brother!</strong> Are you interested in a friendlier UI, cleaner restriction model with WP Roles integration, custom Visibility and Moderation statuses, bbPress content roles, BuddyPress role groups and professional support? Step up to <a href='http://presspermit.com'>Press Permit</a>.
 
 = How it works: =
 Your WordPress core role definitions remain unchanged, and continue to function as default permissions.  User access is altered only as you expand it by assigning content-specific roles, or reduce it by setting content-specific restrictions.
