@@ -153,7 +153,7 @@ function scoper_load_textdomain() {
 	if ( defined( 'SCOPER_TEXTDOMAIN_LOADED' ) )
 		return;
 
-	load_plugin_textdomain( 'scoper', '', SCOPER_FOLDER . '/languages' );
+	load_plugin_textdomain( 'scoper', false, SCOPER_FOLDER . '/languages' );
 
 	define('SCOPER_TEXTDOMAIN_LOADED', true);
 }

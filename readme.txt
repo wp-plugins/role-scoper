@@ -3,14 +3,16 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
-Tested up to: 3.2.1
-Stable Tag: 1.3.46
+Tested up to: 3.3
+Stable Tag: 1.3.47
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
 == Description ==
 
 Role Scoper is a comprehensive access control solution, giving you CMS-like control of reading and editing permissions.  Assign restrictions and roles to specific pages, posts or categories.  For WP 2.7 to 2.9, use [Role Scoper 1.2.x](http://agapetry.net/downloads/role-scoper_legacy).
+
+<strong>Role Scoper has a big brother!</strong> Are you interested in a friendlier UI, cleaner restriction model with WP Roles integration, custom Visibility and Moderation statuses, BBpress content roles, BuddyPress role groups and professional support? Step up to <a href='http://presspermit.com'>Press Permit</a>.
 
 = How it works: =
 Your WordPress core role definitions remain unchanged, and continue to function as default permissions.  User access is altered only as you expand it by assigning content-specific roles, or reduce it by setting content-specific restrictions.
@@ -93,6 +95,10 @@ Role Scoper creates and uses the following tables: groups&#95;rs, user2group&#95
 
 Due to the potential damage incurred by accidental deletion, no automatic removal is currently available.  You can use a SQL editing tool such as phpMyAdmin to drop the tables and delete the scoper options.
 
+= With the launch of Press Permit as a professional equivalent, is Role Scoper still supported? =
+
+Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versions and address future bug reports. However, Press Permit will receive support priority and most new functionality will be built around that plugin. This has proven to be a necessary move to fund development at this scale. 
+
 == Screenshots ==
 
 1. Admin menus
@@ -106,27 +112,51 @@ Due to the potential damage incurred by accidental deletion, no automatic remova
 
 == Changelog ==
 
-= 1.3.47-dev =
-* Feature : Roles > Options > Features > Content Maint > "Require moderate_comments capability" (otherwise Post Author received comment moderation emails even without moderate_comments capability)
+= 1.3.47 - 11 Nov 2011 =
+
+= Front End =
+* Fixed : Tag filtering did not support hide_empty=0 argument in get_tags()
+* Fixed : Don't block access to attachment templates (?attachment_id=) for unattached uploads unless SCOPER_BLOCK_UNATTACHED_UPLOADS is defined
+
+= Admin - Misc. =
+* Fixed : Nav Menu editing based on Nav Menu Manager role cleared theme locations menu selections for uneditable menus
+* Fixed : Media Library items could not be deleted based on a Page-specific role assignment
+* Fixed : Bulk Role Editor only deleted roles for one selected user/group on each update
+* Fixed : Invalid edit link for "DEFAULTS for new" in bulk Roles / Restrictions admin form
+* Fixed : Non-Administrators can't access /wp-admin/, under some configurations
+
+= Multisite =
+* Fixed : Appearance menu items hidden from super administrator on Multisite installations
+* Fixed : On Multisite installations with enabled, removal of a user from a site also removed them from network-wide groups
+
+= Post Edit Form =
 * Fixed : Javascript on "Edit Posts" / "Edit Pages" was broken for non-Administrators under some configurations
 * Fixed : Default Object Roles (as specified in Roles > Pages, etc.) were not retained upon saving a new post
-* Fixed : When creating or editing a Role Group, user search always returned all users
-* Fixed : Invalid edit link for "DEFAULTS for new" in bulk Roles / Restrictions admin form
-* Fixed : PHP Warning for DB error on User Profile
-* Fixed : PHP Notices in Dashboard QuickPress, Quick Edit and Revisionary "Publishers to Notify" metabox
-* Fixed : Non-Administrators can't access /wp-admin/, under some configurations
-* Fixed : Tag filtering did not support hide_empty=0 argument in get_tags()
-* Fixed : Bulk Role Editor only deleted roles for one selected user/group on each update
+* Fixed : Page Associate role for specific pages did not allow Page Authors to save a new post with specified parent
+* Fixed : Unfiltered html capability could not be granted via content role
+
+= Edit Posts Listing =
 * Fixed : Posts/Pages could not be bulk-edited or bulk-trashed by non-Administrator when access is based on a Post-assigned editing role
 * Fixed : Pages and custom post types could not be Quick-edited by non-Administrator when user relies on a Page-assigned editing role
-* Fixed : Don't block access to attachment templates (?attachment_id=) for unattached uploads unless SCOPER_BLOCK_UNATTACHED_UPLOADS is defined
-* Compat : Revisionary - better error message when a Revisor attempts to Quick-Edit a page which they cannot fully edit
-* Compat : Role Scoping for NextGEN Gallery : non-Editors could change Gallery Author
-* Fixed : Media Library items could not be deleted based on a Page-specific role assignment
-* Fixed : Page Associate role for specific pages did not allow Page Authors to save a new post with specified parent
+
+= User Groups =
+* Fixed : When creating or editing a Role Group, user search always returned all users
+* Fixed : Group membership cache was not cleared after removal of user from group
+* Fixed : Group membership requests and recommendations could not be removed by non-Administrators
+* Fixed : Group-specific Managers could not add/remove Group Moderators
+
+= PHP Warnings =
+* Fixed : PHP Warning for DB error on User Profile
 * Fixed : PHP Warning when saving a post with non-hierarchical terms
-* Feature : Support SCOPER_NO_HTACCESS constant to prevent any .htaccess modification
-* Fixed : Unfiltered html capability could not be granted via content role
+* Fixed : PHP Notices in Dashboard QuickPress, Quick Edit and Revisionary "Publishers to Notify" metabox
+
+= Plugin Compat =
+* BuddyPress - Filter Activity Stream for Reader-restricted posts
+* Revisionary 1.1.7 compatibility
+* Revisionary - Support option to prevent Revisors from editing other users' revisions
+* Revisionary - better error message when a Revisor attempts to Quick-Edit a page which they cannot fully edit
+* Role Scoping for NextGEN Gallery : non-Editors could change Gallery Author
+* Role Scoping for NextGEN Gallery : DB error when a non-Administrator adds new gallery, if Revisionary also active
 
 = 1.3.46 - 18 Aug 2011 =
 * Fixed : Non-Administrators could not edit/delete attached uploads (since 1.3.43)

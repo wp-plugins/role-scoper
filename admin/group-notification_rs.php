@@ -59,7 +59,7 @@ function membership_recommendation_notify( $group_id, $user_id, $is_update = fal
 	
 	$message = sprintf( __('A moderator (%1$s) has approved the requested group membership for %2$s in the "%3$s" access group.'), $current_user->display_name, $user->display_name, $group->display_name ) . "\r\n\r\n";
 	
-	echo "sending email: $title<br />";
+	//d_echo("sending email: $title<br />");
 	
 	// If group has moderator(s), notify them.  Otherwise, notify managers / administrators
 	if ( $managers = $scoper->users_who_can( "manage_groups", COLS_ALL_RS, 'group', $group_id ) ) {
@@ -67,7 +67,7 @@ function membership_recommendation_notify( $group_id, $user_id, $is_update = fal
 		$message .= sprintf( __('As an administrator of this group, you can activate the membership request by clicking the following link: %1$s'), $approval_url ) . "\r\n\r\n";
 		
 		foreach ( $managers as $_user ) {
-			echo "to: $_user->user_email<br />";
+			//d_echo("to: $_user->user_email<br />");
 			awp_mail( $_user->user_email, $title, $message );
 		}
 	}

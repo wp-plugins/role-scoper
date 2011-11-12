@@ -75,7 +75,7 @@ class WP_Scoped_User_Anon extends WP_User { // Special skeleton class for ANONYM
 		
 		if ( empty($args['no_cache']) ) {
 			// use -1 here to ignore accidental storage of other groups for zero user_id
-			$cache = wpp_cache_get( -1, 'group_membership_user' );
+			$cache = wpp_cache_get( -1, 'group_membership_for_user' );
 			if ( is_array($cache) )
 				return $cache;
 		}
@@ -91,7 +91,7 @@ class WP_Scoped_User_Anon extends WP_User { // Special skeleton class for ANONYM
 		if ( $user_groups && empty($args['no_cache']) ) {  // users should always be in at least a metagroup.  Problem with caching empty result on user creation beginning with WP 2.8
 			$user_groups = array_fill_keys($user_groups, 1);
 			
-			wpp_cache_set( -1, $user_groups, 'group_membership_user' );
+			wpp_cache_set( -1, $user_groups, 'group_membership_for_user' );
 		}
 
 		return $user_groups;

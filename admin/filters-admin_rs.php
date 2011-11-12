@@ -150,12 +150,18 @@ class ScoperAdminFilters
 			
 		add_filter( 'pre_post_tax_input', array(&$this, 'flt_tax_input'), 50, 1);
 
-		if ( ( 'nav-menus.php' == $GLOBALS['pagenow'] ) && scoper_get_option( 'admin_nav_menu_filter_items' ) ) {
-			add_action( 'admin_head', array( &$this, 'act_nav_menu_header' ) );
+		if ( ( 'nav-menus.php' == $GLOBALS['pagenow'] ) ) {
+			if ( scoper_get_option( 'admin_nav_menu_filter_items' ) ) {
+				add_action( 'admin_head', array( &$this, 'act_nav_menu_header' ) );
 			
-			if ( ! empty( $_POST ) )
-				add_action( 'pre_post_update', array(&$this, 'mnt_pre_post_update') );
+				if ( ! empty( $_POST ) )
+					add_action( 'pre_post_update', array(&$this, 'mnt_pre_post_update') );
+			}
+			
+			add_action( 'admin_head', array( &$this, 'act_nav_menu_ui' ) );
 		}
+	
+		add_action( 'check_admin_referer', array( &$this, 'act_nav_menu_guard_theme_locs' ) );
 
 		// Filtering of terms selection:
 		add_action('check_admin_referer', array(&$this, 'act_detect_post_presave')); // abuse referer check to work around a missing hook
@@ -348,6 +354,27 @@ class ScoperAdminFilters
 
 		require_once( dirname(__FILE__).'/filters-admin-save_rs.php');
 		scoper_mnt_save_object($src_name, $args, $object_id, $object);
+	}
+	
+	function _can_edit_theme_locs() {
+		return is_content_administrator_rs() || ! empty( $GLOBALS['current_user']->allcaps['manage_nav_menus'] ) || ! empty( $GLOBALS['current_user']->allcaps['switch_themes'] );
+	}
+	
+	// users with editing access to a limited subset of menus are not allowed to set menu for theme locations
+	function act_nav_menu_ui() {
+		if ( ! $this->_can_edit_theme_locs() ) {
+			unset( $GLOBALS['wp_meta_boxes']['nav-menus']['side']['default']['nav-menu-theme-locations'] );
+		}
+	}
+	
+	// make sure theme locations are not wiped because logged user has editing access to a subset of menus
+	function act_nav_menu_guard_theme_locs( $referer ) {
+		if ( 'update-nav_menu' == $referer ) {
+			if ( isset( $_POST['menu-locations'] ) ) {
+				if ( ! $this->_can_edit_theme_locs() )
+					unset( $_POST['menu-locations'] );
+			}
+		}
 	}
 	
 	function act_nav_menu_header() {
@@ -601,7 +628,7 @@ class ScoperAdminFilters
 		if ( $can_moderate ) {
 			$posted_groups['recommended'] = ! empty($_POST['recommended_agents_rs_csv']) ? explode( ',', trim($_POST['recommended_agents_rs_csv'], '') ) : array();
 
-			$stored_groups['recommended'] = $current_rs_user->get_groups_for_user( $current_rs_user->ID, array( 'status' => 'recommended' ) );
+			$stored_groups['recommended'] = array_fill_keys( $current_rs_user->get_groups_for_user( $current_rs_user->ID, array( 'status' => 'recommended' ) ), true );
 			
 			$editable_group_ids['recommended'] = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => 'recommend_group_membership' ) );
 		
@@ -609,7 +636,7 @@ class ScoperAdminFilters
 				$editable_group_ids['recommended'] = array_unique( $editable_group_ids['recommended'] + $editable_group_ids['active'] );
 		}
 
-		$stored_groups['requested'] = $current_rs_user->get_groups_for_user( $current_rs_user->ID, array( 'status' => 'requested' ) );
+		$stored_groups['requested'] = array_fill_keys( $current_rs_user->get_groups_for_user( $current_rs_user->ID, array( 'status' => 'requested' ) ), true );
 
 		$editable_group_ids['requested'] = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS, array( 'reqd_caps' => 'request_group_membership' ) );
 
@@ -624,16 +651,6 @@ class ScoperAdminFilters
 		foreach ( array_keys($stored_groups) as $status )
 			$all_stored_groups = $all_stored_groups + $stored_groups[$status];
 		
-		/*
-		dump($_POST);	
-		dump($editable_group_ids);
-		dump($stored_groups);
-		dump($all_stored_groups);
-		dump($posted_groups);
-		dump($all_posted_groups);
-		die;
-		*/
-
 		foreach ( $stored_groups as $status => $stored ) {
 			if ( ! $editable_group_ids[$status] )
 				continue;

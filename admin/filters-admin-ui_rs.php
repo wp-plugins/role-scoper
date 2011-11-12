@@ -178,7 +178,7 @@ jQuery(document).ready( function($) {
 	function ui_hide_appearance_submenus() {
 		global $current_user;
 		
-		if ( ! empty( $current_user->allcaps['edit_theme_options'] ) )
+		if ( is_content_administrator_rs() || ! empty( $current_user->allcaps['edit_theme_options'] ) )
 			return;
 ?>
 <script type="text/javascript">

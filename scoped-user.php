@@ -353,9 +353,11 @@ class WP_Scoped_User extends WP_User {
 				}
 				
 				// support legacy template code using $current_user->term_roles or $current_user->assigned_term_roles
-				if ( $this->ID == $GLOBALS['current_user']->ID ) {
-					$GLOBALS['current_user']->assigned_term_roles[$taxonomy] = $this->assigned_term_roles[$taxonomy];
-					$GLOBALS['current_user']->term_roles[$taxonomy] = $this->term_roles[$taxonomy];
+				if ( ! awp_ver( '3.3-dev' ) ) {
+					if ( $this->ID == $GLOBALS['current_user']->ID ) {
+						$GLOBALS['current_user']->assigned_term_roles[$taxonomy] = $this->assigned_term_roles[$taxonomy];
+						$GLOBALS['current_user']->term_roles[$taxonomy] = $this->term_roles[$taxonomy];
+					}
 				}
 			}
 		}

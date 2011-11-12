@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.3.47-dev
+Version: 1.3.47
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 3.0
@@ -41,7 +41,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-define ('SCOPER_VERSION', '1.3.47-dev');
+define ('SCOPER_VERSION', '1.3.47');
 define ('SCOPER_DB_VERSION', '1.1.4');
 
 // No filtering on dashboard Ajax or plugin installation/update, but run this check after defining version to prevent nuisance error message from Role Scoping for NGG
@@ -86,7 +86,7 @@ if ( $prev = get_option('scoper_version') ) {
 }
 
 // avoid lockout in case of editing plugin via wp-admin
-if ( defined('RS_DEBUG') && is_admin() && isset($GLOBALS['pagenow']) && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) ) {
+if ( defined('RS_DEBUG') && RS_DEBUG && is_admin() && isset($GLOBALS['pagenow']) && in_array( $GLOBALS['pagenow'], array( 'plugin-editor.php', 'plugins.php' ) ) ) {
 	if ( empty( $_REQUEST['action'] ) || ! in_array( $_REQUEST['action'], array( 'activate', 'deactivate' ) ) )
 		return;
 }
@@ -245,14 +245,16 @@ if ( ! $bail ) {
 
 	//log_mem_usage_rs( 'user-plug_rs' );
 
-	$priority = ( defined( 'SCOPER_EARLY_INIT' ) ) ? 1 : 50;
-
 	add_action( 'set_current_user', 'scoper_act_set_current_user', 99 );
 	
-	if ( ! empty( $GLOBALS['current_user'] ) )	// some plugins force setting of current user before RS loads
-		scoper_act_set_current_user();
+	if ( ! empty( $GLOBALS['current_user'] ) ) {  // some plugins force setting of current user before RS loads
+		if ( ! is_admin() || ! isset($GLOBALS['pagenow']) || ( 'plugins.php' != $GLOBALS['pagenow'] ) || ( empty($_REQUEST['activate']) && empty($_REQUEST['action']) && empty($_REQUEST['action2']) ) ) {
+			scoper_act_set_current_user();
+		}
+	}
 
 	// since sequence of set_current_user and init actions seems unreliable, make sure our current_user is loaded first
+	$priority = ( defined( 'SCOPER_EARLY_INIT' ) ) ? 1 : 50;
 	add_action('init', 'scoper_log_init_action', $priority);
 }
 ?>

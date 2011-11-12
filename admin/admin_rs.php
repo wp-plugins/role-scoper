@@ -21,10 +21,6 @@ require_once( dirname(__FILE__).'/admin_lib_rs.php' );
 if ( IS_MU_RS )
 	require_once( dirname(__FILE__).'/admin_lib-mu_rs.php' );
 
-if ( ( 'index.php' == $GLOBALS['pagenow'] ) && ! defined( 'USE_RVY_RIGHTNOW' )  )
-	include_once( dirname(__FILE__).'/admin-dashboard_rs.php' );
-
-	
 class ScoperAdmin
 {
 	var $scoper;
@@ -59,11 +55,48 @@ class ScoperAdmin
 			}
 		}
 
+		if ( defined('RVY_VERSION') )
+			require_once( SCOPER_ABSPATH.'/revisionary-helper_rs.php' );
+		
 		if ( ( ( 'edit-tags.php' == $pagenow ) || ( isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'p-admin/edit-tags.php') ) ) && awp_is_plugin_active('subscribe2') )
 			require_once( dirname(__FILE__).'/subscribe2_helper_rs.php');
 			
 		if ( defined( 'FLUTTER_NAME' ) )
 			require_once( dirname(__FILE__).'/flutter_helper_rs.php');
+			
+		if ( ( 'index.php' == $GLOBALS['pagenow'] ) ) {
+			if ( ! defined( 'USE_RVY_RIGHTNOW' ) )
+				include_once( dirname(__FILE__).'/admin-dashboard_rs.php' );
+
+			add_action( 'admin_notices', array( &$this, 'dashboard_notice' ) );
+		}
+	}
+
+	function dashboard_notice() {
+		if ( ! is_content_administrator_rs() || defined('PP_VERSION') )
+			return;
+
+		$msg_id = 'pp_offer';
+		$dismissals = (array) scoper_get_option( 'dismissals' );
+
+		if ( in_array( $msg_id, $dismissals ) )
+			return;
+
+		require_once( dirname(__FILE__).'/misc/version_notice_rs.php' );
+		$message = scoper_pp_msg();
+		
+		// thanks to GravityForms for the nifty dismissal script
+		?>
+		<div class='updated' style='padding:15px; position:relative;' id='rs_dashboard_message'><?php echo $message ?>
+			<a href="javascript:void(0);" onclick="ScoperDismissUpgrade();" style='float:right;'><?php _e("Dismiss", "scoper") ?></a>
+		</div>
+		<script type="text/javascript">
+			function ScoperDismissUpgrade(){
+				jQuery("#rs_dashboard_message").slideUp();
+				jQuery.post(ajaxurl, {action:"rs_dismiss_msg", msg_id:"<?php echo $msg_id ?>", cookie: encodeURIComponent(document.cookie)});
+			}
+		</script>
+		<?php
 	}
 	
 	function menu_handler() {
@@ -354,7 +387,7 @@ jQuery(document).ready( function($) {
 			scoper_use_posted_init_options();
 
 		global $current_user;
-		
+
 		$is_option_administrator = is_option_administrator_rs();
 		$is_user_administrator = is_user_administrator_rs();
 		$is_content_administrator = is_content_administrator_rs();
@@ -404,7 +437,7 @@ jQuery(document).ready( function($) {
 						$can_admin_objects[$src_name][$object_type] = true;
 			}
 		}
-
+		
 		// which taxonomies does this user have any administration over?
 		foreach ( $this->scoper->taxonomies->get_all() as $taxonomy => $tx ) {
 			if ( taxonomy_exists($taxonomy) && empty( $use_taxonomies[$taxonomy] ) && ( 'post' == $tx->object_source ) )

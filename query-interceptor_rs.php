@@ -970,11 +970,14 @@ class QueryInterceptor_RS
 								// enable authors to view / edit / approve revisions to their published posts
 								if ( ! empty( $do_revision_clause ) && ! defined( 'HIDE_REVISIONS_FROM_AUTHOR' ) ) {
 									static $owner_ids = array();
-									
-									if ( ! isset( $owner_ids[$user->ID][$object_type] ) )	// also keying by user ID in case this filter is invoked for a non-current user
-										$owner_ids[$user->ID][$object_type] = scoper_get_col( "SELECT {$src->cols->id} FROM $src->table WHERE {$src->cols->type} = '$object_type' AND {$src->cols->owner} = '$user->ID'" );
 
-									if ( $owner_ids[$user->ID][$object_type] )
+									if ( ! isset( $owner_ids[$user->ID][$object_type] ) ) {	// also keying by user ID in case this filter is invoked for a non-current user
+										$type_clause = ( ! empty($src->cols->type) ) ? "{$src->cols->type} = '$object_type' AND" : '';
+					
+										$owner_ids[$user->ID][$object_type] = scoper_get_col( "SELECT {$src->cols->id} FROM $src->table WHERE $type_clause {$src->cols->owner} = '$user->ID'" );
+									}
+										
+									if ( ! empty($src->cols->type) && ! empty($src->cols->parent) && $owner_ids[$user->ID][$object_type] )
 										$parent_clause = "OR $src_table.{$src->cols->type} = 'revision' AND $src_table.{$src->cols->parent} IN ('" . implode( "','", $owner_ids[$user->ID][$object_type] ) . "')"; 
 								}
 								
@@ -1447,10 +1450,11 @@ class QueryInterceptor_RS
 	}
 	
 	// currently only used to conditionally launch teaser filtering
-	function flt_the_posts( $results ) {	
+	function flt_the_posts( $results, $query_obj ) {	
 		if ( empty($this->skip_teaser) ) {
-			$object_type = cr_find_post_type( '', false); // arg: don't return 'post' as a default if detection fails
-
+			//$object_type = cr_find_post_type( '', false); // object type detection is problematic due to insertion of posts query into page templates on some installations
+			$object_type = '';
+			
 			// won't do anything unless teaser is enabled for object type(s)
 			$results = apply_filters( 'objects_teaser_rs', $results, 'post', $object_type, array('force_teaser' => true) );
 		}

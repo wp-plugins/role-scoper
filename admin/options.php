@@ -485,6 +485,10 @@ if ( scoper_get_option('display_hints', $sitewide, $customize_defaults) ) {
 	echo '<div class="rs-optionhint">';
 	_e("This page enables <strong>optional</strong> adjustment of Role Scoper's features. For most installations, the default settings are fine.", 'scoper');
 
+	require_once( dirname(__FILE__).'/misc/version_notice_rs.php' );
+	$message = scoper_pp_msg();
+	echo "<br /><br /><div>$message</div>";
+	
 	if ( IS_MU_RS && function_exists('is_super_admin') && is_super_admin() ) {
 		if ( $sitewide ) {
 			if ( ! $customize_defaults ) {
@@ -1726,8 +1730,15 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 		
 		_e('Specify which WordPress Taxonomies can have Restrictions and Roles:', 'scoper');
 		echo '<br />';
+
+		$registered = array();
+		$registered['object'] = get_post_types( array() );
+		$registered['term'] = get_taxonomies( array() );
 		
-	
+		$public = array();
+		$public['object'] = get_post_types( array( 'public' => true ) );
+		$public['term'] = get_taxonomies( array( 'public' => true ) );
+
 		$scopes = array( 'term', 'object');
 		foreach ( $scopes as $scope ) {
 			if ( 'object' == $scope ) {
@@ -1762,7 +1773,8 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 						$id = $option_name . '-' . $key;
 						?>
 						
-						<?php if ( 'nav_menu' == $key ) :?>
+						<?php // nav menu and link category are currently governed by "Term Scope" setting only, so just set a hidden enable here
+						if ( in_array( $key, array( 'nav_menu', 'link_category' ) ) ) :?>
 							<input name="<?php echo($id);?>" type="hidden" id="<?php echo($id);?>" value="1" />
 						<?php else: ?>
 							<div class="agp-vspaced_input">
@@ -1785,7 +1797,17 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 								
 							if ( ! $display_name )
 								$display_name = $key;
-									
+		
+							if ( ! isset($public[$scope][$key]) ) {
+								if ( isset($registered[$scope][$key]) ) {
+									$display_name .= '<span class="rs-warning"> <big>*</big></span>';
+									$any_private_types = true;
+								} else {
+									$display_name .= '<span class="rs-warning"> <big>**</big></span>';
+									$any_unregistered_types = true;
+								}
+							}
+
 							echo $display_name;
 	
 							echo ('</label></div>');
@@ -1804,6 +1826,18 @@ if ( ! empty( $ui->form_options[$tab][$section_alias] ) ) : ?>
 				$link_close = '</a>';
 			}
 
+			if ( ! empty($any_private_types) ) {
+				$msg = ( 'term' == $scope ) ? __( '<big>*</big> = private type, filtering may not be valid', 'scoper' ) : __( '<big>*</big> = private taxonomy, filtering may not be valid', 'scoper' );
+				echo '<div class="rs-warning">' . $msg . '</div><br />';
+				$any_private_types = false;
+			}
+			
+			if ( ! empty($any_unregistered_types) ) {
+				$msg = __( '<big>**</big> = currently unregistered, corresponding plugin may be deactivated', 'scoper' );
+				echo '<div class="rs-warning">' . $msg . '</div><br />';
+				$any_unregistered_types = false;
+			}
+			
 			if ( 'term' == $scope ) {
 				if ( get_taxonomies( array( '_builtin' => false, 'public' => true ) ) ) {
 					echo '<div>';

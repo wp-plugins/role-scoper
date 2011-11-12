@@ -225,8 +225,8 @@ if ( ! $errorMessage && ( ('editSubmit' == $mode) || ('add' == $mode) || ('appro
 			}
 			
 			$role_arg = array( 'rs_group_moderator' => $users );
-	
-			$args = array( 'implicit_removal' => true );
+			$args = array( 'implicit_removal' => true, 'user_has_role' => array_fill_keys( array( 'rs_group_manager','rs_group_moderator' ), true ) );
+
 			$role_assigner->assign_roles( OBJECT_SCOPE_RS, 'group', $group->ID, $role_arg, ROLE_BASIS_USER, $args );
 		}
 	}

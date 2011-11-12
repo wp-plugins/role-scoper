@@ -31,7 +31,7 @@ class TermsInterceptor_RS
 
 		// flt_get_pages is required on the front end (even for administrators) to enable the inclusion of private pages
 		// flt_get_terms '' so private posts are included in count, as basis for display when hide_empty arg is used
-		if ( $scoper->is_front() || ! is_content_administrator_rs() ) {	
+		if ( ( $scoper->is_front() || ! is_content_administrator_rs() ) && ( ! defined( 'DOING_AUTOSAVE' ) || ! DOING_AUTOSAVE ) ) {
 			add_filter('get_terms_args', array(&$this, 'flt_get_terms_args'), 50, 2);
 			add_filter('terms_clauses', array(&$this, 'flt_terms_clauses'), 50, 3);
 			add_filter('get_terms', array(&$this, 'flt_get_terms'), 0, 3);   // WPML registers at priority 1
@@ -99,7 +99,7 @@ class TermsInterceptor_RS
 			
 		// link category roles / restrictions are only scoped for management (TODO: review this)
 		if ( ( 'link_category' == $taxonomy ) && $scoper->is_front() )
-			return $taxonomies;
+			return true;
 		
 		if ( $args['child_of'] || $args['parent'] ) {
 			$children = ScoperAncestry::get_terms_children($taxonomy);

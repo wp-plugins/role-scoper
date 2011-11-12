@@ -22,7 +22,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  */
  
 $GLOBALS['rs_default_disable_taxonomies'] = (array) apply_filters( 'default_disable_taxonomies_rs', array_fill_keys( array( 'link_category', 'post_tag', 'post_format', 'ngg_tag' ), true ) );
-$GLOBALS['rs_forbidden_taxonomies'] = (array) apply_filters( 'forbidden_taxonomies_rs', array_fill_keys( array( 'post_status', 'following_users', 'unfollowing_users', 'following_usergroups' ), true ) );   // avoid extreme config confusion with these Edit Flow taxonomies
+$GLOBALS['rs_forbidden_taxonomies'] = (array) apply_filters( 'forbidden_taxonomies_rs', array_fill_keys( array( 'post_status', 'following_users', 'unfollowing_users', 'following_usergroups', 'ef_editorial_meta' ), true ) );   // avoid extreme config confusion with these Edit Flow taxonomies
 
 function scoper_default_options() {
 	$def = array(
@@ -75,21 +75,36 @@ function scoper_default_options() {
 		'auto_private' => 1,
 		'admin_nav_menu_filter_items' => 0,
 		'require_moderate_comments_cap' => 0,
+		'dismissals' => array(),
 	);
 	
 	// NOTE: scoper_get_option() applies these defaults
 	if ( in_array( $GLOBALS['plugin_page_cr'], array( 'rs-options', 'rs-site_options' ) ) ) {
 		$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) );
-
 		foreach ( $post_types as $type )
 			$def['use_post_types'][$type] = 1;
-			
+
+		/* // can't do this yet because lots of other get_post_types() calls assume public-only
+		if ( ! defined( 'SCOPER_NO_PRIVATE_TYPES' ) ) {
+			foreach ( array_diff( get_post_types( array( 'public' => false ) ), array( 'revision', 'nav_menu_item' ) ) as $type )
+				$def['use_post_types'][$type] = 0;
+		}
+		*/
+		
 		foreach ( array_diff( get_taxonomies( array( 'public' => true ) ), array_keys($GLOBALS['rs_forbidden_taxonomies']) ) as $taxonomy ) {
 			if ( isset( $GLOBALS['rs_default_disable_taxonomies'][$taxonomy] ) )
 				$def['use_taxonomies'][$taxonomy] = 0;
 			else
 				$def['use_taxonomies'][$taxonomy] = 1;
 		}
+
+		/* // can't do this yet because lots of other get_taxonomies() calls assume public-only
+		if ( ! defined( 'SCOPER_NO_PRIVATE_TAXONOMIES' ) ) {
+			foreach ( array_diff( get_taxonomies( array( 'public' => false ) ), array_keys($GLOBALS['rs_forbidden_taxonomies']) ) as $taxonomy ) {
+				$def['use_taxonomies'][$taxonomy] = 0;
+			}
+		}
+		*/
 	}
 	
 	return $def;
@@ -108,8 +123,8 @@ function scoper_default_otype_options( $include_custom_types = true ) {
 	if ( $include_custom_types )
 		$post_types = array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) );
 	else
-		$post_types = get_post_types( array( '_builtin' => false, 'public' => true ) );
-		
+		$post_types = get_post_types( array( '_builtin' => true, 'public' => true ) );
+
 	foreach ( $post_types as $type ) {
 		$def['limit_object_editors']["post:{$type}"] = 0;
 		$def['default_private']["post:{$type}"] = 0;

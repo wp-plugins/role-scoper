@@ -53,6 +53,7 @@ class ScoperRoleAssigner
 						continue;	
 					}
 
+					$src_name = $this->scoper->role_defs->member_property($role_handle, 'src_name');
 					$object_type = $this->scoper->role_defs->member_property($role_handle, 'object_type');
 
 					static $can_edit_blogwide;
@@ -138,7 +139,7 @@ class ScoperRoleAssigner
 	}
 	
 	function assign_roles($scope, $src_or_tx_name, $item_id, $roles, $role_basis = ROLE_BASIS_USER, $args = array() ) {
-		$defaults = array( 'implicit_removal' => false, 'is_auto_insertion' => false, 'force_flush' => false, 'set_role_duration' => '', 'set_content_date_limits' => '' );
+		$defaults = array( 'implicit_removal' => false, 'is_auto_insertion' => false, 'force_flush' => false, 'set_role_duration' => '', 'set_content_date_limits' => '', 'user_has_role' => array() );
 		$args = array_merge($defaults, (array) $args);
 		extract($args);
 		
@@ -186,10 +187,10 @@ class ScoperRoleAssigner
 			$stored_assignments[$role_handle][$ass->$col_ug_id] = (array) $ass;	 // last-stored assignment for this object and user/group
 			$assignment_ids[$role_handle][$ass->$col_ug_id][$ass->assignment_id] = true;	// all assignment ids for this object and user/group
 		}
-		
-		if ( ! $is_administrator )
+
+		if ( ! $is_administrator && empty($user_has_role[$role_handle]) )
 			$user_has_role = $this->_validate_assigner_roles($scope, $src_or_tx_name, $item_id, $roles);
-				
+
 		foreach ( $roles as $role_handle => $agents ) {
 			if ( ! $is_administrator && ! $user_has_role[$role_handle] )
 				continue;
@@ -301,7 +302,7 @@ class ScoperRoleAssigner
 		} // end foreach roles
 		
 		// delete assignments; flush user/group roles cache
-		$this->role_assignment_aftermath($scope, $role_basis, $role_change_agent_ids, $delete_assignments, '', $force_flush || $update_assign_for);
+		$this->role_assignment_aftermath( $scope, $role_basis, $role_change_agent_ids, $delete_assignments, '', $force_flush || ! empty($update_assign_for) );
 	
 		// possible todo: reinstate this after further testing
 		//$this->delete_orphan_roles($scope, $src_or_tx_name);

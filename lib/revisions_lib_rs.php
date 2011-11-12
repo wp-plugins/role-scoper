@@ -4,7 +4,7 @@
 function rs_get_post_revisions($post_id, $status = 'inherit', $args = array() ) {
 	global $wpdb;
 	
-	$defaults = array( 'order' => 'DESC', 'orderby' => 'post_modified_gmt', 'use_memcache' => true, 'fields' => COLS_ALL_RS, 'return_flipped' => false );
+	$defaults = array( 'order' => 'DESC', 'orderby' => 'post_modified_gmt', 'use_memcache' => true, 'fields' => COLS_ALL_RS, 'return_flipped' => false, 'where' => '' );
 	$args = wp_parse_args( $args, $defaults );
 	extract( $args );
 	
@@ -20,7 +20,7 @@ function rs_get_post_revisions($post_id, $status = 'inherit', $args = array() ) 
 				return $last_results[$post_id][$status];
 		}
 		
-		$revisions = scoper_get_col("SELECT ID FROM $wpdb->posts WHERE post_type = 'revision' AND post_parent = '$post_id' AND post_status = '$status'");
+		$revisions = scoper_get_col("SELECT ID FROM $wpdb->posts WHERE post_type = 'revision' AND post_parent = '$post_id' AND post_status = '$status' $where");
 	
 		if ( $return_flipped )
 			$revisions = array_fill_keys( $revisions, true );

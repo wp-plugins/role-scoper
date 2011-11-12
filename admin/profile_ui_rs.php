@@ -338,7 +338,7 @@ class ScoperProfileUI {
 			return;
 
 		global $current_rs_user, $profileuser;
-		$user_id = $profileuser->id;
+		$user_id = $profileuser->ID;
 		
 		$editable_ids = ScoperAdminLib::get_all_groups(FILTERED_RS, COL_ID_RS);
 		

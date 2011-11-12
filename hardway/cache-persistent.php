@@ -146,7 +146,6 @@ function wpp_cache_init( $sitewide_groups = true, $use_cache_subdir = true ) {
 		$all_sites = ( 'all_sites' == $need_flush );
 		$GLOBALS['wpp_object_cache']->flush( '', $all_sites );
 	}
-		
 }
 
 function wpp_cache_replace($key, $data, $flag = '', $expire = 0, $append_blog_suffix = true) {

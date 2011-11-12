@@ -5,11 +5,18 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 add_filter( 'get_previous_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 add_filter( 'get_next_post_where', array('QueryInterceptorFront_RS', 'flt_adjacent_post_where') );
 
-add_filter('getarchives_where', array('QueryInterceptorFront_RS', 'flt_getarchives_where') );
+add_filter( 'getarchives_where', array('QueryInterceptorFront_RS', 'flt_getarchives_where') );
 	
 add_filter( 'option_sticky_posts', array('QueryInterceptorFront_RS', 'flt_sticky_posts') );
 
+add_filter( 'bp_has_activities', array('QueryInterceptorFront_RS', 'bp_has_activities'), 10, 2 );
+
 class QueryInterceptorFront_RS {
+	function bp_has_activities( $bp_activities, $bp_activities_template ) {
+		require_once( dirname(__FILE__). '/bp-helper_rs.php' );
+		return _scoper_bp_has_activities( $bp_activities, $bp_activities_template );
+	}
+
 	// custom wrapper to clean up after get_previous_post_where, get_next_post_where nonstandard arg syntax 
 	// (uses alias p for post table, passes "WHERE post_type=...)
 	function flt_adjacent_post_where( $where ) {

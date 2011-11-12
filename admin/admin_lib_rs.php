@@ -330,7 +330,7 @@ class ScoperAdminLib {
 		
 		foreach ( $user_ids as $user_id ) {
 			//rs_errlog( "calling wpp_cache_delete from user $user_id group_memb" );
-			wpp_cache_delete($user_id, 'group_membership_user');
+			wpp_cache_delete($user_id, 'group_membership_for_user');
 		}
 	
 		scoper_flush_results_cache( ROLE_BASIS_USER_AND_GROUPS, $user_ids );
@@ -449,7 +449,9 @@ class ScoperAdminLib {
 		scoper_query("DELETE FROM $table_name WHERE $user_clause");
 		
 		foreach ( $user_ids as $user_id ) {
-			ScoperAdminLib::delete_user_from_groups($user_id);
+			if ( ! MULTISITE || ! scoper_get_site_option( 'mu_sitewide_groups' ) )
+			   ScoperAdminLib::delete_user_from_groups($user_id);
+			
 			ScoperAdminLib::flush_user_cache( $user_id );
 		}
 	}
@@ -598,5 +600,20 @@ class ScoperAdminLib {
 		
 		return $agent_ids;
 	}
+	
+	function dashboard_dismiss_msg() {
+		$dismissals = get_option( 'scoper_dismissals' );
+		if ( ! is_array( $dismissals ) )
+			$dismissals = array();
+
+		$msg_id = ( isset( $_REQUEST['msg_id'] ) ) ? $_REQUEST['msg_id'] : 'pp_offer';
+		$dismissals[$msg_id] = true;
+		update_option( 'scoper_dismissals', $dismissals );
+	}
 } // end ScoperAdmin class
+
+// thanks to GravityForms for the nifty dismissal script
+if ( in_array( basename($_SERVER['PHP_SELF']), array('admin.php', 'admin-ajax.php') ) ) {
+	add_action( 'wp_ajax_rs_dismiss_msg', array( 'ScoperAdminLib', 'dashboard_dismiss_msg' ) );
+}
 ?>
