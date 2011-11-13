@@ -559,7 +559,7 @@ class CapInterceptor_RS
 				if ( 'revision' == $_post->post_type ) {
 					require_once( dirname(__FILE__).'/lib/revisions_lib_rs.php' );
 					
-					$rev_where = ( RVY_VERSION && rvy_get_option( 'revisor_lock_others_revisions' ) ) ? " AND post_author = '$current_rs_user->ID'" : '';  // might need to apply different cap requirement for other users' revisions. todo: skip this clause for sitewide editors
+					$rev_where = ( defined('RVY_VERSION') && rvy_get_option( 'revisor_lock_others_revisions' ) ) ? " AND post_author = '$current_rs_user->ID'" : '';  // might need to apply different cap requirement for other users' revisions. todo: skip this clause for sitewide editors
 					$revisions = rs_get_post_revisions($_post->post_parent, 'inherit', array( 'fields' => constant('COL_ID_RS'), 'return_flipped' => true, 'where' => $rev_where ) );						
 				}
 
