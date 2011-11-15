@@ -1,5 +1,5 @@
 <?php
-add_action( 'wp_loaded', array( 'Rvy_Helper', 'init_rvy_interface' ) );
+add_action( 'plugins_loaded', array( 'Rvy_Helper', 'init_rvy_interface' ) );
 
 if ( class_exists( 'RevisionaryContentRoles' ) ) {
 class Scoper_RvyContentRoles extends RevisionaryContentRoles {
@@ -79,7 +79,7 @@ class Scoper_RvyContentRoles extends RevisionaryContentRoles {
 
 Class Rvy_Helper {
 	function init_rvy_interface() {
-		if ( method_exists( $GLOBALS['revisionary'], 'set_content_roles' ) ) {
+		if ( ! empty($GLOBALS['revisionary']) && method_exists( $GLOBALS['revisionary'], 'set_content_roles' ) ) {
 			$GLOBALS['revisionary']->set_content_roles( new Scoper_RvyContentRoles() );
 		}
 	}

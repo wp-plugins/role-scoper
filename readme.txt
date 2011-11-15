@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.3
-Stable Tag: 1.3.49
+Stable Tag: 1.3.50
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -111,6 +111,9 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.50 - 15 Nov 2011 =
+* Fixed : Fatal error in wp-admin when Revisionary active but not initializes after Role Scoper
 
 = 1.3.49 - 15 Nov 2011 =
 * Fixed : Fatal error in wp-admin when activated alongside an old version of Revisionary
