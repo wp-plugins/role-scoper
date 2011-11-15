@@ -79,7 +79,9 @@ class Scoper_RvyContentRoles extends RevisionaryContentRoles {
 
 Class Rvy_Helper {
 	function init_rvy_interface() {
-		$GLOBALS['revisionary']->set_content_roles( new Scoper_RvyContentRoles() );
+		if ( method_exists( $GLOBALS['revisionary'], 'set_content_roles' ) ) {
+			$GLOBALS['revisionary']->set_content_roles( new Scoper_RvyContentRoles() );
+		}
 	}
 	
 	// Allow contributors and revisors to edit published post/page, with change stored as a revision pending review
