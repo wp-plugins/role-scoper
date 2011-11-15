@@ -113,7 +113,7 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 == Changelog ==
 
 = 1.3.49 - 15 Nov 2011 =
-* Fixed : Fatal error in wp-admin when activated alongside an old version of Revisionary (<1.1.7)
+* Fixed : Fatal error in wp-admin when activated alongside an old version of Revisionary
 
 = 1.3.48 - 13 Nov 2011 =
 * Fixed : Fatal error "Call to undefined function rvy_get_option" when updating a page under some conditions
