@@ -527,7 +527,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				return $selected_terms;
 		}
 
-		global $scoper, $current_user;
+		global $scoper, $current_user, $wpdb;
 			
 		if ( ! $src_name = $scoper->taxonomies->member_property($taxonomy, 'object_source') )
 			return $selected_terms;
@@ -558,8 +558,18 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 					$stored_terms = wp_get_object_terms( $object_id, $taxonomy, array( 'fields' => 'ids' ) );
 
 					if ( $deselected_terms = array_diff( $stored_terms, $selected_terms ) ) {
-						if ( $unremovable_terms = array_diff( $deselected_terms, $user_terms ) )
+						if ( $unremovable_terms = array_diff( $deselected_terms, $user_terms ) ) {
+							// --- work around storage of autodraft to default category ---
+							$_post = get_post( $object_id );
+
+							if ( ( 'category' == $taxonomy ) && ( 'draft' == $_post->post_status ) ) {
+								$default_terms = (array) maybe_unserialize( scoper_get_var( "SELECT option_value FROM $wpdb->options WHERE option_name = 'default_category'" ) );
+								$unremovable_terms = array_diff( $unremovable_terms, $default_terms );
+							}
+							// --- end workaround ---
+							
 							$selected_terms = array_merge( $selected_terms, $unremovable_terms );
+						}
 					}
 				}
 			}
@@ -574,7 +584,6 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 				$default_term_option = "default_{$taxonomy}";
 
 			// avoid recursive filtering.  Todo: use remove_filter so we can call get_option, supporting filtering by other plugins 
-			global $wpdb;
 			$default_terms = (array) maybe_unserialize( scoper_get_var( "SELECT option_value FROM $wpdb->options WHERE option_name = '$default_term_option'" ) );
 			//$selected_terms = (array) get_option( $tx->default_term_option );
 			

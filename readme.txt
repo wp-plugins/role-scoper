@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.3
-Stable Tag: 1.3.50
+Stable Tag: 1.3.51
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -111,6 +111,12 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.51 - 20 Dec 2011 =
+* Compat: NextGEN Gallery - non-Administrators could not upload images with NGG 1.9.x
+* Fixed: Default category is always stored when Category Restrictions prevent user from selecting some categories
+* Fixed: "Add New" buttons in wp-admin were not removed under some configurations
+* Perf: When Role Date Limits or Content Date Limits enabled, supplemental query caused full scan of roles table
 
 = 1.3.50 - 15 Nov 2011 =
 * Fixed : Fatal error in wp-admin when Revisionary active but not initializes after Role Scoper
@@ -768,6 +774,8 @@ Improves Nav Menu Manager and Category Manager role assignment; filters "Add New
 * Role Scoper's menus, onscreen captions and inline descriptive footnotes [can be translated using poEdit](http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/).  I will gladly include any user-contributed languages!.
 
 == Plugin Compatibility Issues ==
+
+**Relevanssi** : Not compatible as of Relevanssi 2.9.12 (search results indexing prevents user-specific query filtering)
 
 **WP Super Cache** : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
 

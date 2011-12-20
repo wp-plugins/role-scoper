@@ -2,8 +2,6 @@
 add_filter( 'comments_clauses', array( 'CommentsInterceptor_RS', 'flt_comments_clauses' ), 10, 2 );
 add_filter( 'wp_count_comments', array( 'CommentsInterceptor_RS', 'wp_count_comments_override'), 99 );
 
-if ( is_admin() )
-	require_once( 'admin/comments-interceptor-admin_rs.php' );
 
 class CommentsInterceptor_RS {
 	function flt_comments_clauses( $clauses, &$qry_obj ) {
@@ -29,9 +27,11 @@ class CommentsInterceptor_RS {
 
 		$args = array( 'skip_teaser' => true );
 
-		if ( is_admin() )
+		if ( is_admin() ) {
+			require_once( 'admin/comments-interceptor-admin_rs.php' );
 			$args['force_reqd_caps'] = CommentsInterceptorAdmin_RS::get_reqd_caps();
-
+		}
+			
 		if ( ! $attachment_query && ( $post_id || defined('SCOPER_NO_ATTACHMENT_COMMENTS') || ( ! defined('SCOPER_ATTACHMENT_COMMENTS') && ! scoper_get_var($qry_any_attachment_comments) ) ) ) {
 			$clauses['where'] = " AND " . $clauses['where'];
 			$clauses['where'] = "1=1" . apply_filters('objects_where_rs', $clauses['where'], 'post', $post_type_arg, $args );

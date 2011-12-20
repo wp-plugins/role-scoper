@@ -739,31 +739,28 @@ function scoper_any_role_limits() {
 	global $wpdb;
 	
 	$any_limits = (object) array( 'date_limited' => false, 'start_date_gmt' => false, 'end_date_gmt' => false, 'content_date_limited' => false, 'content_min_date_gmt' => false, 'content_max_date_gmt' => false );
-	
-	if ( $row = scoper_get_row( "SELECT MAX(date_limited) AS date_limited, MAX(start_date_gmt) AS start_date_gmt, MIN(end_date_gmt) AS end_date_gmt, MAX(content_date_limited) AS content_date_limited, MAX(content_min_date_gmt) AS content_min_date_gmt, MIN(content_max_date_gmt) AS content_max_date_gmt FROM $wpdb->user2role2object_rs" ) ) {
-		if ( $row->date_limited ) {
-			$any_limits->date_limited = true;
-			
-			if ( strtotime( $row->start_date_gmt ) )
-				$any_limits->start_date_gmt = true;
 
-			if ( $row->end_date_gmt != SCOPER_MAX_DATE_STRING )
-				$any_limits->end_date_gmt = true;
-		}
+	if ( scoper_get_var( "SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE date_limited > 0 LIMIT 1" ) ) {
+		$any_limits->date_limited = true;
 		
-		if ( $row->content_date_limited ) {
-			$any_limits->content_date_limited = true;
+		if ( scoper_get_var( "SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE start_date_gmt > 0 LIMIT 1" ) )
+			$any_limits->start_date_gmt = true;
 			
-			if ( strtotime( $row->content_min_date_gmt ) )
-				$any_limits->content_min_date_gmt = true;
-				
-			if ( $row->content_max_date_gmt != SCOPER_MAX_DATE_STRING )
-				$any_limits->content_max_date_gmt = true;
-		}
+		if ( scoper_get_var( "SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE end_date_gmt != '" . SCOPER_MAX_DATE_STRING . "' LIMIT 1" ) )
+			$any_limits->end_date_gmt = true;
+	}
+	
+	if ( scoper_get_var( "SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE content_date_limited > 0 LIMIT 1" ) ) {
+		$any_limits->content_date_limited = true;
+		
+		if ( scoper_get_var( "SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE content_min_date_gmt > 0 LIMIT 1" ) )
+			$any_limits->content_min_date_gmt = true;
+			
+		if ( scoper_get_var( "SELECT assignment_id FROM $wpdb->user2role2object_rs WHERE content_max_date_gmt != '" . SCOPER_MAX_DATE_STRING . "' LIMIT 1" ) )
+			$any_limits->content_max_date_gmt = true;
 	}
 	
 	return $any_limits;
-	
 }
 
 function scoper_get_duration_clause( $content_date_comparison = '', $table_prefix = 'uro', $enforce_duration_limits = true ) {

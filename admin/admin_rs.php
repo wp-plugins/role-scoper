@@ -48,7 +48,7 @@ class ScoperAdmin
 				add_action('admin_menu', array(&$this,'ngg_uploader_workaround'));
 
 				add_action('admin_init', array(&$this,'filter_add_new_content_links'));	// changed from 'admin_menu' hook to work around WP 3.2 (as of RC1) removal of Edit submenu item if Add New is removed
-				add_action('admin_print_scripts', array(&$this,'filter_add_new_button'));
+				add_action('admin_print_scripts', array(&$this,'filter_add_new_button'), 99 );
 				
 				if ( 'plugins.php' == $pagenow )
 					add_filter( 'plugin_row_meta', array(&$this, 'flt_plugin_action_links'), 10, 2 );
