@@ -210,16 +210,19 @@
 		$args = array_merge( $defaults, (array) $args );
 		extract($args);
 
-		$cap_defs = $scoper->cap_defs->get_matching( $src_name, $object_type, OP_EDIT_RS, '', ! $require_others_cap );
+		$object_types = ( $object_type ) ? (array) $object_type : get_post_types( array( 'public' => true ) );
+		
+		foreach( $object_types as $object_type ) {
+			$cap_defs = $scoper->cap_defs->get_matching( $src_name, $object_type, OP_EDIT_RS, '', ! $require_others_cap );
+		
+			if ( $status )
+				$cap_defs = array_merge( $cap_defs, $scoper->cap_defs->get_matching( $src_name, $object_type, OP_EDIT_RS, $status, ! $require_others_cap ) );
 
-		if ( $status )
-			$cap_defs = array_merge( $cap_defs, $scoper->cap_defs->get_matching( $src_name, $object_type, OP_EDIT_RS, $status, ! $require_others_cap ) );
-			
-		foreach ( array_keys($current_rs_user->blog_roles[ANY_CONTENT_DATE_RS]) as $role_handle )
-			if ( isset($scoper->role_defs->role_caps[$role_handle]) )
-				if ( ! array_diff_key( $cap_defs, $scoper->role_defs->role_caps[$role_handle] ) )
-					return true;
+			foreach ( array_keys($current_rs_user->blog_roles[ANY_CONTENT_DATE_RS]) as $role_handle )
+				if ( isset($scoper->role_defs->role_caps[$role_handle]) )
+					if ( ! array_diff_key( $cap_defs, $scoper->role_defs->role_caps[$role_handle] ) )
+						return true;
+		}
 	}
-
 
 ?>

@@ -31,8 +31,11 @@ class CommentsInterceptor_RS {
 			require_once( 'admin/comments-interceptor-admin_rs.php' );
 			$args['force_reqd_caps'] = CommentsInterceptorAdmin_RS::get_reqd_caps();
 		}
-			
-		if ( ! $attachment_query && ( $post_id || defined('SCOPER_NO_ATTACHMENT_COMMENTS') || ( ! defined('SCOPER_ATTACHMENT_COMMENTS') && ! scoper_get_var($qry_any_attachment_comments) ) ) ) {
+		
+		// $attachment_query: current query is for attachment post type, or for a specific post which is an attachment
+		// $post_id: current query is for a specific post
+		// 	 NOTE: even if not $attachment_query, attachment comments are included by default along with comments on other post types (i.e. for Recent Comments sidebar)
+		if ( defined('SCOPER_NO_ATTACHMENT_COMMENTS') || ( ! $attachment_query && ( $post_id || ( ! defined('SCOPER_ATTACHMENT_COMMENTS') && ! scoper_get_var($qry_any_attachment_comments) ) ) ) ) {
 			$clauses['where'] = " AND " . $clauses['where'];
 			$clauses['where'] = "1=1" . apply_filters('objects_where_rs', $clauses['where'], 'post', $post_type_arg, $args );
 		} else {

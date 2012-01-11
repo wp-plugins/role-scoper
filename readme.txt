@@ -112,6 +112,10 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
+= 1.3.52-dev =
+* Fixed: Editors could not see other user's Media uploads unless "non-editors see" options were enabled
+* Change: Simplify function of SCOPER_NO_ATTACHMENT_COMMENTS constant (For performance, disable filtering for attachment comments.  This filtering normally enables a logged user to see comments on files which are attached to a post he can access based on an RS role assignment.)
+
 = 1.3.51 - 20 Dec 2011 =
 * Compat: NextGEN Gallery - non-Administrators could not upload images with NGG 1.9.x
 * Fixed: Default category is always stored when Category Restrictions prevent user from selecting some categories
