@@ -652,6 +652,9 @@ class UsersInterceptor_RS
 				$orderby = " ORDER BY user_login AS display_name";	// calling code assumes display_name property for user or group object
 		}
 		
+		if ( 'id' == $cols )
+			$cols = COL_ID_RS;
+
 		if ( COL_ID_RS == $cols ) {
 			if ( $force_all_users )
 				$qry = "SELECT ID FROM $wpdb->users";
@@ -790,7 +793,8 @@ class UsersInterceptor_RS
 			$groups = scoper_get_col($qry);
 		} else {
 			$grp = $wpdb->groups_rs;
-			$qry = "SELECT DISTINCT $grp.{$wpdb->groups_id_col} AS ID, $grp.{$wpdb->groups_name_col} AS display_name, $grp.$wpdb->groups_descript_col as descript"
+			
+			$qry = "SELECT DISTINCT $grp.{$wpdb->groups_id_col} AS ID, $grp.{$wpdb->groups_name_col} AS display_name, $grp.$wpdb->groups_descript_col as descript FROM $grp"
 				. " INNER JOIN $wpdb->user2group_rs as u2g ON u2g.{$wpdb->user2group_gid_col} = $grp.{$wpdb->groups_id_col}"
 				. " INNER JOIN $wpdb->user2role2object_rs AS gro ON $grp.{$wpdb->groups_id_col} = gro.group_id WHERE 1=1 $where $orderby";
 		

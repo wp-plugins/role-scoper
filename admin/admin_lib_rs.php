@@ -64,6 +64,20 @@ class ScoperAdminLib {
 	function get_group_members($group_id, $cols = COLS_ALL_RS, $maybe_metagroup = false, $args = array() ) {
 		global $wpdb;
 		
+		// If $group_id is an array of group objects, extract IDs into a separate array 
+		if ( is_array($group_id) ) {
+			$first = current($group_id);
+			
+			if ( is_object($first) ) {
+				$actual_ids = array();
+				
+				foreach( $group_id as $group )
+					$actual_ids []= $group->ID;
+					
+				$group_id = $actual_ids;
+			}
+		}
+		
 		if ( empty($args['status']) ) {
 			$status = 'active';
 		} elseif ( 'any' == $args['status'] ) {

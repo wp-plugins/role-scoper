@@ -3,7 +3,7 @@
 Plugin Name: Role Scoper
 Plugin URI: http://agapetry.net/
 Description: CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
-Version: 1.3.52-dev
+Version: 1.3.52
 Author: Kevin Behrens
 Author URI: http://agapetry.net/
 Min WP Version: 3.0
@@ -41,7 +41,7 @@ if ( defined( 'SCOPER_VERSION' ) ) {
 	return;
 }
 
-define ('SCOPER_VERSION', '1.3.52-dev');
+define ('SCOPER_VERSION', '1.3.52');
 define ('SCOPER_DB_VERSION', '1.1.4');
 
 // No filtering on dashboard Ajax or plugin installation/update, but run this check after defining version to prevent nuisance error message from Role Scoping for NGG
@@ -193,11 +193,6 @@ $bail = 0;
 if ( ! awp_ver('3.0') ) {
 	rs_notice('Sorry, this version of Role Scoper requires WordPress 3.0 or higher.  Please upgrade Wordpress or deactivate Role Scoper.  If you must run WP 2.7 - 2.9.2, try <a href="http://agapetry.net/downloads/role-scoper_legacy">Role Scoper 1.2.x</a>.');
 	$bail = 1;	
-} else {
-	if ( ! $wpdb->has_cap( 'subqueries' ) ) {
-		rs_notice('Sorry, this version of Role Scoper requires a database server that supports subqueries (such as MySQL 4.1+).  Please upgrade your server or deactivate Role Scoper.');
-		$bail = 1;
-	}
 }
 
 if ( is_admin() || defined('XMLRPC_REQUEST') ) {
