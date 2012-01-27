@@ -10,7 +10,8 @@ add_filter('get_the_category', array('ScoperHardwayFront', 'flt_get_the_category
 if ( awp_is_plugin_active('snazzy-archives') )
 	add_filter( 'query', array('ScoperHardwayFront', 'flt_snazzy_archives') );
 
-add_action( 'admin_bar_menu', array('ScoperHardwayFront', 'flt_admin_bar_menu'), 50 );
+if ( ! awp_ver( '3.3' ) )
+	add_action( 'admin_bar_menu', array('ScoperHardwayFront', 'flt_admin_bar_menu'), 50 );
 	
 
 class ScoperHardwayFront

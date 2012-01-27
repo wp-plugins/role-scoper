@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable Tag: 1.3.52
+Stable Tag: 1.3.53
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -112,17 +112,23 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
+= 1.3.53 - 27 Jan 2012 =
+* Compat : Relevanssi - Readable Private pages were not included in search results until Relevanssi re-indexed
+* Compat : Relevanssi - RS Reader Restrictions were not applied to search results unless posts also have Private Visibility 
+* Compat : Relevanssi - When Hidden Content Teaser enabled and set to "fixed teaser", teased posts had a portion of their content displayed in search results
+* Fixed : PHP Warnings on WP 3.3 Front End when logged in as a non-Administrator
+
 = 1.3.52 - 18 Jan 2012 =
-* Fixed: Editors could not see other user's Media uploads unless "non-editors see" options were enabled
-* Change: Simplify function of SCOPER_NO_ATTACHMENT_COMMENTS constant (For performance, disable filtering for attachment comments.  This filtering normally enables a logged user to see comments on files which are attached to a post he can access based on an RS role assignment.)
-* Compat: Revisionary - RS Roles were not applied, under some configurations (related fix in Revisionary to 1.1.9)
-* Compat: Revisionary - members of Pending Revision Monitors group do not receive email notifications even though they can publish the post (since 1.3.47)
+* Fixed : Editors could not see other user's Media uploads unless "non-editors see" options were enabled
+* Change : Simplify function of SCOPER_NO_ATTACHMENT_COMMENTS constant (For performance, disable filtering for attachment comments.  This filtering normally enables a logged user to see comments on files which are attached to a post he can access based on an RS role assignment.)
+* Compat : Revisionary - RS Roles were not applied, under some configurations (related fix in Revisionary to 1.1.9)
+* Compat : Revisionary - members of Pending Revision Monitors group do not receive email notifications even though they can publish the post (since 1.3.47)
 
 = 1.3.51 - 20 Dec 2011 =
-* Compat: NextGEN Gallery - non-Administrators could not upload images with NGG 1.9.x
-* Fixed: Default category is always stored when Category Restrictions prevent user from selecting some categories
-* Fixed: "Add New" buttons in wp-admin were not removed under some configurations
-* Perf: When Role Date Limits or Content Date Limits enabled, supplemental query caused full scan of roles table
+* Compat : NextGEN Gallery - non-Administrators could not upload images with NGG 1.9.x
+* Fixed : Default category is always stored when Category Restrictions prevent user from selecting some categories
+* Fixed : "Add New" buttons in wp-admin were not removed under some configurations
+* Perf : When Role Date Limits or Content Date Limits enabled, supplemental query caused full scan of roles table
 
 = 1.3.50 - 15 Nov 2011 =
 * Fixed : Fatal error in wp-admin when Revisionary active but not initializes after Role Scoper
@@ -780,8 +786,6 @@ Improves Nav Menu Manager and Category Manager role assignment; filters "Add New
 * Role Scoper's menus, onscreen captions and inline descriptive footnotes [can be translated using poEdit](http://weblogtoolscollection.com/archives/2007/08/27/localizing-a-wordpress-plugin-using-poedit/).  I will gladly include any user-contributed languages!.
 
 == Plugin Compatibility Issues ==
-
-**Relevanssi** : Not compatible as of Relevanssi 2.9.12 (search results indexing prevents user-specific query filtering)
 
 **WP Super Cache** : set WPSC option to disable caching for logged users (unless you only use Role Scoper to customize editing access).
 

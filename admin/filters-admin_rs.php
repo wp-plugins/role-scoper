@@ -10,7 +10,7 @@ require_once( dirname(__FILE__).'/admin_lib_rs.php' );
  * filters-admin_rs.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2011
+ * @copyright 	Copyright 2012
  * 
  */
 class ScoperAdminFilters
@@ -354,6 +354,11 @@ class ScoperAdminFilters
 
 		require_once( dirname(__FILE__).'/filters-admin-save_rs.php');
 		scoper_mnt_save_object($src_name, $args, $object_id, $object);
+		
+		if ( function_exists('relevanssi_query') ) {
+			require_once( dirname(__FILE__).'/relevanssi-helper-admin_rs.php' );
+			Relevanssi_Admin_Helper_RS::rvi_reindex();
+		}
 	}
 	
 	function _can_edit_theme_locs() {

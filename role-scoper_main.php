@@ -7,7 +7,7 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
  * role-scoper_main.php
  * 
  * @author 		Kevin Behrens
- * @copyright 	Copyright 2011
+ * @copyright 	Copyright 2012
  * 
  */
 class Scoper
@@ -409,8 +409,13 @@ class Scoper
 				$GLOBALS['template_interceptor'] = new TemplateInterceptor_RS();
 	
 				$frontend_admin = ! scoper_get_option('no_frontend_admin'); // potential performance enhancement	
+
+				if ( ! empty($_REQUEST['s']) && function_exists('relevanssi_query') ) {
+					require_once( dirname(__FILE__).'/relevanssi-helper-front_rs.php' );
+					$rel_helper_rs = new Relevanssi_Search_Filter_RS();
+				}
 			}
-				
+
 			// ===== Filters which are always loaded (except on plugin scripts), for any access type
 			include_once( dirname(__FILE__).'/hardway/wp-patches_agp.php' ); // simple patches for WP
 			

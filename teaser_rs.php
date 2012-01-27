@@ -318,7 +318,9 @@ class ScoperTeaser {
 			// but only if since no custom excerpt exists or teaser options aren't set to some variation of "use excerpt as teaser"
 			if ( ! empty($teaser_replace[$object_type]['post_excerpt']) )
 				$object->post_excerpt = $teaser_replace[$object_type]['post_excerpt'];
-				
+			else
+				$object->post_excerpt = '';
+			
 			// If SCOPER_FORCE_EXCERPT_SUFFIX is defined, use the "content" prefix and suffix only when fully replacing content with a fixed teaser 
 			$use_excerpt_suffix = false;
 		}
