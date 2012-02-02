@@ -117,7 +117,7 @@ class WP_Cap_Helper_CR {
 		$generic_caps = array();
 		foreach( array( 'post', 'page' ) as $post_type )
 			$generic_caps[$post_type] = (array) $wp_post_types[$post_type]->cap;
-			
+
 		foreach( array_keys($wp_post_types) as $post_type ) {
 			if ( empty( $use_post_types[$post_type] ) )
 				continue;
@@ -130,16 +130,31 @@ class WP_Cap_Helper_CR {
 			/* $plural_name =  */	// as of WP 3.1, no basis for determinining this unless type-specific caps are set
 			
 			// don't allow any capability defined for this type to match any capability defined for post or page (unless this IS post or page type)
-			foreach( $type_caps as $cap_property => $type_cap )
+			foreach( $type_caps as $cap_property => $type_cap ) {
+				if ( in_array( $cap_property, array( 'read_post', 'edit_post', 'delete_post' ) ) ) {
+					continue;
+				}
+			
 				foreach( array( 'post', 'page' ) as $generic_type )
 					if ( ( $post_type != $generic_type ) && in_array( $type_cap, $generic_caps[$generic_type] ) && ( 'read' != $type_cap ) ) {
 						$type_caps[$cap_property] = str_replace( $generic_type, $post_type, $cap_property );
 						$customized[$post_type] = true;
 					}
-	
+			}
+			
+			// this simplifies map_meta_cap handling
+			if ( ! defined( 'SCOPER_RETAIN_CUSTOM_METACAPS' ) ) {
+				$type_caps['attachment']['read_post'] = 'read_attachment';
+				$type_caps['attachment']['edit_post'] = 'edit_attachment';
+				$type_caps['attachment']['delete_post'] = 'delete_attachment';
+				$type_caps['revision']['read_post'] = 'read_revision';
+				$type_caps['revision']['edit_post'] = 'edit_revision';
+				$type_caps['revision']['delete_post'] = 'delete_revision';
+			}
+			
 			$wp_post_types[$post_type]->cap = (object) $type_caps;
 		}
-		
+
 		// One-time message alerting Administrators that custom types were auto-enabled for RS filtering
 		if ( $customized ) {
 			$logged = ( ! empty($_POST['rs_defaults'] ) ) ? array() : (array) scoper_get_option( 'log_customized_types' );

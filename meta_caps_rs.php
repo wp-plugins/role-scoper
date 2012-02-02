@@ -1,15 +1,23 @@
 <?php
 
 // to override default WP core meta_cap translation
-add_filter( 'map_meta_cap', '_map_meta_cap_rs', 1, 4 );  // register early because we are wiping out default meta_cap expansion
+add_filter( 'map_meta_cap', '_map_core_meta_cap_rs', 1, 4 );  // register early because we are wiping out default meta_cap expansion
 
 // used by UsersInterceptor for users_who_can filtering
 add_filter( 'map_meta_cap_rs', '_map_meta_cap_rs', 1, 4 );  // register early because we are wiping out default meta_cap expansion
 
 
+// no need to reconstruct WP-generated cap mapping except for revisions and attachments (not supporting custom statuses)
+function _map_core_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
+	if ( ( -1 === $user_id ) || in_array( $meta_cap, array( 'read_attachment', 'edit_attachment', 'delete_attachment', 'read_revision', 'edit_revision', 'delete_revision' ) ) || defined( 'SCOPER_FORCE_MAP_METACAP' ) )
+		$caps = _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args );
+
+	return $caps;
+}
+
 function _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
 	static $defined_meta_caps;
-
+	
 	// support usage by RS users_who_can function, which needs to remap meta caps to simple equivalent but builds owner cap adjustment into DB query
 	$adjust_for_user = ( -1 !== $user_id );
 
@@ -20,6 +28,10 @@ function _map_meta_cap_rs( $caps, $meta_cap, $user_id, $args ) {
 	if ( ! isset( $defined_meta_caps ) ) {
 		$defined_meta_caps = array();
 
+		$defined_meta_caps ['read'] = array( 'read_attachment', 'read_revision' );
+		$defined_meta_caps ['edit'] = array( 'edit_attachment', 'edit_revision' );
+		$defined_meta_caps ['delete'] = array( 'delete_attachment', 'delete_revision' );
+		
 		$post_types = array_diff_key( get_post_types( array( 'public' => true ), 'object' ), array( 'attachment' => true ) );
 
 		foreach( $post_types as $type => $post_type_obj ) {

@@ -343,6 +343,11 @@ class ScoperAdmin
 	function filter_add_new_button() {
 		if ( in_array( $GLOBALS['pagenow'], array( 'edit.php', 'post.php', 'post-new.php' ) ) ) {
 			$_post_type = ( ! empty($_REQUEST['post_type']) ) ? $_REQUEST['post_type'] : 'post';
+			
+			$use_post_types = scoper_get_option( 'use_post_types' );
+			if ( empty( $use_post_types[$_post_type] ) )
+				return;
+			
 			if ( $wp_type = get_post_type_object( $_post_type ) ) {
 				global $scoper;
 				$_default_restricted_roles = $scoper->get_default_restrictions( 'object' );

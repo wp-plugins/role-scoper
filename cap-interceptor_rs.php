@@ -512,7 +512,7 @@ class CapInterceptor_RS
 						if ( $set_terms = $GLOBALS['scoper_admin_filters']->flt_pre_object_terms($selected_terms, $taxonomy) ) {
 							$set_terms = array_unique( array_map('intval', $set_terms) );
 
-							if ( $set_terms != $stored_terms ) {
+							if ( ( $set_terms != $stored_terms ) && $set_terms && ( $set_terms != array(1) ) ) { // safeguard against unintended clearing of stored categories
 								wp_set_object_terms( $object_id, $set_terms, $taxonomy );
 
 								// delete any buffered cap check results which were queried prior to storage of these object terms
