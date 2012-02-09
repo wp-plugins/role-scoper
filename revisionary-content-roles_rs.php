@@ -2,10 +2,10 @@
 
 class Scoper_RvyContentRoles extends RevisionaryContentRoles {
 	function filter_object_terms( $terms, $taxonomy ) { 
-		global $scoper_admin;
+		global $scoper_admin_filters;
 		
-		if ( ! empty($scoper_admin) ) {
-			return $scoper_admin->flt_pre_object_terms( $terms, $taxonomy );
+		if ( ! empty($scoper_admin_filters) ) {
+			return $scoper_admin_filters->flt_pre_object_terms( $terms, $taxonomy );
 		}
 		return array(); 
 	}

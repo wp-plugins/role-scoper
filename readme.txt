@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable Tag: 1.3.53
+Stable Tag: 1.3.54
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -112,10 +112,12 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
-= 1.3.54-dev =
+= 1.3.54 - 8 Feb 2012 =
 * Compat : Events Manager - "Add Recurring Event" button was hidden if Event type not enabled for RS filtering
 * Compat : Contact Form 7 - post categories reset to Uncategorized under some configurations
 * Compat : Relevanssi - reduce queries by memcaching post data (requires new Relevanassi filter 'relevanssi_results' on $doc_weight)
+* Compat : Revisionary - Fatal Error on revision submission for Posts and other types that have related taxonomies (since 1.3.52)
+* Compat : Subscribe2 - Subscription categories were not filtered for read access with s2 version 7+
 
 = 1.3.53 - 27 Jan 2012 =
 * Compat : Relevanssi - Readable Private pages were not included in search results until Relevanssi re-indexed

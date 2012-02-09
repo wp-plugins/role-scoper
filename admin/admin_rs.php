@@ -60,10 +60,7 @@ class ScoperAdmin
 		
 		if ( ( ( 'edit-tags.php' == $pagenow ) || ( isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'p-admin/edit-tags.php') ) ) && awp_is_plugin_active('subscribe2') )
 			require_once( dirname(__FILE__).'/subscribe2_helper_rs.php');
-			
-		if ( defined( 'FLUTTER_NAME' ) )
-			require_once( dirname(__FILE__).'/flutter_helper_rs.php');
-			
+
 		if ( ( 'index.php' == $GLOBALS['pagenow'] ) ) {
 			if ( ! defined( 'USE_RVY_RIGHTNOW' ) )
 				include_once( dirname(__FILE__).'/admin-dashboard_rs.php' );

@@ -142,7 +142,7 @@ class WP_Cap_Helper_CR {
 					}
 			}
 			
-			// this simplifies map_meta_cap handling
+			// This simplifies map_meta_cap handling. Actual attachment or revision editing access is still based on access to the parent post
 			if ( ! defined( 'SCOPER_RETAIN_CUSTOM_METACAPS' ) ) {
 				$type_caps['attachment']['read_post'] = 'read_attachment';
 				$type_caps['attachment']['edit_post'] = 'edit_attachment';
