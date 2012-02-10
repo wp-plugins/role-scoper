@@ -12,10 +12,31 @@ if ( awp_is_plugin_active('snazzy-archives') )
 
 if ( ! awp_ver( '3.3' ) )
 	add_action( 'admin_bar_menu', array('ScoperHardwayFront', 'flt_admin_bar_menu'), 50 );
-	
+
+//if ( defined( 'SCOPER_FORCE_FRONTEND_JQUERY' ) )
+//	add_action( 'wp_head', array('ScoperHardwayFront', 'include_jquery') );
+
+add_action( 'wp_print_footer_scripts', array('ScoperHardwayFront', 'flt_hide_empty_menus') );
 
 class ScoperHardwayFront
 {	
+	function include_jquery() {
+		wp_enqueue_script( 'jquery' );	
+	}
+
+	function flt_hide_empty_menus() {
+		if ( ! wp_script_is('jquery') )
+			return;
+?>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(document).ready( function($) {
+	$("ul.menu").not(":has(li)").closest('div').prev('h3.widget-title').hide();
+});
+/* ]]> */
+</script><?php
+	}
+
 	// filter "Add New" links out of admin bar if user lacks site-wide capability
 	function flt_admin_bar_menu( &$bar ) {
 		if ( is_content_administrator_rs() )

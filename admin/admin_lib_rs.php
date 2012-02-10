@@ -337,6 +337,9 @@ class ScoperAdminLib {
 	}
 	
 	function flush_groups_cache_for_user( $user_ids ) {
+		wpp_cache_flush();
+		
+		/* work around reported omission in the selective cache flush: http://agapetry.net/forum/role-scoper/issue-with-role-cache-and-add_group_user/page-1/post-5530/#p5530
 		$user_ids = (array) $user_ids;
 		
 		wpp_cache_flush_group( 'group_members' );
@@ -350,7 +353,8 @@ class ScoperAdminLib {
 		scoper_flush_results_cache( ROLE_BASIS_USER_AND_GROUPS, $user_ids );
 		scoper_flush_roles_cache( OBJECT_SCOPE_RS, ROLE_BASIS_USER_AND_GROUPS, $user_ids);
 		scoper_flush_roles_cache( TERM_SCOPE_RS, ROLE_BASIS_USER_AND_GROUPS, $user_ids);
-		scoper_flush_roles_cache( BLOG_SCOPE_RS, ROLE_BASIS_USER_AND_GROUPS, $user_ids);	
+		scoper_flush_roles_cache( BLOG_SCOPE_RS, ROLE_BASIS_USER_AND_GROUPS, $user_ids);
+		*/
 	}
 	
 	/**

@@ -112,6 +112,12 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
+= 1.3.55-dev =
+* Feature : If jQuery is loaded on front end, hide titles of menus which have no readable items
+* Fixed : With Internal Cache enabled, manual calls to ScoperAdminLib::add_group_user() do not fully clear applicable caches
+* Fixed : SCOPER_NO_ATTACHMENT_COMMENTS constant definition was ineffective for Administrators
+* Compat : Relevanssi - long delay (and site downtime) during post update (since 1.3.53)
+
 = 1.3.54 - 8 Feb 2012 =
 * Compat : Events Manager - "Add Recurring Event" button was hidden if Event type not enabled for RS filtering
 * Compat : Contact Form 7 - post categories reset to Uncategorized under some configurations
