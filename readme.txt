@@ -4,7 +4,7 @@ Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-downl
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable Tag: 1.3.54
+Stable Tag: 1.3.55
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -112,7 +112,7 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
-= 1.3.55-dev =
+= 1.3.55 - 22 Feb 2012 =
 * Feature : If jQuery is loaded on front end, hide titles of menus which have no readable items
 * Fixed : With Internal Cache enabled, manual calls to ScoperAdminLib::add_group_user() do not fully clear applicable caches
 * Fixed : SCOPER_NO_ATTACHMENT_COMMENTS constant definition was ineffective for Administrators
