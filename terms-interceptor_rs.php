@@ -40,9 +40,30 @@ class TermsInterceptor_RS
 			add_filter('posts_where', array($this, 'flt_cat_not_in_subquery'), 1);
 		}
 		
+		if ( $scoper->is_front() && ! is_content_administrator_rs() ) {
+			add_filter('get_the_terms', array(&$this, 'flt_get_the_terms'), 10, 3 );
+		}
+		
 		$this->no_cache = defined( 'SCOPER_NO_TERMS_CACHE' ) || ( ! defined('SCOPER_QTRANSLATE_COMPAT') && awp_is_plugin_active('qtranslate') );
 	}
 
+	function flt_get_the_terms( $terms, $id, $taxonomy ) {
+		if ( $terms ) {
+			static $all_terms = array();
+			
+			if ( ! isset($all_terms[$taxonomy]) ) {
+				$all_terms[$taxonomy] = get_terms($taxonomy, array( 'fields'=> 'ids' ) );
+			}
+			
+			foreach( array_keys($terms) as $key ) {
+				if ( ! in_array( $terms[$key]->term_id, $all_terms[$taxonomy] ) )
+					unset( $terms[$key] );
+			}		
+		}
+
+		return $terms;
+	}
+	
 	function get_cache_key( $taxonomy, $args, $criteria ) {
 		// $default_criteria = array( 'is_term_admin' => false, 'filter_key' => '', 'required_operation' => '' );
 

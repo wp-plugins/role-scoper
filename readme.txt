@@ -112,6 +112,9 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
+= 1.3.56-dev =
+* Feature : Filter post terms listing (function get_the_terms)
+
 = 1.3.55 - 22 Feb 2012 =
 * Feature : If jQuery is loaded on front end, hide titles of menus which have no readable items
 * Fixed : With Internal Cache enabled, manual calls to ScoperAdminLib::add_group_user() do not fully clear applicable caches
