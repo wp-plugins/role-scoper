@@ -195,6 +195,8 @@ class ScoperAdminFilters
 		}
 		
 		add_action( 'load-post.php', array( &$this, 'maybe_override_kses' ) );
+
+		add_action( 'add_link', 'wpp_cache_flush' );
 	}
 	
 	function maybe_override_kses() {

@@ -10,8 +10,8 @@ class CommentsInterceptor_RS {
 		if ( is_admin() && defined( 'SCOPER_NO_COMMENT_FILTERING' ) && empty( $GLOBALS['current_user']->allcaps['moderate_comments'] ) )
 			return $clauses;
 
-		if ( empty( $clauses['join'] ) )
-			$clauses['join'] = "JOIN $wpdb->posts ON $wpdb->posts.ID = $wpdb->comments.comment_post_ID";
+		if ( empty( $clauses['join'] ) || ! strpos( $clauses['join'], $wpdb->posts ) )
+			$clauses['join'] .= "JOIN $wpdb->posts ON $wpdb->posts.ID = $wpdb->comments.comment_post_ID";
 		
 		// for WP 3.1 and any manual 3rd-party join construction (subsequent filter will expand to additional statuses as appropriate)
 		$clauses['where'] = preg_replace( "/ post_status\s*=\s*[']?publish[']?/", " $wpdb->posts.post_status = 'publish'", $clauses['where'] );

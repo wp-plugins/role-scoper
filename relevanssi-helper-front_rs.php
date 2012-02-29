@@ -12,16 +12,18 @@ class Relevanssi_Search_Filter_RS {
 	}
 
 	function relevanssi_log_results( $arr ) {
-		$this->relevanssi_results = $arr;
-		
-		global $wpdb;
-		$id_clause = "AND ID IN( '" . implode( "','", array_keys($arr) ) . "')";
-		$results = $wpdb->get_results( "SELECT ID, post_name, post_type, post_status, post_author, post_parent FROM $wpdb->posts WHERE 1=1 $id_clause" );
-		
-		foreach( $results as $row ) {
-			wp_cache_add( $row->ID, $row, 'posts' );
+		if ( is_array($arr) ) {
+			$this->relevanssi_results = $arr;
+			
+			global $wpdb;
+			$id_clause = "AND ID IN( '" . implode( "','", array_keys($arr) ) . "')";
+			$results = $wpdb->get_results( "SELECT ID, post_name, post_type, post_status, post_author, post_parent FROM $wpdb->posts WHERE 1=1 $id_clause" );
+			
+			foreach( $results as $row ) {
+				wp_cache_add( $row->ID, $row, 'posts' );
+			}
 		}
-		
+
 		return $arr;
 	}
 	

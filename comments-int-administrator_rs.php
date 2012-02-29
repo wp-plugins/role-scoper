@@ -9,9 +9,6 @@ class CommentsInterceptor_Administrator_RS {
 			$stati = array_merge( get_post_stati( array( 'public' => true ) ), get_post_stati( array( 'private' => true ) ) );
 			$status_csv = "'" . implode( "','", $stati ) . "'";
 			$clauses['where'] = preg_replace( "/\s*AND\s*{$wpdb->posts}.post_status\s*=\s*[']?publish[']?/", "AND {$wpdb->posts}.post_status IN ($status_csv)", $clauses['where'] );
-			
-			if ( defined( 'SCOPER_NO_ATTACHMENT_COMMENTS' ) )
-				$clauses['where'] .= " AND $wpdb->posts.post_type != 'attachment'";
 		}
 
 		return $clauses;
