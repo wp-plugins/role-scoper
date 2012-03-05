@@ -116,8 +116,8 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 * Feature : Filter post terms listing (function get_the_terms)
 * Compat : Relevanssi - PHP Warning for non-array under some conditions
 * Compat : WPML - improper comment filtering in wp-admin when WPML activated
-* Fixed : SCOPER_NO_ATTACHMENT_COMMENTS constant definition was ineffective for Administrators
 * Fixed : Non-Editors could not see newly added link in link-manager.php until RS cache is flushed
+* Fixed : SCOPER_NO_ATTACHMENT_COMMENTS constant definition was ineffective for Administrators
 
 = 1.3.55 - 22 Feb 2012 =
 * Feature : If jQuery is loaded on front end, hide titles of menus which have no readable items
