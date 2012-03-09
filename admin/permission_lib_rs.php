@@ -42,8 +42,13 @@
 			if ( is_null($item_id) )
 				$item_id = 0;
 
-			if ( ! cr_user_can( array_keys($reqd_caps[$role_handle]), $item_id ) )
-				return false;
+			if ( defined( 'SCOPER_AUTHORS_ASSIGN_ANY_ROLE' ) && ( 'post' == $src_name ) )
+				$author_post = get_post( $item_id );
+			
+			if ( empty($author_post) || ( $author_post->post_author == $GLOBALS['current_user']->ID ) || ! user_can_admin_object_rs( 'post', $author_post->post_type, $item_id ) ) {
+				if ( ! cr_user_can( array_keys($reqd_caps[$role_handle]), $item_id ) )
+					return false;
+			}
 			
 			// are we also applying the additional requirement (based on RS Option setting) that the user is a blog-wide editor?
 			if ( $require_blogwide_editor ) {
