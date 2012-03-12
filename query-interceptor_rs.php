@@ -242,7 +242,7 @@ class QueryInterceptor_RS
 			$where .= $this->flt_objects_where('', $src_name, '', $args);
 
 			// For Edit Form display, include currently stored terms.  User will still not be able to remove them without proper editing roles for object. (TODO: abstract for other data sources)
-			if ( ( 'post.php' == $GLOBALS['pagenow'] ) && empty( $_REQUEST['admin_bar'] ) ) {
+			if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'press-this.php' ) ) && empty( $_REQUEST['admin_bar'] ) ) {
 				if ( 'post' == $src_name ) {
 					if ( $object_id = $this->scoper->data_sources->detect( 'id', $src_name ) ) {
 						if ( $stored_terms = wp_get_object_terms( $object_id, $taxonomies[0] ) ) {
@@ -1334,7 +1334,7 @@ class QueryInterceptor_RS
 
 								static $cache_obj_ids = array();
 
-								if ( 'post.php' == $GLOBALS['pagenow'] && ! empty($_REQUEST['action']) || did_action( 'save_post' ) || ! empty($_GET['doaction']) )
+								if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'press-this.php' ) ) && ! empty($_REQUEST['action']) || did_action( 'save_post' ) || ! empty($_GET['doaction']) )
 									$force_refresh = true;		
 
 								$objrole_subselect = "SELECT DISTINCT uro.obj_or_term_id FROM $wpdb->user2role2object_rs AS uro WHERE uro.role_type = '$role_spec->role_type' AND uro.scope = 'object' AND uro.assign_for IN ('entity', 'both') AND uro.role_name IN ($role_in) AND uro.src_or_tx_name = '$src_name' $object_roles_duration_clause $u_g_clause ";

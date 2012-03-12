@@ -120,6 +120,7 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 * Fixed : SCOPER_NO_ATTACHMENT_COMMENTS constant definition was ineffective for Administrators
 * Feature : SCOPER_PUBLIC_ATTACHMENT_COMMENTS constant definition forces get_comments() inclusion of all comments on attachments to public posts (but not private posts)
 * Feature : SCOPER_AUTHORS_ASSIGN_ANY_ROLE constant definition allows authors to assign Editor role for their own posts
+* Fixed : Quick Press did not work when posting capabilities are via Category Role
 
 = 1.3.55 - 22 Feb 2012 =
 * Feature : If jQuery is loaded on front end, hide titles of menus which have no readable items

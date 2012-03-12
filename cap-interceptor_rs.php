@@ -283,7 +283,7 @@ class CapInterceptor_RS
 					foreach( $replace_post_caps as $post_cap_name ) {
 						$key = array_search( $post_cap_name, $rs_reqd_caps );
 
-						if ( ( false !== $key ) && ! $doing_admin_menus && in_array( $pagenow, array( 'edit.php', 'post.php', 'post-new.php', 'admin-ajax.php', 'upload.php', 'media.php' ) ) ) {				
+						if ( ( false !== $key ) && ! $doing_admin_menus && in_array( $pagenow, array( 'edit.php', 'post.php', 'post-new.php', 'press-this.php', 'admin-ajax.php', 'upload.php', 'media.php' ) ) ) {				
 							$rs_reqd_caps[$key] = $object_type_obj->cap->$post_cap_name;
 							$modified_caps = true;
 						}
@@ -486,7 +486,7 @@ class CapInterceptor_RS
 		
 		// Workaround to deal with WP core's checking of publish cap prior to storing categories
 		// Store terms to DB in advance of any cap-checking query which may use those terms to qualify an operation		
-		if ( ! empty($_POST['action']) && ( ('editpost' == $_POST['action']) || ('autosave' == $_POST['action']) ) ) {
+		if ( ! empty($_REQUEST['action']) && ( in_array( $_REQUEST['action'], array( 'editpost', 'post' ) ) || ('autosave' == $_REQUEST['action']) ) ) {
 			if ( array_intersect( array( 'publish_posts', 'edit_posts', $object_type_obj->cap->publish_posts,  $object_type_obj->cap->edit_posts ), $rs_reqd_caps) ) {
 				$uses_taxonomies = scoper_get_taxonomy_usage( $src_name, $object_type );
 				
@@ -614,7 +614,7 @@ class CapInterceptor_RS
 		// $force_refresh = 'async-upload.php' == $pagenow;
 		
 		// Page refresh following publishing of new page by users who can edit by way of Term Role fails without this workaround
-		if ( ! empty( $_POST ) && ( defined( 'SCOPER_CACHE_SAFE_MODE' ) || ( ( 'post.php' == $pagenow ) && ( $args[0] == $object_type_obj->cap->edit_post ) ) ) ) {
+		if ( ! empty( $_POST ) && ( defined( 'SCOPER_CACHE_SAFE_MODE' ) || ( in_array( $pagenow, array( 'post.php', 'press-this.php' ) ) && ( $args[0] == $object_type_obj->cap->edit_post ) ) ) ) {
 			$force_refresh = true;
 			$cache_tested_ids = array();
 			$cache_okay_ids = array();
