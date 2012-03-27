@@ -242,7 +242,7 @@ class QueryInterceptor_RS
 			$where .= $this->flt_objects_where('', $src_name, '', $args);
 
 			// For Edit Form display, include currently stored terms.  User will still not be able to remove them without proper editing roles for object. (TODO: abstract for other data sources)
-			if ( in_array( $GLOBALS['pagenow'], array( 'post.php', 'press-this.php' ) ) && empty( $_REQUEST['admin_bar'] ) ) {
+			if ( ( 'post.php' == $GLOBALS['pagenow'] ) && empty( $_REQUEST['admin_bar'] ) ) {
 				if ( 'post' == $src_name ) {
 					if ( $object_id = $this->scoper->data_sources->detect( 'id', $src_name ) ) {
 						if ( $stored_terms = wp_get_object_terms( $object_id, $taxonomies[0] ) ) {
@@ -343,7 +343,7 @@ class QueryInterceptor_RS
 				// The listed objects are attachments, so query filter is based on objects they inherit from
 				$admin_others_attached = scoper_get_option( 'admin_others_attached_files' );
 				$admin_others_unattached = scoper_get_option( 'admin_others_unattached_files' );
-				
+
 				if ( ( ! $admin_others_attached ) || ! $admin_others_unattached )
 					$can_edit_others_blogwide = $this->scoper->user_can_edit_blogwide( 'post', '', array( 'require_others_cap' => true, 'status' => 'publish' ) );
 
