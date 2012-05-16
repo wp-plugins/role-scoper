@@ -246,7 +246,7 @@ class CapInterceptor_RS
 							if ( 'revision' == $object_type ) {
 								if ( $_orig_post = get_post($_parent->post_parent) ) {
 									$object_type = $_orig_post->post_type;
-									$object_id = $orig_post->ID;
+									$object_id = $_orig_post->ID;
 								}
 							}
 							
@@ -527,6 +527,7 @@ class CapInterceptor_RS
 				// also avoid chicken-egg situation when publish cap is granted by a propagating page role
 				if ( $object_type_obj->hierarchical && isset( $_POST['parent_id'] ) ) {
 					if ( $_POST['parent_id'] != get_post_field( 'post_parent', $object_id ) ) {
+						global $wpdb;
 						$set_parent = $GLOBALS['scoper_admin_filters']->flt_page_parent( $_POST['parent_id'] );
 						$GLOBALS['wpdb']->query( "UPDATE $wpdb->posts SET post_parent = '$set_parent' WHERE ID = '$object_id'" );
 						

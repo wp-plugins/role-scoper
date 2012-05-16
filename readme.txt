@@ -116,12 +116,14 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 * Feature : Filter post terms listing (function get_the_terms)
 * Compat : Relevanssi - PHP Warning for non-array under some conditions
 * Compat : WPML - improper comment filtering in wp-admin when WPML activated
+* Compat : CMS Page Tree View - could not create subpages based on propagating object roles
 * Fixed : Non-Editors could not see newly added link in link-manager.php until RS cache is flushed
 * Fixed : SCOPER_NO_ATTACHMENT_COMMENTS constant definition was ineffective for Administrators
 * Feature : SCOPER_PUBLIC_ATTACHMENT_COMMENTS constant definition forces get_comments() inclusion of all comments on attachments to public posts (but not private posts)
 * Feature : SCOPER_AUTHORS_ASSIGN_ANY_ROLE constant definition allows authors to assign Editor role for their own posts
 * Fixed : Quick Press did not work when posting capabilities are via Category Role
 * Fixed : Other user's unattached uploads were always available in Media Library, regardless of RS option setting
+* Fixed : If "Users CSV Entry" option enabled, Group Members could not be added via rs_group_members > edit
 
 = 1.3.55 - 22 Feb 2012 =
 * Feature : If jQuery is loaded on front end, hide titles of menus which have no readable items
