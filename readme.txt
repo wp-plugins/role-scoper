@@ -124,6 +124,7 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 * Fixed : Quick Press did not work when posting capabilities are via Category Role
 * Fixed : Other user's unattached uploads were always available in Media Library, regardless of RS option setting
 * Fixed : If "Users CSV Entry" option enabled, Group Members could not be added via rs_group_members > edit
+* Fixed : PHP Warning caused xml-rpc (ScribeFire) posting failure in some configurations
 
 = 1.3.55 - 22 Feb 2012 =
 * Feature : If jQuery is loaded on front end, hide titles of menus which have no readable items

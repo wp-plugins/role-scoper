@@ -118,7 +118,7 @@ class CapInterceptor_RS
 		
 		// work around bug in mw_EditPost method (requires publish_pages AND publish_posts cap)
 		if ( defined('XMLRPC_REQUEST') && ( 'publish_posts' == $orig_reqd_caps[0] ) ) {
-			if ( 'page' == $GLOBALS['xmlrpc_post_type_rs'] ) {
+			if ( ! empty($GLOBALS['xmlrpc_post_type_rs']) && ( 'page' == $GLOBALS['xmlrpc_post_type_rs'] ) ) {
 				return array( 'publish_posts' => true );
 			}
 		}
