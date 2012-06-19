@@ -128,7 +128,7 @@ function display_inputs($mode, $assignment_modes, $args = array()) {
 		$retain_value = ( isset($_POST["max_scope"]) ) ? $_POST["max_scope"] : '';
 		
 		foreach($max_scopes as $max_scope => $caption) {
-			$selected = ( $status_id === $retain_value ) ? 'selected="selected"' : '';
+			$selected = ( ! empty($status_id) && $status_id === $retain_value ) ? 'selected="selected"' : '';
 			echo "<option value='$max_scope' $selected>$caption</option>";
 		}
 		echo '</select></li>';

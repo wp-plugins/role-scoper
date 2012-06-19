@@ -779,6 +779,11 @@ class QueryInterceptor_RS
 					// Replace existing status clause with our scoped equivalent
 					$where = str_replace($basic_status_clause[$status_name], "$status_clause", $where);
 
+					// account for padding and parentheses that may have been inserted ahead of first status clause
+					$matches = array();
+					if ( $num_matches = preg_match_all( "/{$src_table}.$col_status\s*=\s*'([^']+)'/", $where, $matches ) )
+						$status_clause_pos = strpos( $where, $matches[0][0] ); // note the match position for use downstream
+
 				} elseif ( $status_clause_pos && ( $status_clause != '1=2' ) ) {
 					// This status was not in the original query, but we now insert it with scoping clause at the position of another existing status clause
 					$where = substr($where, 0, $status_clause_pos) . "$status_clause OR " . substr($where, $status_clause_pos);
