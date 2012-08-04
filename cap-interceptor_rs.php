@@ -163,7 +163,7 @@ class CapInterceptor_RS
 			$this->scoper->refresh_blogroles();
 			
 		$object_id = ( isset($args[2]) ) ? (int) $args[2] : 0;
-
+		
 		// WP passes comment ID with 'edit_comment' metacap
 		if ( $object_id && ( 'edit_comment' == $args[0] ) ) {
 			if ( ! in_array( 'moderate_comments', $rs_reqd_caps ) ) {	 // as of WP 3.2.1, 'edit_comment' maps to related post's 'edit_post' caps without requiring moderate_comments
@@ -210,7 +210,7 @@ class CapInterceptor_RS
 			// required capabilities correspond to multiple data sources
 			return $wp_blogcaps;		
 		}
-
+		
 		// slight simplification: assume a single cap object type for a few cap substitution checks
 		$is_taxonomy_cap = $this->scoper->cap_defs->member_property( reset($rs_reqd_caps), 'is_taxonomy_cap' );
 		
@@ -329,7 +329,7 @@ class CapInterceptor_RS
 		if ( 'post' == $src_name ) {
 			if ( $object_id ) {
 				if ( $_post = get_post($object_id) ) {
-					if ( ( 'auto-draft' == $_post->post_status ) && ! empty($_POST['action']) ) { // && ( 'autosave' == $_POST['action'] ) ) {
+					if ( ( 'auto-draft' == $_post->post_status ) ) { // && ! empty($_POST['action']) )
 						$object_id = 0;
 						
 						if ( ! $doing_admin_menus )

@@ -148,6 +148,10 @@ class TermsInterceptor_RS
 				$return['post_type'] = 'post';
 				$return['remap_parents'] = true;
 			}
+
+			if ( is_admin() && ( 's2' == $GLOBALS['plugin_page'] ) ) {
+				$return['required_operation'] = 'read';
+			}
 		}
 
 		if ( '' === $args['is_term_admin'] ) {
@@ -331,7 +335,7 @@ class TermsInterceptor_RS
 		
 		//d_echo( 'flt_get_terms input:' );
 		//dump($terms);
-		
+
 		if ( ! $this->no_cache ) {
 			// NOTE: this caching eliminates both the results post-processing below and query clause filtering in flt_terms_clauses()
 			$ckey = $this->get_cache_key( $taxonomy, $args, $criteria );

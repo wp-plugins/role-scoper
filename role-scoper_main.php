@@ -103,8 +103,12 @@ class Scoper
 		$current_rs_user->merge_scoped_blogcaps();
 		$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
 		
+		if ( empty($GLOBALS['current_user']->data) )
+			$GLOBALS['current_user']->data = (object) array();
+
 		foreach( array( 'groups', 'blog_roles', 'assigned_blog_roles' ) as $var ) {
-			$GLOBALS['current_user']->$var = $current_rs_user->$var;
+			if ( isset($current_rs_user->$var) )
+				$GLOBALS['current_user']->$var = $current_rs_user->$var;
 		}
 
 		if ( $current_rs_user->ID ) {

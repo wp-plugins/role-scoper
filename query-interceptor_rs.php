@@ -169,6 +169,12 @@ class QueryInterceptor_RS
 		if ( ! $taxonomies )
 			return $where;
 	
+		$enabled_taxonomies = array_keys( array_intersect( scoper_get_option( 'use_taxonomies' ), array( 1, '1', true ) ) );
+		$enabled_taxonomies []= 'link_category';
+
+		if ( ! array_intersect( $taxonomies, $enabled_taxonomies ) )
+			return $where;
+
 		if ( $post_type )
 			$post_type = (array) $post_type;
 	
@@ -185,7 +191,7 @@ class QueryInterceptor_RS
 			
 			$taxonomy_sources[$src_name] = true;
 		}
-
+		
 		if ( count($taxonomy_sources) != 1 )
 			return $where;
 			
@@ -293,6 +299,9 @@ class QueryInterceptor_RS
 		}
 			
 		// prevent hardway-admin filtering of any queries which may be triggered by this filter
+		if ( ! isset($GLOBALS['scoper_status']) )
+			$GLOBALS['scoper_status'] = (object) array();
+		
 		$GLOBALS['scoper_status']->querying_db = true;
 			
 		if ( empty($skip_teaser) ) {
@@ -570,8 +579,10 @@ class QueryInterceptor_RS
 			// If the passed request contains a single status criteria, maintain that status exclusively (otherwise include status-specific conditions for each available status)
 			// (But not if user is anon and hidden content teaser is enabled.  In that case, we need to replace the default "status=publish" clause)
 			$matches = array();
-			if ( $num_matches = preg_match_all( "/{$src_table}.$col_status\s*=\s*'([^']+)'/", $where, $matches ) )
+			if ( $num_matches = preg_match_all( "/{$src_table}.$col_status\s*=\s*'([^']+)'/", $where, $matches ) ) {
+				$where = str_replace( $matches[0][0], "( {$matches[0][0]} )", $where );
 				$status_clause_pos = strpos( $where, $matches[0][0] ); // note the match position for use downstream
+			}
 			
 			if ( 1 == $num_matches ) {
 				$use_status = $matches[1][0];

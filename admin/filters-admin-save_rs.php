@@ -430,6 +430,9 @@ if( basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']) )
 	
 	// Enforce any page parent filtering which may have been dictated by the flt_post_status filter, which executes earlier.
 	function scoper_flt_page_parent ($parent_id) {
+		if ( 'no_parent_filter' == scoper_get_option( 'lock_top_pages' ) )
+			return $parent_id;
+	
 		if ( ! empty($_REQUEST['post_ID']) ) 
 			$post_id = $_REQUEST['post_ID'];
 		elseif ( ! empty($_REQUEST['post_id']) )
