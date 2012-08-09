@@ -112,6 +112,11 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
+= 1.3.57-dev =
+* Fixed : PHP 5.4 - warning "Creating default object from empty value" on front end access (sporadically or when internal cache not enabled)
+* Fixed : PHP warning for improper is_404() call
+* Compat : Revisionary - "Edit Pages" search results were displayed as uneditable under some configurations
+
 = 1.3.56 - 3 Aug 2012 =
 
 = WP 3.4 / PHP 5.4 =
@@ -131,7 +136,6 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 = Other Fixes =
 * Fixed : Other user's unattached uploads were always available in Media Library, regardless of RS option setting
 * Fixed : XML-RPC (ScribeFire) posting failure in some configurations, due to PHP warning
-* Fixed : Non-Editors could not see newly added link in link-manager.php until RS cache is flushed
 * Fixed : SCOPER_NO_ATTACHMENT_COMMENTS constant definition was ineffective for Administrators
 * Fixed : If "Users CSV Entry" option enabled, Group Members could not be added via rs_group_members > edit
 * Fixed : Categories / terms were filtered even if removed from Realm > Taxonomy Usage
@@ -141,6 +145,7 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 = Links / Link Categories =
 * Fixed : Link Editor restrictions did not limit category selection
 * Fixed : Link Editor role did not permit viewing widget on front end
+* Fixed : Non-Editors could not see newly added link in link-manager.php until RS cache is flushed
 
 = Page Editing =
 * Feature : New option Roles > Options > Advanced > Page Structure > "no Page Parent filter", means anyone who can edit submit or publish a page can select any parent

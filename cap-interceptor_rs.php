@@ -262,7 +262,7 @@ class CapInterceptor_RS
 		}
 		
 		// =====================================================================================================================================
-
+		
 		// ======================================== SUBVERT MISGUIDED CAPABILITY REQUIREMENTS ==================================================
 		if ( 'post' == $src_name ) {	
 			if ( ! $is_taxonomy_cap ) {
@@ -441,7 +441,7 @@ class CapInterceptor_RS
 			$object_type = $_post->post_type;
 			$object_type_obj = cr_get_type_object( $src_name, $object_type );
 			
-			if ( defined('RVY_VERSION') && in_array( $pagenow, array('edit.php', 'edit-tags.php', 'admin-ajax.php') ) && ! empty($_REQUEST['action']) ) {
+			if ( defined('RVY_VERSION') && in_array( $pagenow, array('edit.php', 'edit-tags.php', 'admin-ajax.php') ) && ( ! empty($_REQUEST['action']) && ( -1 != $_REQUEST['action'] ) ) ) {
 				$rs_reqd_caps = Rvy_Helper::fix_table_edit_reqd_caps( $rs_reqd_caps, $args[0], $_post, $object_type_obj );
 			}
 
@@ -622,7 +622,7 @@ class CapInterceptor_RS
 			$cache_where_clause = array();
 		} else
 			$force_refresh = false;
-			
+
 		// Check whether this object id was already tested for the same reqd_caps in a previous execution of this function within the same http request
 		if ( $force_refresh || ! isset($cache_tested_ids[$src_name][$object_type][$capreqs_key][$object_id]) ) {
 		//if ( ! isset($cache_tested_ids[$src_name][$object_type][$capreqs_key][$object_id]) ) {
