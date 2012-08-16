@@ -584,8 +584,8 @@ function scoper_expire_file_rules() {
 			add_action( 'scoper_init', 'scoper_flush_file_rules' );
 	}
 }
-	
-	
+
+
 function scoper_version_check() {
 	$ver_change = false;
 

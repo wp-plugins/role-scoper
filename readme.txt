@@ -115,6 +115,8 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 = 1.3.57-dev =
 * Fixed : PHP 5.4 - warning "Creating default object from empty value" on front end access (sporadically or when internal cache not enabled)
 * Fixed : PHP warning for improper is_404() call
+* Fixed : Fatal error on first-time installation on WP 3.4 multisite
+* Fixed : Various PHP warnings
 * Compat : Revisionary - "Edit Pages" search results were displayed as uneditable under some configurations
 
 = 1.3.56 - 3 Aug 2012 =

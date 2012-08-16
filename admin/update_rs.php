@@ -473,6 +473,7 @@ function scoper_set_default_rs_roledefs() {
 	if ( scoper_get_option( 'disabled_role_caps', $sitewide ) || scoper_get_option( 'default_disabled_role_caps', $sitewide ) )
 		return;
 
+	require_once( SCOPER_ABSPATH . '/definitions_cr.php');	
 	$default_role_caps = cr_role_caps();
 
 	$wp_role_sync = array( 
