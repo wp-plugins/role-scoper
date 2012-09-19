@@ -118,6 +118,8 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 * Fixed : Fatal error on first-time installation on WP 3.4 multisite
 * Fixed : Various PHP warnings
 * Compat : Revisionary - "Edit Pages" search results were displayed as uneditable under some configurations
+* Change : If constant SCOPER_NO_HTACCESS is defined, eliminate all .htaccess file manipulations and rewrite rules insertions
+* Change : When deactivating or turning off file filtering, don't alter the .htaccess file if it does not contain a Role Scoper block
 
 = 1.3.56 - 3 Aug 2012 =
 
