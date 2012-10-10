@@ -9,6 +9,13 @@ function scoper_version_updated( $prev_version ) {
 
 	// single-pass do loop to easily skip unnecessary version checks
 	do {
+		// role_name column width of 32 was too narrow for long post type / taxonomy names. Thanks to http://wordpress.org/support/profile/vmattila
+		if ( version_compare( $prev_version, '1.3.57', '<') ) {
+			global $wpdb;
+			scoper_query( "ALTER TABLE $wpdb->user2role2object_rs MODIFY role_name VARCHAR(64) NOT NULL" );
+			scoper_query( "ALTER TABLE $wpdb->role_scope_rs MODIFY role_name VARCHAR(64) NOT NULL" );
+		}
+
 		// roles were stored with invalid assign_for value under some conditions
 		if ( version_compare( $prev_version, '1.3.45-beta', '<') ) {
 			global $wpdb;
@@ -462,7 +469,6 @@ function delete_restrictions_orphaned_from_item( $scope, $src_or_tx_name ) {
 	}
 }
 */
-
 
 // On first-time install, prevent WP/RS role mismatch by disabling RS rolecaps that are missing from corresponding default WP roles
 function scoper_set_default_rs_roledefs() {

@@ -69,11 +69,11 @@ class Scoper
 			require_once( dirname(__FILE__).'/extension-helper_rs.php' );
 			scoper_adjust_legacy_extension_cfg( $this->role_defs, $this->cap_defs );
 		}
-
+		
 		add_action( 'set_current_user', array( &$this, 'credit_blogroles' ) );
 		
 		$this->credit_blogroles();
-			
+
 		do_action('config_loaded_rs');
 	}
 	
@@ -101,7 +101,7 @@ class Scoper
 			return;
 		
 		$current_rs_user->merge_scoped_blogcaps();
-		$GLOBALS['current_user']->allcaps = $current_rs_user->allcaps;
+		$GLOBALS['current_user']->allcaps = array_merge( $GLOBALS['current_user']->allcaps, $current_rs_user->allcaps );
 		
 		if ( empty($GLOBALS['current_user']->data) )
 			$GLOBALS['current_user']->data = (object) array();
@@ -226,7 +226,7 @@ class Scoper
 		if ( $doing_cron = defined('DOING_CRON') )
 			if ( ! defined('DISABLE_QUERYFILTERS_RS') )
 				define('DISABLE_QUERYFILTERS_RS', true);
-
+				
 		if ( ! $this->direct_file_access = strpos($_SERVER['QUERY_STRING'], 'rs_rewrite') )
 			$this->add_main_filters();
 			
