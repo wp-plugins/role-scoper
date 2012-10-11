@@ -55,7 +55,7 @@ function scoper_act_set_current_user() {
 		scoper_version_check();
 	}
 
-	if ( $id ) {
+	if ( $id || defined( 'SCOPER_ANON_METAGROUP' ) ) {
 		require_once( dirname(__FILE__).'/scoped-user.php');
 		$GLOBALS['current_rs_user'] = new WP_Scoped_User($id);
 		

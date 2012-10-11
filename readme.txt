@@ -112,6 +112,10 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
+= 1.3.58-dev =
+* Fixed : Posts were unreadable if associated with a taxonomy which has no terms, under some configurations
+* Fixed : RS Roles assigned to [Anonymous] group were ineffective
+
 = 1.3.57 - 10 Oct 2012 =
 * Fixed : Fatal error on first-time installation (Call to undefined function cr_role_caps)
 * Fixed : XML-RPC publishing error with Windows Live Writer, under some configurations
