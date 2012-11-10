@@ -1191,7 +1191,9 @@ class QueryInterceptor_RS
 					if ( ! isset($term_count[$taxonomy]) )
 						$term_count[$taxonomy] = $this->scoper->get_terms($taxonomy, UNFILTERED_RS, COL_COUNT_RS);
 
-					if ( ! $term_count[$taxonomy] || $user_terms = $this->scoper->qualify_terms_daterange($reqd_caps, $taxonomy, $role_handle_arg, $args) ) {
+					if ( ! $term_count[$taxonomy] ) {
+						$all_terms_qualified[''][$taxonomy] = true;
+					} elseif ( $user_terms = $this->scoper->qualify_terms_daterange($reqd_caps, $taxonomy, $role_handle_arg, $args) ) {
 						foreach ( array_keys($user_terms) as $date_key ) {
 							if ( count($user_terms[$date_key]) ) {
 								// don't bother applying term requirements if user has cap for all terms in this taxonomy

@@ -332,7 +332,7 @@ $ui->form_options = array(
 );
 	
 
-if ( IS_MU_RS ) {
+if ( IS_MU_RS && agp_is_plugin_network_active( SCOPER_BASENAME ) ) {
 	if ( $sitewide )
 		$available_form_options = $ui->form_options;
 		
