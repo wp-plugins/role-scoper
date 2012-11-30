@@ -118,10 +118,15 @@ class WP_Cap_Helper_CR {
 		foreach( array( 'post', 'page' ) as $post_type )
 			$generic_caps[$post_type] = (array) $wp_post_types[$post_type]->cap;
 
+		$skip_caps = array( 'read_post', 'edit_post', 'delete_post' );
+			
+		if ( ! isset($generic_caps['post']->create_posts) || ! isset($generic_caps['post']['edit_posts']) || ( $generic_caps['post']['create_posts'] == $generic_caps['post']['edit_posts'] ) )
+			$skip_caps []= 'create_posts';
+
 		foreach( array_keys($wp_post_types) as $post_type ) {
 			if ( empty( $use_post_types[$post_type] ) )
 				continue;
-				
+
 			if ( 'post' === $wp_post_types[$post_type]->capability_type )
 				$wp_post_types[$post_type]->capability_type = $post_type;
 
@@ -131,7 +136,7 @@ class WP_Cap_Helper_CR {
 			
 			// don't allow any capability defined for this type to match any capability defined for post or page (unless this IS post or page type)
 			foreach( $type_caps as $cap_property => $type_cap ) {
-				if ( in_array( $cap_property, array( 'read_post', 'edit_post', 'delete_post' ) ) ) {
+				if ( in_array( $cap_property, $skip_caps ) ) {
 					continue;
 				}
 			

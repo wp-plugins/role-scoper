@@ -113,6 +113,7 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 == Changelog ==
 
 = 1.3.58-dev =
+* Compat : WP 3.5 - Custom posts could not be created or edited when post type enabled for RS filtering 
 * Fixed : Posts were unreadable if associated with a taxonomy which has no terms, under some configurations
 * Fixed : RS Roles assigned to [Anonymous] group were ineffective
 * Fixed : XML-RPC post editing by users who are not sitewide Editors failed or caused categories to be dropped
