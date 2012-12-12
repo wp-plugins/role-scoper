@@ -3,8 +3,8 @@ Contributors: kevinB
 Donate link: http://agapetry.net/news/introducing-role-scoper/#role-scoper-download
 Tags: restrict, access, permissions, cms, user, members, admin, category, categories, pages, posts, page, Post, privacy, private, attachment, files, rss, feed
 Requires at least: 3.0
-Tested up to: 3.4.1
-Stable Tag: 1.3.57
+Tested up to: 3.5
+Stable Tag: 1.3.58
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -112,8 +112,10 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
-= 1.3.58-dev =
-* Compat : WP 3.5 - Custom posts could not be created or edited when post type enabled for RS filtering 
+= 1.3.58 - 12 Dec 2012 =
+* Compat : WP 3.5 - Custom posts could not be created or edited when post type enabled for RS filtering
+* Compat : WP 3.5 - edit_posts capability was required to access Edit menu for any post type
+* Compat : WP 3.5 - Support usage of the new create_posts capability (new checkbox in Roles > Options > Features > Content Maintenance)
 * Fixed : Posts were unreadable if associated with a taxonomy which has no terms, under some configurations
 * Fixed : RS Roles assigned to [Anonymous] group were ineffective
 * Fixed : XML-RPC post editing by users who are not sitewide Editors failed or caused categories to be dropped
