@@ -112,6 +112,10 @@ Yes, at this point I plan to keep Role Scoper compatible with upcoming WP versio
 
 == Changelog ==
 
+= 1.3.61-dev =
+* Fixed : If a custom post type is hierarchical, non-Administrators could not create new post if "Lock Top Pages" enabled for any roles
+* Fixed : RS roles were ineffective in some situations
+
 = 1.3.60 - 23 Jan 2013 =
 * Fixed : Non-Administrators could not edit posts unless create_posts capability is defined for post type and included in their role (since 1.3.58)
 
