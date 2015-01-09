@@ -5,7 +5,7 @@ Tags: restrict, access, permissions, cms, user, private, category, pages, privac
 License: GPLv2
 Requires at least: 3.0
 Tested up to: 3.6.1
-Stable Tag: 1.3.63
+Stable Tag: 1.3.64
 
 CMS-like permissions for reading and editing. Content-specific restrictions and roles supplement/override WordPress roles. User groups optional.
 
@@ -108,6 +108,9 @@ Basic Role Scoper support (bug fixes but not necessarily plugin conflict resolut
 8. [View more screenshots](http://agapetry.net/news/introducing-role-scoper/)
 
 == Changelog ==
+
+= 1.3.64 - 9 Jan 2015 =
+* License : Replaced Creative Commons code with GPL-compatible equivalent
 
 = 1.3.63 - 15 Oct 2013 =
 * Compat : Eyes Only User Access Shortcode (requires v 1.6)
